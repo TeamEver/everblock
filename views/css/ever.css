@@ -1,0 +1,74 @@
+#everlogo {
+    -webkit-animation:spin 8s linear infinite;
+    -moz-animation:spin 8s linear infinite;
+    animation:spin 8s linear 8s;
+}
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+#content.bootstrap .everheader, #content.bootstrap .everfooter, #dropdownMenuButton{
+    border: 1px solid #eb6e1f9e;
+}
+#dropdownMenuButton{
+    background-color: transparent;
+    float: left;
+}
+.bootstrap .btn.btn-default:hover, .bootstrap .btn.btn-default:hover i, .bootstrap .pagination>.active>a{
+    background-color: #faeab8c9;
+    color:#1e1e1e;
+    border:1px solid #1e1e1e;
+}
+.bootstrap .table thead>tr.filter>th{
+    background-color: #faeab842;
+}
+.bootstrap .table thead>tr>th{
+    color: #eb6e1f9e;
+}
+.bootstrap .page-head{
+    height: auto;
+}
+.page-sidebar #content{
+    padding-top: 80px;
+}
+.ever-danger{
+    background-color: red!important;
+    color:#FFF!important;
+}
+.ever-alert{
+    background-color: orange!important;
+    color:#FFF!important;
+}
+.ever-warning{
+    background-color: yellow!important;
+    color:#FFF!important;
+}
+.ever-success{
+    background-color: green!important;
+    color:#FFF!important;
+}
+.row .panel-heading{
+    cursor:pointer!important;
+}
+.row .panel-heading:hover{
+    color:#FFF!important;
+    background-color: #eb6e1f9e;
+}
+.mi-icon-team-ever {
+    content: url(../img/logo.png);
+    -webkit-animation:spin 8s linear infinite;
+    -moz-animation:spin 8s linear infinite;
+    animation:spin 8s linear 8s;
+}
+.everdashboard{
+    margin-top: 2%;
+}
+.everdashboard h3{
+    text-align: center;
+    padding: 3px;
+}
+.everdashboard .panel-heading{
+    text-align: center;
+}
+.everlist{
+    list-style-type: none;
+}
