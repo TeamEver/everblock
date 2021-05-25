@@ -32,7 +32,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '2.2.9';
+        $this->version = '2.2.10';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -46,7 +46,7 @@ class Everblock extends Module
 
     public function __call($method, $args)
     {
-        $controllerTypes = array('admin', 'moduleadmin', 'front');
+        $controllerTypes = array('admin', 'moduleadmin', 'front', 'modulefront');
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
         }
@@ -171,7 +171,7 @@ class Everblock extends Module
                 return;
             }
         }
-        $controllerTypes = array('admin', 'moduleadmin', 'front');
+        $controllerTypes = array('admin', 'moduleadmin', 'front', 'modulefront');
         $controller_name = Tools::getValue('controller');
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
