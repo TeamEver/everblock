@@ -32,7 +32,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '2.2.10';
+        $this->version = '2.3.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -178,8 +178,7 @@ class Everblock extends Module
         }
         // Get current hook name based on method name, first letter to lowercase
         $id_hook = Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
-        if (Context::getContext()->controller->controller_type === 'front'
-        ) {
+        if (Context::getContext()->controller->controller_type === 'front') {
             if (Context::getContext()->customer->id) {
                 $id_entity = (int)Context::getContext()->customer->id;
             } else {

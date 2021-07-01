@@ -31,6 +31,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'everblock` (
         `only_category` int(10) unsigned DEFAULT NULL,
         `id_category` int(10) unsigned DEFAULT NULL,
         `id_shop` int(10) unsigned NOT NULL,
+        `position` int(10) unsigned DEFAULT 0,
         `active` int(10) unsigned NOT NULL,
         PRIMARY KEY (`id_everblock`)
     ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';

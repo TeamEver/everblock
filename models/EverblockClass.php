@@ -47,7 +47,7 @@ class EverBlockClass extends ObjectModel
             'id_hook' => array(
                 'type' => self::TYPE_INT,
                 'lang' => false,
-                'validate' => 'isunsignedInt',
+                'validate' => 'isUnsignedInt',
                 'required' => true
             ),
             'only_home' => array(
@@ -63,13 +63,19 @@ class EverBlockClass extends ObjectModel
             'id_category' => array(
                 'type' => self::TYPE_INT,
                 'lang' => false,
-                'validate' => 'isunsignedInt',
+                'validate' => 'isUnsignedInt',
                 'required' => true
             ),
             'id_shop' => array(
                 'type' => self::TYPE_INT,
                 'lang' => false,
-                'validate' => 'isunsignedInt',
+                'validate' => 'isUnsignedInt',
+                'required' => true
+            ),
+            'position' => array(
+                'type' => self::TYPE_INT,
+                'lang' => false,
+                'validate' => 'isUnsignedInt',
                 'required' => true
             ),
             'active' => array(
@@ -87,29 +93,17 @@ class EverBlockClass extends ObjectModel
         )
     );
 
-    public static function truncate()
-    {
-        return Db::getInstance()->Execute('TRUNCATE `'._DB_PREFIX_.'everblock`')
-            && Db::getInstance()->Execute('TRUNCATE `'._DB_PREFIX_.'everblock_lang`');
-    }
-
-    public static function erase($id_everblock)
-    {
-        $everblock_obj = new EverBlockClass($id_everblock);
-        
-        return $everblock_obj->delete();
-    }
-
     public static function getBlocks($id_hook, $id_lang, $id_shop)
     {
         $sql = new DbQuery;
         $sql->select('*');
         $sql->from('everblock', 'eb');
         $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
-        $sql->where('eb.id_hook = '.$id_hook);
-        $sql->where('ebl.id_lang = '.$id_lang);
-        $sql->where('eb.id_shop = '.$id_shop);
+        $sql->where('eb.id_hook = '.(int)$id_hook);
+        $sql->where('ebl.id_lang = '.(int)$id_lang);
+        $sql->where('eb.id_shop = '.(int)$id_shop);
         $sql->where('eb.active = 1');
+        $sql->orderBy('eb.position ASC');
 
         return Db::getInstance()->executeS($sql);
     }

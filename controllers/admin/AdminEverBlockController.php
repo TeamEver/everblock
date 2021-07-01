@@ -37,6 +37,13 @@ class AdminEverBlockController extends ModuleAdminController
         $this->context->smarty->assign(array(
             'everblock_dir' => _MODULE_DIR_ . '/everblock/'
         ));
+        $this->_select = 'h.name AS hname';
+
+        $this->_join =
+            'LEFT JOIN `'._DB_PREFIX_.'hook` h
+                ON (
+                    h.`id_hook` = a.`id_hook`
+                )';
         $this->fields_list = array(
             'id_everblock' => array(
                 'title' => $this->l('ID'),
@@ -45,6 +52,16 @@ class AdminEverBlockController extends ModuleAdminController
             ),
             'name' => array(
                 'title' => $this->l('Name'),
+                'align' => 'left',
+                'width' => 'auto'
+            ),
+            'position' => array(
+                'title' => $this->l('Position'),
+                'align' => 'left',
+                'width' => 'auto'
+            ),
+            'hname' => array(
+                'title' => $this->l('Hook'),
                 'align' => 'left',
                 'width' => 'auto'
             ),
@@ -69,7 +86,7 @@ class AdminEverBlockController extends ModuleAdminController
             return Context::getContext()->getTranslator()->trans(
                 $string,
                 [],
-                'Modules.Everblock.Admineverblockeverblockcontroller'
+                'Modules.Everblock.Admineverblockcontroller'
             );
         }
 
@@ -145,7 +162,7 @@ class AdminEverBlockController extends ModuleAdminController
     public function renderForm()
     {
         if (Context::getContext()->shop->getContext() != Shop::CONTEXT_SHOP && Shop::isFeatureActive()) {
-            $this->errors[] = $this->l('You have to select a shop before creating or editing new SEO rules.');
+            $this->errors[] = $this->l('You have to select a shop before creating or editing new blocks.');
         }
         if (count($this->errors)) {
             return false;
@@ -178,7 +195,9 @@ class AdminEverBlockController extends ModuleAdminController
             'input' => array(
                 array(
                     'type' => 'select',
-                    'label' => $this->l('Position'),
+                    'label' => $this->l('Hook'),
+                    'desc' => $this->l('Please select hook'),
+                    'hint' => $this->l('Block will be shown on this hook'),
                     'name' => 'id_hook',
                     'required' => true,
                     'options' => array(
@@ -191,6 +210,7 @@ class AdminEverBlockController extends ModuleAdminController
                     'type' => 'switch',
                     'label' => $this->l('Only on homepage ?'),
                     'desc' => $this->l('Will only be set on homepage'),
+                    'hint' => $this->l('Else will be shown depending on hook and next settings'),
                     'name' => 'only_home',
                     'bool' => true,
                     'lang' => false,
@@ -211,6 +231,7 @@ class AdminEverBlockController extends ModuleAdminController
                     'type' => 'switch',
                     'label' => $this->l('Only on specific category ?'),
                     'desc' => $this->l('Only if hook is available on categories'),
+                    'hint' => $this->l('Set to now to show this block on each category'),
                     'name' => 'only_category',
                     'bool' => true,
                     'lang' => false,
@@ -231,6 +252,7 @@ class AdminEverBlockController extends ModuleAdminController
                     'type' => 'select',
                     'label' => $this->l('Limit on categories ?'),
                     'desc' => $this->l('Only if chosen hook is on categories'),
+                    'hint' => $this->l('Depends on previous setting'),
                     'name' => 'id_category',
                     'required' => false,
                     'options' => array(
@@ -242,6 +264,8 @@ class AdminEverBlockController extends ModuleAdminController
                 array(
                     'type' => 'text',
                     'label' => $this->l('Name'),
+                    'desc' => $this->l('As a reminder, wont be shown'),
+                    'hint' => $this->l('This reminder will be shown on admin only'),
                     'required' => true,
                     'name' => 'name',
                     'lang' => false
@@ -249,14 +273,27 @@ class AdminEverBlockController extends ModuleAdminController
                 array(
                     'type' => 'textarea',
                     'label' => $this->l('HTML block content'),
+                    'desc' => $this->l('Please type your block content'),
+                    'hint' => $this->l('HTML content depends on your shop settings'),
                     'required' => true,
                     'name' => 'content',
                     'lang' => true,
                     'autoload_rte' => true
                 ),
                 array(
+                    'type' => 'text',
+                    'label' => $this->l('Block position'),
+                    'desc' => $this->l('Enter block position number'),
+                    'hint' => $this->l('Blocks will be ordered using this number'),
+                    'required' => true,
+                    'name' => 'position',
+                    'lang' => false
+                ),
+                array(
                     'type' => 'switch',
                     'label' => $this->l('Active'),
+                    'desc' => $this->l('Enable this block ?'),
+                    'hint' => $this->l('Only active blocks will be shown'),
                     'name' => 'active',
                     'bool' => true,
                     'lang' => false,
@@ -326,6 +363,11 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                  $this->errors[] = $this->l('Category is not valid');
             }
+            if (!Tools::getValue('position')
+                || !Validate::isUnsignedInt(Tools::getValue('position'))
+            ) {
+                 $this->errors[] = $this->l('Active is not valid');
+            }
             if (Tools::getValue('active')
                 && !Validate::isBool(Tools::getValue('active'))
             ) {
@@ -339,6 +381,7 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->only_home = (int)Tools::getValue('only_home');
             $everblock_obj->only_category = (int)Tools::getValue('only_category');
             $everblock_obj->id_category = (int)Tools::getValue('id_category');
+            $everblock_obj->position = (int)Tools::getValue('position');
             $hook_name = Hook::getNameById((int)Tools::getValue('id_hook'));
             $everblock = Module::getInstanceByName('everblock');
             foreach (Language::getLanguages(false) as $language) {
