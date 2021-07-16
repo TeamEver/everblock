@@ -183,15 +183,6 @@ class AdminEverBlockController extends ModuleAdminController
                 'title' => $this->l('Save'),
                 'class' => 'button pull-right'
             ),
-            'buttons' => array(
-                'save-and-stay' => array(
-                    'title' => $this->l('Save and stay'),
-                    'name' => 'submitAdd'.$this->table.'AndStay',
-                    'type' => 'submit',
-                    'class' => 'btn btn-default pull-right',
-                    'icon' => 'process-icon-save'
-                ),
-            ),
             'input' => array(
                 array(
                     'type' => 'select',
@@ -332,7 +323,7 @@ class AdminEverBlockController extends ModuleAdminController
 
     public function postProcess()
     {
-        if (Tools::isSubmit('save') || Tools::isSubmit('submitAdd'.$this->table.'AndStay')) {
+        if (Tools::isSubmit('save')) {
             if (!Tools::getValue('name')
                 || !Validate::isGenericName(Tools::getValue('name'))
             ) {
@@ -399,9 +390,7 @@ class AdminEverBlockController extends ModuleAdminController
                         $hook_name
                     );
                     Tools::clearSmartyCache();
-                    if (Tools::isSubmit('save')) {
-                        Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
-                    }
+                    Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
                 } else {
                     $this->errors[] = $this->l('Can\'t update the current object');
                 }
