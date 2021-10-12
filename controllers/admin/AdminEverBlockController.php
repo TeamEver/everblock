@@ -106,6 +106,7 @@ class AdminEverBlockController extends ModuleAdminController
     public function renderList()
     {
         $this->addRowAction('edit');
+        $this->addRowAction('delete');
         $this->toolbar_title = $this->l('HTML blocks Configuration');
 
         $this->bulk_actions = array(
@@ -150,7 +151,7 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
-                $this->html .= $this->displayError($error);
+                $this->html .= Tools::displayError($error);
             }
         }
         $this->html .= $lists;
@@ -183,6 +184,15 @@ class AdminEverBlockController extends ModuleAdminController
                 'title' => $this->l('Save'),
                 'class' => 'button pull-right'
             ),
+            // 'buttons' => array(
+            //     'import' => array(
+            //         'name' => 'save_and_stay',
+            //         'type' => 'submit',
+            //         'class' => 'btn btn-default pull-right',
+            //         'icon' => 'process-icon-save',
+            //         'title' => $this->l('Save & stay')
+            //     ),
+            // ),
             'input' => array(
                 array(
                     'type' => 'select',
@@ -300,7 +310,7 @@ class AdminEverBlockController extends ModuleAdminController
                             'label' => $this->l('Desactivate')
                         )
                     )
-                )
+                ),
             )
         );
         $lists = parent::renderForm();
@@ -311,7 +321,7 @@ class AdminEverBlockController extends ModuleAdminController
         $this->html .= $lists;
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
-                $this->html .= $this->displayError($error);
+                $this->html .= Tools::displayError($error);
             }
         }
         $this->html .= $this->context->smarty->fetch(
@@ -323,46 +333,54 @@ class AdminEverBlockController extends ModuleAdminController
 
     public function postProcess()
     {
-        if (Tools::isSubmit('save')) {
+        if (Tools::isSubmit('deleteeverblock')) {
+            $everblock_obj = new EverBlockClass(
+                (int)Tools::getValue('id_everblock')
+            );
+            if (!$everblock_obj->delete()) {
+                $this->errors[] = Tools::displayError('An error has occurred: Can\'t delete the current object');
+            }
+        }
+        if (Tools::isSubmit('save') || Tools::isSubmit('save_and_stay')) {
             if (!Tools::getValue('name')
                 || !Validate::isGenericName(Tools::getValue('name'))
             ) {
-                 $this->errors[] = $this->l('Name is not valid or missing');
+                $this->errors[] = $this->l('Name is not valid or missing');
             }
             if (Tools::getValue('id_hook')
                 && !Validate::isUnsignedInt(Tools::getValue('id_hook'))
             ) {
-                 $this->errors[] = $this->l('Hook is not valid');
+                $this->errors[] = $this->l('Hook is not valid');
             }
             if (Tools::getValue('only_home')
                 && !Validate::isBool(Tools::getValue('only_home'))
             ) {
-                 $this->errors[] = $this->l('Only home is not valid');
+                $this->errors[] = $this->l('Only home is not valid');
             }
             if (Tools::getValue('only_category')
                 && !Validate::isBool(Tools::getValue('only_category'))
             ) {
-                 $this->errors[] = $this->l('Only category is not valid');
+                $this->errors[] = $this->l('Only category is not valid');
             }
             if (Tools::getValue('only_home')
                 && Tools::getValue('only_category')
             ) {
-                 $this->errors[] = $this->l('"Only category" and "Only home" ae both selected');
+                $this->errors[] = $this->l('"Only category" and "Only home" ae both selected');
             }
             if (Tools::getValue('id_category')
                 && !Validate::isUnsignedInt(Tools::getValue('id_category'))
             ) {
-                 $this->errors[] = $this->l('Category is not valid');
+                $this->errors[] = $this->l('Category is not valid');
             }
-            if (!Tools::getValue('position')
-                || !Validate::isUnsignedInt(Tools::getValue('position'))
+            if (Tools::getValue('position')
+                && !Validate::isUnsignedInt(Tools::getValue('position'))
             ) {
-                 $this->errors[] = $this->l('Active is not valid');
+                $this->errors[] = $this->l('Position is not valid');
             }
             if (Tools::getValue('active')
                 && !Validate::isBool(Tools::getValue('active'))
             ) {
-                 $this->errors[] = $this->l('Active is not valid');
+                $this->errors[] = $this->l('Active is not valid');
             }
             $id = Tools::getValue('id_everblock');
             $everblock_obj = new EverBlockClass($id);
@@ -374,23 +392,20 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->id_category = (int)Tools::getValue('id_category');
             $everblock_obj->position = (int)Tools::getValue('position');
             $hook_name = Hook::getNameById((int)Tools::getValue('id_hook'));
+            $everblock_obj->active = Tools::getValue('active');
             $everblock = Module::getInstanceByName('everblock');
             foreach (Language::getLanguages(false) as $language) {
-                if (!Tools::getValue('content_'.$language['id_lang'])) {
-                    $this->errors[] = $this->l('Content is missing for lang ').$language['id_lang'];
-                } else {
-                    $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_'.$language['id_lang']);
-                }
+                $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_'.$language['id_lang']);
             }
-
             if (!count($this->errors)) {
-                $everblock_obj->active = Tools::getValue('active');
                 if ($everblock_obj->save()) {
                     $everblock->registerHook(
                         $hook_name
                     );
                     Tools::clearSmartyCache();
-                    Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
+                    if (Tools::isSubmit('save')) {
+                        Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
+                    }
                 } else {
                     $this->errors[] = $this->l('Can\'t update the current object');
                 }
