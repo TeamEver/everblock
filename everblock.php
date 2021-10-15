@@ -25,6 +25,7 @@ require_once(dirname(__FILE__).'/models/EverblockClass.php');
 
 class Everblock extends Module
 {
+    private $html;
     /**
      * Constructor
      */
@@ -32,7 +33,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '2.3.5';
+        $this->version = '2.4.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -139,6 +140,28 @@ class Everblock extends Module
         $tab = new Tab((int)Tab::getIdFromClassName($tabClass));
 
         return $tab->delete();
+    }
+
+    /**
+     * Load the configuration form
+     */
+    public function getContent()
+    {
+        $block_admin_link  = 'index.php?controller=AdminEverBlock&token=';
+        $block_admin_link .= Tools::getAdminTokenLite('AdminEverBlock');
+        $this->context->smarty->assign(array(
+            'everblock_dir' => $this->_path,
+            'block_admin_link' => $block_admin_link,
+        ));
+
+        $this->html .= $this->context->smarty->fetch($this->local_path.'views/templates/admin/header.tpl');
+        if ($this->checkLatestEverModuleVersion($this->name, $this->version)) {
+            $this->html .= $this->context->smarty->fetch($this->local_path.'views/templates/admin/upgrade.tpl');
+        }
+        $this->html .= $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
+        $this->html .= $this->context->smarty->fetch($this->local_path.'views/templates/admin/footer.tpl');
+
+        return $this->html;
     }
 
     /**

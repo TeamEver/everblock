@@ -20,6 +20,12 @@
     <div class="col-md-6">
         <img id="everlogo" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" style="max-width: 120px;">
         <p>{l s='Thanks for using Team Ever\'s modules' mod='everblock'}.<br /></p>
+        {if isset($block_admin_link) && $block_admin_link}
+        <a href="{$block_admin_link|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-success">{l s='Manage blocks' mod='everblock'}</a>
+        {/if}
+        {if isset($module_link) && $module_link}
+        <a href="{$module_link|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-success">{l s='Module configuration' mod='everblock'}</a>
+        {/if}
         <p>{l s='You can use shortcodes for your content' mod='everblock'}</p>
         <div class="dropdown">
           <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -41,10 +47,14 @@
         </div>
     </div>
     <div class="col-md-6">
-        <h4>{l s='How to be first on Google pages ?' mod='everblock'}</h4>
-        <p>{l s='We have created the best SEO module, by working with huge websites and SEO societies' mod='everblock'}</p>
-        <p>
-            <a href="https://addons.prestashop.com/fr/seo-referencement-naturel/39489-ever-ultimate-seo.html" target="_blank">{l s='See the best SEO module on Prestashop Addons' mod='everblock'}</a>
+        <p class="alert alert-warning">
+            {l s='This module is free and will always be ! You can support our free modules by making a donation by clicking the button below' mod='everblock'}
         </p>
+        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" style="display: flex;justify-content: center;">
+        <input type="hidden" name="cmd" value="_s-xclick" />
+        <input type="hidden" name="hosted_button_id" value="3LE8ABFYJKP98" />
+        <input type="image" src="https://www.team-ever.com/wp-content/uploads/2019/06/appel_a_dons-1.jpg" border="0" name="submit" title="Soutenez le développement des modules gratuits de Team Ever !" alt="Soutenez le développement des modules gratuits de Team Ever !" style="width: 150px;" />
+        <img alt="" border="0" src="https://www.paypal.com/fr_FR/i/scr/pixel.gif" width="1" height="1" />
+        </form>
     </div>
 </div>

@@ -34,7 +34,10 @@ class AdminEverBlockController extends ModuleAdminController
         $this->context = Context::getContext();
         $this->identifier = "id_everblock";
         $this->isSeven = Tools::version_compare(_PS_VERSION_, '1.7', '>=') ? true : false;
+        $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
+        $module_link .= Tools::getAdminTokenLite('AdminModules');
         $this->context->smarty->assign(array(
+            'module_link' => $module_link,
             'everblock_dir' => _MODULE_DIR_ . '/everblock/'
         ));
         $this->_select = 'h.name AS hname';
@@ -184,15 +187,15 @@ class AdminEverBlockController extends ModuleAdminController
                 'title' => $this->l('Save'),
                 'class' => 'button pull-right'
             ),
-            // 'buttons' => array(
-            //     'import' => array(
-            //         'name' => 'save_and_stay',
-            //         'type' => 'submit',
-            //         'class' => 'btn btn-default pull-right',
-            //         'icon' => 'process-icon-save',
-            //         'title' => $this->l('Save & stay')
-            //     ),
-            // ),
+            'buttons' => array(
+                'import' => array(
+                    'name' => 'save_and_stay',
+                    'type' => 'submit',
+                    'class' => 'btn btn-default pull-right',
+                    'icon' => 'process-icon-save',
+                    'title' => $this->l('Save & stay')
+                ),
+            ),
             'input' => array(
                 array(
                     'type' => 'select',
@@ -382,8 +385,9 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Active is not valid');
             }
-            $id = Tools::getValue('id_everblock');
-            $everblock_obj = new EverBlockClass($id);
+            $everblock_obj = new EverBlockClass(
+                (int)Tools::getValue('id_everblock')
+            );
             $everblock_obj->name = Tools::getValue('name');
             $everblock_obj->id_shop = (int)$this->context->shop->id;
             $everblock_obj->id_hook = (int)Tools::getValue('id_hook');
@@ -403,8 +407,17 @@ class AdminEverBlockController extends ModuleAdminController
                         $hook_name
                     );
                     Tools::clearSmartyCache();
-                    if (Tools::isSubmit('save')) {
+                    if (Tools::isSubmit('save') === true) {
                         Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
+                    }
+                    if (Tools::isSubmit('save_and_stay') === true) {
+                        Tools::redirectAdmin(
+                            self::$currentIndex
+                            .'&updateeverblock=&id_everblock='
+                            .(int)$everblock_obj->id
+                            .'&token='
+                            .$this->token
+                        );
                     }
                 } else {
                     $this->errors[] = $this->l('Can\'t update the current object');
