@@ -33,7 +33,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '2.4.1';
+        $this->version = '2.4.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -228,7 +228,7 @@ class Everblock extends Module
             ) {
                 continue;
             }
-            // Only category managementmanagement
+            // Only category management
             if ((bool)$block['only_category'] === true
                 && $controller_name == 'index'
             ) {
@@ -239,6 +239,16 @@ class Everblock extends Module
                     $continue = true;
                 } else {
                     $continue = false;
+                }
+                if (Tools::getValue('id_product')) {
+                    $product = new Product(
+                        (int)Tools::getValue('id_product')
+                    );
+                    if ((int)$product->id_category_default != (int)$block['id_category']) {
+                        $continue = true;
+                    } else {
+                        $continue = false;
+                    }
                 }
             }
             if (isset($continue) && $continue) {
