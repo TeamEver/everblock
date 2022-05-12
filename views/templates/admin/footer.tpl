@@ -17,7 +17,7 @@
 *}
 
 <div class="panel">
-    <h3><i class="icon icon-credit-card"></i> {l s='Ever Block' mod='everblock'}</h3>
+    <h3><i class="icon icon-smile"></i> {l s='Ever Block' mod='everblock'}</h3>
     <img id="everlogo" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" style="max-width: 120px;">
     </a>
     <p>

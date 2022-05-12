@@ -34,6 +34,7 @@ class AdminEverBlockController extends ModuleAdminController
         $this->context = Context::getContext();
         $this->identifier = "id_everblock";
         $this->isSeven = Tools::version_compare(_PS_VERSION_, '1.7', '>=') ? true : false;
+        $this->name = 'AdminEverBlockController';
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
         $this->context->smarty->assign(array(
@@ -171,167 +172,265 @@ class AdminEverBlockController extends ModuleAdminController
         if (count($this->errors)) {
             return false;
         }
+        $obj = new EverBlockClass(
+            (int)Tools::getValue('id_everblock')
+        );
+        $fields_form = array();
         $hooks_list = Hook::getHooks(false, true);
         $categories_list = Category::getCategories(
             false,
             true,
             false
         );
+        $everblock_obj = $this->loadObject(true);
+        $everblock_obj->categories = json_decode($everblock_obj->categories);
+        // die(var_dump($everblock_obj));
 
         // Building the Add/Edit form
-        $this->fields_form = array(
-            'tinymce' => true,
-            'description' => $this->l('Add a new block.'),
-            'submit' => array(
-                'name' => 'save',
-                'title' => $this->l('Save'),
-                'class' => 'button pull-right'
-            ),
-            'buttons' => array(
-                'import' => array(
-                    'name' => 'save_and_stay',
-                    'type' => 'submit',
-                    'class' => 'btn btn-default pull-right',
-                    'icon' => 'process-icon-save',
-                    'title' => $this->l('Save & stay')
+        $fields_form[] = array(
+            'form' => array(
+                'tinymce' => true,
+                'description' => $this->l('Add a new block.'),
+                'submit' => array(
+                    'name' => 'save',
+                    'title' => $this->l('Save'),
+                    'class' => 'button btn btn-success pull-right'
                 ),
-            ),
-            'input' => array(
-                array(
-                    'type' => 'select',
-                    'label' => $this->l('Hook'),
-                    'desc' => $this->l('Please select hook'),
-                    'hint' => $this->l('Block will be shown on this hook'),
-                    'name' => 'id_hook',
-                    'required' => true,
-                    'options' => array(
-                        'query' => $hooks_list,
-                        'id' => 'id_hook',
-                        'name' => 'name'
-                    )
+                'buttons' => array(
+                    'import' => array(
+                        'name' => 'stay',
+                        'type' => 'submit',
+                        'class' => 'btn btn-default pull-right',
+                        'icon' => 'process-icon-save',
+                        'title' => $this->l('Save & stay')
+                    ),
                 ),
-                array(
-                    'type' => 'switch',
-                    'label' => $this->l('Only on homepage ?'),
-                    'desc' => $this->l('Will only be set on homepage'),
-                    'hint' => $this->l('Else will be shown depending on hook and next settings'),
-                    'name' => 'only_home',
-                    'bool' => true,
-                    'lang' => false,
-                    'values' => array(
-                        array(
-                            'id'    => 'active_on',
-                            'value' => 1,
-                            'label' => $this->l('Activate')
-                        ),
-                        array(
-                            'id'    => 'active_off',
-                            'value' => 0,
-                            'label' => $this->l('Desactivate')
+                'input' => array(
+                    array(
+                        'type' => 'hidden',
+                        'name' => 'id_everblock'
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => $this->l('Hook'),
+                        'desc' => $this->l('Please select hook'),
+                        'hint' => $this->l('Block will be shown on this hook'),
+                        'name' => 'id_hook',
+                        'required' => true,
+                        'options' => array(
+                            'query' => $hooks_list,
+                            'id' => 'id_hook',
+                            'name' => 'name'
                         )
-                    )
-                ),
-                array(
-                    'type' => 'switch',
-                    'label' => $this->l('Only on specific category ?'),
-                    'desc' => $this->l('Only if hook is available on categories'),
-                    'hint' => $this->l('Set to now to show this block on each category'),
-                    'name' => 'only_category',
-                    'bool' => true,
-                    'lang' => false,
-                    'values' => array(
-                        array(
-                            'id'    => 'active_on',
-                            'value' => 1,
-                            'label' => $this->l('Activate')
-                        ),
-                        array(
-                            'id'    => 'active_off',
-                            'value' => 0,
-                            'label' => $this->l('Desactivate')
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Only on homepage ?'),
+                        'desc' => $this->l('Will only be set on homepage'),
+                        'hint' => $this->l('Else will be shown depending on hook and next settings'),
+                        'name' => 'only_home',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => array(
+                            array(
+                                'id'    => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate')
+                            ),
+                            array(
+                                'id'    => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate')
+                            )
                         )
-                    )
-                ),
-                array(
-                    'type' => 'select',
-                    'label' => $this->l('Limit on categories ?'),
-                    'desc' => $this->l('Only if chosen hook is on categories'),
-                    'hint' => $this->l('Depends on previous setting'),
-                    'name' => 'id_category',
-                    'required' => false,
-                    'options' => array(
-                        'query' => $categories_list,
-                        'id' => 'id_category',
-                        'name' => 'name'
-                    )
-                ),
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Name'),
-                    'desc' => $this->l('As a reminder, wont be shown'),
-                    'hint' => $this->l('This reminder will be shown on admin only'),
-                    'required' => true,
-                    'name' => 'name',
-                    'lang' => false
-                ),
-                array(
-                    'type' => 'textarea',
-                    'label' => $this->l('HTML block content'),
-                    'desc' => $this->l('Please type your block content'),
-                    'hint' => $this->l('HTML content depends on your shop settings'),
-                    'required' => true,
-                    'name' => 'content',
-                    'lang' => true,
-                    'autoload_rte' => true
-                ),
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Block position'),
-                    'desc' => $this->l('Enter block position number'),
-                    'hint' => $this->l('Blocks will be ordered using this number'),
-                    'required' => true,
-                    'name' => 'position',
-                    'lang' => false
-                ),
-                array(
-                    'type' => 'switch',
-                    'label' => $this->l('Active'),
-                    'desc' => $this->l('Enable this block ?'),
-                    'hint' => $this->l('Only active blocks will be shown'),
-                    'name' => 'active',
-                    'bool' => true,
-                    'lang' => false,
-                    'values' => array(
-                        array(
-                            'id'    => 'active_on',
-                            'value' => 1,
-                            'label' => $this->l('Activate')
-                        ),
-                        array(
-                            'id'    => 'active_off',
-                            'value' => 0,
-                            'label' => $this->l('Desactivate')
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Only on specific category ?'),
+                        'desc' => $this->l('Only if hook is available on categories'),
+                        'hint' => $this->l('Set to now to show this block on each category'),
+                        'name' => 'only_category',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => array(
+                            array(
+                                'id'    => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate')
+                            ),
+                            array(
+                                'id'    => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate')
+                            )
                         )
-                    )
-                ),
+                    ),
+                    array(
+                        'type' => 'select',
+                        'class' => 'chosen',
+                        'multiple' => true,
+                        'label' => $this->l('Limit on categories ?'),
+                        'desc' => $this->l('Only if chosen hook is on categories'),
+                        'hint' => $this->l('Depends on previous setting'),
+                        'name' => 'categories[]',
+                        'required' => false,
+                        'options' => array(
+                            'query' => $categories_list,
+                            'id' => 'id_category',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Name'),
+                        'desc' => $this->l('As a reminder, wont be shown'),
+                        'hint' => $this->l('This reminder will be shown on admin only'),
+                        'required' => true,
+                        'name' => 'name',
+                        'lang' => false
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => $this->l('HTML block content'),
+                        'desc' => $this->l('Please type your block content'),
+                        'hint' => $this->l('HTML content depends on your shop settings'),
+                        'required' => true,
+                        'name' => 'content',
+                        'lang' => true,
+                        'autoload_rte' => true
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Block position'),
+                        'desc' => $this->l('Enter block position number'),
+                        'hint' => $this->l('Blocks will be ordered using this number'),
+                        'required' => true,
+                        'name' => 'position',
+                        'lang' => false
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Active'),
+                        'desc' => $this->l('Enable this block ?'),
+                        'hint' => $this->l('Only active blocks will be shown'),
+                        'name' => 'active',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => array(
+                            array(
+                                'id'    => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate')
+                            ),
+                            array(
+                                'id'    => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate')
+                            )
+                        )
+                    ),
+                )
             )
         );
-        $lists = parent::renderForm();
-
-        $this->html .= $this->context->smarty->fetch(
-            _PS_MODULE_DIR_.'/everblock/views/templates/admin/header.tpl'
+        $helper = new HelperForm();
+        $helper->show_toolbar = false;
+        $helper->module = $this;
+        $helper->name_controller = $this->name;
+        $helper->toolbar_scroll = true;
+        $lang = new Language((int) Configuration::get('PS_LANG_DEFAULT'));
+        $helper->default_form_language = $lang->id;
+        $helper->allow_employee_form_lang = Configuration::get(
+            'PS_BO_ALLOW_EMPLOYEE_FORM_LANG'
+        ) ? Configuration::get(
+            'PS_BO_ALLOW_EMPLOYEE_FORM_LANG'
+        ) : 0;
+        $this->fields_form = array();
+        $helper->identifier = $this->identifier;
+        $helper->currentIndex = AdminController::$currentIndex;
+        $helper->token = Tools::getValue('token');
+        $helper->submit_action = 'save';
+        $helper->tpl_vars = array(
+            'fields_value' => $this->getConfigFormValues($obj), /* Add values for your inputs */
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => (int)Context::getContext()->language->id,
         );
-        $this->html .= $lists;
-        if (count($this->errors)) {
-            foreach ($this->errors as $error) {
-                $this->html .= Tools::displayError($error);
-            }
+        $helper->currentIndex = AdminController::$currentIndex;
+        return $helper->generateForm($fields_form);
+    }
+
+    protected function getConfigFormValues($obj)
+    {
+        $formValues = array();
+        if (Validate::isLoadedObject($obj)) {
+            $formValues[] = array(
+                'id_everblock' => (!empty(Tools::getValue('id_everblock')))
+                ? Tools::getValue('id_everblock')
+                : $obj->id,
+                'id_hook' => (!empty(Tools::getValue('id_hook')))
+                ? Tools::getValue('id_hook')
+                : $obj->id_hook,
+                'name' => (!empty(Tools::getValue('name')))
+                ? Tools::getValue('name')
+                : $obj->name,
+                'content' => (!empty(Tools::getValue('content')))
+                ? Tools::getValue('content')
+                : $obj->content,
+                'categories[]' => (!empty(Tools::getValue('categories')))
+                ? Tools::getValue('categories')
+                : json_decode($obj->categories),
+                'only_home' => (!empty(Tools::getValue('only_home')))
+                ? Tools::getValue('only_home')
+                : $obj->only_home,
+                'only_category' => (!empty(Tools::getValue('only_category')))
+                ? Tools::getValue('only_category')
+                : $obj->only_category,
+                'position' => (!empty(Tools::getValue('position')))
+                ? Tools::getValue('position')
+                : $obj->position,
+                'id_shop' => (!empty(Tools::getValue('id_shop')))
+                ? Tools::getValue('id_shop')
+                : $obj->id_shop,
+                'active' => (!empty(Tools::getValue('active')))
+                ? Tools::getValue('active')
+                : $obj->active,
+            );
+        } else {
+            $categories = array();
+            $formValues[] = array(
+                'id_everblock' => (!empty(Tools::getValue('id_everblock')))
+                ? Tools::getValue('id_everblock')
+                : '',
+                'id_hook' => (!empty(Tools::getValue('id_hook')))
+                ? Tools::getValue('id_hook')
+                : '',
+                'name' => (!empty(Tools::getValue('name')))
+                ? Tools::getValue('name')
+                : '',
+                'content' => (!empty(Tools::getValue('content')))
+                ? Tools::getValue('content')
+                : '',
+                'categories[]' => (!empty(Tools::getValue('categories')))
+                ? Tools::getValue('categories')
+                :'',
+                'only_home' => (!empty(Tools::getValue('only_home')))
+                ? Tools::getValue('only_home')
+                : '',
+                'only_category' => (!empty(Tools::getValue('only_category')))
+                ? Tools::getValue('only_category')
+                : '',
+                'position' => (!empty(Tools::getValue('position')))
+                ? Tools::getValue('position')
+                : '',
+                'id_shop' => (!empty(Tools::getValue('id_shop')))
+                ? Tools::getValue('id_shop')
+                : '',
+                'active' => (!empty(Tools::getValue('active')))
+                ? Tools::getValue('active')
+                : '',
+            );
         }
-        $this->html .= $this->context->smarty->fetch(
-            _PS_MODULE_DIR_.'/everblock/views/templates/admin/footer.tpl'
-        );
-
-        return $this->html;
+        $values = call_user_func_array('array_merge', $formValues);
+        return $values;
     }
 
     public function postProcess()
@@ -344,7 +443,10 @@ class AdminEverBlockController extends ModuleAdminController
                 $this->errors[] = Tools::displayError('An error has occurred: Can\'t delete the current object');
             }
         }
-        if (Tools::isSubmit('save') || Tools::isSubmit('save_and_stay')) {
+        if (Tools::isSubmit('save') || Tools::isSubmit('stay')) {
+            $everblock_obj = new EverBlockClass(
+                (int)Tools::getValue('id_everblock')
+            );
             if (!Tools::getValue('name')
                 || !Validate::isGenericName(Tools::getValue('name'))
             ) {
@@ -370,10 +472,10 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('"Only category" and "Only home" ae both selected');
             }
-            if (Tools::getValue('id_category')
-                && !Validate::isUnsignedInt(Tools::getValue('id_category'))
+            if (Tools::getValue('categories')
+                && !Validate::isArrayWithIds(Tools::getValue('categories'))
             ) {
-                $this->errors[] = $this->l('Category is not valid');
+                $this->errors[] = $this->l('Categories are not valid');
             }
             if (Tools::getValue('position')
                 && !Validate::isUnsignedInt(Tools::getValue('position'))
@@ -391,9 +493,11 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->name = Tools::getValue('name');
             $everblock_obj->id_shop = (int)$this->context->shop->id;
             $everblock_obj->id_hook = (int)Tools::getValue('id_hook');
-            $everblock_obj->only_home = (int)Tools::getValue('only_home');
-            $everblock_obj->only_category = (int)Tools::getValue('only_category');
-            $everblock_obj->id_category = (int)Tools::getValue('id_category');
+            $everblock_obj->only_home = (bool)Tools::getValue('only_home');
+            $everblock_obj->only_category = (bool)Tools::getValue('only_category');
+            $everblock_obj->categories = json_encode(
+                Tools::getValue('categories')
+            );
             $everblock_obj->position = (int)Tools::getValue('position');
             $hook_name = Hook::getNameById((int)Tools::getValue('id_hook'));
             $everblock_obj->active = Tools::getValue('active');
@@ -402,26 +506,21 @@ class AdminEverBlockController extends ModuleAdminController
                 $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_'.$language['id_lang']);
             }
             if (!count($this->errors)) {
-                if ($everblock_obj->save()) {
-                    $everblock->registerHook(
-                        $hook_name
+                $everblock_obj->save();
+                $everblock->registerHook(
+                    $hook_name
+                );
+                Tools::clearSmartyCache();
+                if ((bool)Tools::isSubmit('stay') === true) {
+                    Tools::redirectAdmin(
+                        self::$currentIndex
+                        .'&updateeverblock=&id_everblock='
+                        .(int)$everblock_obj->id
+                        .'&token='
+                        .$this->token
                     );
-                    Tools::clearSmartyCache();
-                    if (Tools::isSubmit('save') === true) {
-                        Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
-                    }
-                    if (Tools::isSubmit('save_and_stay') === true) {
-                        Tools::redirectAdmin(
-                            self::$currentIndex
-                            .'&updateeverblock=&id_everblock='
-                            .(int)$everblock_obj->id
-                            .'&token='
-                            .$this->token
-                        );
-                    }
-                } else {
-                    $this->errors[] = $this->l('Can\'t update the current object');
                 }
+                Tools::redirectAdmin(self::$currentIndex.'&token='.$this->token);
             }
         }
     }

@@ -29,8 +29,8 @@ class EverBlockClass extends ObjectModel
     public $only_home;
     public $only_category;
     public $id_hook;
-    public $id_category;
     public $id_shop;
+    public $categories;
     public $active;
 
     public static $definition = array(
@@ -60,12 +60,6 @@ class EverBlockClass extends ObjectModel
                 'lang' => false,
                 'validate' => 'isBool',
             ),
-            'id_category' => array(
-                'type' => self::TYPE_INT,
-                'lang' => false,
-                'validate' => 'isUnsignedInt',
-                'required' => true
-            ),
             'id_shop' => array(
                 'type' => self::TYPE_INT,
                 'lang' => false,
@@ -82,6 +76,11 @@ class EverBlockClass extends ObjectModel
                 'type' => self::TYPE_BOOL,
                 'lang' => false,
                 'validate' => 'isBool'
+            ),
+            'categories' => array(
+                'type' => self::TYPE_STRING,
+                'validate' => 'isAnything',
+                'required' => false
             ),
             // lang fields
             'content' => array(

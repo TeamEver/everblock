@@ -33,7 +33,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '2.4.2';
+        $this->version = '3.1.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -176,9 +176,6 @@ class Everblock extends Module
     {
         $this->context->controller->addCss($this->_path.'views/css/ever.css');
         $currentConfigure = Tools::getValue('configure');
-        if ($currentConfigure == 'everpsseo') {
-            $this->context->controller->addJs($this->_path.'views/js/ever.js');
-        }
     }
 
     public function everHook($method, $args)
@@ -234,8 +231,9 @@ class Everblock extends Module
             ) {
                 continue;
             }
-            if ((bool)$block['only_category']) {
-                if ((int)$block['id_category'] != (int)Tools::getValue('id_category')) {
+            if ((bool)$block['only_category'] === true) {
+                $categories = json_decode($block['categories']);
+                if (!in_array((int)Tools::getValue('id_category'), $categories)) {
                     $continue = true;
                 } else {
                     $continue = false;
@@ -244,7 +242,7 @@ class Everblock extends Module
                     $product = new Product(
                         (int)Tools::getValue('id_product')
                     );
-                    if ((int)$product->id_category_default != (int)$block['id_category']) {
+                    if (!in_array((int)$product->id_category_default, $categories)) {
                         $continue = true;
                     } else {
                         $continue = false;
@@ -363,6 +361,8 @@ class Everblock extends Module
         .$version;
         $handle = curl_init($upgrade_link);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
         curl_exec($handle);
         $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
         if ($httpCode != 200) {
