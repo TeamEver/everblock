@@ -111,12 +111,17 @@ class AdminEverBlockController extends ModuleAdminController
     {
         $this->addRowAction('edit');
         $this->addRowAction('delete');
+        $this->addRowAction('duplicate');
         $this->toolbar_title = $this->l('HTML blocks Configuration');
 
         $this->bulk_actions = array(
             'delete' => array(
                 'text' => $this->l('Delete selected items'),
                 'confirm' => $this->l('Delete selected items ?')
+            ),
+            'duplicateall' => array(
+                'text' => $this->l('Duplicate selected items'),
+                'confirm' => $this->l('Duplicate selected items ?')
             ),
         );
 
@@ -128,6 +133,9 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::isSubmit('submitBulkenableSelection'.$this->table)) {
             $this->processBulkEnable();
+        }
+        if (Tools::isSubmit('submitBulkduplicateall'.$this->table)) {
+            $this->processBulkDuplicate();
         }
         if (Tools::isSubmit('status'.$this->table)) {
             $db = Db::getInstance();
@@ -435,6 +443,11 @@ class AdminEverBlockController extends ModuleAdminController
 
     public function postProcess()
     {
+        if (Tools::getIsset('duplicate'.$this->table)) {
+            $this->duplicate(
+                (int)Tools::getValue($this->identifier)
+            );
+        }
         if (Tools::isSubmit('deleteeverblock')) {
             $everblock_obj = new EverBlockClass(
                 (int)Tools::getValue('id_everblock')
@@ -563,4 +576,31 @@ class AdminEverBlockController extends ModuleAdminController
             }
         }
     }
+
+    protected function processBulkDuplicate()
+    {
+        foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
+            $this->duplicate($idEverBlock);
+        }
+    }
+
+    protected function duplicate($id)
+    {
+        $everBlock = new EverBlockClass((int)$id);
+        $newBlock = new EverBlockClass();
+        $newBlock->name = $everBlock->name;
+        $newBlock->content = $everBlock->content;
+        $newBlock->only_home = $everBlock->only_home;
+        $newBlock->only_category = $everBlock->only_category;
+        $newBlock->id_hook = $everBlock->id_hook;
+        $newBlock->id_shop = $everBlock->id_shop;
+        $newBlock->categories = $everBlock->categories;
+        $newBlock->active = $everBlock->active;
+        $newBlock->position = $everBlock->position;
+
+        if (!$newBlock->save()) {
+            $this->errors[] = $this->l('An error has occurred: Can\'t delete the current object');
+        }
+    }
+
 }

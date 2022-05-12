@@ -33,7 +33,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '3.1.2';
+        $this->version = '3.1.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -284,6 +284,11 @@ class Everblock extends Module
     {
         $link = new Link();
         $contactLink = $link->getPageLink('contact');
+        if (Context::getContext()->customer->isLogged()) {
+            $my_account_link = $link->getPageLink('my-account');
+        } else {
+            $my_account_link = $link->getPageLink('authentication');
+        }
         if ($id_entity) {
             if (Context::getContext()->controller->controller_type == 'admin'
                 || Context::getContext()->controller->controller_type == 'moduleadmin'
@@ -300,7 +305,9 @@ class Everblock extends Module
                     '[entity_gender]' => '', // info unavailable on employee object
                 );
             }
-            if (Context::getContext()->controller->controller_type == 'front') {
+            if (Context::getContext()->controller->controller_type == 'front'
+                || Context::getContext()->controller->controller_type == 'modulefront'
+            ) {
                 $entity = new Customer((int)$id_entity);
                 $gender = new Gender((int)$entity->id_gender, (int)$entity->id_lang);
                 $entityShortcodes = array(
@@ -328,6 +335,8 @@ class Everblock extends Module
             '[start_contact_link]' => '<a href="'.$contactLink.'" target="_blank">',
             '[end_shop_link]' => '</a>',
             '[end_contact_link]' => '</a>',
+            '[contact_link]'=> $contactLink,
+            '[my_account_link]' => $my_account_link,
             'NULL' => '', // Useful : remove empty strings in case of NULL
             'null' => '', // Useful : remove empty strings in case of null
         );
