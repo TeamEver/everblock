@@ -43,6 +43,7 @@
             <p class="dropdown-item px-2">[end_contact_link] {l s='for ending link to contact page' mod='everblock'}</p>
             <p class="dropdown-item px-2">[shop_url] {l s='for shop url' mod='everblock'}</p>
             <p class="dropdown-item px-2">[shop_name] {l s='for shop name' mod='everblock'}</p>
+            <p class="dropdown-item px-2">[theme_uri] {l s='for current theme url' mod='everblock'}</p>
           </div>
         </div>
     </div>

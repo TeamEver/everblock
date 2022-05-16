@@ -322,7 +322,7 @@ class Everblock extends Module
                 );
             }
         }
-        if (empty(_PS_PARENT_THEME_URI_)) {
+        if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
             $theme_uri = Tools::getShopDomainSsl(true)._PS_THEME_URI_;
         } else {
             $theme_uri = Tools::getShopDomainSsl(true)._PS_PARENT_THEME_URI_;
