@@ -33,7 +33,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '3.1.3';
+        $this->version = '3.2.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -322,6 +322,11 @@ class Everblock extends Module
                 );
             }
         }
+        if (empty(_PS_PARENT_THEME_URI_)) {
+            $theme_uri = Tools::getShopDomainSsl(true)._PS_THEME_URI_;
+        } else {
+            $theme_uri = Tools::getShopDomainSsl(true)._PS_PARENT_THEME_URI_;
+        }
         $defaultShortcodes = array(
             '[shop_url]' => Tools::getShopDomainSsl(true),
             '[shop_name]'=> (string)Configuration::get('PS_SHOP_NAME'),
@@ -337,6 +342,7 @@ class Everblock extends Module
             '[end_contact_link]' => '</a>',
             '[contact_link]'=> $contactLink,
             '[my_account_link]' => $my_account_link,
+            '[theme_uri]' => $theme_uri,
             'NULL' => '', // Useful : remove empty strings in case of NULL
             'null' => '', // Useful : remove empty strings in case of null
         );

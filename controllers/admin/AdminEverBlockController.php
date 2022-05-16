@@ -404,6 +404,10 @@ class AdminEverBlockController extends ModuleAdminController
             );
         } else {
             $categories = array();
+            $content = array();
+            foreach (Language::getLanguages(false) as $language) {
+                $content[$language['id_lang']] = '';
+            }
             $formValues[] = array(
                 'id_everblock' => (!empty(Tools::getValue('id_everblock')))
                 ? Tools::getValue('id_everblock')
@@ -416,7 +420,7 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'content' => (!empty(Tools::getValue('content')))
                 ? Tools::getValue('content')
-                : '',
+                : $content,
                 'categories[]' => (!empty(Tools::getValue('categories')))
                 ? Tools::getValue('categories')
                 :'',
