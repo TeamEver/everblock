@@ -33,7 +33,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '3.2.1';
+        $this->version = '3.2.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -220,6 +220,13 @@ class Everblock extends Module
         );
         $currentBlock = array();
         foreach ($everblock as $block) {
+            if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+                $ip = $_SERVER['HTTP_CLIENT_IP'];
+            } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+                $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            } else {
+                $ip = $_SERVER['REMOTE_ADDR'];
+            }
             if ((bool)$block['only_home'] === true
                 && $controller_name != 'index'
             ) {
@@ -231,12 +238,11 @@ class Everblock extends Module
             ) {
                 continue;
             }
+            $continue = false;
             if ((bool)$block['only_category'] === true) {
                 $categories = json_decode($block['categories']);
                 if (!in_array((int)Tools::getValue('id_category'), $categories)) {
                     $continue = true;
-                } else {
-                    $continue = false;
                 }
                 if (Tools::getValue('id_product')) {
                     $product = new Product(
@@ -244,12 +250,10 @@ class Everblock extends Module
                     );
                     if (!in_array((int)$product->id_category_default, $categories)) {
                         $continue = true;
-                    } else {
-                        $continue = false;
                     }
                 }
             }
-            if (isset($continue) && $continue) {
+            if (isset($continue) && (bool)$continue === true) {
                 continue;
             }
             $block['content'] = $this->changeShortcodes(
