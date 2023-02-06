@@ -29,6 +29,7 @@ class EverBlockClass extends ObjectModel
     public $only_home;
     public $only_category;
     public $id_hook;
+    public $device;
     public $id_shop;
     public $categories;
     public $active;
@@ -59,6 +60,12 @@ class EverBlockClass extends ObjectModel
                 'type' => self::TYPE_BOOL,
                 'lang' => false,
                 'validate' => 'isBool',
+            ),
+            'device' => array(
+                'type' => self::TYPE_INT,
+                'lang' => false,
+                'validate' => 'isUnsignedInt',
+                'required' => false
             ),
             'id_shop' => array(
                 'type' => self::TYPE_INT,
@@ -92,7 +99,7 @@ class EverBlockClass extends ObjectModel
         )
     );
 
-    public static function getBlocks($id_hook, $id_lang, $id_shop)
+    public static function getBlocks($id_hook, $id_lang, $id_shop, $device = 0)
     {
         $sql = new DbQuery;
         $sql->select('*');
@@ -102,6 +109,7 @@ class EverBlockClass extends ObjectModel
         $sql->where('ebl.id_lang = '.(int)$id_lang);
         $sql->where('eb.id_shop = '.(int)$id_shop);
         $sql->where('eb.active = 1');
+        $sql->where('eb.device = '.(int)$device);
         $sql->orderBy('eb.position ASC');
 
         return Db::getInstance()->executeS($sql);

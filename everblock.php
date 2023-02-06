@@ -33,7 +33,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '3.2.3';
+        $this->version = '3.3.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -220,6 +220,13 @@ class Everblock extends Module
         );
         $currentBlock = array();
         foreach ($everblock as $block) {
+            // Check device
+            if ((int)$block['device'] != 0
+                && (int)$this->context->getDevice() != (int)$block['device']
+            ) {
+                continue;
+            }
+            // Is block only for homepage ?
             if ((bool)$block['only_home'] === true
                 && $controller_name != 'index'
             ) {

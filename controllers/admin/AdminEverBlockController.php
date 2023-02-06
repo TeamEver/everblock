@@ -190,9 +190,28 @@ class AdminEverBlockController extends ModuleAdminController
             true,
             false
         );
+        // IDs are set depending on context values
+        $devices = [
+            [
+                'id_device' => 0,
+                'name' => $this->l('All devices')
+            ],
+            [
+                'id_device' => 4,
+                'name' => $this->l('Only mobile devices')
+            ],
+            [
+                'id_device' => 2,
+                'name' => $this->l('Only tablet devices')
+            ],
+            [
+                'id_device' => 1,
+                'name' => $this->l('Only desktop devices')
+            ]
+
+        ]
         $everblock_obj = $this->loadObject(true);
         $everblock_obj->categories = json_decode($everblock_obj->categories);
-        // die(var_dump($everblock_obj));
 
         // Building the Add/Edit form
         $fields_form[] = array(
@@ -298,6 +317,19 @@ class AdminEverBlockController extends ModuleAdminController
                         'lang' => false
                     ),
                     array(
+                        'type' => 'select',
+                        'label' => $this->l('Devices management'),
+                        'desc' => $this->l('Please specify the device on which the popup should be displayed'),
+                        'hint' => $this->l('Select "all devices" for a global view'),
+                        'name' => 'device',
+                        'required' => true,
+                        'options' => array(
+                            'query' => $devices,
+                            'id' => 'id_device',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
                         'type' => 'textarea',
                         'label' => $this->l('HTML block content'),
                         'desc' => $this->l('Please type your block content'),
@@ -395,6 +427,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'position' => (!empty(Tools::getValue('position')))
                 ? Tools::getValue('position')
                 : $obj->position,
+                'device' => (!empty(Tools::getValue('device')))
+                ? Tools::getValue('device')
+                : $obj->device,
                 'id_shop' => (!empty(Tools::getValue('id_shop')))
                 ? Tools::getValue('id_shop')
                 : $obj->id_shop,
@@ -432,6 +467,9 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'position' => (!empty(Tools::getValue('position')))
                 ? Tools::getValue('position')
+                : '',
+                'device' => (!empty(Tools::getValue('device')))
+                ? Tools::getValue('device')
                 : '',
                 'id_shop' => (!empty(Tools::getValue('id_shop')))
                 ? Tools::getValue('id_shop')
@@ -504,10 +542,15 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Active is not valid');
             }
+            if (Tools::getValue('device')
+                && !Validate::isUnsignedInt(Tools::getValue('device'))
+            ) {
+                $this->errors[] = $this->l('Device is not valid');
+            }
             $everblock_obj = new EverBlockClass(
                 (int)Tools::getValue('id_everblock')
             );
-            $everblock_obj->name = Tools::getValue('name');
+            $everblock_obj->name = pSQL(Tools::getValue('name'));
             $everblock_obj->id_shop = (int)$this->context->shop->id;
             $everblock_obj->id_hook = (int)Tools::getValue('id_hook');
             $everblock_obj->only_home = (bool)Tools::getValue('only_home');
@@ -516,6 +559,7 @@ class AdminEverBlockController extends ModuleAdminController
                 Tools::getValue('categories')
             );
             $everblock_obj->position = (int)Tools::getValue('position');
+            $everblock_obj->device = (int)Tools::getValue('device');
             $hook_name = Hook::getNameById((int)Tools::getValue('id_hook'));
             $everblock_obj->active = Tools::getValue('active');
             $everblock = Module::getInstanceByName('everblock');
@@ -527,7 +571,6 @@ class AdminEverBlockController extends ModuleAdminController
                 $everblock->registerHook(
                     $hook_name
                 );
-                Tools::clearSmartyCache();
                 if ((bool)Tools::isSubmit('stay') === true) {
                     Tools::redirectAdmin(
                         self::$currentIndex
@@ -597,6 +640,7 @@ class AdminEverBlockController extends ModuleAdminController
         $newBlock->only_home = $everBlock->only_home;
         $newBlock->only_category = $everBlock->only_category;
         $newBlock->id_hook = $everBlock->id_hook;
+        $newBlock->device = $everBlock->device;
         $newBlock->id_shop = $everBlock->id_shop;
         $newBlock->categories = $everBlock->categories;
         $newBlock->active = $everBlock->active;

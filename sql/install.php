@@ -30,6 +30,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'everblock` (
         `only_home` int(10) unsigned DEFAULT NULL,
         `only_category` int(10) unsigned DEFAULT NULL,
         `id_category` int(10) unsigned DEFAULT NULL,
+        `device` int(10) unsigned NOT NULL DEFAULT 0,
         `id_shop` int(10) unsigned NOT NULL,
         `position` int(10) unsigned DEFAULT 0,
         `categories` text NOT NULL,
