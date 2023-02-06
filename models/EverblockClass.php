@@ -99,7 +99,7 @@ class EverBlockClass extends ObjectModel
         )
     );
 
-    public static function getBlocks($id_hook, $id_lang, $id_shop, $device = 0)
+    public static function getBlocks($id_hook, $id_lang, $id_shop)
     {
         $sql = new DbQuery;
         $sql->select('*');
@@ -109,7 +109,6 @@ class EverBlockClass extends ObjectModel
         $sql->where('ebl.id_lang = '.(int)$id_lang);
         $sql->where('eb.id_shop = '.(int)$id_shop);
         $sql->where('eb.active = 1');
-        $sql->where('eb.device = '.(int)$device);
         $sql->orderBy('eb.position ASC');
 
         return Db::getInstance()->executeS($sql);
