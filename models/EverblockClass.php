@@ -101,16 +101,27 @@ class EverBlockClass extends ObjectModel
 
     public static function getBlocks($id_hook, $id_lang, $id_shop)
     {
-        $sql = new DbQuery;
-        $sql->select('*');
-        $sql->from('everblock', 'eb');
-        $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
-        $sql->where('eb.id_hook = '.(int)$id_hook);
-        $sql->where('ebl.id_lang = '.(int)$id_lang);
-        $sql->where('eb.id_shop = '.(int)$id_shop);
-        $sql->where('eb.active = 1');
-        $sql->orderBy('eb.position ASC');
+        $cache_id = 'EverBlockClass::getBlocks_'
+        .(int)$id_hook
+        .'_'
+        .(int)$id_lang
+        .'_'
+        .(int)$id_shop;
+        if (!Cache::isStored($cache_id)) {
+            $sql = new DbQuery;
+            $sql->select('*');
+            $sql->from('everblock', 'eb');
+            $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
+            $sql->where('eb.id_hook = '.(int)$id_hook);
+            $sql->where('ebl.id_lang = '.(int)$id_lang);
+            $sql->where('eb.id_shop = '.(int)$id_shop);
+            $sql->where('eb.active = 1');
+            $sql->orderBy('eb.position ASC');
 
-        return Db::getInstance()->executeS($sql);
+            $return = Db::getInstance()->executeS($sql);
+            Cache::store($cache_id, $return);
+            return $return;
+        }
+        return Cache::retrieve($cache_id);
     }
 }
