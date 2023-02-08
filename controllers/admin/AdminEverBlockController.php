@@ -209,7 +209,7 @@ class AdminEverBlockController extends ModuleAdminController
                 'name' => $this->l('Only desktop devices')
             ]
 
-        ]
+        ];
         $everblock_obj = $this->loadObject(true);
         $everblock_obj->categories = json_decode($everblock_obj->categories);
 
