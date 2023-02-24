@@ -33,7 +33,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '3.3.3';
+        $this->version = '3.3.4';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -241,6 +241,9 @@ class Everblock extends Module
             $continue = false;
             if ((bool)$block['only_category'] === true) {
                 $categories = json_decode($block['categories']);
+                if (Context::getContext()->controller->controller_name != 'category') {
+                    $continue = true;
+                }
                 if (Tools::getValue('id_category')
                     && !in_array((int)Tools::getValue('id_category'), $categories)
                 ) {
