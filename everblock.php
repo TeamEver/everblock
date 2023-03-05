@@ -241,9 +241,6 @@ class Everblock extends Module
             $continue = false;
             if ((bool)$block['only_category'] === true) {
                 $categories = json_decode($block['categories']);
-                if (Context::getContext()->controller->controller_name != 'category') {
-                    $continue = true;
-                }
                 if (Tools::getValue('id_category')
                     && !in_array((int)Tools::getValue('id_category'), $categories)
                 ) {
