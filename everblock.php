@@ -37,7 +37,6 @@ class Everblock extends Module
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->module_key = '1923c7d347a03a925a05e2808955a04c';
         parent::__construct();
         $this->isSeven = Tools::version_compare(_PS_VERSION_, '1.7', '>=') ? true : false;
         $this->displayName = $this->l('Ever Block');
