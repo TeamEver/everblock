@@ -21,9 +21,9 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-$sql = array();
+$sql = [];
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'everblock` (
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
         `id_everblock` int(10) unsigned NOT NULL auto_increment,
         `name` text NOT NULL,
         `id_hook` int(10) unsigned NOT NULL,
@@ -40,7 +40,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'everblock` (
         PRIMARY KEY (`id_everblock`)
     ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'everblock_lang` (
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_lang` (
     	`id_everblock` int(10) unsigned NOT NULL,
         `id_lang` int(10) unsigned NOT NULL,
     	`content` text DEFAULT NULL,

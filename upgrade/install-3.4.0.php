@@ -24,14 +24,14 @@ if (!defined('_PS_VERSION_')) {
 function upgrade_module_3_4_0()
 {
     $result = true;
-    $sql = array();
+    $sql = [];
     $sql[] =
-        'ALTER TABLE '._DB_PREFIX_.'everblock
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
         ADD COLUMN `date_start` DATE DEFAULT NULL
         AFTER `categories`
     ';
     $sql[] =
-        'ALTER TABLE '._DB_PREFIX_.'everblock
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
         ADD COLUMN `date_end` DATE DEFAULT NULL
         AFTER `date_start`
     ';

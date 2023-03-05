@@ -24,9 +24,9 @@ if (!defined('_PS_VERSION_')) {
 function upgrade_module_3_1_1()
 {
     $result = false;
-    $sql = array();
+    $sql = [];
     $sql[] =
-        'ALTER TABLE '._DB_PREFIX_.'everblock
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
         ADD COLUMN `categories` text DEFAULT NULL
         AFTER `position`
     ';
@@ -42,10 +42,10 @@ function upgrade_module_3_1_1()
         $bloc_categories = json_encode($bloc['id_category']);
         Db::getInstance()->update(
             'everblock',
-            array(
-                'categories' => $bloc_categories
-            ),
-            'id_everblock = '.(int)$bloc['id_everblock']
+            [
+                'categories' => $bloc_categories,
+            ],
+            'id_everblock = '.(int) $bloc['id_everblock']
         );
     }
     return $result;

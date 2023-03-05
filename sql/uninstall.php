@@ -21,6 +21,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-$sql = array();
-$sql[] = 'DROP TABLE IF EXISTS `'._DB_PREFIX_.'everblock`;';
-$sql[] = 'DROP TABLE IF EXISTS `'._DB_PREFIX_.'everblock_lang`;';
+$sql = [];
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock`;';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_lang`;';

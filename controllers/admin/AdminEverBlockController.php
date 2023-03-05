@@ -16,7 +16,6 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -37,47 +36,47 @@ class AdminEverBlockController extends ModuleAdminController
         $this->name = 'AdminEverBlockController';
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
-        $this->context->smarty->assign(array(
+        $this->context->smarty->assign([
             'module_link' => $module_link,
-            'everblock_dir' => _MODULE_DIR_ . '/everblock/'
-        ));
+            'everblock_dir' => _MODULE_DIR_ . '/everblock/',
+        ]);
         $this->_select = 'h.name AS hname';
 
         $this->_join =
-            'LEFT JOIN `'._DB_PREFIX_.'hook` h
+            'LEFT JOIN `' . _DB_PREFIX_ . 'hook` h
                 ON (
                     h.`id_hook` = a.`id_hook`
                 )';
-        $this->fields_list = array(
-            'id_everblock' => array(
+        $this->fields_list = [
+            'id_everblock' => [
                 'title' => $this->l('ID'),
                 'align' => 'left',
-                'width' => 'auto'
-            ),
-            'name' => array(
+                'width' => 'auto',
+            ],
+            'name' => [
                 'title' => $this->l('Name'),
                 'align' => 'left',
-                'width' => 'auto'
-            ),
-            'position' => array(
+                'width' => 'auto',
+            ],
+            'position' => [
                 'title' => $this->l('Position'),
                 'align' => 'left',
-                'width' => 'auto'
-            ),
-            'hname' => array(
+                'width' => 'auto',
+            ],
+            'hname' => [
                 'title' => $this->l('Hook'),
                 'align' => 'left',
-                'width' => 'auto'
-            ),
-            'active' => array(
+                'width' => 'auto',
+            ],
+            'active' => [
                 'title' => $this->l('Status'),
                 'type' => 'bool',
                 'active' => 'status',
                 'orderby' => false,
-                'class' => 'fixed-width-sm'
-            )
-        );
-        $this->_where = 'AND a.id_shop ='.(int)$this->context->shop->id;
+                'class' => 'fixed-width-sm',
+            ],
+        ];
+        $this->_where = 'AND a.id_shop =' . (int) $this->context->shop->id;
         $this->colorOnBackground = true;
 
         parent::__construct();
@@ -99,11 +98,11 @@ class AdminEverBlockController extends ModuleAdminController
 
     public function initPageHeaderToolbar()
     {
-        $this->page_header_toolbar_btn['new'] = array(
+        $this->page_header_toolbar_btn['new'] = [
             'href' => self::$currentIndex . '&add' . $this->table . '&token=' . $this->token,
             'desc' => $this->l('Add new element'),
-            'icon' => 'process-icon-new'
-        );
+            'icon' => 'process-icon-new',
+        ];
         parent::initPageHeaderToolbar();
     }
 
@@ -114,40 +113,40 @@ class AdminEverBlockController extends ModuleAdminController
         $this->addRowAction('duplicate');
         $this->toolbar_title = $this->l('HTML blocks Configuration');
 
-        $this->bulk_actions = array(
-            'delete' => array(
+        $this->bulk_actions = [
+            'delete' => [
                 'text' => $this->l('Delete selected items'),
-                'confirm' => $this->l('Delete selected items ?')
-            ),
-            'duplicateall' => array(
+                'confirm' => $this->l('Delete selected items ?'),
+            ],
+            'duplicateall' => [
                 'text' => $this->l('Duplicate selected items'),
-                'confirm' => $this->l('Duplicate selected items ?')
-            ),
-        );
+                'confirm' => $this->l('Duplicate selected items ?'),
+            ],
+        ];
 
-        if (Tools::isSubmit('submitBulkdelete'.$this->table)) {
+        if (Tools::isSubmit('submitBulkdelete' . $this->table)) {
             $this->processBulkDelete();
         }
-        if (Tools::isSubmit('submitBulkdisableSelection'.$this->table)) {
+        if (Tools::isSubmit('submitBulkdisableSelection' . $this->table)) {
             $this->processBulkDisable();
         }
-        if (Tools::isSubmit('submitBulkenableSelection'.$this->table)) {
+        if (Tools::isSubmit('submitBulkenableSelection' . $this->table)) {
             $this->processBulkEnable();
         }
-        if (Tools::isSubmit('submitBulkduplicateall'.$this->table)) {
+        if (Tools::isSubmit('submitBulkduplicateall' . $this->table)) {
             $this->processBulkDuplicate();
         }
-        if (Tools::isSubmit('status'.$this->table)) {
+        if (Tools::isSubmit('status' . $this->table)) {
             $db = Db::getInstance();
             if ($id_everblock = (int)Tools::getValue($this->identifier)) {
                 $update = $db->execute(
-                    'UPDATE `'._DB_PREFIX_.'everblock`
+                    'UPDATE `' . _DB_PREFIX_ . 'everblock`
                     SET `active` = (1 - `active`)
-                    WHERE `id_everblock` = '.(int)$id_everblock.' LIMIT 1'
+                    WHERE `id_everblock` = ' . (int) $id_everblock.' LIMIT 1'
                 );
             }
             if (isset($update) && $update) {
-                $this->redirect_after = self::$currentIndex.'&conf=5&token='.$this->token;
+                $this->redirect_after = self::$currentIndex . '&token=' . $this->token;
             } else {
                 $this->errors[] = $this->l('An error occurred while updating the status.');
             }
@@ -156,10 +155,10 @@ class AdminEverBlockController extends ModuleAdminController
         $lists = parent::renderList();
 
         $blog_instance = Module::getInstanceByName($this->module_name);
-        $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/'.$this->module_name.'/views/templates/admin/header.tpl');
+        $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/' . $this->module_name . '/views/templates/admin/header.tpl');
         if ($blog_instance->checkLatestEverModuleVersion($this->module_name, $blog_instance->version)) {
             $this->html .= $this->context->smarty->fetch(
-                _PS_MODULE_DIR_ .'/'.$this->module_name.'/views/templates/admin/upgrade.tpl');
+                _PS_MODULE_DIR_ . '/' . $this->module_name . '/views/templates/admin/upgrade.tpl');
         }
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
@@ -183,7 +182,7 @@ class AdminEverBlockController extends ModuleAdminController
         $obj = new EverBlockClass(
             (int)Tools::getValue('id_everblock')
         );
-        $fields_form = array();
+        $fields_form = [];
         $hooks_list = Hook::getHooks(false, true);
         $categories_list = Category::getCategories(
             false,
@@ -214,43 +213,43 @@ class AdminEverBlockController extends ModuleAdminController
         $everblock_obj->categories = json_decode($everblock_obj->categories);
 
         // Building the Add/Edit form
-        $fields_form[] = array(
-            'form' => array(
+        $fields_form[] = [
+            'form' => [
                 'tinymce' => true,
                 'description' => $this->l('Add a new block.'),
-                'submit' => array(
+                'submit' => [
                     'name' => 'save',
                     'title' => $this->l('Save'),
-                    'class' => 'button btn btn-success pull-right'
-                ),
-                'buttons' => array(
-                    'import' => array(
+                    'class' => 'button btn btn-success pull-right',
+                ],
+                'buttons' => [
+                    'import' => [
                         'name' => 'stay',
                         'type' => 'submit',
                         'class' => 'btn btn-default pull-right',
                         'icon' => 'process-icon-save',
-                        'title' => $this->l('Save & stay')
-                    ),
-                ),
-                'input' => array(
-                    array(
+                        'title' => $this->l('Save & stay'),
+                    ],
+                ],
+                'input' => [
+                    [
                         'type' => 'hidden',
-                        'name' => 'id_everblock'
-                    ),
-                    array(
+                        'name' => 'id_everblock',
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('Hook'),
                         'desc' => $this->l('Please select hook'),
                         'hint' => $this->l('Block will be shown on this hook'),
                         'name' => 'id_hook',
                         'required' => true,
-                        'options' => array(
+                        'options' => [
                             'query' => $hooks_list,
                             'id' => 'id_hook',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
+                            'name' => 'name',
+                        ],
+                    ],
+                    [
                         'type' => 'switch',
                         'label' => $this->l('Only on homepage ?'),
                         'desc' => $this->l('Will only be set on homepage'),
@@ -258,20 +257,20 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'only_home',
                         'bool' => true,
                         'lang' => false,
-                        'values' => array(
-                            array(
-                                'id'    => 'active_on',
+                        'values' => [
+                            [
+                                'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Activate')
-                            ),
-                            array(
-                                'id'    => 'active_off',
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Desactivate')
-                            )
-                        )
-                    ),
-                    array(
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                    [
                         'type' => 'switch',
                         'label' => $this->l('Only on specific category ?'),
                         'desc' => $this->l('Only if hook is available on categories'),
@@ -279,20 +278,20 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'only_category',
                         'bool' => true,
                         'lang' => false,
-                        'values' => array(
-                            array(
-                                'id'    => 'active_on',
+                        'values' => [
+                            [
+                                'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Activate')
-                            ),
-                            array(
-                                'id'    => 'active_off',
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Desactivate')
-                            )
-                        )
-                    ),
-                    array(
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                    [
                         'type' => 'select',
                         'class' => 'chosen',
                         'multiple' => true,
@@ -301,35 +300,35 @@ class AdminEverBlockController extends ModuleAdminController
                         'hint' => $this->l('Depends on previous setting'),
                         'name' => 'categories[]',
                         'required' => false,
-                        'options' => array(
+                        'options' => [
                             'query' => $categories_list,
                             'id' => 'id_category',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
+                            'name' => 'name',
+                        ],
+                    ],
+                    [
                         'type' => 'text',
                         'label' => $this->l('Name'),
                         'desc' => $this->l('As a reminder, wont be shown'),
                         'hint' => $this->l('This reminder will be shown on admin only'),
                         'required' => true,
                         'name' => 'name',
-                        'lang' => false
-                    ),
-                    array(
+                        'lang' => false,
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('Devices management'),
                         'desc' => $this->l('Please specify the device on which the popup should be displayed'),
                         'hint' => $this->l('Select "all devices" for a global view'),
                         'name' => 'device',
                         'required' => true,
-                        'options' => array(
+                        'options' => [
                             'query' => $devices,
                             'id' => 'id_device',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
+                            'name' => 'name',
+                        ],
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('HTML block content'),
                         'desc' => $this->l('Please type your block content'),
@@ -337,32 +336,32 @@ class AdminEverBlockController extends ModuleAdminController
                         'required' => true,
                         'name' => 'content',
                         'lang' => true,
-                        'autoload_rte' => true
-                    ),
-                    array(
+                        'autoload_rte' => true,
+                    ],
+                    [
                         'type' => 'text',
                         'label' => $this->l('Block position'),
                         'desc' => $this->l('Enter block position number'),
                         'hint' => $this->l('Blocks will be ordered using this number'),
                         'required' => true,
                         'name' => 'position',
-                        'lang' => false
-                    ),
-                    array(
+                        'lang' => false,
+                    ],
+                    [
                         'type' => 'date',
                         'label' => $this->l('Date start'),
                         'desc' => $this->l('Date block will start to appear'),
                         'hint' => $this->l('Leave empty for no use'),
                         'name' => 'date_start',
-                    ),
-                    array(
+                    ],
+                    [
                         'type' => 'date',
                         'label' => $this->l('Date end'),
                         'desc' => $this->l('Date block will end'),
                         'hint' => $this->l('Leave empty for no use'),
                         'name' => 'date_end',
-                    ),
-                    array(
+                    ],
+                    [
                         'type' => 'switch',
                         'label' => $this->l('Active'),
                         'desc' => $this->l('Enable this block ?'),
@@ -370,22 +369,22 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'active',
                         'bool' => true,
                         'lang' => false,
-                        'values' => array(
-                            array(
-                                'id'    => 'active_on',
+                        'values' => [
+                            [
+                                'id' => 'active_on',
                                 'value' => 1,
-                                'label' => $this->l('Activate')
-                            ),
-                            array(
-                                'id'    => 'active_off',
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
                                 'value' => 0,
-                                'label' => $this->l('Desactivate')
-                            )
-                        )
-                    ),
-                )
-            )
-        );
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
         $helper = new HelperForm();
         $helper->show_toolbar = false;
         $helper->module = $this;
@@ -398,25 +397,25 @@ class AdminEverBlockController extends ModuleAdminController
         ) ? Configuration::get(
             'PS_BO_ALLOW_EMPLOYEE_FORM_LANG'
         ) : 0;
-        $this->fields_form = array();
+        $this->fields_form = [];
         $helper->identifier = $this->identifier;
         $helper->currentIndex = AdminController::$currentIndex;
         $helper->token = Tools::getValue('token');
         $helper->submit_action = 'save';
-        $helper->tpl_vars = array(
-            'fields_value' => $this->getConfigFormValues($obj), /* Add values for your inputs */
+        $helper->tpl_vars = [
+            'fields_value' => $this->getConfigFormValues($obj),
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => (int)Context::getContext()->language->id,
-        );
+        ];
         $helper->currentIndex = AdminController::$currentIndex;
         return $helper->generateForm($fields_form);
     }
 
     protected function getConfigFormValues($obj)
     {
-        $formValues = array();
+        $formValues = [];
         if (Validate::isLoadedObject($obj)) {
-            $formValues[] = array(
+            $formValues[] = [
                 'id_everblock' => (!empty(Tools::getValue('id_everblock')))
                 ? Tools::getValue('id_everblock')
                 : $obj->id,
@@ -456,14 +455,14 @@ class AdminEverBlockController extends ModuleAdminController
                 'active' => (!empty(Tools::getValue('active')))
                 ? Tools::getValue('active')
                 : $obj->active,
-            );
+            ];
         } else {
-            $categories = array();
-            $content = array();
+            $categories = [];
+            $content = [];
             foreach (Language::getLanguages(false) as $language) {
                 $content[$language['id_lang']] = '';
             }
-            $formValues[] = array(
+            $formValues[] = [
                 'id_everblock' => (!empty(Tools::getValue('id_everblock')))
                 ? Tools::getValue('id_everblock')
                 : '',
@@ -503,7 +502,7 @@ class AdminEverBlockController extends ModuleAdminController
                 'active' => (!empty(Tools::getValue('active')))
                 ? Tools::getValue('active')
                 : '',
-            );
+            ];
         }
         $values = call_user_func_array('array_merge', $formValues);
         return $values;
@@ -577,7 +576,7 @@ class AdminEverBlockController extends ModuleAdminController
                 (int)Tools::getValue('id_everblock')
             );
             $everblock_obj->name = pSQL(Tools::getValue('name'));
-            $everblock_obj->id_shop = (int)$this->context->shop->id;
+            $everblock_obj->id_shop = (int) $this->context->shop->id;
             $everblock_obj->id_hook = (int)Tools::getValue('id_hook');
             $everblock_obj->only_home = (bool)Tools::getValue('only_home');
             $everblock_obj->only_category = (bool)Tools::getValue('only_category');
@@ -587,8 +586,8 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->position = (int)Tools::getValue('position');
             $everblock_obj->device = (int)Tools::getValue('device');
             $hook_name = Hook::getNameById((int)Tools::getValue('id_hook'));
-            $everblock_obj->date_start = Tools::getValue('date_start');
-            $everblock_obj->date_end = Tools::getValue('date_end');
+            $everblock_obj->date_start = pSQL(Tools::getValue('date_start'));
+            $everblock_obj->date_end = pSQL(Tools::getValue('date_end'));
             $everblock_obj->active = Tools::getValue('active');
             $everblock = Module::getInstanceByName('everblock');
             foreach (Language::getLanguages(false) as $language) {
@@ -602,13 +601,13 @@ class AdminEverBlockController extends ModuleAdminController
                 if ((bool)Tools::isSubmit('stay') === true) {
                     Tools::redirectAdmin(
                         self::$currentIndex
-                        .'&updateeverblock=&id_everblock='
-                        .(int)$everblock_obj->id
-                        .'&token='
-                        .$this->token
+                        . '&updateeverblock=&id_everblock='
+                        . (int) $everblock_obj->id
+                        . '&token='
+                        . $this->token
                     );
                 }
-                Tools::redirectAdmin(self::$currentIndex.'&token='.$this->token);
+                Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
             }
         }
     }
@@ -616,7 +615,7 @@ class AdminEverBlockController extends ModuleAdminController
     protected function processBulkDelete()
     {
         foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
-            $everBlock = new EverBlockClass((int)$idEverBlock);
+            $everBlock = new EverBlockClass((int) $idEverBlock);
 
             if (!$everBlock->delete()) {
                 $this->errors[] = $this->l('An error has occurred: Can\'t delete the current object');
@@ -627,7 +626,7 @@ class AdminEverBlockController extends ModuleAdminController
     protected function processBulkDisable()
     {
         foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
-            $everBlock = new EverBlockClass((int)$idEverBlock);
+            $everBlock = new EverBlockClass((int) $idEverBlock);
             if ($everBlock->active) {
                 $everBlock->active = false;
             }
@@ -641,7 +640,7 @@ class AdminEverBlockController extends ModuleAdminController
     protected function processBulkEnable()
     {
         foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
-            $everBlock = new EverBlockClass((int)$idEverBlock);
+            $everBlock = new EverBlockClass((int) $idEverBlock);
             if (!$everBlock->active) {
                 $everBlock->active = true;
             }
@@ -661,7 +660,7 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function duplicate($id)
     {
-        $everBlock = new EverBlockClass((int)$id);
+        $everBlock = new EverBlockClass((int) $id);
         $newBlock = new EverBlockClass();
         $newBlock->name = $everBlock->name;
         $newBlock->content = $everBlock->content;

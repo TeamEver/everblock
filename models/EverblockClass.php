@@ -16,7 +16,6 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -36,95 +35,95 @@ class EverBlockClass extends ObjectModel
     public $date_end;
     public $active;
 
-    public static $definition = array(
+    public static $definition = [
         'table' => 'everblock',
         'primary' => 'id_everblock',
         'multilang' => true,
-        'fields' => array(
-            'name' => array(
+        'fields' => [
+            'name' => [
                 'type' => self::TYPE_STRING,
                 'lang' => false,
                 'validate' => 'isString',
-                'required' => true
-            ),
-            'id_hook' => array(
+                'required' => true,
+            ],
+            'id_hook' => [
                 'type' => self::TYPE_INT,
                 'lang' => false,
                 'validate' => 'isUnsignedInt',
-                'required' => true
-            ),
-            'only_home' => array(
+                'required' => true,
+            ],
+            'only_home' => [
                 'type' => self::TYPE_BOOL,
                 'lang' => false,
                 'validate' => 'isBool',
-            ),
-            'only_category' => array(
+            ],
+            'only_category' => [
                 'type' => self::TYPE_BOOL,
                 'lang' => false,
                 'validate' => 'isBool',
-            ),
-            'device' => array(
+            ],
+            'device' => [
                 'type' => self::TYPE_INT,
                 'lang' => false,
                 'validate' => 'isUnsignedInt',
-                'required' => false
-            ),
-            'id_shop' => array(
+                'required' => false,
+            ],
+            'id_shop' => [
                 'type' => self::TYPE_INT,
                 'lang' => false,
                 'validate' => 'isUnsignedInt',
-                'required' => true
-            ),
-            'position' => array(
+                'required' => true,
+            ],
+            'position' => [
                 'type' => self::TYPE_INT,
                 'lang' => false,
                 'validate' => 'isUnsignedInt',
-                'required' => true
-            ),
-            'date_start' => array(
+                'required' => true,
+            ],
+            'date_start' => [
                 'type' => self::TYPE_DATE,
                 'lang' => false,
                 'validate' => 'isDateFormat',
-                'required' => false
-            ),
-            'date_end' => array(
+                'required' => false,
+            ],
+            'date_end' => [
                 'type' => self::TYPE_DATE,
                 'lang' => false,
                 'validate' => 'isDateFormat',
-                'required' => false
-            ),
-            'active' => array(
+                'required' => false,
+            ],
+            'active' => [
                 'type' => self::TYPE_BOOL,
                 'lang' => false,
-                'validate' => 'isBool'
-            ),
+                'validate' => 'isBool',
+            ],
             // lang fields
-            'content' => array(
+            'content' => [
                 'type' => self::TYPE_HTML,
                 'lang' => true,
                 'validate' => 'isCleanHtml',
-                'required' => false
-            ),
-        )
-    );
+                'required' => false,
+            ],
+        ],
+    ];
 
     public static function getBlocks($id_hook, $id_lang, $id_shop)
     {
         $cache_id = 'EverBlockClass::getBlocks_'
-        .(int)$id_hook
-        .'_'
-        .(int)$id_lang
-        .'_'
-        .(int)$id_shop;
+        . (int) $id_hook
+        . '_'
+        . (int) $id_lang
+        . '_'
+        . (int) $id_shop;
         if (!Cache::isStored($cache_id)) {
             $return = [];
             $sql = new DbQuery;
             $sql->select('*');
             $sql->from('everblock', 'eb');
             $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
-            $sql->where('eb.id_hook = '.(int)$id_hook);
-            $sql->where('ebl.id_lang = '.(int)$id_lang);
-            $sql->where('eb.id_shop = '.(int)$id_shop);
+            $sql->where('eb.id_hook = ' . (int) $id_hook);
+            $sql->where('ebl.id_lang = ' . (int) $id_lang);
+            $sql->where('eb.id_shop = ' . (int) $id_shop);
             $sql->where('eb.active = 1');
             $sql->orderBy('eb.position ASC');
 

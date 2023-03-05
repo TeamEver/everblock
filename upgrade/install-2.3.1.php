@@ -24,9 +24,9 @@ if (!defined('_PS_VERSION_')) {
 function upgrade_module_2_3_1()
 {
     $result = false;
-    $sql = array();
+    $sql = [];
     $sql[] =
-        'ALTER TABLE '._DB_PREFIX_.'everblock
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
         ADD COLUMN `position` int(10) unsigned DEFAULT 0
         AFTER `id_shop`
     ';

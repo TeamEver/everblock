@@ -24,14 +24,14 @@ if (!defined('_PS_VERSION_')) {
 function upgrade_module_2_1_6()
 {
     $result = false;
-    $sql = array();
+    $sql = [];
     $sql[] =
-        'ALTER TABLE '._DB_PREFIX_.'everblock
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
         ADD COLUMN `only_category` int(10) unsigned DEFAULT NULL
         AFTER `id_hook`
     ';
     $sql[] =
-        'ALTER TABLE '._DB_PREFIX_.'everblock
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
         ADD COLUMN `id_category` int(10) unsigned DEFAULT NULL
         AFTER `only_category`
     ';

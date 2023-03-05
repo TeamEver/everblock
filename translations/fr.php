@@ -1,7 +1,7 @@
 <?php
 
 global $_MODULE;
-$_MODULE = array();
+$_MODULE = [];
 $_MODULE['<{everblock}prestashop>everblock_7b2dfd550b9d3758e529d38a94a99d7c'] = 'Ever Block';
 $_MODULE['<{everblock}prestashop>everblock_7972168795111caf92e3cd9a7b029c60'] = 'Ajoutez des blocs HTML n\'importe où !';
 $_MODULE['<{everblock}prestashop>everblock_671493b361489bcf8047a74e6d53525a'] = 'Voulez-vous réellement désinstaller ce module ?';

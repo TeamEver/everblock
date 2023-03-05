@@ -16,7 +16,6 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -46,7 +45,12 @@ class Everblock extends Module
 
     public function __call($method, $args)
     {
-        $controllerTypes = array('admin', 'moduleadmin', 'front', 'modulefront');
+        $controllerTypes = [
+            'admin',
+            'moduleadmin',
+            'front',
+            'modulefront',
+        ];
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
         }
@@ -71,7 +75,7 @@ class Everblock extends Module
     public function install()
     {
         // Install SQL
-        $sql = array();
+        $sql = [];
         include(dirname(__FILE__).'/sql/install.php');
         foreach ($sql as $s) {
             if (!Db::getInstance()->execute($s)) {
@@ -96,7 +100,7 @@ class Everblock extends Module
     public function uninstall()
     {
         // Uninstall SQL
-        $sql = array();
+        $sql = [];
         include(dirname(__FILE__).'/sql/uninstall.php');
         foreach ($sql as $s) {
             if (!Db::getInstance()->execute($s)) {
@@ -122,7 +126,7 @@ class Everblock extends Module
         }
 
         foreach (Language::getLanguages(false) as $lang) {
-            $tab->name[(int)$lang['id_lang']] = $tabName;
+            $tab->name[(int) $lang['id_lang']] = $tabName;
         }
 
         return $tab->add();
@@ -190,7 +194,12 @@ class Everblock extends Module
                 return;
             }
         }
-        $controllerTypes = array('admin', 'moduleadmin', 'front', 'modulefront');
+        $controllerTypes = [
+            'admin',
+            'moduleadmin',
+            'front',
+            'modulefront',
+        ];
         $controller_name = Tools::getValue('controller');
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
@@ -213,15 +222,15 @@ class Everblock extends Module
             }
         }
         $everblock = EverblockClass::getBlocks(
-            (int)$id_hook,
-            (int)$this->context->language->id,
-            (int)$this->context->shop->id
+            (int) $id_hook,
+            (int) $this->context->language->id,
+            (int) $this->context->shop->id
         );
-        $currentBlock = array();
+        $currentBlock = [];
         foreach ($everblock as $block) {
             // Check device
-            if ((int)$block['device'] != 0
-                && (int)$this->context->getDevice() != (int)$block['device']
+            if ((int) $block['device'] != 0
+                && (int) $this->context->getDevice() != (int) $block['device']
             ) {
                 continue;
             }
@@ -249,7 +258,7 @@ class Everblock extends Module
                     $product = new Product(
                         (int)Tools::getValue('id_product')
                     );
-                    if (!in_array((int)$product->id_category_default, $categories)) {
+                    if (!in_array((int) $product->id_category_default, $categories)) {
                         $continue = true;
                     }
                 }
@@ -261,10 +270,10 @@ class Everblock extends Module
                 $block['content'],
                 $id_entity
             );
-            $currentBlock[] = array(
+            $currentBlock[] = [
                 'id_everblock' => $block['id_everblock'],
-                'content' => $block['content']
-            );
+                'content' => $block['content'],
+            ];
         }
         $this->smarty->assign(array(
                 'everblock' => $currentBlock,
@@ -298,8 +307,8 @@ class Everblock extends Module
             if (Context::getContext()->controller->controller_type == 'admin'
                 || Context::getContext()->controller->controller_type == 'moduleadmin'
             ) {
-                $entity = new Employee((int)$id_entity);
-                $entityShortcodes = array(
+                $entity = new Employee((int) $id_entity);
+                $entityShortcodes = [
                     '[entity_lastname]' => $entity->lastname,
                     '[entity_firstname]' => $entity->firstname,
                     '[entity_company]' => '', // info unavailable on employee object
@@ -308,14 +317,14 @@ class Everblock extends Module
                     '[entity_birthday]' => '', // info unavailable on employee object
                     '[entity_website]' => '', // info unavailable on employee object
                     '[entity_gender]' => '', // info unavailable on employee object
-                );
+                ];
             }
             if (Context::getContext()->controller->controller_type == 'front'
                 || Context::getContext()->controller->controller_type == 'modulefront'
             ) {
-                $entity = new Customer((int)$id_entity);
-                $gender = new Gender((int)$entity->id_gender, (int)$entity->id_lang);
-                $entityShortcodes = array(
+                $entity = new Customer((int) $id_entity);
+                $gender = new Gender((int) $entity->id_gender, (int) $entity->id_lang);
+                $entityShortcodes = [
                     '[entity_lastname]' => $entity->lastname,
                     '[entity_firstname]' => $entity->firstname,
                     '[entity_company]' => $entity->company,
@@ -324,7 +333,7 @@ class Everblock extends Module
                     '[entity_birthday]' => $entity->birthday,
                     '[entity_website]' => $entity->website,
                     '[entity_gender]' => $gender->name,
-                );
+                ];
             }
         }
         if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
@@ -332,7 +341,7 @@ class Everblock extends Module
         } else {
             $theme_uri = Tools::getShopDomainSsl(true)._PS_PARENT_THEME_URI_;
         }
-        $defaultShortcodes = array(
+        $defaultShortcodes = [
             '[shop_url]' => Tools::getShopDomainSsl(true),
             '[shop_name]'=> (string)Configuration::get('PS_SHOP_NAME'),
             '[start_cart_link]' => '<a href="'
@@ -350,7 +359,7 @@ class Everblock extends Module
             '[theme_uri]' => $theme_uri,
             'NULL' => '', // Useful : remove empty strings in case of NULL
             'null' => '', // Useful : remove empty strings in case of null
-        );
+        ];
         if ($id_entity) {
             $shortcodes = array_merge($entityShortcodes, $defaultShortcodes);
         } else {
