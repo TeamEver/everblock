@@ -32,6 +32,8 @@ class EverBlockClass extends ObjectModel
     public $device;
     public $id_shop;
     public $categories;
+    public $date_start;
+    public $date_end;
     public $active;
 
     public static $definition = array(
@@ -79,15 +81,22 @@ class EverBlockClass extends ObjectModel
                 'validate' => 'isUnsignedInt',
                 'required' => true
             ),
+            'date_start' => array(
+                'type' => self::TYPE_DATE,
+                'lang' => false,
+                'validate' => 'isDateFormat',
+                'required' => false
+            ),
+            'date_end' => array(
+                'type' => self::TYPE_DATE,
+                'lang' => false,
+                'validate' => 'isDateFormat',
+                'required' => false
+            ),
             'active' => array(
                 'type' => self::TYPE_BOOL,
                 'lang' => false,
                 'validate' => 'isBool'
-            ),
-            'categories' => array(
-                'type' => self::TYPE_STRING,
-                'validate' => 'isAnything',
-                'required' => false
             ),
             // lang fields
             'content' => array(

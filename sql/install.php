@@ -34,6 +34,8 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'everblock` (
         `id_shop` int(10) unsigned NOT NULL,
         `position` int(10) unsigned DEFAULT 0,
         `categories` text NOT NULL,
+        `date_start` DATE DEFAULT NULL,
+        `date_end` DATE DEFAULT NULL,
         `active` int(10) unsigned NOT NULL,
         PRIMARY KEY (`id_everblock`)
     ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';

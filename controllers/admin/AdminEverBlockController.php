@@ -349,6 +349,20 @@ class AdminEverBlockController extends ModuleAdminController
                         'lang' => false
                     ),
                     array(
+                        'type' => 'date',
+                        'label' => $this->l('Date start'),
+                        'desc' => $this->l('Date block will start to appear'),
+                        'hint' => $this->l('Leave empty for no use'),
+                        'name' => 'date_start',
+                    ),
+                    array(
+                        'type' => 'date',
+                        'label' => $this->l('Date end'),
+                        'desc' => $this->l('Date block will end'),
+                        'hint' => $this->l('Leave empty for no use'),
+                        'name' => 'date_end',
+                    ),
+                    array(
                         'type' => 'switch',
                         'label' => $this->l('Active'),
                         'desc' => $this->l('Enable this block ?'),
@@ -430,6 +444,12 @@ class AdminEverBlockController extends ModuleAdminController
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
                 : $obj->device,
+                'date_start' => (!empty(Tools::getValue('date_start')))
+                ? Tools::getValue('date_start')
+                : $obj->date_start,
+                'date_end' => (!empty(Tools::getValue('date_end')))
+                ? Tools::getValue('date_end')
+                : $obj->date_end,
                 'id_shop' => (!empty(Tools::getValue('id_shop')))
                 ? Tools::getValue('id_shop')
                 : $obj->id_shop,
@@ -470,6 +490,12 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
+                : '',
+                'date_start' => (!empty(Tools::getValue('date_start')))
+                ? Tools::getValue('date_start')
+                : '',
+                'date_end' => (!empty(Tools::getValue('date_end')))
+                ? Tools::getValue('date_end')
                 : '',
                 'id_shop' => (!empty(Tools::getValue('id_shop')))
                 ? Tools::getValue('id_shop')
@@ -561,6 +587,8 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->position = (int)Tools::getValue('position');
             $everblock_obj->device = (int)Tools::getValue('device');
             $hook_name = Hook::getNameById((int)Tools::getValue('id_hook'));
+            $everblock_obj->date_start = Tools::getValue('date_start');
+            $everblock_obj->date_end = Tools::getValue('date_end');
             $everblock_obj->active = Tools::getValue('active');
             $everblock = Module::getInstanceByName('everblock');
             foreach (Language::getLanguages(false) as $language) {
