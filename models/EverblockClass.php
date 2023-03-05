@@ -117,6 +117,7 @@ class EverBlockClass extends ObjectModel
         .'_'
         .(int)$id_shop;
         if (!Cache::isStored($cache_id)) {
+            $return = [];
             $sql = new DbQuery;
             $sql->select('*');
             $sql->from('everblock', 'eb');
@@ -127,7 +128,18 @@ class EverBlockClass extends ObjectModel
             $sql->where('eb.active = 1');
             $sql->orderBy('eb.position ASC');
 
-            $return = Db::getInstance()->executeS($sql);
+            $allBlocks = Db::getInstance()->executeS($sql);
+            foreach ($allBlocks as $block) {
+                if ($block['date_start'] !='0000-00-00') {
+                    if ($block['date_start'] > $now) {
+                        continue;
+                    }
+                    if ($block['date_end'] < $now) {
+                        continue;
+                    }
+                    $return[] = $block;
+                }
+            }
             Cache::store($cache_id, $return);
             return $return;
         }
