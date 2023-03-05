@@ -68,6 +68,16 @@ class AdminEverBlockController extends ModuleAdminController
                 'align' => 'left',
                 'width' => 'auto',
             ],
+            'date_start' => [
+                'title' => $this->l('Date start'),
+                'align' => 'left',
+                'width' => 'auto',
+            ],
+            'date_end' => [
+                'title' => $this->l('Date end'),
+                'align' => 'left',
+                'width' => 'auto',
+            ],
             'active' => [
                 'title' => $this->l('Status'),
                 'type' => 'bool',
