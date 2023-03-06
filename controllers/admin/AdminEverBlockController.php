@@ -252,6 +252,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'desc' => $this->l('Please select hook'),
                         'hint' => $this->l('Block will be shown on this hook'),
                         'name' => 'id_hook',
+                        'class' => 'chosen',
                         'required' => true,
                         'options' => [
                             'query' => $hooks_list,
@@ -342,9 +343,10 @@ class AdminEverBlockController extends ModuleAdminController
                         'type' => 'group',
                         'label' => $this->l('Group access'),
                         'name' => 'groupBox',
-                        'values' => Group::getGroups(Context::getContext()->language->id),
-                        'desc' => $this->l('Popup will be shown to these groups'),
+                        'values' => Group::getGroups($this->context->language->id),
+                        'desc' => $this->l('Block will be shown to these groups'),
                         'hint' => $this->l('Please select at least one customer group'),
+                        'required' => true,
                     ],
                     [
                         'type' => 'textarea',
@@ -420,10 +422,11 @@ class AdminEverBlockController extends ModuleAdminController
         $helper->currentIndex = AdminController::$currentIndex;
         $helper->token = Tools::getValue('token');
         $helper->submit_action = 'save';
+        // die(var_dump($this->getConfigFormValues($obj)));
         $helper->tpl_vars = [
             'fields_value' => $this->getConfigFormValues($obj),
             'languages' => $this->context->controller->getLanguages(),
-            'id_language' => (int)Context::getContext()->language->id,
+            'id_language' => (int) Context::getContext()->language->id,
         ];
         $helper->currentIndex = AdminController::$currentIndex;
         return $helper->generateForm($fields_form);
@@ -432,13 +435,13 @@ class AdminEverBlockController extends ModuleAdminController
     protected function getConfigFormValues($obj)
     {
         $groups = Group::getGroups($this->context->language->id);
-        
         $formValues = [];
         if (Validate::isLoadedObject($obj)) {
             $groupsIds = (array)json_decode($obj->groups);
-            $checkedGroups = [];
             foreach ($groups as $group) {
-                $checkedGroups['groupBox_' . $group['id_group']] = Tools::getValue('groupBox_' . $group['id_group'], (in_array($group['id_group'], $groupsIds)));
+                $formValues[] = [
+                    'groupBox_' . $group['id_group'] => Tools::getValue('groupBox_' . $group['id_group'], (in_array($group['id_group'], $groupsIds)))
+                ];
             }
             $formValues[] = [
                 'id_everblock' => (!empty(Tools::getValue('id_everblock')))
@@ -468,9 +471,6 @@ class AdminEverBlockController extends ModuleAdminController
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
                 : $obj->device,
-                'groupBox' => (!empty(Tools::getValue('groupBox')))
-                ? Tools::getValue('groupBox')
-                : $checkedGroups,
                 'date_start' => (!empty(Tools::getValue('date_start')))
                 ? Tools::getValue('date_start')
                 : $obj->date_start,
@@ -489,6 +489,11 @@ class AdminEverBlockController extends ModuleAdminController
             $content = [];
             foreach (Language::getLanguages(false) as $language) {
                 $content[$language['id_lang']] = '';
+            }
+            foreach ($groups as $group) {
+                $formValues[] = [
+                    'groupBox_' . $group['id_group'] => Tools::getValue('groupBox_' . $group['id_group'], false)
+                ];
             }
             $formValues[] = [
                 'id_everblock' => (!empty(Tools::getValue('id_everblock')))
@@ -517,9 +522,6 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
-                : '',
-                'groupBox' => (!empty(Tools::getValue('groupBox')))
-                ? Tools::getValue('groupBox')
                 : '',
                 'date_start' => (!empty(Tools::getValue('date_start')))
                 ? Tools::getValue('date_start')
@@ -616,6 +618,23 @@ class AdminEverBlockController extends ModuleAdminController
             );
             $everblock_obj->position = (int)Tools::getValue('position');
             $everblock_obj->device = (int)Tools::getValue('device');
+            if (!Tools::getValue('groupBox')
+                || !Validate::isArrayWithIds(Tools::getValue('groupBox'))
+            ) {
+                $groups = Group::getGroups(
+                    (int)$this->context->language->id,
+                    (int)$this->context->shop->id
+                );
+                $groupCondition = array();
+                foreach ($groups as $group) {
+                    $groupCondition[] = (int)$group['id_group'];
+                }
+            }
+            if (isset($groupCondition)) {
+                $everblock_obj->groups = json_encode($groupCondition);
+            } else {
+                $everblock_obj->groups = json_encode(Tools::getValue('groupBox'));
+            }
             $hook_name = Hook::getNameById((int)Tools::getValue('id_hook'));
             $everblock_obj->date_start = pSQL(Tools::getValue('date_start'));
             $everblock_obj->date_end = pSQL(Tools::getValue('date_end'));
@@ -701,6 +720,7 @@ class AdminEverBlockController extends ModuleAdminController
         $newBlock->device = $everBlock->device;
         $newBlock->id_shop = $everBlock->id_shop;
         $newBlock->categories = $everBlock->categories;
+        $newBlock->groups = $everBlock->groups;
         $newBlock->active = $everBlock->active;
         $newBlock->position = $everBlock->position;
 

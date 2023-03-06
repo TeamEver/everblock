@@ -122,7 +122,7 @@ class EverBlockClass extends ObjectModel
 
     public static function getBlocks($idHook, $idLang, $idShop)
     {
-        $cache_id = 'EverBlockClass::getBlocks_'
+        $cacheId = 'EverBlockClass::getBlocks_'
         . (int) $idHook
         . '_'
         . (int) $idLang
@@ -141,6 +141,7 @@ class EverBlockClass extends ObjectModel
             $sql->orderBy('eb.position ASC');
 
             $allBlocks = Db::getInstance()->executeS($sql);
+            $now = date('Y-m-d');
             foreach ($allBlocks as $block) {
                 if ($block['date_start'] && $block['date_start'] !='0000-00-00') {
                     if ($block['date_start'] > $now) {
