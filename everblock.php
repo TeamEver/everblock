@@ -32,7 +32,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '3.4.2';
+        $this->version = '3.4.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -67,41 +67,26 @@ class Everblock extends Module
         }
     }
 
-    /**
-     * The install method
-     *
-     * @see prestashop/classes/Module#install()
-     */
     public function install()
     {
         // Install SQL
         $sql = [];
-        include(dirname(__FILE__).'/sql/install.php');
+        include dirname(__FILE__).'/sql/install.php';
         foreach ($sql as $s) {
             if (!Db::getInstance()->execute($s)) {
                 return false;
             }
         }
-        $hooks_list = Hook::getHooks(false, true);
-        foreach ($hooks_list as $hook) {
-            $this->registerHook($hook['name']);
-        }
-
         return (parent::install()
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->installModuleTab('AdminEverBlock', 'IMPROVE', $this->l('Block HTML')));
     }
 
-    /**
-     * The uninstall method
-     *
-     * @see prestashop/classes/Module#uninstall()
-     */
     public function uninstall()
     {
         // Uninstall SQL
         $sql = [];
-        include(dirname(__FILE__).'/sql/uninstall.php');
+        include dirname(__FILE__).'/sql/uninstall.php';
         foreach ($sql as $s) {
             if (!Db::getInstance()->execute($s)) {
                 return false;
@@ -109,7 +94,6 @@ class Everblock extends Module
         }
 
         return (parent::uninstall()
-            && $this->registerHook('header')
             && $this->uninstallModuleTab('AdminEverBlock'));
     }
 
@@ -132,12 +116,6 @@ class Everblock extends Module
         return $tab->add();
     }
 
-    /**
-     * The uninstallModuleTab method
-     *
-     * @param string $tabClass
-     * @return boolean
-     */
     private function uninstallModuleTab($tabClass)
     {
         $tab = new Tab((int)Tab::getIdFromClassName($tabClass));
@@ -145,31 +123,33 @@ class Everblock extends Module
         return $tab->delete();
     }
 
-    /**
-     * Load the configuration form
-     */
     public function getContent()
     {
         $block_admin_link  = 'index.php?controller=AdminEverBlock&token=';
         $block_admin_link .= Tools::getAdminTokenLite('AdminEverBlock');
-        $this->context->smarty->assign(array(
+        $this->context->smarty->assign([
             'everblock_dir' => $this->_path,
             'block_admin_link' => $block_admin_link,
-        ));
+        ]);
 
-        $this->html .= $this->context->smarty->fetch($this->local_path.'views/templates/admin/header.tpl');
+        $this->html .= $this->context->smarty->fetch(
+            $this->local_path . 'views/templates/admin/header.tpl'
+        );
         if ($this->checkLatestEverModuleVersion($this->name, $this->version)) {
-            $this->html .= $this->context->smarty->fetch($this->local_path.'views/templates/admin/upgrade.tpl');
+            $this->html .= $this->context->smarty->fetch(
+                $this->local_path . 'views/templates/admin/upgrade.tpl'
+            );
         }
-        $this->html .= $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
-        $this->html .= $this->context->smarty->fetch($this->local_path.'views/templates/admin/footer.tpl');
+        $this->html .= $this->context->smarty->fetch(
+            $this->local_path . 'views/templates/admin/configure.tpl'
+        );
+        $this->html .= $this->context->smarty->fetch(
+            $this->local_path . 'views/templates/admin/footer.tpl'
+        );
 
         return $this->html;
     }
 
-    /**
-    * Add the CSS & JavaScript files you want to be loaded in the BO.
-    */
     public function hookDisplayBackOfficeHeader()
     {
         return $this->hookActionAdminControllerSetMedia();
@@ -229,7 +209,7 @@ class Everblock extends Module
         $currentBlock = [];
         foreach ($everblock as $block) {
             // Check device
-            if ((int) $block['device'] != 0
+            if ((int) $block['device'] > 0
                 && (int) $this->context->getDevice() != (int) $block['device']
             ) {
                 continue;
@@ -275,10 +255,11 @@ class Everblock extends Module
                 'content' => $block['content'],
             ];
         }
-        $this->smarty->assign(array(
-                'everblock' => $currentBlock,
-                'args' => $args
-        ));
+        $this->smarty->assign([
+            'everhook' => trim($method),
+            'everblock' => $currentBlock,
+            'args' => $args,
+        ]);
         return $this->display(__FILE__, 'everblock.tpl');
     }
 
@@ -378,16 +359,15 @@ class Everblock extends Module
             // so it doesn't display anything by itself
             return false;
         }
-
         return strpos($hook_name, 'display') === 0;
     }
 
     public function checkLatestEverModuleVersion($module, $version)
     {
         $upgrade_link = 'https://upgrade.team-ever.com/upgrade.php?module='
-        .$module
-        .'&version='
-        .$version;
+        . $module
+        . '&version='
+        . $version;
         $handle = curl_init($upgrade_link);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);

@@ -17,9 +17,9 @@
 *}
 
 <!-- Module Ever Block -->
-{if $everblock}
+{if isset($everblock) && $everblock}
     {foreach from=$everblock item=item}
-		<div class="everblock everblock-{$item.id_everblock nofilter}">
+		<div class="everblock everblock-{$item.id_everblock|escape:'htmlall':'UTF-8'} everhook-{$everhook|escape:'htmlall':'UTF-8'}" id="everblock-{$item.id_everblock|escape:'htmlall':'UTF-8'}">
             {$item.content nofilter}
 		</div>
     {/foreach}

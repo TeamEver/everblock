@@ -107,41 +107,43 @@ class EverBlockClass extends ObjectModel
         ],
     ];
 
-    public static function getBlocks($id_hook, $id_lang, $id_shop)
+    public static function getBlocks($idHook, $idLang, $idShop)
     {
         $cache_id = 'EverBlockClass::getBlocks_'
-        . (int) $id_hook
+        . (int) $idHook
         . '_'
-        . (int) $id_lang
+        . (int) $idLang
         . '_'
-        . (int) $id_shop;
-        if (!Cache::isStored($cache_id)) {
+        . (int) $idShop;
+        if (!Cache::isStored($cacheId)) {
             $return = [];
             $sql = new DbQuery;
             $sql->select('*');
             $sql->from('everblock', 'eb');
             $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
-            $sql->where('eb.id_hook = ' . (int) $id_hook);
-            $sql->where('ebl.id_lang = ' . (int) $id_lang);
-            $sql->where('eb.id_shop = ' . (int) $id_shop);
+            $sql->where('eb.id_hook = ' . (int) $idHook);
+            $sql->where('ebl.id_lang = ' . (int) $idLang);
+            $sql->where('eb.id_shop = ' . (int) $idShop);
             $sql->where('eb.active = 1');
             $sql->orderBy('eb.position ASC');
 
             $allBlocks = Db::getInstance()->executeS($sql);
             foreach ($allBlocks as $block) {
-                if ($block['date_start'] !='0000-00-00') {
+                if ($block['date_start'] && $block['date_start'] !='0000-00-00') {
                     if ($block['date_start'] > $now) {
                         continue;
                     }
+                }
+                if ($block['date_end'] && $block['date_end'] !='0000-00-00') {
                     if ($block['date_end'] < $now) {
                         continue;
                     }
-                    $return[] = $block;
                 }
+                $return[] = $block;
             }
-            Cache::store($cache_id, $return);
+            Cache::store($cacheId, $return);
             return $return;
         }
-        return Cache::retrieve($cache_id);
+        return Cache::retrieve($cacheId);
     }
 }
