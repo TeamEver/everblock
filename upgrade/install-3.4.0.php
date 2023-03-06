@@ -27,8 +27,13 @@ function upgrade_module_3_4_0()
     $sql = [];
     $sql[] =
         'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
-        ADD COLUMN `date_start` DATE DEFAULT NULL
+        ADD COLUMN `groups` TEXT DEFAULT NULL
         AFTER `categories`
+    ';
+    $sql[] =
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
+        ADD COLUMN `date_start` DATE DEFAULT NULL
+        AFTER `groups`
     ';
     $sql[] =
         'ALTER TABLE ' . _DB_PREFIX_ . 'everblock

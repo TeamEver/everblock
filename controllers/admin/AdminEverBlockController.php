@@ -339,6 +339,14 @@ class AdminEverBlockController extends ModuleAdminController
                         ],
                     ],
                     [
+                        'type' => 'group',
+                        'label' => $this->l('Group access'),
+                        'name' => 'groupBox',
+                        'values' => Group::getGroups(Context::getContext()->language->id),
+                        'desc' => $this->l('Popup will be shown to these groups'),
+                        'hint' => $this->l('Please select at least one customer group'),
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('HTML block content'),
                         'desc' => $this->l('Please type your block content'),
@@ -423,8 +431,15 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function getConfigFormValues($obj)
     {
+        $groups = Group::getGroups($this->context->language->id);
+        
         $formValues = [];
         if (Validate::isLoadedObject($obj)) {
+            $groupsIds = (array)json_decode($obj->groups);
+            $checkedGroups = [];
+            foreach ($groups as $group) {
+                $checkedGroups['groupBox_' . $group['id_group']] = Tools::getValue('groupBox_' . $group['id_group'], (in_array($group['id_group'], $groupsIds)));
+            }
             $formValues[] = [
                 'id_everblock' => (!empty(Tools::getValue('id_everblock')))
                 ? Tools::getValue('id_everblock')
@@ -453,6 +468,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
                 : $obj->device,
+                'groupBox' => (!empty(Tools::getValue('groupBox')))
+                ? Tools::getValue('groupBox')
+                : $checkedGroups,
                 'date_start' => (!empty(Tools::getValue('date_start')))
                 ? Tools::getValue('date_start')
                 : $obj->date_start,
@@ -499,6 +517,9 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
+                : '',
+                'groupBox' => (!empty(Tools::getValue('groupBox')))
+                ? Tools::getValue('groupBox')
                 : '',
                 'date_start' => (!empty(Tools::getValue('date_start')))
                 ? Tools::getValue('date_start')
