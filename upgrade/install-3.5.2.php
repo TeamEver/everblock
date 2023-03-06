@@ -1,4 +1,5 @@
-{*
+<?php
+/**
  * 2019-2023 Team Ever
  *
  * NOTICE OF LICENSE
@@ -14,14 +15,23 @@
  *  @author    Team Ever <https://www.team-ever.com/>
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*}
+ */
 
-<!-- Module Ever Block -->
-{if isset($everblock) && $everblock}
-    {foreach from=$everblock item=item}
-		<div class="everblock everblock-{$item.id_everblock|escape:'htmlall':'UTF-8'} everhook-{$everhook|escape:'htmlall':'UTF-8'}" id="everblock-{$item.id_everblock|escape:'htmlall':'UTF-8'}" data-everhook="{$everhook|escape:'htmlall':'UTF-8'}"{if isset($item.background) && $item.background} style="background-color:{$item.background|escape:'htmlall':'UTF-8'};"{/if}>
-            {$item.content nofilter}
-		</div>
-    {/foreach}
-{/if}
-<!-- /Module Ever Block -->
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
+function upgrade_module_3_5_2()
+{
+    $result = true;
+    $sql = [];
+    $sql[] =
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
+        ADD COLUMN `background` varchar(255) DEFAULT NULL
+        AFTER `position`
+    ';
+    foreach ($sql as $s) {
+        $result &= Db::getInstance()->execute($s);
+    }
+    return $result;
+}

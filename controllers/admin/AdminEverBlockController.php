@@ -349,6 +349,15 @@ class AdminEverBlockController extends ModuleAdminController
                         'required' => true,
                     ],
                     [
+                        'type' => 'color',
+                        'label' => $this->l('Block background color'),
+                        'desc' => $this->l('Enter block background color'),
+                        'hint' => $this->l('Leave empty for no use'),
+                        'required' => false,
+                        'name' => 'background',
+                        'lang' => false,
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('HTML block content'),
                         'desc' => $this->l('Please type your block content'),
@@ -468,6 +477,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'position' => (!empty(Tools::getValue('position')))
                 ? Tools::getValue('position')
                 : $obj->position,
+                'background' => (!empty(Tools::getValue('background')))
+                ? Tools::getValue('background')
+                : $obj->background,
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
                 : $obj->device,
@@ -519,6 +531,9 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'position' => (!empty(Tools::getValue('position')))
                 ? Tools::getValue('position')
+                : '',
+                'background' => (!empty(Tools::getValue('background')))
+                ? Tools::getValue('background')
                 : '',
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
@@ -595,6 +610,11 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Position is not valid');
             }
+            if (Tools::getValue('background')
+                && !Validate::isColor(Tools::getValue('background'))
+            ) {
+                $this->errors[] = $this->l('Background color is not valid');
+            }
             if (Tools::getValue('active')
                 && !Validate::isBool(Tools::getValue('active'))
             ) {
@@ -610,14 +630,15 @@ class AdminEverBlockController extends ModuleAdminController
             );
             $everblock_obj->name = pSQL(Tools::getValue('name'));
             $everblock_obj->id_shop = (int) $this->context->shop->id;
-            $everblock_obj->id_hook = (int)Tools::getValue('id_hook');
-            $everblock_obj->only_home = (bool)Tools::getValue('only_home');
-            $everblock_obj->only_category = (bool)Tools::getValue('only_category');
+            $everblock_obj->id_hook = (int) Tools::getValue('id_hook');
+            $everblock_obj->only_home = (bool) Tools::getValue('only_home');
+            $everblock_obj->only_category = (bool) Tools::getValue('only_category');
             $everblock_obj->categories = json_encode(
                 Tools::getValue('categories')
             );
-            $everblock_obj->position = (int)Tools::getValue('position');
-            $everblock_obj->device = (int)Tools::getValue('device');
+            $everblock_obj->position = (int) Tools::getValue('position');
+            $everblock_obj->background =  pSQL(Tools::getValue('background'));
+            $everblock_obj->device = (int) Tools::getValue('device');
             if (!Tools::getValue('groupBox')
                 || !Validate::isArrayWithIds(Tools::getValue('groupBox'))
             ) {
@@ -627,7 +648,7 @@ class AdminEverBlockController extends ModuleAdminController
                 );
                 $groupCondition = array();
                 foreach ($groups as $group) {
-                    $groupCondition[] = (int)$group['id_group'];
+                    $groupCondition[] = (int) $group['id_group'];
                 }
             }
             if (isset($groupCondition)) {
@@ -635,13 +656,13 @@ class AdminEverBlockController extends ModuleAdminController
             } else {
                 $everblock_obj->groups = json_encode(Tools::getValue('groupBox'));
             }
-            $hook_name = Hook::getNameById((int)Tools::getValue('id_hook'));
+            $hook_name = Hook::getNameById((int) Tools::getValue('id_hook'));
             $everblock_obj->date_start = pSQL(Tools::getValue('date_start'));
             $everblock_obj->date_end = pSQL(Tools::getValue('date_end'));
             $everblock_obj->active = Tools::getValue('active');
             $everblock = Module::getInstanceByName('everblock');
             foreach (Language::getLanguages(false) as $language) {
-                $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_'.$language['id_lang']);
+                $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_' . $language['id_lang']);
             }
             if (!count($this->errors)) {
                 $everblock_obj->save();

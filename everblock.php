@@ -13,7 +13,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    Team Ever <https://www.team-ever.com/>
- *  @copyright 2019-2021 Team Ever
+ *  @copyright 2019-2023 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 if (!defined('_PS_VERSION_')) {
@@ -30,7 +30,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '3.5.1';
+        $this->version = '3.5.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -258,6 +258,7 @@ class Everblock extends Module
             $currentBlock[] = [
                 'id_everblock' => $block['id_everblock'],
                 'content' => $block['content'],
+                'background' => $block['background'],
             ];
         }
         $this->smarty->assign([

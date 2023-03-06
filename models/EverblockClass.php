@@ -30,6 +30,7 @@ class EverBlockClass extends ObjectModel
     public $id_hook;
     public $device;
     public $groups;
+    public $background;
     public $id_shop;
     public $categories;
     public $date_start;
@@ -79,6 +80,12 @@ class EverBlockClass extends ObjectModel
                 'type' => self::TYPE_STRING,
                 'lang' => false,
                 'validate' => 'isJson',
+                'required' => false,
+            ],
+            'background' => [
+                'type' => self::TYPE_STRING,
+                'lang' => false,
+                'validate' => 'isColor',
                 'required' => false,
             ],
             'id_shop' => [

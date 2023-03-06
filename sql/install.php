@@ -34,6 +34,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
         `position` int(10) unsigned DEFAULT 0,
         `categories` text DEFAULT NULL,
         `groups` text DEFAULT NULL,
+        `background` varchar(255) unsigned DEFAULT NULL,
         `date_start` DATE DEFAULT NULL,
         `date_end` DATE DEFAULT NULL,
         `active` int(10) unsigned NOT NULL,
