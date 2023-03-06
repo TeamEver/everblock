@@ -329,7 +329,7 @@ class AdminEverBlockController extends ModuleAdminController
                     [
                         'type' => 'select',
                         'label' => $this->l('Devices management'),
-                        'desc' => $this->l('Please specify the device on which the popup should be displayed'),
+                        'desc' => $this->l('Please specify the device on which the block should be displayed'),
                         'hint' => $this->l('Select "all devices" for a global view'),
                         'name' => 'device',
                         'required' => true,

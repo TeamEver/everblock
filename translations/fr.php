@@ -1,7 +1,7 @@
 <?php
 
 global $_MODULE;
-$_MODULE = [];
+$_MODULE = array();
 $_MODULE['<{everblock}prestashop>everblock_7b2dfd550b9d3758e529d38a94a99d7c'] = 'Ever Block';
 $_MODULE['<{everblock}prestashop>everblock_7972168795111caf92e3cd9a7b029c60'] = 'Ajoutez des blocs HTML n\'importe où !';
 $_MODULE['<{everblock}prestashop>everblock_671493b361489bcf8047a74e6d53525a'] = 'Voulez-vous réellement désinstaller ce module ?';
@@ -10,13 +10,21 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_b718adec73e04ce3ec720d
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_49ee3087348e8d44e1feda1917443987'] = 'Nom';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_52f5e0bc3859bc5f5e25130b6c7e8881'] = 'Position';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_b9b371458ab7c314f88b81c553f6ce51'] = 'Hook';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_111893dc2ad3535a627f8d904e9acf80'] = 'Date de début';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_7d6da8f6cb6897fb1a8ce7f74e826c2e'] = 'Date de fin';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_ec53a8c4f07baed5d8825072c89799be'] = 'Etat';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_f05697e8558532fc1a7c1ca0556ea2eb'] = 'Ajouter un bloc HTML';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_79e9aa3d57966d04a010a465c6b1ec03'] = 'Configuration des blocs HTML';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_b8ecf0476559a85f23f7921a75dacac1'] = 'Supprimer les blocs sélectionnés';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_48a688e2c614f9afa08c207d3556c2c8'] = 'Supprimer les blocs sélectionnés ?';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_34e3bd31e37b7e8bfa4fa7445241aee0'] = 'Dupliquer les éléments sélectionnés';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_ecca24871c31fed63c45303448575944'] = 'Dupliquer les éléments sélectionnés ?';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_1b0cc7183377b461e298d0ebcf5f8548'] = 'Une erreur est survenue durant la mise à jour de l\'état';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_3710e833217aa6bf0f08c1b06eea5c9a'] = 'Vous devez sélectionner une boutique avant de créer de nouveaux blocs HTML';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_840bdbdc390494be7be953424a61fba7'] = 'Tous les supports';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_61778e4de4633f0dc17e009bfd47d5fe'] = 'Uniquement sur mobile';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_49daac757008ecac661a3af429662d26'] = 'Uniquement sur tablette';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_38a430f17a2edec8cfa2dd68167355c6'] = 'Uniquement sur ordinateur';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_ef79539e692b785c2ce0169052eb3f96'] = 'Ajouter un bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c9cc8cce247e49bae79f15173ce97354'] = 'Sauvegarder';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_fe18323671e928a3fb8f4388159be29b'] = 'Sauvegarder et rester';
@@ -35,12 +43,21 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_e61788a80f444d91773c57
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_e7a350a08c68015bbd63220c2ae0966b'] = 'Dépend également du réglage précédent';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c41d907fd5a5197209171188d5f0f24a'] = 'Simple rappel dans l\'administration ';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_104f9d219084486ae4193df017459bc6'] = 'Ce rappel sera uniquement affiché dans l\'administration de votre boutique';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_7c843db3dc99974980d882893afd7303'] = 'Gestion des appareils';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_f7d5dd9aaa05df66b370c2d4eb8bcce9'] = 'Merci de préciser le type d\'appareil sur lequel le bloc doit être affiché';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_df48b0fa03947baf98b9ecc0d485e841'] = 'Sélectionnez \"tous les appareils\" pour un affichage global';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_920bd1fb6d54c93fca528ce941464225'] = 'Accès aux groupes';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_4370d99e1582887e71a59c5524ac4657'] = 'Le bloc sera affiché uniquement  sur les groupes sélectionnés';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_30e03c5437690b217fc16fe93752c460'] = 'Merci de sélectionner au moins un groupe';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_9d1fac76d81f06ec83eee3a73073869e'] = 'Contenu du bloc HTML';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_d4bcf29f89eec8f89d2399bf4026d365'] = 'Merci de saisir le contenu de votre bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_93e32cd7f3ae7da22645c4a24a716aff'] = 'Le code HTML dépend également des réglages de votre boutique';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_517ebf75f85434d669c39d8af75631b0'] = 'Position du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_fd704ea41268a7b760b8a234a6273c44'] = 'Saisissez un numéro de position du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c3bed604ee8b68cf22f2c70a12e44bf1'] = 'Les blocs seront ordonnés par position';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_4f102aa0276bbd9b1c2bf0257f371d08'] = 'Date de début d\'affichage du bloc';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_f1252d5ff7d9423a58a4bec68eb50e03'] = 'Laissez vide pour ne pas utiliser';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_d00ece8783a5f89ac941a4cda807c4f7'] = 'Date de fin d\'affichage du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_4d3d769b812b6faa6b76e1a8abaece2d'] = 'Actif';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_3f1a992a00a0e2abecbaed61d13a36c5'] = 'Activer ce bloc ?';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_78d7ed7ec812922e5250ea4dc03c422c'] = 'Seuls les blocs actifs seront affichés';
@@ -52,7 +69,7 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_b295772e411c3327fbdd3e
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_7e8b62aa399a3eb3f8220a0cfd9e72c9'] = 'Les catégories ne sont pas valides';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c32d9968f3071dc2f7f55c8cf28ea48b'] = 'La position n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_5999ebfb5e6d9ab139865a400fc3324e'] = 'Activer n\'est pas valide';
-$_MODULE['<{everblock}prestashop>admineverblockcontroller_e60f90387ee2c3311967a71f27e0511e'] = 'Impossible de mettre  à jour l\'objet';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_b207bf1f0294d535c352bfbcd82a4baa'] = 'Le type d\'appareil n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_5056d83dfa11a4fcf25b0eec55bf4817'] = 'Une erreur est survenue. Impossible de supprimer l\'objet';
 $_MODULE['<{everblock}prestashop>configure_621886d5d907cadfb35840e0bc9688d3'] = 'Qu\'est-ce qu\'un hook ?';
 $_MODULE['<{everblock}prestashop>configure_714f82bdd35410e27b403a7ed10fa67e'] = 'Un hook est un endroit où vous pouvez « greffer » un module. Très nombreux sur Prestashop, ils sont enregistrés dans votre base de données, et affichés par votre thème et vos modules.';
@@ -95,6 +112,7 @@ $_MODULE['<{everblock}prestashop>header_b292373020a30d4abfdd110c4ae31a59'] = 'po
 $_MODULE['<{everblock}prestashop>header_6dc9fc4fd354856b565e17d5ed1eb694'] = 'pour terminer le lien vers la page contact';
 $_MODULE['<{everblock}prestashop>header_a4d3b54bd2b341172d3135805f4a1fa9'] = 'pour l\'URL de  la boutique';
 $_MODULE['<{everblock}prestashop>header_f9b9b81e4429f466d5629e687dfa87dd'] = 'pour le nom de la boutique';
+$_MODULE['<{everblock}prestashop>header_39d832f8e6dffddbb3b5b785509e6095'] = 'pour l\'URL du thème actuel';
 $_MODULE['<{everblock}prestashop>header_4fb704f05a00111d953eb10dddc881d9'] = 'Ce module est gratuit et le sera toujours ! Vous pouvez soutenir nos modules gratuits en faisant un don en cliquant sur le bouton ci-dessous';
 $_MODULE['<{everblock}prestashop>upgrade_11f4d2cc4546c08ed99645473ba29a5f'] = 'Une mise à jour du module est à disposition. Merci de vous rendre sur ';
 $_MODULE['<{everblock}prestashop>upgrade_a43640b6c7cabe3d8d157aba85f7cee4'] = 'afin de récupérer la dernière version de ce module';
