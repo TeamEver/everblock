@@ -1,6 +1,6 @@
 <?php
 /**
- * 2019-2021 Team Ever
+ * 2019-2023 Team Ever
  *
  * NOTICE OF LICENSE
  *
@@ -130,6 +130,9 @@ class EverBlockClass extends ObjectModel
         . (int) $idShop;
         if (!Cache::isStored($cacheId)) {
             $return = [];
+            $customerGroups = Customer::getGroupsStatic(
+                (int) Context::getContext()->customer->id
+            );
             $sql = new DbQuery;
             $sql->select('*');
             $sql->from('everblock', 'eb');
@@ -143,13 +146,23 @@ class EverBlockClass extends ObjectModel
             $allBlocks = Db::getInstance()->executeS($sql);
             $now = date('Y-m-d');
             foreach ($allBlocks as $block) {
+                // Date start management
                 if ($block['date_start'] && $block['date_start'] !='0000-00-00') {
                     if ($block['date_start'] > $now) {
                         continue;
                     }
                 }
+                // Date end management
                 if ($block['date_end'] && $block['date_end'] !='0000-00-00') {
                     if ($block['date_end'] < $now) {
+                        continue;
+                    }
+                }
+                // Allowed groups
+                $allowedGroups = $block['groups'];
+                if ($allowedGroups) {
+                    $allowedGroups = json_decode($allowedGroups);
+                    if (!array_intersect($allowedGroups, $customerGroups)) {
                         continue;
                     }
                 }

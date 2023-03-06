@@ -1,6 +1,6 @@
 <?php
 /**
- * 2019-2021 Team Ever
+ * 2019-2023 Team Ever
  *
  * NOTICE OF LICENSE
  *
@@ -25,9 +25,7 @@ require_once(dirname(__FILE__).'/models/EverblockClass.php');
 class Everblock extends Module
 {
     private $html;
-    /**
-     * Constructor
-     */
+
     public function __construct()
     {
         $this->name = 'everblock';
@@ -78,6 +76,7 @@ class Everblock extends Module
             }
         }
         return (parent::install()
+            && $this->registerHook('header')
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->installModuleTab('AdminEverBlock', 'IMPROVE', $this->l('Block HTML')));
     }
@@ -92,17 +91,16 @@ class Everblock extends Module
                 return false;
             }
         }
-
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlock'));
     }
 
-    private function installModuleTab($tabClass, $parent, $tabName)
+    protected function installModuleTab($tabClass, $parent, $tabName)
     {
         $tab = new Tab();
         $tab->active = 1;
         $tab->class_name = $tabClass;
-        $tab->id_parent = (int)Tab::getIdFromClassName($parent);
+        $tab->id_parent = (int) Tab::getIdFromClassName($parent);
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
         $tab->module = $this->name;
         if ($tabClass == 'AdminEverBlock' && $this->isSeven) {
@@ -116,15 +114,22 @@ class Everblock extends Module
         return $tab->add();
     }
 
-    private function uninstallModuleTab($tabClass)
+    protected function uninstallModuleTab($tabClass)
     {
         $tab = new Tab((int)Tab::getIdFromClassName($tabClass));
 
         return $tab->delete();
     }
 
+    protected function checkHooks()
+    {
+        $this->registerHook('header');
+        $this->registerHook('actionAdminControllerSetMedia');
+    }
+
     public function getContent()
     {
+        $this->checkHooks();
         $block_admin_link  = 'index.php?controller=AdminEverBlock&token=';
         $block_admin_link .= Tools::getAdminTokenLite('AdminEverBlock');
         $this->context->smarty->assign([
@@ -196,7 +201,7 @@ class Everblock extends Module
             if (Context::getContext()->controller->controller_type === 'admin'
                 || Context::getContext()->controller->controller_type === 'moduleadmin'
             ) {
-                $id_entity = (int)Context::getContext()->employee->id;
+                $id_entity = (int) Context::getContext()->employee->id;
             } else {
                 $id_entity = false;
             }
@@ -230,13 +235,13 @@ class Everblock extends Module
             if ((bool)$block['only_category'] === true) {
                 $categories = json_decode($block['categories']);
                 if (Tools::getValue('id_category')
-                    && !in_array((int)Tools::getValue('id_category'), $categories)
+                    && !in_array((int) Tools::getValue('id_category'), $categories)
                 ) {
                     $continue = true;
                 }
                 if (Tools::getValue('id_product')) {
                     $product = new Product(
-                        (int)Tools::getValue('id_product')
+                        (int) Tools::getValue('id_product')
                     );
                     if (!in_array((int) $product->id_category_default, $categories)) {
                         $continue = true;
@@ -266,11 +271,11 @@ class Everblock extends Module
     public function hookHeader()
     {
         $this->context->controller->addCss(
-            _PS_MODULE_DIR_.'everblock/views/css/everblock.css',
+            _PS_MODULE_DIR_ . 'everblock/views/css/everblock.css',
             'all'
         );
         $this->context->controller->addJs(
-            _PS_MODULE_DIR_.'everblock/views/js/everblock.js',
+            _PS_MODULE_DIR_ . 'everblock/views/js/everblock.js',
             'all'
         );
     }
@@ -318,21 +323,21 @@ class Everblock extends Module
             }
         }
         if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
-            $theme_uri = Tools::getShopDomainSsl(true)._PS_THEME_URI_;
+            $theme_uri = Tools::getShopDomainSsl(true) . _PS_THEME_URI_;
         } else {
-            $theme_uri = Tools::getShopDomainSsl(true)._PS_PARENT_THEME_URI_;
+            $theme_uri = Tools::getShopDomainSsl(true) . _PS_PARENT_THEME_URI_;
         }
         $defaultShortcodes = [
             '[shop_url]' => Tools::getShopDomainSsl(true),
-            '[shop_name]'=> (string)Configuration::get('PS_SHOP_NAME'),
+            '[shop_name]'=> (string) Configuration::get('PS_SHOP_NAME'),
             '[start_cart_link]' => '<a href="'
-            .Tools::getShopDomainSsl(true)
-            .'/index.php?controller=cart&action=show" target="_blank">',
+            . Tools::getShopDomainSsl(true)
+            . '/index.php?controller=cart&action=show" target="_blank">',
             '[end_cart_link]' => '</a>',
             '[start_shop_link]' => '<a href="'
-            .Tools::getShopDomainSsl(true)
-            .'" target="_blank">',
-            '[start_contact_link]' => '<a href="'.$contactLink.'" target="_blank">',
+            . Tools::getShopDomainSsl(true)
+            . '" target="_blank">',
+            '[start_contact_link]' => '<a href="' . $contactLink . '" target="_blank">',
             '[end_shop_link]' => '</a>',
             '[end_contact_link]' => '</a>',
             '[contact_link]'=> $contactLink,
