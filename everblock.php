@@ -25,12 +25,14 @@ require_once(dirname(__FILE__).'/models/EverblockClass.php');
 class Everblock extends Module
 {
     private $html;
+    private $postErrors = [];
+    private $postSuccess = [];
 
     public function __construct()
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '3.5.3';
+        $this->version = '4.0.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -138,6 +140,30 @@ class Everblock extends Module
     public function getContent()
     {
         $this->checkHooks();
+        $this->html = '';
+        if (((bool)Tools::isSubmit('submit' . $this->name . 'Module')) == true) {
+            $this->postValidation();
+            if (!count($this->postErrors)) {
+                $this->postProcess();
+            }
+        }
+
+        if ((bool)Tools::isSubmit('submitEmptyCache') === true) {
+            $this->emptyAllCache();
+        }
+        if (count($this->postErrors)) {
+            // Pour chaque erreur trouvée
+            foreach ($this->postErrors as $error) {
+                // On les affiche
+                $this->html .= $this->displayError($error);
+            }
+        }
+
+        if (count($this->postSuccess)) {
+            foreach ($this->postSuccess as $success) {
+                $this->html .= $this->displayConfirmation($success);
+            }
+        }
         $block_admin_link  = 'index.php?controller=AdminEverBlock&token=';
         $block_admin_link .= Tools::getAdminTokenLite('AdminEverBlock');
         $this->context->smarty->assign([
@@ -156,11 +182,185 @@ class Everblock extends Module
         $this->html .= $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/configure.tpl'
         );
+        $this->html .= $this->renderForm();
         $this->html .= $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/footer.tpl'
         );
 
         return $this->html;
+    }
+    protected function renderForm()
+    {
+        $helper = new HelperForm();
+
+        $helper->show_toolbar = false;
+        $helper->table = $this->table;
+        $helper->module = $this;
+        $helper->default_form_language = $this->context->language->id;
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
+
+        $helper->identifier = $this->identifier;
+        $helper->submit_action = 'submit' . $this->name . 'Module';
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+
+        $helper->tpl_vars = [
+            'fields_value' => $this->getConfigFormValues(),
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id,
+        ];
+
+        return $helper->generateForm(array($this->getConfigForm()));
+    }
+    protected function getConfigForm()
+    {
+        return array(
+            'form' => array(
+                'legend' => array(
+                'title' => $this->l('Settings'),
+                'icon' => 'icon-smile',
+                ),
+                'input' => array(
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Empty cache on saving ?'),
+                        'desc' => $this->l('Set yes to empty cache on saving'),
+                        'hint' => $this->l('Else cache will not be emptied'),
+                        'name' => 'EVERPSCSS_CACHE',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on',
+                                'value' => true,
+                                'label' => $this->l('Yes')
+                            ),
+                            array(
+                                'id' => 'active_off',
+                                'value' => false,
+                                'label' => $this->l('No')
+                            )
+                        ),
+                    ),
+                    array(
+                        'type' => 'textarea', // y'a plusieurs types existants : select, multiple select, text, switch, radio, etc
+                        'label' => $this->l('Custom CSS'), // Le titre du champ
+                        'desc' => $this->l('Add here your custom CSS rules'), // Description du champ
+                        'hint' => $this->l('Webdesigners here can manage CSS rules'), // Le "tip" du champ
+                        'name' => 'EVERPSCSS', // Cette information unique est celle qui nous permet de détecter et d'enregistrer des valeurs. Elle est donc très importante et doit être unique
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => $this->l('Custom Javascript'),
+                        'desc' => $this->l('Add here your custom Javascript rules'),
+                        'hint' => $this->l('Webdesigners here can manage Javascript rules'),
+                        'name' => 'EVERPSJS',
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => $this->l('Custom CSS links'),
+                        'desc' => $this->l('Add here your custom CSS links, one per line'),
+                        'hint' => $this->l('Add one link per line, must be CSS'),
+                        'name' => 'EVERPSCSS_LINKS',
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => $this->l('Custom JS links'),
+                        'desc' => $this->l('Add here your custom JS links, one per line'),
+                        'hint' => $this->l('Add one link per line, must be JS'),
+                        'name' => 'EVERPSJS_LINKS',
+                    ),
+                ),
+                'buttons' => array(
+                    'emptyCache' => array(
+                        'name' => 'submitEmptyCache',
+                        'type' => 'submit',
+                        'class' => 'btn btn-info pull-right',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Empty cache')
+                    ),
+                ),
+                'submit' => array(
+                    'title' => $this->l('Save'),
+                ),
+            ),
+        );
+    }
+
+    protected function getConfigFormValues()
+    {
+        $custom_css = Tools::file_get_contents(
+            _PS_MODULE_DIR_.'/' . $this->name . '/views/css/custom.css'
+        );
+        $custom_js = Tools::file_get_contents(
+            _PS_MODULE_DIR_.'/' . $this->name . '/views/js/custom.js'
+        );
+        return array(
+            'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
+            'EVERPSCSS' => $custom_css,
+            'EVERPSJS' => $custom_js,
+            'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
+            'EVERPSJS_LINKS' => Configuration::get('EVERPSJS_LINKS')
+        );
+    }
+
+    public function postValidation()
+    {
+        if (Tools::isSubmit('submit' . $this->name . 'Module')) {
+        }
+    }
+    /**
+     * C'est cette méthode qui enregistre le formulaire, à supposer qu'on n'ait aucune erreur
+     * On récupère les infos du formulaire en faisant Tools::getValue('EVERPSCSS') par exemple
+     * Ce qui récupère ce qui a été mis dans le champ EVERPSCSS, tout simplement
+     */
+    protected function postProcess()
+    {
+        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom.css';
+        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom.js';
+        $handle_css = fopen(
+            $custom_css,
+            'w+'
+        );
+        fclose($handle_css);
+        $handle_js = fopen(
+            $custom_js,
+            'w+'
+        );
+        fclose($handle_js);
+
+        Configuration::updateValue(
+            'EVERPSCSS_CACHE',
+            Tools::getValue('EVERPSCSS_CACHE')
+        );
+        // Là par exemplte j'enregistre dans un fichier les infos reçus du champ EVERPSCSS
+        file_put_contents(
+            $custom_css,
+            Tools::getValue('EVERPSCSS')
+        );
+        // Là par exemplte j'enregistre dans un fichier les infos reçus du champ EVERPSJS
+        file_put_contents(
+            $custom_js,
+            Tools::getValue('EVERPSJS')
+        );
+        Configuration::updateValue(
+            'EVERPSCSS_LINKS',
+            Tools::getValue('EVERPSCSS_LINKS')
+        );
+        Configuration::updateValue(
+            'EVERPSJS_LINKS',
+            Tools::getValue('EVERPSJS_LINKS')
+        );
+        if ((bool) Configuration::get('EVERPSCSS_CACHE') === true) {
+            $this->emptyAllCache();
+        }
+        // Là, comme on a bien enregistré, c'est ici qu'on précise un message de succès
+        $this->postSuccess[] = $this->l('All settings have been saved');
+    }
+
+    protected function emptyAllCache()
+    {
+        Tools::clearAllCache();
+        $this->postSuccess[] = $this->l('Cache has been cleared');
     }
 
     public function hookDisplayBackOfficeHeader()
@@ -278,13 +478,21 @@ class Everblock extends Module
     public function hookHeader()
     {
         $this->context->controller->addCss(
-            _PS_MODULE_DIR_ . 'everblock/views/css/everblock.css',
+            _PS_MODULE_DIR_ . $this->name . '/views/css/everblock.css',
             'all'
         );
         $this->context->controller->addJs(
-            _PS_MODULE_DIR_ . 'everblock/views/js/everblock.js',
+            _PS_MODULE_DIR_ . $this->name . '/views/js/everblock.js',
             'all'
         );
+        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom.css';
+        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom.js';
+        if (file_exists($custom_css)) {
+            $this->context->controller->addCSS($this->_path . '/views/css/custom.css');
+        }
+        if (file_exists($custom_js)) {
+            $this->context->controller->addJS($this->_path . '/views/js/custom.js');
+        }
     }
 
     private function changeShortcodes($message, $id_entity)
