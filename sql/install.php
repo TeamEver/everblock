@@ -34,9 +34,10 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
         `position` int(10) unsigned DEFAULT 0,
         `categories` text DEFAULT NULL,
         `groups` text DEFAULT NULL,
-        `background` varchar(255) unsigned DEFAULT NULL,
-        `date_start` DATE DEFAULT NULL,
-        `date_end` DATE DEFAULT NULL,
+        `background` varchar(255) DEFAULT NULL,
+        `css_class` varchar(255) DEFAULT NULL,
+        `date_start` DATETIME DEFAULT NULL,
+        `date_end` DATETIME DEFAULT NULL,
         `active` int(10) unsigned NOT NULL,
         PRIMARY KEY (`id_everblock`)
     ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';

@@ -30,12 +30,11 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '3.5.2';
+        $this->version = '3.5.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
         parent::__construct();
-        $this->isSeven = Tools::version_compare(_PS_VERSION_, '1.7', '>=') ? true : false;
         $this->displayName = $this->l('Ever Block');
         $this->description = $this->l('Add HTML block everywhere !');
         $this->confirmUninstall = $this->l('Do yo really want to uninstall this module ?');
@@ -70,10 +69,19 @@ class Everblock extends Module
         // Install SQL
         $sql = [];
         include dirname(__FILE__).'/sql/install.php';
+
         foreach ($sql as $s) {
             if (!Db::getInstance()->execute($s)) {
                 return false;
             }
+        }
+        // Hook actionGetEverBlockBefore
+        if (!Hook::getIdByName('actionGetEverBlockBefore')) {
+            $hook = new Hook();
+            $hook->name = 'actionGetEverBlockBefore';
+            $hook->title = 'Before block is rendered';
+            $hook->description = 'This hook triggers before block is rendered';
+            $hook->save();
         }
         return (parent::install()
             && $this->registerHook('header')
@@ -103,7 +111,7 @@ class Everblock extends Module
         $tab->id_parent = (int) Tab::getIdFromClassName($parent);
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
         $tab->module = $this->name;
-        if ($tabClass == 'AdminEverBlock' && $this->isSeven) {
+        if ($tabClass == 'AdminEverBlock') {
             $tab->icon = 'icon-team-ever';
         }
 
@@ -162,7 +170,7 @@ class Everblock extends Module
 
     public function hookActionAdminControllerSetMedia()
     {
-        $this->context->controller->addCss($this->_path.'views/css/ever.css');
+        $this->context->controller->addCss($this->_path . 'views/css/ever.css');
         $currentConfigure = Tools::getValue('configure');
     }
 
@@ -256,9 +264,7 @@ class Everblock extends Module
                 $id_entity
             );
             $currentBlock[] = [
-                'id_everblock' => $block['id_everblock'],
-                'content' => $block['content'],
-                'background' => $block['background'],
+                'block' => $block,
             ];
         }
         $this->smarty->assign([

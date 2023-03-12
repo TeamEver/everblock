@@ -358,6 +358,15 @@ class AdminEverBlockController extends ModuleAdminController
                         'lang' => false,
                     ],
                     [
+                        'type' => 'text',
+                        'label' => $this->l('Block custom class name'),
+                        'desc' => $this->l('Enter block custom class name'),
+                        'hint' => $this->l('Leave empty for no use'),
+                        'required' => false,
+                        'name' => 'css_class',
+                        'lang' => false,
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('HTML block content'),
                         'desc' => $this->l('Please type your block content'),
@@ -377,14 +386,14 @@ class AdminEverBlockController extends ModuleAdminController
                         'lang' => false,
                     ],
                     [
-                        'type' => 'date',
+                        'type' => 'datetime',
                         'label' => $this->l('Date start'),
                         'desc' => $this->l('Date block will start to appear'),
                         'hint' => $this->l('Leave empty for no use'),
                         'name' => 'date_start',
                     ],
                     [
-                        'type' => 'date',
+                        'type' => 'datetime',
                         'label' => $this->l('Date end'),
                         'desc' => $this->l('Date block will end'),
                         'hint' => $this->l('Leave empty for no use'),
@@ -480,6 +489,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'background' => (!empty(Tools::getValue('background')))
                 ? Tools::getValue('background')
                 : $obj->background,
+                'css_class' => (!empty(Tools::getValue('css_class')))
+                ? Tools::getValue('css_class')
+                : $obj->css_class,
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
                 : $obj->device,
@@ -534,6 +546,9 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'background' => (!empty(Tools::getValue('background')))
                 ? Tools::getValue('background')
+                : '',
+                'css_class' => (!empty(Tools::getValue('css_class')))
+                ? Tools::getValue('css_class')
                 : '',
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
@@ -615,6 +630,11 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Background color is not valid');
             }
+            if (Tools::getValue('css_class')
+                && !Validate::isString(Tools::getValue('css_class'))
+            ) {
+                $this->errors[] = $this->l('Custom class name is not valid');
+            }
             if (Tools::getValue('active')
                 && !Validate::isBool(Tools::getValue('active'))
             ) {
@@ -638,6 +658,7 @@ class AdminEverBlockController extends ModuleAdminController
             );
             $everblock_obj->position = (int) Tools::getValue('position');
             $everblock_obj->background =  pSQL(Tools::getValue('background'));
+            $everblock_obj->css_class =  pSQL(Tools::getValue('css_class'));
             $everblock_obj->device = (int) Tools::getValue('device');
             if (!Tools::getValue('groupBox')
                 || !Validate::isArrayWithIds(Tools::getValue('groupBox'))

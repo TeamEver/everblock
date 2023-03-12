@@ -31,6 +31,7 @@ class EverBlockClass extends ObjectModel
     public $device;
     public $groups;
     public $background;
+    public $css_class;
     public $id_shop;
     public $categories;
     public $date_start;
@@ -83,6 +84,12 @@ class EverBlockClass extends ObjectModel
                 'required' => false,
             ],
             'background' => [
+                'type' => self::TYPE_STRING,
+                'lang' => false,
+                'validate' => 'isColor',
+                'required' => false,
+            ],
+            'css_class' => [
                 'type' => self::TYPE_STRING,
                 'lang' => false,
                 'validate' => 'isColor',
@@ -151,16 +158,16 @@ class EverBlockClass extends ObjectModel
             $sql->orderBy('eb.position ASC');
 
             $allBlocks = Db::getInstance()->executeS($sql);
-            $now = date('Y-m-d');
+            $now = date('Y-m-d H:i:s');
             foreach ($allBlocks as $block) {
                 // Date start management
-                if ($block['date_start'] && $block['date_start'] !='0000-00-00') {
+                if ($block['date_start'] && $block['date_start'] != '0000-00-00 00:00:00') {
                     if ($block['date_start'] > $now) {
                         continue;
                     }
                 }
                 // Date end management
-                if ($block['date_end'] && $block['date_end'] !='0000-00-00') {
+                if ($block['date_end'] && $block['date_end'] != '0000-00-00 00:00:00') {
                     if ($block['date_end'] < $now) {
                         continue;
                     }
@@ -173,6 +180,12 @@ class EverBlockClass extends ObjectModel
                         continue;
                     }
                 }
+                Hook::exec('actionGetEverBlockBefore', [
+                    'id_product' => (int) $idHook,
+                    'id_product_attribute' => (int) $idLang,
+                    'id_shop' => (int) $idShop,
+                    'block' => &$block,
+                ]);
                 $return[] = $block;
             }
             Cache::store($cacheId, $return);
