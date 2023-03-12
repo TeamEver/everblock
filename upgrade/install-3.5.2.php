@@ -30,6 +30,11 @@ function upgrade_module_3_5_2()
         ADD COLUMN `background` varchar(255) DEFAULT NULL
         AFTER `position`
     ';
+    $sql[] =
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
+        ADD COLUMN `css_class` varchar(255) DEFAULT NULL
+        AFTER `position`
+    ';
     foreach ($sql as $s) {
         $result &= Db::getInstance()->execute($s);
     }
