@@ -32,7 +32,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.1.4';
+        $this->version = '4.2.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -141,6 +141,30 @@ class Everblock extends Module
 
     protected function checkHooks()
     {
+        // Hook actionGetEverBlockBefore
+        if (!Hook::getIdByName('actionGetEverBlockBefore')) {
+            $hook = new Hook();
+            $hook->name = 'actionGetEverBlockBefore';
+            $hook->title = 'Before block is rendered';
+            $hook->description = 'This hook triggers before block is rendered';
+            $hook->save();
+        }
+        // Hook actionEverBlockChangeShortcodeBefore
+        if (!Hook::getIdByName('actionEverBlockChangeShortcodeBefore')) {
+            $hook = new Hook();
+            $hook->name = 'actionEverBlockChangeShortcodeBefore';
+            $hook->title = 'Before block shortcodes are rendered';
+            $hook->description = 'This hook triggers before every block shortcode is rendered';
+            $hook->save();
+        }
+        // Hook actionEverBlockChangeShortcodeBefore
+        if (!Hook::getIdByName('actionEverBlockChangeShortcodeAfter')) {
+            $hook = new Hook();
+            $hook->name = 'actionEverBlockChangeShortcodeAfter';
+            $hook->title = 'After block shortcodes are rendered';
+            $hook->description = 'This hook triggers after every block shortcode is rendered';
+            $hook->save();
+        }
         $this->registerHook('header');
         $this->registerHook('actionAdminControllerSetMedia');
     }
@@ -328,11 +352,20 @@ class Everblock extends Module
         $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         $cssCode = Tools::getValue('EVERPSCSS');
         $jsCode = Tools::getValue('EVERPSJS');
+        // Compress CSS code
         $compressedCssCode = preg_replace(
-          array('/\s*(\w)\s*{\s*/','/\s*(\S*:)(\s*)([^;]*)(\s|\n)*;(\n|\s)*/','/\n/','/\s*}\s*/'), 
-          array('$1{ ','$1$3;',"",'} '),
-          $cssCode
+            [
+                '/\s*(\w)\s*{\s*/',
+                '/\s*(\S*:)(\s*)([^;]*)(\s|\n)*;(\n|\s)*/',
+                '/\n/',
+                '/\s*}\s*/',
+            ], 
+            [
+                '$1{ ','$1$3;',"",'} ',
+            ],
+            $cssCode
         );
+        // Compress JS code
         $compressedJsCode = $jsCode;
         $search = [
             '/\>[^\S ]+/s',
@@ -347,14 +380,25 @@ class Everblock extends Module
             '',
         ];
         $compressedJsCode = preg_replace($search, $replace, $compressedJsCode);
-
+        // Create CSS file if need
         $handle_css = fopen(
             $custom_css,
             'w+'
         );
         fclose($handle_css);
+        $handle_css = fopen(
+            $compressedCss,
+            'w+'
+        );
+        fclose($handle_css);
+        // Create JS file if need
         $handle_js = fopen(
             $custom_js,
+            'w+'
+        );
+        fclose($handle_js);
+        $handle_js = fopen(
+            $compressedJs,
             'w+'
         );
         fclose($handle_js);
