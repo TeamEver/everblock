@@ -27,6 +27,11 @@ function upgrade_module_3_5_2()
     $sql = [];
     $sql[] =
         'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
+        ADD COLUMN `device` int(10) unsigned NOT NULL DEFAULT 0
+        AFTER `only_category`
+    ';
+    $sql[] =
+        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
         ADD COLUMN `background` varchar(255) DEFAULT NULL
         AFTER `position`
     ';

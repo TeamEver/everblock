@@ -40,7 +40,7 @@ class AdminEverBlockController extends ModuleAdminController
             'module_link' => $module_link,
             'everblock_dir' => _MODULE_DIR_ . '/everblock/',
         ]);
-        $this->_select = 'h.name AS hname';
+        $this->_select = 'h.title AS hname';
 
         $this->_join =
             'LEFT JOIN `' . _DB_PREFIX_ . 'hook` h
@@ -193,7 +193,7 @@ class AdminEverBlockController extends ModuleAdminController
             (int)Tools::getValue('id_everblock')
         );
         $fields_form = [];
-        $hooks_list = Hook::getHooks(false, true);
+        $hooks_list = $this->getHooks(false, true);
         $categories_list = Category::getCategories(
             false,
             true,
@@ -257,7 +257,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'options' => [
                             'query' => $hooks_list,
                             'id' => 'id_hook',
-                            'name' => 'name',
+                            'name' => 'evername',
                         ],
                     ],
                     [
@@ -771,4 +771,32 @@ class AdminEverBlockController extends ModuleAdminController
         }
     }
 
+    /**
+     * Return Hooks List.
+     * @param bool $position
+     * @return array Hooks List
+     */
+    protected function getHooks($position = false, $only_display_hooks = false)
+    {
+        $return = [];
+        $hooks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            '
+            SELECT * FROM `' . _DB_PREFIX_ . 'hook` h
+            ' . ($position ? 'WHERE h.`position` = 1' : '') . '
+            ORDER BY `name`'
+        );
+
+        if ($only_display_hooks) {
+            $returnedHooks = array_filter($hooks, function ($hook) {
+                return Hook::isDisplayHookName($hook['name']);
+            });
+        } else {
+            $returnedHooks = $hooks;
+        }
+        foreach ($returnedHooks as $hook) {
+            $hook['evername'] = $hook['name'] . ' - ' . $hook['title'];
+            $return[] = $hook;
+        }
+        return $return;
+    }
 }

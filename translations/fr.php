@@ -49,6 +49,11 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_df48b0fa03947baf98b9ec
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_920bd1fb6d54c93fca528ce941464225'] = 'Accès aux groupes';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_4370d99e1582887e71a59c5524ac4657'] = 'Le bloc sera affiché uniquement  sur les groupes sélectionnés';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_30e03c5437690b217fc16fe93752c460'] = 'Merci de sélectionner au moins un groupe';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_271a8b794fa054ed69b311cb4ccbc00d'] = 'Couleur de fond du block';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_832f2efd87893914752e20e0366f24b1'] = 'Saisissez la couleur hexadécimale de fond du bloc';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_f1252d5ff7d9423a58a4bec68eb50e03'] = 'Laissez vide pour ne pas utiliser';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_8d7c2d267d89343e17605f7cca9cb93b'] = 'Class HTML personnalisée';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_d5b7a5686c84be69491508c06ea86ec5'] = 'Saisissez ici votre ou vos classes HTML personnalisées';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_9d1fac76d81f06ec83eee3a73073869e'] = 'Contenu du bloc HTML';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_d4bcf29f89eec8f89d2399bf4026d365'] = 'Merci de saisir le contenu de votre bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_93e32cd7f3ae7da22645c4a24a716aff'] = 'Le code HTML dépend également des réglages de votre boutique';
@@ -56,7 +61,6 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_517ebf75f85434d669c39d
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_fd704ea41268a7b760b8a234a6273c44'] = 'Saisissez un numéro de position du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c3bed604ee8b68cf22f2c70a12e44bf1'] = 'Les blocs seront ordonnés par position';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_4f102aa0276bbd9b1c2bf0257f371d08'] = 'Date de début d\'affichage du bloc';
-$_MODULE['<{everblock}prestashop>admineverblockcontroller_f1252d5ff7d9423a58a4bec68eb50e03'] = 'Laissez vide pour ne pas utiliser';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_d00ece8783a5f89ac941a4cda807c4f7'] = 'Date de fin d\'affichage du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_4d3d769b812b6faa6b76e1a8abaece2d'] = 'Actif';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_3f1a992a00a0e2abecbaed61d13a36c5'] = 'Activer ce bloc ?';
@@ -68,6 +72,8 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_dc072554aec608b9c6d476
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_b295772e411c3327fbdd3e4f368cb2b7'] = '\"Uniquement sur la home\" et \"Uniquement sur les catégories\" sont tous les deux sélectionnés ';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_7e8b62aa399a3eb3f8220a0cfd9e72c9'] = 'Les catégories ne sont pas valides';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c32d9968f3071dc2f7f55c8cf28ea48b'] = 'La position n\'est pas valide';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_2dfae56804a20b70fbf2bac261ae7ec0'] = 'La couleur de fond n\'est pas valide';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_1aac650841668d548bb9c02f02f4abca'] = 'Les class HTML personnalisées ne sont pas valides';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_5999ebfb5e6d9ab139865a400fc3324e'] = 'Activer n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_b207bf1f0294d535c352bfbcd82a4baa'] = 'Le type d\'appareil n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_5056d83dfa11a4fcf25b0eec55bf4817'] = 'Une erreur est survenue. Impossible de supprimer l\'objet';

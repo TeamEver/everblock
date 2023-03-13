@@ -32,7 +32,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.0.1';
+        $this->version = '4.1.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -53,16 +53,8 @@ class Everblock extends Module
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
         }
-        if (_PS_VERSION_ < '1.6.1.6') {
-            if ($this->isDisplayHookName(lcfirst(str_replace('hook', '', $method)))
-              && strpos($method, 'display') !== false
-            ) {
-                return $this->everHook($method, $args);
-            }
-        } else {
-            if (Hook::isDisplayHookName(lcfirst(str_replace('hook', '', $method)))) {
-                return $this->everHook($method, $args);
-            }
+        if (Hook::isDisplayHookName(lcfirst(str_replace('hook', '', $method)))) {
+            return $this->everHook($method, $args);
         }
     }
 
@@ -83,6 +75,22 @@ class Everblock extends Module
             $hook->name = 'actionGetEverBlockBefore';
             $hook->title = 'Before block is rendered';
             $hook->description = 'This hook triggers before block is rendered';
+            $hook->save();
+        }
+        // Hook actionEverBlockChangeShortcodeBefore
+        if (!Hook::getIdByName('actionEverBlockChangeShortcodeBefore')) {
+            $hook = new Hook();
+            $hook->name = 'actionEverBlockChangeShortcodeBefore';
+            $hook->title = 'Before block shortcodes are rendered';
+            $hook->description = 'This hook triggers before every block shortcode is rendered';
+            $hook->save();
+        }
+        // Hook actionEverBlockChangeShortcodeBefore
+        if (!Hook::getIdByName('actionEverBlockChangeShortcodeAfter')) {
+            $hook = new Hook();
+            $hook->name = 'actionEverBlockChangeShortcodeAfter';
+            $hook->title = 'After block shortcodes are rendered';
+            $hook->description = 'This hook triggers after every block shortcode is rendered';
             $hook->save();
         }
         return (parent::install()
@@ -214,76 +222,76 @@ class Everblock extends Module
     }
     protected function getConfigForm()
     {
-        return array(
-            'form' => array(
-                'legend' => array(
-                'title' => $this->l('Settings'),
-                'icon' => 'icon-smile',
-                ),
-                'input' => array(
-                    array(
+        return [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('Settings'),
+                    'icon' => 'icon-smile',
+                ],
+                'input' => [
+                    [
                         'type' => 'switch',
                         'label' => $this->l('Empty cache on saving ?'),
                         'desc' => $this->l('Set yes to empty cache on saving'),
                         'hint' => $this->l('Else cache will not be emptied'),
                         'name' => 'EVERPSCSS_CACHE',
                         'is_bool' => true,
-                        'values' => array(
-                            array(
+                        'values' => [
+                            [
                                 'id' => 'active_on',
                                 'value' => true,
-                                'label' => $this->l('Yes')
-                            ),
-                            array(
+                                'label' => $this->l('Yes'),
+                            ],
+                            [
                                 'id' => 'active_off',
                                 'value' => false,
-                                'label' => $this->l('No')
-                            )
-                        ),
-                    ),
-                    array(
-                        'type' => 'textarea', // y'a plusieurs types existants : select, multiple select, text, switch, radio, etc
-                        'label' => $this->l('Custom CSS'), // Le titre du champ
-                        'desc' => $this->l('Add here your custom CSS rules'), // Description du champ
-                        'hint' => $this->l('Webdesigners here can manage CSS rules'), // Le "tip" du champ
-                        'name' => 'EVERPSCSS', // Cette information unique est celle qui nous permet de détecter et d'enregistrer des valeurs. Elle est donc très importante et doit être unique
-                    ),
-                    array(
+                                'label' => $this->l('No'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'textarea',
+                        'label' => $this->l('Custom CSS'),
+                        'desc' => $this->l('Add here your custom CSS rules'),
+                        'hint' => $this->l('Webdesigners here can manage CSS rules'),
+                        'name' => 'EVERPSCSS',
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('Custom Javascript'),
                         'desc' => $this->l('Add here your custom Javascript rules'),
                         'hint' => $this->l('Webdesigners here can manage Javascript rules'),
                         'name' => 'EVERPSJS',
-                    ),
-                    array(
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('Custom CSS links'),
                         'desc' => $this->l('Add here your custom CSS links, one per line'),
                         'hint' => $this->l('Add one link per line, must be CSS'),
                         'name' => 'EVERPSCSS_LINKS',
-                    ),
-                    array(
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('Custom JS links'),
                         'desc' => $this->l('Add here your custom JS links, one per line'),
                         'hint' => $this->l('Add one link per line, must be JS'),
                         'name' => 'EVERPSJS_LINKS',
-                    ),
-                ),
-                'buttons' => array(
-                    'emptyCache' => array(
+                    ],
+                ],
+                'buttons' => [
+                    'emptyCache' => [
                         'name' => 'submitEmptyCache',
                         'type' => 'submit',
                         'class' => 'btn btn-info pull-right',
                         'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Empty cache')
-                    ),
-                ),
-                'submit' => array(
+                        'title' => $this->l('Empty cache'),
+                    ],
+                ],
+                'submit' => [
                     'title' => $this->l('Save'),
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
     }
 
     protected function getConfigFormValues()
@@ -308,15 +316,12 @@ class Everblock extends Module
         if (Tools::isSubmit('submit' . $this->name . 'Module')) {
         }
     }
-    /**
-     * C'est cette méthode qui enregistre le formulaire, à supposer qu'on n'ait aucune erreur
-     * On récupère les infos du formulaire en faisant Tools::getValue('EVERPSCSS') par exemple
-     * Ce qui récupère ce qui a été mis dans le champ EVERPSCSS, tout simplement
-     */
+
     protected function postProcess()
     {
-        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom.css';
-        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom.js';
+        $idShop = Context::getContext()->shop->id;
+        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom' . $idShop . '.css';
+        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
         $handle_css = fopen(
             $custom_css,
             'w+'
@@ -332,12 +337,10 @@ class Everblock extends Module
             'EVERPSCSS_CACHE',
             Tools::getValue('EVERPSCSS_CACHE')
         );
-        // Là par exemplte j'enregistre dans un fichier les infos reçus du champ EVERPSCSS
         file_put_contents(
             $custom_css,
             Tools::getValue('EVERPSCSS')
         );
-        // Là par exemplte j'enregistre dans un fichier les infos reçus du champ EVERPSJS
         file_put_contents(
             $custom_js,
             Tools::getValue('EVERPSJS')
@@ -376,16 +379,8 @@ class Everblock extends Module
 
     public function everHook($method, $args)
     {
-        if (_PS_VERSION_ < '1.6.1.6') {
-            if (!$this->isDisplayHookName(lcfirst(str_replace('hook', '', $method)))
-              || !strpos($method, 'display') !== false
-            ) {
-                return;
-            }
-        } else {
-            if (!Hook::isDisplayHookName(lcfirst(str_replace('hook', '', $method)))) {
-                return;
-            }
+        if (!Hook::isDisplayHookName(lcfirst(str_replace('hook', '', $method)))) {
+            return;
         }
         $controllerTypes = [
             'admin',
@@ -399,84 +394,88 @@ class Everblock extends Module
         }
         // Get current hook name based on method name, first letter to lowercase
         $id_hook = Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
-        if (Context::getContext()->controller->controller_type === 'front') {
-            if (Context::getContext()->customer->id) {
-                $id_entity = (int)Context::getContext()->customer->id;
-            } else {
-                $id_entity = false;
-            }
-        } else {
-            if (Context::getContext()->controller->controller_type === 'admin'
-                || Context::getContext()->controller->controller_type === 'moduleadmin'
-            ) {
-                $id_entity = (int) Context::getContext()->employee->id;
-            } else {
-                $id_entity = false;
-            }
-        }
-        $everblock = EverblockClass::getBlocks(
-            (int) $id_hook,
-            (int) $this->context->language->id,
-            (int) $this->context->shop->id
-        );
-        $currentBlock = [];
-        foreach ($everblock as $block) {
-            // Check device
-            if ((int) $block['device'] > 0
-                && (int) $this->context->getDevice() != (int) $block['device']
-            ) {
-                continue;
-            }
-            // Is block only for homepage ?
-            if ((bool)$block['only_home'] === true
-                && $controller_name != 'index'
-            ) {
-                continue;
-            }
-            // Only category management
-            if ((bool)$block['only_category'] === true
-                && $controller_name == 'index'
-            ) {
-                continue;
-            }
-            $continue = false;
-            if ((bool)$block['only_category'] === true) {
-                $categories = json_decode($block['categories']);
-                if (Tools::getValue('id_category')
-                    && !in_array((int) Tools::getValue('id_category'), $categories)
-                ) {
-                    $continue = true;
+        $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook . '-' . date('Ymd'));
+        if (!$this->isCached('everblock.tpl', $cacheId)) {
+            if (Context::getContext()->controller->controller_type === 'front') {
+                if (Context::getContext()->customer->id) {
+                    $id_entity = (int)Context::getContext()->customer->id;
+                } else {
+                    $id_entity = false;
                 }
-                if (Tools::getValue('id_product')) {
-                    $product = new Product(
-                        (int) Tools::getValue('id_product')
-                    );
-                    if (!in_array((int) $product->id_category_default, $categories)) {
+            } else {
+                if (Context::getContext()->controller->controller_type === 'admin'
+                    || Context::getContext()->controller->controller_type === 'moduleadmin'
+                ) {
+                    $id_entity = (int) Context::getContext()->employee->id;
+                } else {
+                    $id_entity = false;
+                }
+            }
+            $everblock = EverblockClass::getBlocks(
+                (int) $id_hook,
+                (int) $this->context->language->id,
+                (int) $this->context->shop->id
+            );
+            $currentBlock = [];
+            foreach ($everblock as $block) {
+                // Check device
+                if ((int) $block['device'] > 0
+                    && (int) $this->context->getDevice() != (int) $block['device']
+                ) {
+                    continue;
+                }
+                // Is block only for homepage ?
+                if ((bool)$block['only_home'] === true
+                    && $controller_name != 'index'
+                ) {
+                    continue;
+                }
+                // Only category management
+                if ((bool)$block['only_category'] === true
+                    && $controller_name == 'index'
+                ) {
+                    continue;
+                }
+                $continue = false;
+                if ((bool)$block['only_category'] === true) {
+                    $categories = json_decode($block['categories']);
+                    if (Tools::getValue('id_category')
+                        && !in_array((int) Tools::getValue('id_category'), $categories)
+                    ) {
                         $continue = true;
                     }
+                    if (Tools::getValue('id_product')) {
+                        $product = new Product(
+                            (int) Tools::getValue('id_product')
+                        );
+                        if (!in_array((int) $product->id_category_default, $categories)) {
+                            $continue = true;
+                        }
+                    }
                 }
+                if (isset($continue) && (bool)$continue === true) {
+                    continue;
+                }
+                $block['content'] = $this->changeShortcodes(
+                    $block['content'],
+                    $id_entity
+                );
+                $currentBlock[] = [
+                    'block' => $block,
+                ];
             }
-            if (isset($continue) && (bool)$continue === true) {
-                continue;
-            }
-            $block['content'] = $this->changeShortcodes(
-                $block['content'],
-                $id_entity
-            );
-            $currentBlock[] = [
-                'block' => $block,
-            ];
+            $this->smarty->assign([
+                'everhook' => trim($method),
+                'everblock' => $currentBlock,
+                'args' => $args,
+            ]);
         }
-        $this->smarty->assign([
-            'everhook' => trim($method),
-            'everblock' => $currentBlock,
-            'args' => $args,
-        ]);
-        return $this->display(__FILE__, 'everblock.tpl');
+        return $this->display(__FILE__, 'everblock.tpl', $cacheId);
     }
 
     public function hookHeader()
     {
+        $idShop = Context::getContext()->shop->id;
         $this->context->controller->addCss(
             _PS_MODULE_DIR_ . $this->name . '/views/css/everblock.css',
             'all'
@@ -485,13 +484,13 @@ class Everblock extends Module
             _PS_MODULE_DIR_ . $this->name . '/views/js/everblock.js',
             'all'
         );
-        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom.css';
-        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom.js';
+        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom' . $idShop . '.css';
+        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
         if (file_exists($custom_css)) {
-            $this->context->controller->addCSS($this->_path . '/views/css/custom.css');
+            $this->context->controller->addCSS($this->_path . '/views/css/custom' . $idShop . '.css');
         }
         if (file_exists($custom_js)) {
-            $this->context->controller->addJS($this->_path . '/views/js/custom.js');
+            $this->context->controller->addJS($this->_path . '/views/js/custom' . $idShop . '.js');
         }
     }
 
@@ -561,6 +560,12 @@ class Everblock extends Module
             'NULL' => '', // Useful : remove empty strings in case of NULL
             'null' => '', // Useful : remove empty strings in case of null
         ];
+        Hook::exec('actionEverBlockChangeShortcodeBefore', [
+            'message' => &$message,
+            'id_entity' => (int) $id_entity,
+            'id_shop' => (int) Context::getContext()->shop->id,
+            'id_lang' => (int) Context::getContext()->language->id,
+        ]);
         if ($id_entity) {
             $shortcodes = array_merge($entityShortcodes, $defaultShortcodes);
         } else {
@@ -569,17 +574,13 @@ class Everblock extends Module
         foreach ($shortcodes as $key => $value) {
             $message = str_replace($key, $value, $message);
         }
+        Hook::exec('actionEverBlockChangeShortcodeAfter', [
+            'message' => &$message,
+            'id_entity' => (int) $id_entity,
+            'id_shop' => (int) Context::getContext()->shop->id,
+            'id_lang' => (int) Context::getContext()->language->id,
+        ]);
         return $message;
-    }
-
-    private function isDisplayHookName($hook_name)
-    {
-        if ($hook_name === 'header' || $hook_name === 'displayheader') {
-            // this hook is to add resources to the <head> section of the page
-            // so it doesn't display anything by itself
-            return false;
-        }
-        return strpos($hook_name, 'display') === 0;
     }
 
     public function checkLatestEverModuleVersion($module, $version)
