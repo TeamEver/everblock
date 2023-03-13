@@ -25,6 +25,7 @@ class EverBlockClass extends ObjectModel
     public $id_everblock;
     public $name;
     public $content;
+    public $custom_code;
     public $only_home;
     public $only_category;
     public $id_hook;
@@ -131,8 +132,71 @@ class EverBlockClass extends ObjectModel
                 'validate' => 'isCleanHtml',
                 'required' => false,
             ],
+            'custom_code' => [
+                'type' => self::TYPE_HTML,
+                'lang' => true,
+                'validate' => 'isAnything',
+                'required' => false,
+            ],
         ],
     ];
+
+    public static function getHeaderBlocks($idLang, $idShop)
+    {
+        $cacheId = 'EverBlockClass::getHeaderBlocks_'
+        . (int) $idLang
+        . '_'
+        . (int) $idShop;
+        if (!Cache::isStored($cacheId)) {
+            $return = [];
+            $customerGroups = Customer::getGroupsStatic(
+                (int) Context::getContext()->customer->id
+            );
+            $sql = new DbQuery;
+            $sql->select('*');
+            $sql->from('everblock', 'eb');
+            $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
+            $sql->where('ebl.id_lang = ' . (int) $idLang);
+            $sql->where('eb.id_shop = ' . (int) $idShop);
+            $sql->where('eb.active = 1');
+            $sql->where('ebl.custom_code IS NOT NULL');
+            $sql->orderBy('eb.position ASC');
+
+            $allBlocks = Db::getInstance()->executeS($sql);
+            $now = date('Y-m-d H:i:s');
+            foreach ($allBlocks as $block) {
+                // Date start management
+                if ($block['date_start'] && $block['date_start'] != '0000-00-00 00:00:00') {
+                    if ($block['date_start'] > $now) {
+                        continue;
+                    }
+                }
+                // Date end management
+                if ($block['date_end'] && $block['date_end'] != '0000-00-00 00:00:00') {
+                    if ($block['date_end'] < $now) {
+                        continue;
+                    }
+                }
+                // Allowed groups
+                $allowedGroups = $block['groups'];
+                if ($allowedGroups) {
+                    $allowedGroups = json_decode($allowedGroups);
+                    if (!array_intersect($allowedGroups, $customerGroups)) {
+                        continue;
+                    }
+                }
+                Hook::exec('actionGetEverBlockBefore', [
+                    'id_lang' => (int) $idLang,
+                    'id_shop' => (int) $idShop,
+                    'block' => &$block,
+                ]);
+                $return[] = $block;
+            }
+            Cache::store($cacheId, $return);
+            return $return;
+        }
+        return Cache::retrieve($cacheId);
+    }
 
     public static function getBlocks($idHook, $idLang, $idShop)
     {
@@ -181,8 +245,8 @@ class EverBlockClass extends ObjectModel
                     }
                 }
                 Hook::exec('actionGetEverBlockBefore', [
-                    'id_product' => (int) $idHook,
-                    'id_product_attribute' => (int) $idLang,
+                    'id_hook' => (int) $idHook,
+                    'id_lang' => (int) $idLang,
                     'id_shop' => (int) $idShop,
                     'block' => &$block,
                 ]);

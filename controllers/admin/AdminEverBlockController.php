@@ -377,6 +377,16 @@ class AdminEverBlockController extends ModuleAdminController
                         'autoload_rte' => true,
                     ],
                     [
+                        'type' => 'textarea',
+                        'label' => $this->l('Custom code on head section'),
+                        'desc' => $this->l('Please type your custom code for head section'),
+                        'hint' => $this->l('Leave empty for no use'),
+                        'required' => false,
+                        'name' => 'custom_code',
+                        'lang' => true,
+                        'autoload_rte' => false,
+                    ],
+                    [
                         'type' => 'text',
                         'label' => $this->l('Block position'),
                         'desc' => $this->l('Enter block position number'),
@@ -474,6 +484,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'content' => (!empty(Tools::getValue('content')))
                 ? Tools::getValue('content')
                 : $obj->content,
+                'custom_code' => (!empty(Tools::getValue('custom_code')))
+                ? Tools::getValue('custom_code')
+                : $obj->custom_code,
                 'categories[]' => (!empty(Tools::getValue('categories')))
                 ? Tools::getValue('categories')
                 : json_decode($obj->categories),
@@ -511,8 +524,10 @@ class AdminEverBlockController extends ModuleAdminController
         } else {
             $categories = [];
             $content = [];
+            $custom_code = [];
             foreach (Language::getLanguages(false) as $language) {
                 $content[$language['id_lang']] = '';
+                $custom_code[$language['id_lang']] = '';
             }
             foreach ($groups as $group) {
                 $formValues[] = [
@@ -532,6 +547,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'content' => (!empty(Tools::getValue('content')))
                 ? Tools::getValue('content')
                 : $content,
+                'custom_code' => (!empty(Tools::getValue('custom_code')))
+                ? Tools::getValue('custom_code')
+                : $custom_code,
                 'categories[]' => (!empty(Tools::getValue('categories')))
                 ? Tools::getValue('categories')
                 :'',
@@ -684,6 +702,7 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock = Module::getInstanceByName('everblock');
             foreach (Language::getLanguages(false) as $language) {
                 $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_' . $language['id_lang']);
+                $everblock_obj->custom_code[$language['id_lang']] = Tools::getValue('custom_code_' . $language['id_lang']);
             }
             if (!count($this->errors)) {
                 $everblock_obj->save();
@@ -756,6 +775,7 @@ class AdminEverBlockController extends ModuleAdminController
         $newBlock = new EverBlockClass();
         $newBlock->name = $everBlock->name;
         $newBlock->content = $everBlock->content;
+        $newBlock->custom_code = $everBlock->custom_code;
         $newBlock->only_home = $everBlock->only_home;
         $newBlock->only_category = $everBlock->only_category;
         $newBlock->id_hook = $everBlock->id_hook;

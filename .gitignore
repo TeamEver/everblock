@@ -1,2 +1,6 @@
 config*.xml
 *.webp
+views/css/custom-compressed1.css
+views/css/custom1.css
+views/js/custom-compressed1.js
+views/js/custom1.js

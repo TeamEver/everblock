@@ -32,7 +32,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.1.2';
+        $this->version = '4.1.4';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -296,11 +296,12 @@ class Everblock extends Module
 
     protected function getConfigFormValues()
     {
+        $idShop = Context::getContext()->shop->id;
         $custom_css = Tools::file_get_contents(
-            _PS_MODULE_DIR_.'/' . $this->name . '/views/css/custom.css'
+            _PS_MODULE_DIR_.'/' . $this->name . '/views/css/custom' . $idShop . '.css'
         );
         $custom_js = Tools::file_get_contents(
-            _PS_MODULE_DIR_.'/' . $this->name . '/views/js/custom.js'
+            _PS_MODULE_DIR_.'/' . $this->name . '/views/js/custom' . $idShop . '.js'
         );
         return array(
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
@@ -322,6 +323,31 @@ class Everblock extends Module
         $idShop = Context::getContext()->shop->id;
         $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom' . $idShop . '.css';
         $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
+        // Compressed
+        $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
+        $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
+        $cssCode = Tools::getValue('EVERPSCSS');
+        $jsCode = Tools::getValue('EVERPSJS');
+        $compressedCssCode = preg_replace(
+          array('/\s*(\w)\s*{\s*/','/\s*(\S*:)(\s*)([^;]*)(\s|\n)*;(\n|\s)*/','/\n/','/\s*}\s*/'), 
+          array('$1{ ','$1$3;',"",'} '),
+          $cssCode
+        );
+        $compressedJsCode = $jsCode;
+        $search = [
+            '/\>[^\S ]+/s',
+            '/[^\S ]+\</s',
+            '/(\s)+/s',
+            '#[\r\n]+#',   
+        ];
+        $replace = [
+            '>',
+            '<',
+            '\\1',
+            '',
+        ];
+        $compressedJsCode = preg_replace($search, $replace, $compressedJsCode);
+
         $handle_css = fopen(
             $custom_css,
             'w+'
@@ -339,11 +365,19 @@ class Everblock extends Module
         );
         file_put_contents(
             $custom_css,
-            Tools::getValue('EVERPSCSS')
+            $cssCode
         );
         file_put_contents(
             $custom_js,
-            Tools::getValue('EVERPSJS')
+            $jsCode
+        );
+        file_put_contents(
+            $compressedCss,
+            $compressedCssCode
+        );
+        file_put_contents(
+            $compressedJs,
+            $compressedJsCode
         );
         Configuration::updateValue(
             'EVERPSCSS_LINKS',
@@ -366,15 +400,12 @@ class Everblock extends Module
         $this->postSuccess[] = $this->l('Cache has been cleared');
     }
 
-    public function hookDisplayBackOfficeHeader()
-    {
-        return $this->hookActionAdminControllerSetMedia();
-    }
-
     public function hookActionAdminControllerSetMedia()
     {
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
-        $currentConfigure = Tools::getValue('configure');
+        if (Tools::getValue('id_everblock')) {
+            $this->context->controller->addJs($this->_path . 'views/js/admin.js');
+        }
     }
 
     public function everHook($method, $args)
@@ -475,7 +506,7 @@ class Everblock extends Module
 
     public function hookHeader()
     {
-        $idShop = Context::getContext()->shop->id;
+        $idShop = (int) Context::getContext()->shop->id;
         $this->context->controller->addCss(
             _PS_MODULE_DIR_ . $this->name . '/views/css/everblock.css',
             'all'
@@ -484,14 +515,71 @@ class Everblock extends Module
             _PS_MODULE_DIR_ . $this->name . '/views/js/everblock.js',
             'all'
         );
-        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom' . $idShop . '.css';
-        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
+        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
+        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         if (file_exists($custom_css)) {
-            $this->context->controller->addCSS($this->_path . '/views/css/custom' . $idShop . '.css');
+            $this->context->controller->addCSS($this->_path . '/views/css/custom-compressed' . $idShop . '.css');
         }
         if (file_exists($custom_js)) {
-            $this->context->controller->addJS($this->_path . '/views/js/custom' . $idShop . '.js');
+            $this->context->controller->addJS($this->_path . '/views/js/custom-compressed' . $idShop . '.js');
         }
+        // Get current hook name based on method name, first letter to lowercase
+        $cacheId = $this->getCacheId($this->name . '-custom-header-' . date('Ymd'));
+        if (!$this->isCached('everblockheader.tpl', $cacheId)) {
+            $everblock = EverblockClass::getHeaderBlocks(
+                (int) $this->context->language->id,
+                (int) $this->context->shop->id
+            );
+            $currentBlock = [];
+            foreach ($everblock as $block) {
+                // Check device
+                if ((int) $block['device'] > 0
+                    && (int) $this->context->getDevice() != (int) $block['device']
+                ) {
+                    continue;
+                }
+                // Is block only for homepage ?
+                if ((bool)$block['only_home'] === true
+                    && $controller_name != 'index'
+                ) {
+                    continue;
+                }
+                // Only category management
+                if ((bool)$block['only_category'] === true
+                    && $controller_name == 'index'
+                ) {
+                    continue;
+                }
+                $continue = false;
+                if ((bool)$block['only_category'] === true) {
+                    $categories = json_decode($block['categories']);
+                    if (Tools::getValue('id_category')
+                        && !in_array((int) Tools::getValue('id_category'), $categories)
+                    ) {
+                        $continue = true;
+                    }
+                    if (Tools::getValue('id_product')) {
+                        $product = new Product(
+                            (int) Tools::getValue('id_product')
+                        );
+                        if (!in_array((int) $product->id_category_default, $categories)) {
+                            $continue = true;
+                        }
+                    }
+                }
+                if (isset($continue) && (bool)$continue === true) {
+                    continue;
+                }
+                $currentBlock[] = [
+                    'block' => $block,
+                ];
+            }
+            $this->smarty->assign([
+                'everhook' => 'header',
+                'everblock' => $currentBlock,
+            ]);
+        }
+        return $this->display(__FILE__, 'everblockheader.tpl', $cacheId);
     }
 
     private function changeShortcodes($message, $id_entity)

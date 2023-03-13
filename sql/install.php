@@ -46,5 +46,6 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_lang` (
     	`id_everblock` int(10) unsigned NOT NULL,
         `id_lang` int(10) unsigned NOT NULL,
     	`content` text DEFAULT NULL,
+        `custom_code` text DEFAULT NULL,
     	PRIMARY KEY (`id_everblock`, `id_lang`)
     ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';
