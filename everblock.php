@@ -32,7 +32,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.2.3';
+        $this->version = '4.2.4';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -760,7 +760,7 @@ class Everblock extends Module
         ];
 
         foreach ($everblockColumns as $column => $definition) {
-            $columnExists = Db::getInstance()->getValue('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'everblock` LIKE "' . pSQL($column) . '"');
+            $columnExists = Db::getInstance()->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock`');
             if (!$columnExists) {
                 $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock` ADD `' . pSQL($column) . '` ' . pSQL($definition);
                 Db::getInstance()->execute($addColumnQuery);
@@ -776,7 +776,7 @@ class Everblock extends Module
         ];
 
         foreach ($everblockLangColumns as $column => $definition) {
-            $columnExists = Db::getInstance()->getValue('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'everblock_lang` LIKE "' . pSQL($column) . '"');
+            $columnExists = Db::getInstance()->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_lang`');
             if (!$columnExists) {
                 $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_lang` ADD `' . pSQL($column) . '` ' . pSQL($definition);
                 Db::getInstance()->execute($addColumnQuery);
