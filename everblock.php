@@ -32,7 +32,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.2.2';
+        $this->version = '4.2.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -354,33 +354,11 @@ class Everblock extends Module
         $cssCode = Tools::getValue('EVERPSCSS');
         $jsCode = Tools::getValue('EVERPSJS');
         // Compress CSS code
-        $compressedCssCode = preg_replace(
-            [
-                '/\s*(\w)\s*{\s*/',
-                '/\s*(\S*:)(\s*)([^;]*)(\s|\n)*;(\n|\s)*/',
-                '/\n/',
-                '/\s*}\s*/',
-            ], 
-            [
-                '$1{ ','$1$3;',"",'} ',
-            ],
+        $compressedCssCode = $this->compressCSSCode(
             $cssCode
         );
         // Compress JS code
-        $compressedJsCode = $jsCode;
-        $search = [
-            '/\>[^\S ]+/s',
-            '/[^\S ]+\</s',
-            '/(\s)+/s',
-            '#[\r\n]+#',   
-        ];
-        $replace = [
-            '>',
-            '<',
-            '\\1',
-            '',
-        ];
-        $compressedJsCode = preg_replace($search, $replace, $compressedJsCode);
+        $compressedJsCode = $this->compressJsCode($jsCode);
         // Create CSS file if need
         $handle_css = fopen(
             $custom_css,
@@ -470,7 +448,7 @@ class Everblock extends Module
         }
         // Get current hook name based on method name, first letter to lowercase
         $id_hook = Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
-        $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook . '-' . date('Ymd'));
+        $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook);
         if (!$this->isCached('everblock.tpl', $cacheId)) {
             if (Context::getContext()->controller->controller_type === 'front') {
                 if (Context::getContext()->customer->id) {
@@ -534,7 +512,7 @@ class Everblock extends Module
                 }
                 $block['content'] = $this->changeShortcodes(
                     $block['content'],
-                    $id_entity
+                    isset($id_entity) ? $id_entity : false
                 );
                 $currentBlock[] = [
                     'block' => $block,
@@ -782,9 +760,9 @@ class Everblock extends Module
         ];
 
         foreach ($everblockColumns as $column => $definition) {
-            $columnExists = Db::getInstance()->getValue('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'everblock` LIKE "' . $column . '"');
+            $columnExists = Db::getInstance()->getValue('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'everblock` LIKE "' . pSQL($column) . '"');
             if (!$columnExists) {
-                $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock` ADD `' . $column . '` ' . $definition;
+                $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock` ADD `' . pSQL($column) . '` ' . pSQL($definition);
                 Db::getInstance()->execute($addColumnQuery);
             }
         }
@@ -798,11 +776,35 @@ class Everblock extends Module
         ];
 
         foreach ($everblockLangColumns as $column => $definition) {
-            $columnExists = Db::getInstance()->getValue('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'everblock_lang` LIKE "' . $column . '"');
+            $columnExists = Db::getInstance()->getValue('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'everblock_lang` LIKE "' . pSQL($column) . '"');
             if (!$columnExists) {
-                $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_lang` ADD `' . $column . '` ' . $definition;
+                $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_lang` ADD `' . pSQL($column) . '` ' . pSQL($definition);
                 Db::getInstance()->execute($addColumnQuery);
             }
         }
+    }
+
+    protected function compressCSSCode($css)
+    {
+      // Supprime les commentaires
+      $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
+      // Supprime les espaces inutiles
+      $css = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $css);
+      // Remplace les séparateurs de déclarations par des points-virgules
+      $css = str_replace(';}', '}', $css);
+      // Supprime les espaces inutiles entre les propriétés et les valeurs
+      $css = preg_replace('/[\s]*:[\s]*(.*?)[\s]*;/', ':$1;', $css);
+      return $css;
+    }
+
+    protected function compressJsCode($code)
+    {
+      // Supprimer les commentaires
+      $code = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $code);
+
+      // Supprimer les espaces inutiles
+      $code = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $code);
+
+      return $code;
     }
 }
