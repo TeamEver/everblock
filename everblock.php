@@ -32,7 +32,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.2.1';
+        $this->version = '4.2.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -171,6 +171,7 @@ class Everblock extends Module
 
     public function getContent()
     {
+        $this->checkAndFixDatabase();
         $this->checkHooks();
         $this->html = '';
         if (((bool)Tools::isSubmit('submit' . $this->name . 'Module')) == true) {
@@ -739,5 +740,81 @@ class Everblock extends Module
             return true;
         }
         return false;
+    }
+
+    protected function checkAndFixDatabase() {
+        // Requêtes pour créer les tables
+        $createEverblockTable = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
+            `id_everblock` int(10) unsigned NOT NULL AUTO_INCREMENT,
+            `name` text NOT NULL,
+            `id_hook` int(10) unsigned NOT NULL,
+            `only_home` int(10) unsigned DEFAULT NULL,
+            `only_category` int(10) unsigned DEFAULT NULL,
+            `device` int(10) unsigned NOT NULL DEFAULT 0,
+            `id_shop` int(10) unsigned NOT NULL,
+            `position` int(10) unsigned DEFAULT 0,
+            `categories` text DEFAULT NULL,
+            `groups` text DEFAULT NULL,
+            `background` varchar(255) DEFAULT NULL,
+            `css_class` varchar(255) DEFAULT NULL,
+            `date_start` DATETIME DEFAULT NULL,
+            `date_end` DATETIME DEFAULT NULL,
+            `active` int(10) unsigned NOT NULL,
+            PRIMARY KEY (`id_everblock`)
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
+
+        $createEverblockLangTable = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_lang` (
+            `id_everblock` int(10) unsigned NOT NULL,
+            `id_lang` int(10) unsigned NOT NULL,
+            `content` text DEFAULT NULL,
+            `custom_code` text DEFAULT NULL,
+            PRIMARY KEY (`id_everblock`, `id_lang`)
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
+
+        // Exécute les requêtes pour créer les tables si elles n'existent pas
+        Db::getInstance()->execute($createEverblockTable);
+        Db::getInstance()->execute($createEverblockLangTable);
+        // Vérifie et ajoute les colonnes manquantes pour la table 'everblock'
+        $everblockColumns = [
+            'id_everblock' => 'int(10) unsigned NOT NULL AUTO_INCREMENT',
+            'name' => 'text NOT NULL',
+            'id_hook' => 'int(10) unsigned NOT NULL',
+            'only_home' => 'int(10) unsigned DEFAULT NULL',
+            'only_category' => 'int(10) unsigned DEFAULT NULL',
+            'device' => 'int(10) unsigned NOT NULL DEFAULT 0',
+            'id_shop' => 'int(10) unsigned NOT NULL',
+            'position' => 'int(10) unsigned DEFAULT 0',
+            'categories' => 'text DEFAULT NULL',
+            'groups' => 'text DEFAULT NULL',
+            'background' => 'varchar(255) DEFAULT NULL',
+            'css_class' => 'varchar(255) DEFAULT NULL',
+            'date_start' => 'DATETIME DEFAULT NULL',
+            'date_end' => 'DATETIME DEFAULT NULL',
+            'active' => 'int(10) unsigned NOT NULL'
+        ];
+
+        foreach ($everblockColumns as $column => $definition) {
+            $columnExists = Db::getInstance()->getValue('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'everblock` LIKE "' . $column . '"');
+            if (!$columnExists) {
+                $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock` ADD `' . $column . '` ' . $definition;
+                Db::getInstance()->execute($addColumnQuery);
+            }
+        }
+
+        // Vérifie et ajoute les colonnes manquantes pour la table 'everblock_lang'
+        $everblockLangColumns = [
+            'id_everblock' => 'int(10) unsigned NOT NULL',
+            'id_lang' => 'int(10) unsigned NOT NULL',
+            'content' => 'text DEFAULT NULL',
+            'custom_code' => 'text DEFAULT NULL'
+        ];
+
+        foreach ($everblockLangColumns as $column => $definition) {
+            $columnExists = Db::getInstance()->getValue('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'everblock_lang` LIKE "' . $column . '"');
+            if (!$columnExists) {
+                $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_lang` ADD `' . $column . '` ' . $definition;
+                Db::getInstance()->execute($addColumnQuery);
+            }
+        }
     }
 }
