@@ -93,7 +93,7 @@ class EverBlockClass extends ObjectModel
             'css_class' => [
                 'type' => self::TYPE_STRING,
                 'lang' => false,
-                'validate' => 'isColor',
+                'validate' => 'isString',
                 'required' => false,
             ],
             'id_shop' => [

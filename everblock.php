@@ -580,6 +580,13 @@ class Everblock extends Module
                     }
                 }
                 if (!$continue) {
+                    if (Context::getContext()->controller->controller_type == 'admin'
+                        || Context::getContext()->controller->controller_type == 'moduleadmin'
+                    ) {
+                        $id_entity = Context::getContext()->employee->id;
+                    } else {
+                        $id_entity = Context::getContext()->customer->id;
+                    }
                     $block['content'] = $this->changeShortcodes($block['content'], $id_entity);
                     $currentBlock[] = [
                         'block' => $block,
