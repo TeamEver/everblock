@@ -198,19 +198,14 @@ class EverBlockClass extends ObjectModel
         return Cache::retrieve($cacheId);
     }
 
-    public static function getBlocks($idHook, $idLang, $idShop)
+    public static function getBlocks(int $idHook, int $idLang, int $idShop): array
     {
-        $cacheId = 'EverBlockClass::getBlocks_'
-        . (int) $idHook
-        . '_'
-        . (int) $idLang
-        . '_'
-        . (int) $idShop;
+        $cacheId = sprintf('EverBlockClass::getBlocks_%d_%d_%d', $idHook, $idLang, $idShop);
         if (!Cache::isStored($cacheId)) {
             $return = [];
-            $customerGroups = Customer::getGroupsStatic(
-                (int) Context::getContext()->customer->id
-            );
+            $now = new DateTime();
+            $now = $now->format('Y-m-d H:i:s');
+            $customerGroups = Customer::getGroupsStatic((int) Context::getContext()->customer->id);
             $sql = new DbQuery;
             $sql->select('*');
             $sql->from('everblock', 'eb');
@@ -220,34 +215,22 @@ class EverBlockClass extends ObjectModel
             $sql->where('eb.id_shop = ' . (int) $idShop);
             $sql->where('eb.active = 1');
             $sql->orderBy('eb.position ASC');
-
             $allBlocks = Db::getInstance()->executeS($sql);
-            $now = date('Y-m-d H:i:s');
             foreach ($allBlocks as $block) {
-                // Date start management
-                if ($block['date_start'] && $block['date_start'] != '0000-00-00 00:00:00') {
-                    if ($block['date_start'] > $now) {
-                        continue;
-                    }
+                if (!empty($block['date_start']) && $block['date_start'] !== '0000-00-00 00:00:00' && $block['date_start'] > $now) {
+                    continue;
                 }
-                // Date end management
-                if ($block['date_end'] && $block['date_end'] != '0000-00-00 00:00:00') {
-                    if ($block['date_end'] < $now) {
-                        continue;
-                    }
+                if (!empty($block['date_end']) && $block['date_end'] !== '0000-00-00 00:00:00' && $block['date_end'] < $now) {
+                    continue;
                 }
-                // Allowed groups
-                $allowedGroups = $block['groups'];
-                if ($allowedGroups) {
-                    $allowedGroups = json_decode($allowedGroups);
-                    if (!array_intersect($allowedGroups, $customerGroups)) {
-                        continue;
-                    }
+                $allowedGroups = json_decode($block['groups'], true);
+                if (!empty($allowedGroups) && !array_intersect($allowedGroups, $customerGroups)) {
+                    continue;
                 }
                 Hook::exec('actionGetEverBlockBefore', [
-                    'id_hook' => (int) $idHook,
-                    'id_lang' => (int) $idLang,
-                    'id_shop' => (int) $idShop,
+                    'id_hook' => $idHook,
+                    'id_lang' => $idLang,
+                    'id_shop' => $idShop,
                     'block' => &$block,
                 ]);
                 $return[] = $block;

@@ -577,47 +577,36 @@ class Everblock extends Module
             );
             $currentBlock = [];
             foreach ($everblock as $block) {
-                // Check device
-                if ((int) $block['device'] > 0
-                    && (int) $this->context->getDevice() != (int) $block['device']
-                ) {
-                    continue;
-                }
-                // Is block only for homepage ?
-                if ((bool)$block['only_home'] === true
-                    && $controller_name != 'index'
-                ) {
-                    continue;
-                }
-                // Only category management
-                if ((bool)$block['only_category'] === true
-                    && $controller_name == 'index'
-                ) {
-                    continue;
-                }
                 $continue = false;
-                if ((bool)$block['only_category'] === true) {
-                    $categories = json_decode($block['categories']);
-                    if (Tools::getValue('id_category')
-                        && !in_array((int) Tools::getValue('id_category'), $categories)
-                    ) {
+                if ((int) $block['device'] > 0 && (int) $this->context->getDevice() != (int) $block['device']) {
+                    $continue = true;
+                }
+                if ((bool)$block['only_home'] === true && $controller_name != 'index') {
+                    $continue = true;
+                }
+                if ((bool)$block['only_category'] === true && $controller_name == 'index') {
+                    $continue = true;
+                }
+                if (!$continue && (bool)$block['only_category'] === true) {
+                    $categories = json_decode($block['categories'], true);
+                    $id_category = (int) Tools::getValue('id_category');
+                    $id_product = (int) Tools::getValue('id_product');
+                    if ($id_category && !in_array($id_category, $categories)) {
                         $continue = true;
                     }
-                    if (Tools::getValue('id_product')) {
-                        $product = new Product(
-                            (int) Tools::getValue('id_product')
-                        );
+                    if ($id_product) {
+                        $product = new Product($id_product);
                         if (!in_array((int) $product->id_category_default, $categories)) {
                             $continue = true;
                         }
                     }
                 }
-                if (isset($continue) && (bool)$continue === true) {
-                    continue;
+                if (!$continue) {
+                    $block['content'] = $this->changeShortcodes($block['content'], $id_entity);
+                    $currentBlock[] = [
+                        'block' => $block,
+                    ];
                 }
-                $currentBlock[] = [
-                    'block' => $block,
-                ];
             }
             $this->smarty->assign([
                 'everhook' => 'header',
@@ -718,28 +707,27 @@ class Everblock extends Module
 
     public function checkLatestEverModuleVersion($module, $version)
     {
-        $upgrade_link = 'https://upgrade.team-ever.com/upgrade.php?module='
-        . $module
-        . '&version='
-        . $version;
-        $handle = curl_init($upgrade_link);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
-        curl_exec($handle);
-        $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-        if ($httpCode != 200) {
+        $upgrade_link = 'https://upgrade.team-ever.com/upgrade.php?module=' . $module . '&version=' . $version;
+        try {
+            $handle = curl_init($upgrade_link);
+            curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
+            $response = curl_exec($handle);
+            $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+            if ($httpCode != 200) {
+                curl_close($handle);
+                return false;
+            }
             curl_close($handle);
+            $module_version = $response;
+            if ($module_version && $module_version > $version) {
+                return true;
+            }
+            return false;
+        } catch (Exception $e) {
             return false;
         }
-        $response = curl_close($handle);
-        $module_version = Tools::file_get_contents(
-            $upgrade_link
-        );
-        if ($module_version && $module_version > $version) {
-            return true;
-        }
-        return false;
     }
 
     protected function checkAndFixDatabase() {
