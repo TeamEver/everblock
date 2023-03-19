@@ -21,6 +21,11 @@ if (!defined('_PS_VERSION_')) {
 }
 
 require_once(dirname(__FILE__).'/models/EverblockClass.php');
+use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
+use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
+use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
+use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
+use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 
 class Everblock extends Module
 {
@@ -32,7 +37,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.2.4';
+        $this->version = '4.3.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -165,6 +170,7 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after every block shortcode is rendered';
             $hook->save();
         }
+        $this->registerHook('actionOutputHTMLBefore');
         $this->registerHook('header');
         $this->registerHook('actionAdminControllerSetMedia');
     }
@@ -245,6 +251,7 @@ class Everblock extends Module
 
         return $helper->generateForm(array($this->getConfigForm()));
     }
+
     protected function getConfigForm()
     {
         return [
@@ -431,6 +438,14 @@ class Everblock extends Module
         }
     }
 
+    public function hookActionOutputHTMLBefore($params)
+    {
+        $txt = $params['html'];
+        $txt = $this->changeShortcodes($txt, (int) Context::getContext()->customer->id);
+        $params['html'] = $txt;
+        return $params['html'];
+    }
+
     public function everHook($method, $args)
     {
         if (!Hook::isDisplayHookName(lcfirst(str_replace('hook', '', $method)))) {
@@ -601,7 +616,7 @@ class Everblock extends Module
         return $this->display(__FILE__, 'everblockheader.tpl', $cacheId);
     }
 
-    private function changeShortcodes($message, $id_entity)
+    protected function changeShortcodes($message, $id_entity)
     {
         $link = new Link();
         $contactLink = $link->getPageLink('contact');
@@ -673,13 +688,43 @@ class Everblock extends Module
             'id_shop' => (int) Context::getContext()->shop->id,
             'id_lang' => (int) Context::getContext()->language->id,
         ]);
+
+        $everPresentProducts = [];
+        $productShortcodes = [];
+        preg_match_all('/\[product\s+(\d+)\]/', $message, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $productId = (int) $match[1];
+            $product = new Product(
+                $productId,
+                false,
+                Context::getContext()->language->id,
+                Context::getContext()->shop->id
+            );
+            if (Validate::isLoadedObject($product)) {
+                $everPresentProducts[] = $this->everPresentProducts([$product->id]);
+                $message = str_replace($match, '[ever_present_products]', $message);
+                $productShortcodes['[ever_present_products]'] = '';
+            }
+        }
+        if (!empty($everPresentProducts)) {
+            // Assignation de la variable Smarty pour le tableau de produits
+            $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
+        }
+
         if ($id_entity) {
             $shortcodes = array_merge($entityShortcodes, $defaultShortcodes);
         } else {
             $shortcodes = $defaultShortcodes;
         }
+        if ($productShortcodes) {
+            $shortcodes = array_merge($shortcodes, $productShortcodes);
+        }
         foreach ($shortcodes as $key => $value) {
-            $message = str_replace($key, $value, $message);
+            if ($key === '[ever_present_products]') {
+                $message = str_replace($key, $this->context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl')), $message);
+            } else {
+                $message = str_replace($key, $value, $message);
+            }
         }
         Hook::exec('actionEverBlockChangeShortcodeAfter', [
             'message' => &$message,
@@ -689,6 +734,44 @@ class Everblock extends Module
         ]);
         return $message;
     }
+
+    protected function everPresentProducts($result)
+    {
+        $products = [];
+        if (!empty($result)) {
+            $showPrice = true;
+            $assembler = new ProductAssembler(Context::getContext());
+            $presenterFactory = new ProductPresenterFactory(Context::getContext());
+            $presentationSettings = $presenterFactory->getPresentationSettings();
+            $presenter = new ProductListingPresenter(
+                new ImageRetriever(
+                    Context::getContext()->link
+                ),
+                Context::getContext()->link,
+                new PriceFormatter(),
+                new ProductColorsRetriever(),
+                Context::getContext()->getTranslator()
+            );
+            $presentationSettings->showPrices = $showPrice;
+            foreach ($result as $productId) {
+                $rawProduct = [
+                    'id_product' => $productId,
+                    'id_lang' => Context::getContext()->language->id,
+                    'id_shop' => Context::getContext()->shop->id,
+                ];
+                $pproduct = $assembler->assembleProduct($rawProduct);
+                if (Product::checkAccessStatic((int) $productId, false)) {
+                    $products[] = $presenter->present(
+                        $presentationSettings,
+                        $pproduct,
+                        Context::getContext()->language
+                    );
+                }
+            }
+        }
+        return $products[0];
+    }
+
 
     public function checkLatestEverModuleVersion($module, $version)
     {
