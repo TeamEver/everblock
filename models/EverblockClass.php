@@ -33,6 +33,7 @@ class EverBlockClass extends ObjectModel
     public $groups;
     public $background;
     public $css_class;
+    public $bootstrap_class;
     public $id_shop;
     public $categories;
     public $date_start;
@@ -91,6 +92,12 @@ class EverBlockClass extends ObjectModel
                 'required' => false,
             ],
             'css_class' => [
+                'type' => self::TYPE_STRING,
+                'lang' => false,
+                'validate' => 'isString',
+                'required' => false,
+            ],
+            'bootstrap_class' => [
                 'type' => self::TYPE_STRING,
                 'lang' => false,
                 'validate' => 'isString',
@@ -227,6 +234,9 @@ class EverBlockClass extends ObjectModel
                 if (!empty($allowedGroups) && !array_intersect($allowedGroups, $customerGroups)) {
                     continue;
                 }
+                $block['bootstrap_class'] = self::getBootstrapColClass(
+                    $block['bootstrap_class']
+                );
                 Hook::exec('actionGetEverBlockBefore', [
                     'id_hook' => $idHook,
                     'id_lang' => $idLang,
@@ -239,5 +249,52 @@ class EverBlockClass extends ObjectModel
             return $return;
         }
         return Cache::retrieve($cacheId);
+    }
+
+    public static function getBootstrapColClass($colNumber) {
+        // die(var_dump($colNumber));
+        $class = 'col-';
+        switch ($colNumber) {
+            case 1:
+                $class .= '12';
+                break;
+            case 2:
+                $class .= '6';
+                break;
+            case 3:
+                $class .= '4';
+                break;
+            case 4:
+                $class .= '3';
+                break;
+            case 6:
+                $class .= '2';
+                break;
+            default:
+                $class .= '12';
+                break;
+        }
+        $class .= ' col-md-';
+        switch ($colNumber) {
+            case 1:
+                $class .= '12';
+                break;
+            case 2:
+                $class .= '6';
+                break;
+            case 3:
+                $class .= '4';
+                break;
+            case 4:
+                $class .= '3';
+                break;
+            case 6:
+                $class .= '2';
+                break;
+            default:
+                $class .= '12';
+                break;
+        }
+        return $class;
     }
 }

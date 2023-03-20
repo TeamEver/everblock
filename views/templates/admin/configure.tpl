@@ -33,6 +33,9 @@
         <li><code>/themes/YOUR_THEME/css/global.css</code> {l s='for Prestashop 1.6' mod='everblock'}</li>
     </ul>
     <br>
+    <h4>{l s='Can the shortcodes be used anywhere on my store?' mod='everblock'}</h3>
+    <p>{l s='If you are using Prestashop 1.7 or 8, the shortcodes will indeed be accessible on any page of your store' mod='everblock'}</p>
+    <br>
     <h4>{l s='Is it really free ?' mod='everblock'}</h3>
     <p>{l s='This module has always been free and will always be.' mod='everblock'}</p>
     <p>{l s='You can support our free modules developpment by making a donation. This will help us make more free modules and help e-merchants. Thanks for your support !' mod='everblock'}</p>

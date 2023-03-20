@@ -217,7 +217,28 @@ class AdminEverBlockController extends ModuleAdminController
                 'id_device' => 1,
                 'name' => $this->l('Only desktop devices')
             ]
-
+        ];
+        $bootstrapSizes = [
+            [
+                'id_bootstrap' => 6,
+                'size' => $this->l('1/6')
+            ],
+            [
+                'id_bootstrap' => 4,
+                'size' => $this->l('1/3')
+            ],
+            [
+                'id_bootstrap' => 3,
+                'size' => $this->l('1/4')
+            ],
+            [
+                'id_bootstrap' => 2,
+                'size' => $this->l('1/2')
+            ],
+            [
+                'id_bootstrap' => 1,
+                'size' => $this->l('100%')
+            ],
         ];
         $everblock_obj = $this->loadObject(true);
         $everblock_obj->categories = json_decode($everblock_obj->categories);
@@ -367,6 +388,20 @@ class AdminEverBlockController extends ModuleAdminController
                         'lang' => false,
                     ],
                     [
+                        'type' => 'select',
+                        'label' => $this->l('Bloc size'),
+                        'desc' => $this->l('Please select bloc size'),
+                        'hint' => $this->l('Block will have this size'),
+                        'name' => 'bootstrap_class',
+                        'class' => 'chosen',
+                        'required' => true,
+                        'options' => [
+                            'query' => $bootstrapSizes,
+                            'id' => 'id_bootstrap',
+                            'name' => 'size',
+                        ],
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('HTML block content'),
                         'desc' => $this->l('Please type your block content'),
@@ -505,6 +540,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'css_class' => (!empty(Tools::getValue('css_class')))
                 ? Tools::getValue('css_class')
                 : $obj->css_class,
+                'bootstrap_class' => (!empty(Tools::getValue('bootstrap_class')))
+                ? Tools::getValue('bootstrap_class')
+                : $obj->bootstrap_class,
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
                 : $obj->device,
@@ -567,6 +605,9 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'css_class' => (!empty(Tools::getValue('css_class')))
                 ? Tools::getValue('css_class')
+                : '',
+                'bootstrap_class' => (!empty(Tools::getValue('bootstrap_class')))
+                ? Tools::getValue('bootstrap_class')
                 : '',
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
@@ -653,6 +694,11 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Custom class name is not valid');
             }
+            if (Tools::getValue('bootstrap_class')
+                && !Validate::isString(Tools::getValue('bootstrap_class'))
+            ) {
+                $this->errors[] = $this->l('Size name is not valid');
+            }
             if (Tools::getValue('active')
                 && !Validate::isBool(Tools::getValue('active'))
             ) {
@@ -677,6 +723,7 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->position = (int) Tools::getValue('position');
             $everblock_obj->background =  pSQL(Tools::getValue('background'));
             $everblock_obj->css_class =  pSQL(Tools::getValue('css_class'));
+            $everblock_obj->bootstrap_class =  pSQL(Tools::getValue('bootstrap_class'));
             $everblock_obj->device = (int) Tools::getValue('device');
             if (!Tools::getValue('groupBox')
                 || !Validate::isArrayWithIds(Tools::getValue('groupBox'))

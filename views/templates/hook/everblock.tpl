@@ -18,10 +18,12 @@
 
 <!-- Module Ever Block -->
 {if isset($everblock) && $everblock}
-    {foreach from=$everblock item=item}
-		<div class="everblock everblock-{$item.block.id_everblock|escape:'htmlall':'UTF-8'} {$item.block.css_class|escape:'htmlall':'UTF-8'} everhook-{$everhook|escape:'htmlall':'UTF-8'}" id="everblock-{$item.block.id_everblock|escape:'htmlall':'UTF-8'}" data-everposition="{$item.block.position|escape:'htmlall':'UTF-8'}" data-everhook="{$everhook|escape:'htmlall':'UTF-8'}"{if isset($item.block.background) && $item.block.background} style="background-color:{$item.block.background|escape:'htmlall':'UTF-8'};"{/if}>
-            {$item.block.content nofilter}
-		</div>
-    {/foreach}
+    <div class="row">
+        {foreach from=$everblock item=item}
+            <div class="everblock everblock-{$item.block.id_everblock|escape:'htmlall':'UTF-8'} {$item.block.css_class|escape:'htmlall':'UTF-8'} {$item.block.bootstrap_class|escape:'htmlall':'UTF-8'} everhook-{$everhook|escape:'htmlall':'UTF-8'}" id="everblock-{$item.block.id_everblock|escape:'htmlall':'UTF-8'}" data-everposition="{$item.block.position|escape:'htmlall':'UTF-8'}" data-everhook="{$everhook|escape:'htmlall':'UTF-8'}"{if isset($item.block.background) && $item.block.background} style="background-color:{$item.block.background|escape:'htmlall':'UTF-8'};"{/if}>
+                {$item.block.content nofilter}
+            </div>
+        {/foreach}
+    </div>
 {/if}
 <!-- /Module Ever Block -->

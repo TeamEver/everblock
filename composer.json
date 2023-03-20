@@ -1,0 +1,21 @@
+{
+    "name": "teamever/everblock",
+    "type": "prestashop-module",
+    "description": "Ever Block Prestashop module",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Team Ever",
+            "email": "info@team-ever.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "scssphp/scssphp": "1.4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Everblock\\": "src/"
+        }
+    }
+}

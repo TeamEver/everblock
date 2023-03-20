@@ -20,12 +20,14 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+require_once('vendor/autoload.php');
 require_once(dirname(__FILE__).'/models/EverblockClass.php');
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use ScssPhp\ScssPhp\Compiler;
 
 class Everblock extends Module
 {
@@ -37,7 +39,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.3.1';
+        $this->version = '4.3.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -433,7 +435,28 @@ class Everblock extends Module
     public function hookActionAdminControllerSetMedia()
     {
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
-        if (Tools::getValue('id_everblock')) {
+        if (Tools::getValue('id_everblock') || Tools::getValue('configure') == $this->name) {
+            /* Chargement des fichiers CSS */
+            $this->context->controller->addCSS(
+                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/codemirror.min.css',
+                'all'
+            );
+
+            $this->context->controller->addCSS(
+                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/theme/dracula.min.css',
+                'all'
+            );
+
+            /* Chargement des fichiers JavaScript */
+            $this->context->controller->addJS(
+                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/codemirror.min.js',
+                'all'
+            );
+
+            $this->context->controller->addJS(
+                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/mode/javascript/javascript.min.js',
+                'all'
+            );
             $this->context->controller->addJs($this->_path . 'views/js/admin.js');
         }
     }
@@ -678,6 +701,7 @@ class Everblock extends Module
             '[end_contact_link]' => '</a>',
             '[contact_link]'=> $contactLink,
             '[my_account_link]' => $my_account_link,
+            '[llorem]' => $this->generateLoremIpsum(),
             '[theme_uri]' => $theme_uri,
             'NULL' => '', // Useful : remove empty strings in case of NULL
             'null' => '', // Useful : remove empty strings in case of null
@@ -798,7 +822,8 @@ class Everblock extends Module
         }
     }
 
-    protected function checkAndFixDatabase() {
+    protected function checkAndFixDatabase()
+    {
         // Requêtes pour créer les tables
         $createEverblockTable = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
             `id_everblock` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -813,6 +838,7 @@ class Everblock extends Module
             `groups` text DEFAULT NULL,
             `background` varchar(255) DEFAULT NULL,
             `css_class` varchar(255) DEFAULT NULL,
+            `bootstrap_class` varchar(255) DEFAULT NULL,
             `date_start` DATETIME DEFAULT NULL,
             `date_end` DATETIME DEFAULT NULL,
             `active` int(10) unsigned NOT NULL,
@@ -844,6 +870,7 @@ class Everblock extends Module
             'groups' => 'text DEFAULT NULL',
             'background' => 'varchar(255) DEFAULT NULL',
             'css_class' => 'varchar(255) DEFAULT NULL',
+            'bootstrap_class' => 'varchar(255) DEFAULT NULL',
             'date_start' => 'DATETIME DEFAULT NULL',
             'date_end' => 'DATETIME DEFAULT NULL',
             'active' => 'int(10) unsigned NOT NULL'
@@ -896,5 +923,33 @@ class Everblock extends Module
       $code = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $code);
 
       return $code;
+    }
+
+    protected function generateLoremIpsum($numParagraphs = 5, $numSentences = 5) {
+        $paragraphs = array();
+        $sentences = array(
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+            'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+            'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+            'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+        );
+        for ($i = 0; $i < $numParagraphs; $i++) {
+            $paragraph = '';
+            for ($j = 0; $j < $numSentences; $j++) {
+                $sentence = $sentences[array_rand($sentences)];
+                $paragraph .= $sentence.' ';
+            }
+            $paragraphs[] = $paragraph;
+        }
+        return implode("\n\n", $paragraphs);
+    }
+
+    protected function compileScss($inputFile, $outputFile)
+    {
+        $compiler = new Compiler();
+        $compiler->setOutputStyle(\ScssPhp\ScssPhp\OutputStyle::COMPRESSED);
+        $css = $compiler->compile(file_get_contents($inputFile));
+        file_put_contents($outputFile, $css);
     }
 }

@@ -15,6 +15,21 @@
  *  @copyright 2019-2022 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
+$(document).ready(function() {
+    var cssTextarea = document.getElementById("EVERPSCSS");
+    var cssEditor = CodeMirror.fromTextArea(cssTextarea, {
+      mode: "text/css",
+      theme: "dracula",
+      lineNumbers: true
+    });
+    var jsTextarea = document.getElementById("EVERPSJS");
+    var jsEditor = CodeMirror.fromTextArea(jsTextarea, {
+      mode: "text/javascript",
+      theme: "dracula",
+      lineNumbers: true
+    });
+});
 var customTinyMCE = {
     init: function () {
         window.defaultTinyMceConfig = {
@@ -46,4 +61,10 @@ var customTinyMCE = {
 };
 $(function () {
     customTinyMCE.init();
+    var myTextarea = document.getElementById("EVERPSCSS");
+    var editor = CodeMirror.fromTextArea(myTextarea, {
+        mode: "javascript",
+        theme: "dracula",
+        lineNumbers: true
+    });
 });
