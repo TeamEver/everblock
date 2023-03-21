@@ -39,7 +39,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.3.2';
+        $this->version = '4.3.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -464,7 +464,52 @@ class Everblock extends Module
     public function hookActionOutputHTMLBefore($params)
     {
         $txt = $params['html'];
-        $txt = $this->changeShortcodes($txt, (int) Context::getContext()->customer->id);
+
+        $link = new Link();
+        $contactLink = $link->getPageLink('contact');
+        if (Context::getContext()->customer->isLogged()) {
+            $my_account_link = $link->getPageLink('my-account');
+        } else {
+            $my_account_link = $link->getPageLink('authentication');
+        }
+
+        if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
+            $theme_uri = Tools::getShopDomainSsl(true) . _PS_THEME_URI_;
+        } else {
+            $theme_uri = Tools::getShopDomainSsl(true) . _PS_PARENT_THEME_URI_;
+        }
+
+        $defaultShortcodes = [
+            '[shop_url]' => Tools::getShopDomainSsl(true),
+            '[shop_name]'=> (string) Configuration::get('PS_SHOP_NAME'),
+            '[start_cart_link]' => '<a href="'
+            . Tools::getShopDomainSsl(true)
+            . '/index.php?controller=cart&action=show" target="_blank">',
+            '[end_cart_link]' => '</a>',
+            '[start_shop_link]' => '<a href="'
+            . Tools::getShopDomainSsl(true)
+            . '" target="_blank">',
+            '[start_contact_link]' => '<a href="' . $contactLink . '" target="_blank">',
+            '[end_shop_link]' => '</a>',
+            '[end_contact_link]' => '</a>',
+            '[contact_link]'=> $contactLink,
+            '[my_account_link]' => $my_account_link,
+            '[llorem]' => $this->generateLoremIpsum(),
+            '[theme_uri]' => $theme_uri,
+        ];
+
+        $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
+        $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
+
+        foreach ($shortcodes as $key => $value) {
+            $txt = preg_replace(
+                '/(?<!\w|[&\'"])' . preg_quote($key, '/') . '(?!\w|;)/',
+                $value,
+                $txt
+            );
+        }
+
+
         $params['html'] = $txt;
         return $params['html'];
     }
@@ -548,10 +593,6 @@ class Everblock extends Module
                 if (isset($continue) && (bool)$continue === true) {
                     continue;
                 }
-                $block['content'] = $this->changeShortcodes(
-                    $block['content'],
-                    isset($id_entity) ? $id_entity : false
-                );
                 $currentBlock[] = [
                     'block' => $block,
                 ];
@@ -625,7 +666,6 @@ class Everblock extends Module
                     } else {
                         $id_entity = Context::getContext()->customer->id;
                     }
-                    $block['content'] = $this->changeShortcodes($block['content'], $id_entity);
                     $currentBlock[] = [
                         'block' => $block,
                     ];
@@ -639,19 +679,11 @@ class Everblock extends Module
         return $this->display(__FILE__, 'everblockheader.tpl', $cacheId);
     }
 
-    protected function changeShortcodes($message, $id_entity)
-    {
-        $link = new Link();
-        $contactLink = $link->getPageLink('contact');
-        if (Context::getContext()->customer->isLogged()) {
-            $my_account_link = $link->getPageLink('my-account');
-        } else {
-            $my_account_link = $link->getPageLink('authentication');
-        }
+    protected function getEntityShortcodes($id_entity) {
+        $entityShortcodes = [];
+
         if ($id_entity) {
-            if (Context::getContext()->controller->controller_type == 'admin'
-                || Context::getContext()->controller->controller_type == 'moduleadmin'
-            ) {
+            if (Context::getContext()->controller->controller_type == 'admin' || Context::getContext()->controller->controller_type == 'moduleadmin') {
                 $entity = new Employee((int) $id_entity);
                 $entityShortcodes = [
                     '[entity_lastname]' => $entity->lastname,
@@ -664,9 +696,7 @@ class Everblock extends Module
                     '[entity_gender]' => '', // info unavailable on employee object
                 ];
             }
-            if (Context::getContext()->controller->controller_type == 'front'
-                || Context::getContext()->controller->controller_type == 'modulefront'
-            ) {
+            if (Context::getContext()->controller->controller_type == 'front' || Context::getContext()->controller->controller_type == 'modulefront') {
                 $entity = new Customer((int) $id_entity);
                 $gender = new Gender((int) $entity->id_gender, (int) $entity->id_lang);
                 $entityShortcodes = [
@@ -681,82 +711,30 @@ class Everblock extends Module
                 ];
             }
         }
-        if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
-            $theme_uri = Tools::getShopDomainSsl(true) . _PS_THEME_URI_;
-        } else {
-            $theme_uri = Tools::getShopDomainSsl(true) . _PS_PARENT_THEME_URI_;
-        }
-        $defaultShortcodes = [
-            '[shop_url]' => Tools::getShopDomainSsl(true),
-            '[shop_name]'=> (string) Configuration::get('PS_SHOP_NAME'),
-            '[start_cart_link]' => '<a href="'
-            . Tools::getShopDomainSsl(true)
-            . '/index.php?controller=cart&action=show" target="_blank">',
-            '[end_cart_link]' => '</a>',
-            '[start_shop_link]' => '<a href="'
-            . Tools::getShopDomainSsl(true)
-            . '" target="_blank">',
-            '[start_contact_link]' => '<a href="' . $contactLink . '" target="_blank">',
-            '[end_shop_link]' => '</a>',
-            '[end_contact_link]' => '</a>',
-            '[contact_link]'=> $contactLink,
-            '[my_account_link]' => $my_account_link,
-            '[llorem]' => $this->generateLoremIpsum(),
-            '[theme_uri]' => $theme_uri,
-            'NULL' => '', // Useful : remove empty strings in case of NULL
-            'null' => '', // Useful : remove empty strings in case of null
-        ];
-        Hook::exec('actionEverBlockChangeShortcodeBefore', [
-            'message' => &$message,
-            'id_entity' => (int) $id_entity,
-            'id_shop' => (int) Context::getContext()->shop->id,
-            'id_lang' => (int) Context::getContext()->language->id,
-        ]);
 
-        $everPresentProducts = [];
+        return $entityShortcodes;
+    }
+
+    protected function getProductShortcodes($message) {
         $productShortcodes = [];
         preg_match_all('/\[product\s+(\d+)\]/', $message, $matches, PREG_SET_ORDER);
+
         foreach ($matches as $match) {
             $productId = (int) $match[1];
-            $product = new Product(
-                $productId,
-                false,
-                Context::getContext()->language->id,
-                Context::getContext()->shop->id
-            );
+            $product = new Product($productId, false, Context::getContext()->language->id, Context::getContext()->shop->id);
             if (Validate::isLoadedObject($product)) {
                 $everPresentProducts[] = $this->everPresentProducts([$product->id]);
                 $message = str_replace($match, '[ever_present_products]', $message);
                 $productShortcodes['[ever_present_products]'] = '';
             }
         }
+
         if (!empty($everPresentProducts)) {
             // Assignation de la variable Smarty pour le tableau de produits
             $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
         }
 
-        if ($id_entity) {
-            $shortcodes = array_merge($entityShortcodes, $defaultShortcodes);
-        } else {
-            $shortcodes = $defaultShortcodes;
-        }
-        if ($productShortcodes) {
-            $shortcodes = array_merge($shortcodes, $productShortcodes);
-        }
-        foreach ($shortcodes as $key => $value) {
-            if ($key === '[ever_present_products]') {
-                $message = str_replace($key, $this->context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl')), $message);
-            } else {
-                $message = str_replace($key, $value, $message);
-            }
-        }
-        Hook::exec('actionEverBlockChangeShortcodeAfter', [
-            'message' => &$message,
-            'id_entity' => (int) $id_entity,
-            'id_shop' => (int) Context::getContext()->shop->id,
-            'id_lang' => (int) Context::getContext()->language->id,
-        ]);
-        return $message;
+        return $productShortcodes;
     }
 
     protected function everPresentProducts($result)
