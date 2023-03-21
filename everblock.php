@@ -39,7 +39,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.3.3';
+        $this->version = '4.3.4';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -715,23 +715,24 @@ class Everblock extends Module
         return $entityShortcodes;
     }
 
-    protected function getProductShortcodes($message) {
+    protected function getProductShortcodes($message)
+    {
         $productShortcodes = [];
-        preg_match_all('/\[product\s+(\d+)\]/', $message, $matches, PREG_SET_ORDER);
+        preg_match_all('/(\[product\s+\d+\])/i', $message, $matches);
 
-        foreach ($matches as $match) {
-            $productId = (int) $match[1];
-            $product = new Product($productId, false, Context::getContext()->language->id, Context::getContext()->shop->id);
+        foreach ($matches[0] as $match) {
+            $productId = (int) substr($match, 9, -1);
+            $product = new Product(
+                $productId,
+                false,
+                Context::getContext()->language->id,
+                Context::getContext()->shop->id
+            );
             if (Validate::isLoadedObject($product)) {
-                $everPresentProducts[] = $this->everPresentProducts([$product->id]);
-                $message = str_replace($match, '[ever_present_products]', $message);
-                $productShortcodes['[ever_present_products]'] = '';
+                $everPresentProducts = $this->everPresentProducts([$product->id]);
+                $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $productShortcodes[$match] = $this->context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
             }
-        }
-
-        if (!empty($everPresentProducts)) {
-            // Assignation de la variable Smarty pour le tableau de produits
-            $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
         }
 
         return $productShortcodes;
@@ -771,7 +772,7 @@ class Everblock extends Module
                 }
             }
         }
-        return $products[0];
+        return $products;
     }
 
 
@@ -903,7 +904,16 @@ class Everblock extends Module
       return $code;
     }
 
-    protected function generateLoremIpsum($numParagraphs = 5, $numSentences = 5) {
+    protected function generateLoremIpsum()
+    {
+        $lloremParagraphNum = (int) Configuration::get('EVERPSCSS_P_LLOREM_NUMBER');
+        if ($lloremParagraphNum <= 0) {
+            $lloremParagraphNum = 5;
+        }
+        $lloremSentencesNum = (int) Configuration::get('EVERPSCSS_S_LLOREM_NUMBER');
+        if ($lloremSentencesNum <= 0) {
+            $lloremSentencesNum = 5;
+        }
         $paragraphs = array();
         $sentences = array(
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
@@ -912,9 +922,9 @@ class Everblock extends Module
             'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
             'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
         );
-        for ($i = 0; $i < $numParagraphs; $i++) {
+        for ($i = 0; $i < $lloremParagraphNum; $i++) {
             $paragraph = '';
-            for ($j = 0; $j < $numSentences; $j++) {
+            for ($j = 0; $j < $lloremSentencesNum; $j++) {
                 $sentence = $sentences[array_rand($sentences)];
                 $paragraph .= $sentence.' ';
             }
