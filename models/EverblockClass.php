@@ -148,6 +148,21 @@ class EverBlockClass extends ObjectModel
         ],
     ];
 
+    public static function getAllBlocks($id_lang, $id_shop)
+    {
+        $sql = new DbQuery();
+        $sql->select('*');
+        $sql->from('everblock', 'eb');
+        $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
+        $sql->where('ebl.id_lang = ' . (int)$id_lang);
+        $sql->where('eb.id_shop = ' . (int)$id_shop);
+        $sql->orderBy('eb.position ASC');
+
+        $allBlocks = Db::getInstance()->executeS($sql);
+
+        return $allBlocks;
+    }
+
     public static function getHeaderBlocks($idLang, $idShop)
     {
         $cacheId = 'EverBlockClass::getHeaderBlocks_'

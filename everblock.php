@@ -39,7 +39,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.3.4';
+        $this->version = '4.4.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -556,46 +556,44 @@ class Everblock extends Module
             $currentBlock = [];
             foreach ($everblock as $block) {
                 // Check device
-                if ((int) $block['device'] > 0
-                    && (int) $this->context->getDevice() != (int) $block['device']
-                ) {
+                if ((int) $block['device'] > 0 && (int) $this->context->getDevice() != (int) $block['device']) {
                     continue;
                 }
                 // Is block only for homepage ?
-                if ((bool)$block['only_home'] === true
-                    && $controller_name != 'index'
-                ) {
+                if ((bool) $block['only_home'] === true && $controller_name != 'index') {
                     continue;
                 }
                 // Only category management
-                if ((bool)$block['only_category'] === true
-                    && $controller_name == 'index'
-                ) {
+                if ((bool) $block['only_category'] === true && $controller_name != 'category') {
                     continue;
                 }
                 $continue = false;
-                if ((bool)$block['only_category'] === true) {
-                    $categories = json_decode($block['categories']);
-                    if (Tools::getValue('id_category')
-                        && !in_array((int) Tools::getValue('id_category'), $categories)
-                    ) {
+
+                if ((bool) $block['only_category'] === true) {
+                    $categories = json_decode($block['categories'], true);
+                    $categoryId = (int) Tools::getValue('id_category');
+                    $isCategorySelected = !empty($categoryId) && !empty($categories) && in_array($categoryId, $categories);
+
+                    if (Tools::getValue('id_product')) {
+                        $product = new Product((int) Tools::getValue('id_product'));
+                        $isProductSelected = !empty($product) && !empty($categories) && !empty($product->id_category_default) && in_array((int) $product->id_category_default, $categories);
+                    } else {
+                        $isProductSelected = false;
+                    }
+
+                    if (!$isCategorySelected) {
                         $continue = true;
                     }
-                    if (Tools::getValue('id_product')) {
-                        $product = new Product(
-                            (int) Tools::getValue('id_product')
-                        );
-                        if (!in_array((int) $product->id_category_default, $categories)) {
-                            $continue = true;
-                        }
+                    if (!$isProductSelected) {
+                        $continue = true;
                     }
                 }
-                if (isset($continue) && (bool)$continue === true) {
+
+                if ((isset($continue) && (bool) $continue === true) || empty($block['id_hook'])) {
                     continue;
                 }
-                $currentBlock[] = [
-                    'block' => $block,
-                ];
+
+                $currentBlock[] = ['block' => $block];
             }
             $this->smarty->assign([
                 'everhook' => trim($method),
@@ -775,6 +773,44 @@ class Everblock extends Module
         return $products;
     }
 
+    public function hookActionRegisterBlock($params)
+    {
+        $blocks = [];
+
+        // Get all blocks
+        $allBlocks = EverBlockClass::getAllBlocks(
+            (int) $this->context->language->id,
+            (int) $this->context->shop->id
+        );
+
+        $template = 'module:'.$this->name.'/views/templates/hook/everblock.tpl';
+        // Add each block to the array
+        foreach ($allBlocks as $block) {
+            // Add block to the array
+            $blocks[] =  [
+                'name' => $this->displayName,
+                'description' => $this->description,
+                'code' => $block['content'],
+                'tab' => 'general',
+                'icon' => 'DocumentTextIcon',
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $template,
+                ],
+                'config' => [
+                    'fields' => [
+                        'text' => [
+                            'type' => 'editor',
+                            'label' => 'Text HTML',
+                            'default' => $block['content'],
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        return $blocks;
+    }
 
     public function checkLatestEverModuleVersion($module, $version)
     {
@@ -803,47 +839,16 @@ class Everblock extends Module
 
     protected function checkAndFixDatabase()
     {
-        // Requêtes pour créer les tables
-        $createEverblockTable = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
-            `id_everblock` int(10) unsigned NOT NULL AUTO_INCREMENT,
-            `name` text NOT NULL,
-            `id_hook` int(10) unsigned NOT NULL,
-            `only_home` int(10) unsigned DEFAULT NULL,
-            `only_category` int(10) unsigned DEFAULT NULL,
-            `device` int(10) unsigned NOT NULL DEFAULT 0,
-            `id_shop` int(10) unsigned NOT NULL,
-            `position` int(10) unsigned DEFAULT 0,
-            `categories` text DEFAULT NULL,
-            `groups` text DEFAULT NULL,
-            `background` varchar(255) DEFAULT NULL,
-            `css_class` varchar(255) DEFAULT NULL,
-            `bootstrap_class` varchar(255) DEFAULT NULL,
-            `date_start` DATETIME DEFAULT NULL,
-            `date_end` DATETIME DEFAULT NULL,
-            `active` int(10) unsigned NOT NULL,
-            PRIMARY KEY (`id_everblock`)
-        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
+        $db = Db::getInstance();
 
-        $createEverblockLangTable = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_lang` (
-            `id_everblock` int(10) unsigned NOT NULL,
-            `id_lang` int(10) unsigned NOT NULL,
-            `content` text DEFAULT NULL,
-            `custom_code` text DEFAULT NULL,
-            PRIMARY KEY (`id_everblock`, `id_lang`)
-        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
-
-        // Exécute les requêtes pour créer les tables si elles n'existent pas
-        Db::getInstance()->execute($createEverblockTable);
-        Db::getInstance()->execute($createEverblockLangTable);
-        // Vérifie et ajoute les colonnes manquantes pour la table 'everblock'
-        $everblockColumns = [
-            'id_everblock' => 'int(10) unsigned NOT NULL AUTO_INCREMENT',
-            'name' => 'text NOT NULL',
+        // Ajoute les colonnes manquantes à la table ps_everblock
+        $columnsToAdd = [
+            'only_home' => 'int(10) unsigned DEFAULT NULL',
             'id_hook' => 'int(10) unsigned NOT NULL',
             'only_home' => 'int(10) unsigned DEFAULT NULL',
             'only_category' => 'int(10) unsigned DEFAULT NULL',
             'device' => 'int(10) unsigned NOT NULL DEFAULT 0',
-            'id_shop' => 'int(10) unsigned NOT NULL',
+            'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
             'position' => 'int(10) unsigned DEFAULT 0',
             'categories' => 'text DEFAULT NULL',
             'groups' => 'text DEFAULT NULL',
@@ -852,30 +857,29 @@ class Everblock extends Module
             'bootstrap_class' => 'varchar(255) DEFAULT NULL',
             'date_start' => 'DATETIME DEFAULT NULL',
             'date_end' => 'DATETIME DEFAULT NULL',
-            'active' => 'int(10) unsigned NOT NULL'
+            'active' => 'int(10) unsigned NOT NULL',
         ];
 
-        foreach ($everblockColumns as $column => $definition) {
-            $columnExists = Db::getInstance()->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock`');
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock` `' . pSQL($columnName) . '`');
             if (!$columnExists) {
-                $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock` ADD `' . pSQL($column) . '` ' . pSQL($definition);
-                Db::getInstance()->execute($addColumnQuery);
+                $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                $db->execute($query);
             }
         }
 
-        // Vérifie et ajoute les colonnes manquantes pour la table 'everblock_lang'
-        $everblockLangColumns = [
-            'id_everblock' => 'int(10) unsigned NOT NULL',
+        // Ajoute les colonnes manquantes à la table ps_everblock_lang
+        $columnsToAdd = [
             'id_lang' => 'int(10) unsigned NOT NULL',
             'content' => 'text DEFAULT NULL',
-            'custom_code' => 'text DEFAULT NULL'
+            'custom_code' => 'text DEFAULT NULL',
         ];
 
-        foreach ($everblockLangColumns as $column => $definition) {
-            $columnExists = Db::getInstance()->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_lang`');
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_lang` `' . pSQL($columnName) . '`');
             if (!$columnExists) {
-                $addColumnQuery = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_lang` ADD `' . pSQL($column) . '` ' . pSQL($definition);
-                Db::getInstance()->execute($addColumnQuery);
+                $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                $db->execute($query);
             }
         }
     }
