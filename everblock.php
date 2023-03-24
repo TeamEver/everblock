@@ -179,7 +179,21 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after every block shortcode is rendered';
             $hook->save();
         }
-        // Vérifier si l'onglet "Hook management" existe déjà
+
+        // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
+        $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
+        if (!$id_tab) {
+            // L'onglet n'existe pas, créer un nouvel onglet
+            $tab = new Tab();
+            $tab->class_name = 'AdminEverBlockParent';
+            $tab->module = $this->name;
+            $tab->id_parent = Tab::getIdFromClassName('IMPROVE');
+            $tab->position = Tab::getNewLastPosition($tab->id_parent);
+            // Les noms des onglets doivent être traduits dans toutes les langues du site
+            $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->l('Ever Block');
+            $tab->add();
+        }
+        // Vérifier si l'onglet "AdminEverBlock" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlock');
         if (!$id_tab) {
             // L'onglet n'existe pas, créer un nouvel onglet
