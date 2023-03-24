@@ -747,13 +747,8 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->active = Tools::getValue('active');
             $everblock = Module::getInstanceByName('everblock');
             foreach (Language::getLanguages(false) as $language) {
-                $everblock_obj->content[$language['id_lang']] = pSQL(
-                    Tools::getValue('content_' . $language['id_lang']),
-                    true
-                );
-                $everblock_obj->custom_code[$language['id_lang']] = pSQL(
-                    Tools::getValue('custom_code_' . $language['id_lang'])
-                );
+                $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_' . $language['id_lang']);
+                $everblock_obj->custom_code[$language['id_lang']] = Tools::getValue('custom_code_' . $language['id_lang']);
             }
             if (!count($this->errors)) {
                 try {
