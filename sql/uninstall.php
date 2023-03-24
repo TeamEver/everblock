@@ -24,3 +24,9 @@ if (!defined('_PS_VERSION_')) {
 $sql = [];
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock`;';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_lang`;';
+
+foreach ($sql as $s) {
+    if (!Db::getInstance()->execute($s)) {
+        return false;
+    }
+}

@@ -22,6 +22,7 @@ if (!defined('_PS_VERSION_')) {
 
 require_once('vendor/autoload.php');
 require_once(dirname(__FILE__).'/models/EverblockClass.php');
+require_once(dirname(__FILE__).'/models/EverblockShortcode.php');
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
@@ -39,7 +40,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.5.1';
+        $this->version = '4.6.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -73,12 +74,6 @@ class Everblock extends Module
         // Install SQL
         $sql = [];
         include dirname(__FILE__).'/sql/install.php';
-
-        foreach ($sql as $s) {
-            if (!Db::getInstance()->execute($s)) {
-                return false;
-            }
-        }
         // Hook actionGetEverBlockBefore
         if (!Hook::getIdByName('actionGetEverBlockBefore')) {
             $hook = new Hook();
@@ -107,8 +102,9 @@ class Everblock extends Module
             && $this->registerHook('header')
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
-            && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks management'))
-            && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks management')));
+            && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
+            && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
+            && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes')));
     }
 
     public function uninstall()
@@ -116,15 +112,11 @@ class Everblock extends Module
         // Uninstall SQL
         $sql = [];
         include dirname(__FILE__).'/sql/uninstall.php';
-        foreach ($sql as $s) {
-            if (!Db::getInstance()->execute($s)) {
-                return false;
-            }
-        }
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlock')
-            && $this->uninstallModuleTab('AdminEverBlockHook'));
+            && $this->uninstallModuleTab('AdminEverBlockHook')
+            && $this->uninstallModuleTab('AdminEverBlockShortcode'));
     }
 
     protected function installModuleTab($tabClass, $parent, $tabName)
@@ -153,7 +145,7 @@ class Everblock extends Module
         return $tab->delete();
     }
 
-    protected function checkHooks()
+    public function checkHooks()
     {
         // Hook actionGetEverBlockBefore
         if (!Hook::getIdByName('actionGetEverBlockBefore')) {
@@ -217,6 +209,19 @@ class Everblock extends Module
             $tab->position = Tab::getNewLastPosition($tab->id_parent);
             // Les noms des onglets doivent être traduits dans toutes les langues du site
             $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->l('Hook management');
+            $tab->add();
+        }
+        // Vérifier si l'onglet "Hook management" existe déjà
+        $id_tab = Tab::getIdFromClassName('AdminEverBlockShortcode');
+        if (!$id_tab) {
+            // L'onglet n'existe pas, créer un nouvel onglet
+            $tab = new Tab();
+            $tab->class_name = 'AdminEverBlockShortcode';
+            $tab->module = $this->name;
+            $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
+            $tab->position = Tab::getNewLastPosition($tab->id_parent);
+            // Les noms des onglets doivent être traduits dans toutes les langues du site
+            $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->l('Shortcodes management');
             $tab->add();
         }
         $this->registerHook('actionOutputHTMLBefore');
@@ -629,6 +634,7 @@ class Everblock extends Module
             ];
             $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
             $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
+            $shortcodes = array_merge($shortcodes, $this->getEverShortcodes($txt));
             foreach ($shortcodes as $key => $value) {
                 $txt = preg_replace(
                     '/(?<!\w|[&\'"])' . preg_quote($key, '/') . '(?!\w|;)/',
@@ -891,6 +897,19 @@ class Everblock extends Module
         return $productShortcodes;
     }
 
+    protected function getEverShortcodes($message)
+    {
+        $customShortcodes = EverblockShortcode::getAllShortcodes(
+            Context::getContext()->shop->id,
+            Context::getContext()->language->id
+        );
+        $returnedShortcodes = [];
+        foreach ($customShortcodes as $sc) {
+            $returnedShortcodes[$sc->shortcode] = $sc->content;
+        }
+        return $returnedShortcodes;
+    }
+
     protected function everPresentProducts($result)
     {
         $products = [];
@@ -992,7 +1011,7 @@ class Everblock extends Module
         }
     }
 
-    protected function checkAndFixDatabase()
+    public function checkAndFixDatabase()
     {
         $db = Db::getInstance();
         // Ajoute les colonnes manquantes à la table ps_everblock
