@@ -39,7 +39,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.4.4';
+        $this->version = '4.5.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -106,7 +106,9 @@ class Everblock extends Module
         return (parent::install()
             && $this->registerHook('header')
             && $this->registerHook('actionAdminControllerSetMedia')
-            && $this->installModuleTab('AdminEverBlock', 'IMPROVE', $this->l('Block HTML')));
+            && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
+            && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks management'))
+            && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks management')));
     }
 
     public function uninstall()
@@ -120,7 +122,9 @@ class Everblock extends Module
             }
         }
         return (parent::uninstall()
-            && $this->uninstallModuleTab('AdminEverBlock'));
+            && $this->uninstallModuleTab('AdminEverBlockParent')
+            && $this->uninstallModuleTab('AdminEverBlock')
+            && $this->uninstallModuleTab('AdminEverBlockHook'));
     }
 
     protected function installModuleTab($tabClass, $parent, $tabName)
@@ -131,7 +135,7 @@ class Everblock extends Module
         $tab->id_parent = (int) Tab::getIdFromClassName($parent);
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
         $tab->module = $this->name;
-        if ($tabClass == 'AdminEverBlock') {
+        if ($tabClass == 'AdminEverBlockParent') {
             $tab->icon = 'icon-team-ever';
         }
 
@@ -174,6 +178,32 @@ class Everblock extends Module
             $hook->title = 'After block shortcodes are rendered';
             $hook->description = 'This hook triggers after every block shortcode is rendered';
             $hook->save();
+        }
+        // Vérifier si l'onglet "Hook management" existe déjà
+        $id_tab = Tab::getIdFromClassName('AdminEverBlock');
+        if (!$id_tab) {
+            // L'onglet n'existe pas, créer un nouvel onglet
+            $tab = new Tab();
+            $tab->class_name = 'AdminEverBlock';
+            $tab->module = $this->name;
+            $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
+            $tab->position = Tab::getNewLastPosition($tab->id_parent);
+            // Les noms des onglets doivent être traduits dans toutes les langues du site
+            $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->l('HTML blocks management');
+            $tab->add();
+        }
+        // Vérifier si l'onglet "Hook management" existe déjà
+        $id_tab = Tab::getIdFromClassName('AdminEverBlockHook');
+        if (!$id_tab) {
+            // L'onglet n'existe pas, créer un nouvel onglet
+            $tab = new Tab();
+            $tab->class_name = 'AdminEverBlockHook';
+            $tab->module = $this->name;
+            $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
+            $tab->position = Tab::getNewLastPosition($tab->id_parent);
+            // Les noms des onglets doivent être traduits dans toutes les langues du site
+            $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->l('Hook management');
+            $tab->add();
         }
         $this->registerHook('actionOutputHTMLBefore');
         $this->registerHook('header');
@@ -351,6 +381,13 @@ class Everblock extends Module
                     ],
                 ],
                 'buttons' => [
+                    'createHook' => [
+                        'name' => 'submitCreateHook',
+                        'type' => 'submit',
+                        'class' => 'btn btn-info pull-right',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Create hook'),
+                    ],
                     'emptyCache' => [
                         'name' => 'submitEmptyCache',
                         'type' => 'submit',
@@ -610,7 +647,7 @@ class Everblock extends Module
         }
         // Get current hook name based on method name, first letter to lowercase
         $id_hook = Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
-        $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook);
+        $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook . '-controller-' . Tools::getValue('controller') . '-device-' . $this->context->getDevice());
         if (!$this->isCached('everblock.tpl', $cacheId)) {
             if (Context::getContext()->controller->controller_type === 'front') {
                 if (Context::getContext()->customer->id) {
@@ -644,9 +681,20 @@ class Everblock extends Module
                 ) {
                     continue;
                 }
+                if ((bool) $block['only_home'] === true
+                    && Tools::getValue('controller') != 'index'
+                ) {
+                    continue;
+                }
                 // Only category management
                 if ((bool) $block['only_category'] === true
-                    && !$this->context->controller instanceof CategoryController) {
+                    && !$this->context->controller instanceof CategoryController
+                ) {
+                    continue;
+                }
+                if ((bool) $block['only_category'] === true
+                    && Tools::getValue('controller') != 'category'
+                ) {
                     continue;
                 }
                 $continue = false;

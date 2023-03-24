@@ -41,11 +41,10 @@ class AdminEverBlockController extends ModuleAdminController
         ]);
         $this->_select = 'h.title AS hname';
 
-        $this->_join =
-            'LEFT JOIN `' . _DB_PREFIX_ . 'hook` h
-                ON (
-                    h.`id_hook` = a.`id_hook`
-                )';
+        $this->_join = 'LEFT JOIN `' . _DB_PREFIX_ . 'hook` h
+        ON (
+            h.`id_hook` = a.`id_hook`
+        )';
         $this->fields_list = [
             'id_everblock' => [
                 'title' => $this->l('ID'),
@@ -246,7 +245,7 @@ class AdminEverBlockController extends ModuleAdminController
         $fields_form[] = [
             'form' => [
                 'tinymce' => true,
-                'description' => $this->l('Add a new block.'),
+                'description' => $this->l('Manage HTML block.'),
                 'submit' => [
                     'name' => 'save',
                     'title' => $this->l('Save'),
@@ -491,7 +490,25 @@ class AdminEverBlockController extends ModuleAdminController
             'id_language' => (int) Context::getContext()->language->id,
         ];
         $helper->currentIndex = AdminController::$currentIndex;
-        return $helper->generateForm($fields_form);
+
+
+        $moduleInstance = Module::getInstanceByName($this->table);
+        $render = '';
+        $render .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/header.tpl');
+        if ($moduleInstance->checkLatestEverModuleVersion($this->table, $moduleInstance->version)) {
+            $this->html .= $this->context->smarty->fetch(
+                _PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/upgrade.tpl');
+        }
+        if (count($this->errors)) {
+            foreach ($this->errors as $error) {
+                $this->html .= Tools::displayError($error);
+            }
+        }
+        $render .= $helper->generateForm($fields_form);
+        $render .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/footer.tpl');
+
+
+        return $render;
     }
 
     protected function getConfigFormValues($obj)
