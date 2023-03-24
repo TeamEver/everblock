@@ -39,7 +39,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.4.2';
+        $this->version = '4.4.4';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -51,6 +51,9 @@ class Everblock extends Module
 
     public function __call($method, $args)
     {
+        if (php_sapi_name() == 'cli') {
+            return;
+        }
         $controllerTypes = [
             'admin',
             'moduleadmin',
@@ -175,6 +178,7 @@ class Everblock extends Module
         $this->registerHook('actionOutputHTMLBefore');
         $this->registerHook('header');
         $this->registerHook('actionAdminControllerSetMedia');
+        $this->registerHook('actionRegisterBlock');
     }
 
     public function getContent()
@@ -251,7 +255,7 @@ class Everblock extends Module
             'id_language' => $this->context->language->id,
         ];
 
-        return $helper->generateForm(array($this->getConfigForm()));
+        return $helper->generateForm([$this->getConfigForm()]);
     }
 
     protected function getConfigForm()
@@ -269,6 +273,26 @@ class Everblock extends Module
                         'desc' => $this->l('Set yes to empty cache on saving'),
                         'hint' => $this->l('Else cache will not be emptied'),
                         'name' => 'EVERPSCSS_CACHE',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => true,
+                                'label' => $this->l('Yes'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => false,
+                                'label' => $this->l('No'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Extends TinyMCE on blocks management ?'),
+                        'desc' => $this->l('Set yes to extends TinyMCE on blocs management'),
+                        'hint' => $this->l('Else TinyMCE will be default'),
+                        'name' => 'EVERBLOCK_TINYMCE',
                         'is_bool' => true,
                         'values' => [
                             [
@@ -311,6 +335,20 @@ class Everblock extends Module
                         'hint' => $this->l('Add one link per line, must be JS'),
                         'name' => 'EVERPSJS_LINKS',
                     ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Default number of paragraphs when [llorem] shortcode is detected'),
+                        'desc' => $this->l('Will generate this number of paragraphs when the [llorem] shortcode is detected'),
+                        'hint' => $this->l('Leaving this value blank will generate five paragraphs'),
+                        'name' => 'EVERPSCSS_P_LLOREM_NUMBER',
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Default number of sentences per paragraphs when [llorem] shortcode is detected'),
+                        'desc' => $this->l('Will generate this number of sentences per paragraphs when the [llorem] shortcode is detected'),
+                        'hint' => $this->l('Leaving this value blank will generate five sentences per paragraphs'),
+                        'name' => 'EVERPSCSS_S_LLOREM_NUMBER',
+                    ],
                 ],
                 'buttons' => [
                     'emptyCache' => [
@@ -337,18 +375,42 @@ class Everblock extends Module
         $custom_js = Tools::file_get_contents(
             _PS_MODULE_DIR_.'/' . $this->name . '/views/js/custom' . $idShop . '.js'
         );
-        return array(
+        return [
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERPSCSS' => $custom_css,
             'EVERPSJS' => $custom_js,
             'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
-            'EVERPSJS_LINKS' => Configuration::get('EVERPSJS_LINKS')
-        );
+            'EVERPSJS_LINKS' => Configuration::get('EVERPSJS_LINKS'),
+            'EVERPSCSS_P_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_P_LLOREM_NUMBER'),
+            'EVERPSCSS_S_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_S_LLOREM_NUMBER'),
+            'EVERBLOCK_TINYMCE' => Configuration::get('EVERBLOCK_TINYMCE'),
+        ];
     }
 
     public function postValidation()
     {
         if (Tools::isSubmit('submit' . $this->name . 'Module')) {
+            if (Tools::getValue('EVERPSCSS_P_LLOREM_NUMBER')
+                && !Validate::isInt(Tools::getValue('EVERPSCSS_P_LLOREM_NUMBER'))
+            ) {
+                $this->postErrors[] = $this->l(
+                    'Error : The field "Llorem paragraph number" is not valid'
+                );
+            }
+            if (Tools::getValue('EVERPSCSS_S_LLOREM_NUMBER')
+                && !Validate::isInt(Tools::getValue('EVERPSCSS_S_LLOREM_NUMBER'))
+            ) {
+                $this->postErrors[] = $this->l(
+                    'Error : The field "Llorem sentences per paragraphs number" is not valid'
+                );
+            }
+            if (Tools::getValue('EVERBLOCK_TINYMCE')
+                && !Validate::isBool(Tools::getValue('EVERBLOCK_TINYMCE'))
+            ) {
+                $this->postErrors[] = $this->l(
+                    'Error : The field "Extends TinyMCE" is not valid'
+                );
+            }
         }
     }
 
@@ -419,10 +481,21 @@ class Everblock extends Module
             'EVERPSJS_LINKS',
             Tools::getValue('EVERPSJS_LINKS')
         );
+        Configuration::updateValue(
+            'EVERPSCSS_P_LLOREM_NUMBER',
+            Tools::getValue('EVERPSCSS_P_LLOREM_NUMBER')
+        );
+        Configuration::updateValue(
+            'EVERPSCSS_S_LLOREM_NUMBER',
+            Tools::getValue('EVERPSCSS_S_LLOREM_NUMBER')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_TINYMCE',
+            Tools::getValue('EVERBLOCK_TINYMCE')
+        );
         if ((bool) Configuration::get('EVERPSCSS_CACHE') === true) {
             $this->emptyAllCache();
         }
-        // Là, comme on a bien enregistré, c'est ici qu'on précise un message de succès
         $this->postSuccess[] = $this->l('All settings have been saved');
     }
 
@@ -457,60 +530,67 @@ class Everblock extends Module
                 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/mode/javascript/javascript.min.js',
                 'all'
             );
-            $this->context->controller->addJs($this->_path . 'views/js/admin.js');
+            if (Tools::getValue('configure') == $this->name) {
+                $this->context->controller->addJs($this->_path . 'views/js/admin.js');
+            }
+            if ((bool) Configuration::get('EVERBLOCK_TINYMCE') === true) {
+                $this->context->controller->addJs($this->_path . 'views/js/adminTinyMce.js');
+            }
         }
     }
 
     public function hookActionOutputHTMLBefore($params)
     {
         $txt = $params['html'];
+        try {
+            $context = Context::getContext();
+            $contactLink = $context->link->getPageLink('contact');
+            if (Context::getContext()->customer->isLogged()) {
+                $myAccountLink = $context->link->getPageLink('my-account');
+            } else {
+                $myAccountLink = $context->link->getPageLink('authentication');
+            }
 
-        $link = new Link();
-        $contactLink = $link->getPageLink('contact');
-        if (Context::getContext()->customer->isLogged()) {
-            $my_account_link = $link->getPageLink('my-account');
-        } else {
-            $my_account_link = $link->getPageLink('authentication');
-        }
-
-        if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
-            $theme_uri = Tools::getShopDomainSsl(true) . _PS_THEME_URI_;
-        } else {
-            $theme_uri = Tools::getShopDomainSsl(true) . _PS_PARENT_THEME_URI_;
-        }
-
-        $defaultShortcodes = [
-            '[shop_url]' => Tools::getShopDomainSsl(true),
-            '[shop_name]'=> (string) Configuration::get('PS_SHOP_NAME'),
-            '[start_cart_link]' => '<a href="'
-            . Tools::getShopDomainSsl(true)
-            . '/index.php?controller=cart&action=show" target="_blank">',
-            '[end_cart_link]' => '</a>',
-            '[start_shop_link]' => '<a href="'
-            . Tools::getShopDomainSsl(true)
-            . '" target="_blank">',
-            '[start_contact_link]' => '<a href="' . $contactLink . '" target="_blank">',
-            '[end_shop_link]' => '</a>',
-            '[end_contact_link]' => '</a>',
-            '[contact_link]'=> $contactLink,
-            '[my_account_link]' => $my_account_link,
-            '[llorem]' => $this->generateLoremIpsum(),
-            '[theme_uri]' => $theme_uri,
-        ];
-
-        $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
-        $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
-
-        foreach ($shortcodes as $key => $value) {
-            $txt = preg_replace(
-                '/(?<!\w|[&\'"])' . preg_quote($key, '/') . '(?!\w|;)/',
-                $value,
-                $txt
+            $cartLink = $context->link->getPageLink('cart', null, null, ['action' => 'show']);
+            if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
+                $theme_uri = Tools::getShopDomainSsl(true) . _PS_THEME_URI_;
+            } else {
+                $theme_uri = Tools::getShopDomainSsl(true) . _PS_PARENT_THEME_URI_;
+            }
+            $shopName = Configuration::get('PS_SHOP_NAME');
+            $defaultShortcodes = [
+                '[shop_url]' => Tools::getShopDomainSsl(true) . __PS_BASE_URI__,
+                '[shop_name]'=> $shopName,
+                '[start_cart_link]' => '<a href="'
+                . $cartLink
+                . '" target="_blank" rel="nofollow" title="' . $shopName . '">',
+                '[end_cart_link]' => '</a>',
+                '[start_shop_link]' => '<a href="'
+                . Tools::getShopDomainSsl(true) . __PS_BASE_URI__
+                . '">',
+                '[start_contact_link]' => '<a href="' . $contactLink . '" target="_blank" title="' . $shopName . '">',
+                '[end_shop_link]' => '</a>',
+                '[end_contact_link]' => '</a>',
+                '[contact_link]'=> $contactLink,
+                '[my_account_link]' => $myAccountLink,
+                '[llorem]' => $this->generateLoremIpsum(),
+                '[theme_uri]' => $theme_uri,
+            ];
+            $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
+            $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
+            foreach ($shortcodes as $key => $value) {
+                $txt = preg_replace(
+                    '/(?<!\w|[&\'"])' . preg_quote($key, '/') . '(?!\w|;)/',
+                    $value,
+                    $txt
+                );
+            }
+            $params['html'] = $txt;
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog(
+                'Ever Block : unable to rewrite HTML page'
             );
         }
-
-
-        $params['html'] = $txt;
         return $params['html'];
     }
 
@@ -525,7 +605,6 @@ class Everblock extends Module
             'front',
             'modulefront',
         ];
-        $controller_name = Tools::getValue('controller');
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
         }
@@ -560,11 +639,14 @@ class Everblock extends Module
                     continue;
                 }
                 // Is block only for homepage ?
-                if ((bool) $block['only_home'] === true && $controller_name != 'index') {
+                if ((bool) $block['only_home'] === true
+                    && !$this->context->controller instanceof IndexController
+                ) {
                     continue;
                 }
                 // Only category management
-                if ((bool) $block['only_category'] === true && $controller_name != 'category') {
+                if ((bool) $block['only_category'] === true
+                    && !$this->context->controller instanceof CategoryController) {
                     continue;
                 }
                 $continue = false;
@@ -576,7 +658,7 @@ class Everblock extends Module
 
                     if (Tools::getValue('id_product')) {
                         $product = new Product((int) Tools::getValue('id_product'));
-                        $isProductSelected = !empty($product) && !empty($categories) && !empty($product->id_category_default) && in_array((int) $product->id_category_default, $categories);
+                        $isProductSelected = (bool) Validate::isLoadedObject($product);
                     } else {
                         $isProductSelected = false;
                     }
@@ -589,7 +671,7 @@ class Everblock extends Module
                     }
                 }
 
-                if ((isset($continue) && (bool) $continue === true) || empty($block['id_hook'])) {
+                if ((bool) $continue === true || empty($block['id_hook'])) {
                     continue;
                 }
 
@@ -636,13 +718,17 @@ class Everblock extends Module
                 if ((int) $block['device'] > 0 && (int) $this->context->getDevice() != (int) $block['device']) {
                     $continue = true;
                 }
-                if ((bool)$block['only_home'] === true && $controller_name != 'index') {
+                if ((bool) $block['only_home'] === true
+                    && !$this->context->controller instanceof IndexController
+                ) {
                     $continue = true;
                 }
-                if ((bool)$block['only_category'] === true && $controller_name == 'index') {
+                if ((bool) $block['only_category'] === true
+                    && !$this->context->controller instanceof IndexController
+                ) {
                     $continue = true;
                 }
-                if (!$continue && (bool)$block['only_category'] === true) {
+                if (!$continue && (bool) $block['only_category'] === true) {
                     $categories = json_decode($block['categories'], true);
                     $id_category = (int) Tools::getValue('id_category');
                     $id_product = (int) Tools::getValue('id_product');
@@ -656,7 +742,10 @@ class Everblock extends Module
                         }
                     }
                 }
-                if (!$continue) {
+                if (empty($block['custom_code'])) {
+                    continue;
+                }
+                if ((bool) $continue === false) {
                     if (Context::getContext()->controller->controller_type == 'admin'
                         || Context::getContext()->controller->controller_type == 'moduleadmin'
                     ) {
@@ -677,11 +766,13 @@ class Everblock extends Module
         return $this->display(__FILE__, 'everblockheader.tpl', $cacheId);
     }
 
-    protected function getEntityShortcodes($id_entity) {
+    protected function getEntityShortcodes($id_entity)
+    {
         $entityShortcodes = [];
-
         if ($id_entity) {
-            if (Context::getContext()->controller->controller_type == 'admin' || Context::getContext()->controller->controller_type == 'moduleadmin') {
+            if (Context::getContext()->controller->controller_type == 'admin'
+                || Context::getContext()->controller->controller_type == 'moduleadmin'
+            ) {
                 $entity = new Employee((int) $id_entity);
                 $entityShortcodes = [
                     '[entity_lastname]' => $entity->lastname,
@@ -694,7 +785,9 @@ class Everblock extends Module
                     '[entity_gender]' => '', // info unavailable on employee object
                 ];
             }
-            if (Context::getContext()->controller->controller_type == 'front' || Context::getContext()->controller->controller_type == 'modulefront') {
+            if (Context::getContext()->controller->controller_type == 'front'
+                || Context::getContext()->controller->controller_type == 'modulefront'
+            ) {
                 $entity = new Customer((int) $id_entity);
                 $gender = new Gender((int) $entity->id_gender, (int) $entity->id_lang);
                 $entityShortcodes = [
@@ -776,20 +869,19 @@ class Everblock extends Module
     public function hookActionRegisterBlock($params)
     {
         $blocks = [];
-
         // Get all blocks
-        $allBlocks = EverBlockClass::getAllBlocks(
+        $allBlocks = EverblockClass::getAllBlocks(
             (int) $this->context->language->id,
             (int) $this->context->shop->id
         );
 
-        $template = 'module:'.$this->name.'/views/templates/hook/everblock.tpl';
+        $template = 'module:' . $this->name . '/views/templates/hook/everblock.tpl';
         // Add each block to the array
         foreach ($allBlocks as $block) {
             // Add block to the array
             $blocks[] =  [
                 'name' => $this->displayName,
-                'description' => $this->description,
+                'description' => $block['title'],
                 'code' => $block['content'],
                 'tab' => 'general',
                 'icon' => 'DocumentTextIcon',
@@ -808,7 +900,7 @@ class Everblock extends Module
                 ],
             ];
         }
-
+        die(var_dump($blocks));
         return $blocks;
     }
 
@@ -833,6 +925,7 @@ class Everblock extends Module
             }
             return false;
         } catch (Exception $e) {
+            PrestaShopLogger::addLog('Unable to check latest Ever Block version');
             return false;
         }
     }
@@ -840,7 +933,6 @@ class Everblock extends Module
     protected function checkAndFixDatabase()
     {
         $db = Db::getInstance();
-
         // Ajoute les colonnes manquantes à la table ps_everblock
         $columnsToAdd = [
             'only_home' => 'int(10) unsigned DEFAULT NULL',
@@ -863,8 +955,12 @@ class Everblock extends Module
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock` `' . pSQL($columnName) . '`');
             if (!$columnExists) {
-                $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                $db->execute($query);
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block database');
+                }
             }
         }
 
@@ -878,34 +974,38 @@ class Everblock extends Module
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_lang` `' . pSQL($columnName) . '`');
             if (!$columnExists) {
-                $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                $db->execute($query);
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block database');
+                }
             }
         }
     }
 
     protected function compressCSSCode($css)
     {
-      // Supprime les commentaires
-      $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
-      // Supprime les espaces inutiles
-      $css = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $css);
-      // Remplace les séparateurs de déclarations par des points-virgules
-      $css = str_replace(';}', '}', $css);
-      // Supprime les espaces inutiles entre les propriétés et les valeurs
-      $css = preg_replace('/[\s]*:[\s]*(.*?)[\s]*;/', ':$1;', $css);
-      return $css;
+        // Supprime les commentaires
+        $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
+        // Supprime les espaces inutiles
+        $css = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '    '], '', $css);
+        // Remplace les séparateurs de déclarations par des points-virgules
+        $css = str_replace(';}', '}', $css);
+        // Supprime les espaces inutiles entre les propriétés et les valeurs
+        $css = preg_replace('/[\s]*:[\s]*(.*?)[\s]*;/', ':$1;', $css);
+        return $css;
     }
 
     protected function compressJsCode($code)
     {
-      // Supprimer les commentaires
-      $code = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $code);
+        // Supprimer les commentaires
+        $code = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $code);
 
-      // Supprimer les espaces inutiles
-      $code = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $code);
+        // Supprimer les espaces inutiles
+        $code = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '    '], '', $code);
 
-      return $code;
+        return $code;
     }
 
     protected function generateLoremIpsum()
@@ -918,20 +1018,21 @@ class Everblock extends Module
         if ($lloremSentencesNum <= 0) {
             $lloremSentencesNum = 5;
         }
-        $paragraphs = array();
-        $sentences = array(
+        $paragraphs = [];
+        $sentences = [
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
             'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
             'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
             'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-            'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
-        );
+            'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+        ];
         for ($i = 0; $i < $lloremParagraphNum; $i++) {
-            $paragraph = '';
+            $paragraph = '<p>';
             for ($j = 0; $j < $lloremSentencesNum; $j++) {
                 $sentence = $sentences[array_rand($sentences)];
                 $paragraph .= $sentence.' ';
             }
+            $paragraph .= '</p>';
             $paragraphs[] = $paragraph;
         }
         return implode("\n\n", $paragraphs);
@@ -941,7 +1042,7 @@ class Everblock extends Module
     {
         $compiler = new Compiler();
         $compiler->setOutputStyle(\ScssPhp\ScssPhp\OutputStyle::COMPRESSED);
-        $css = $compiler->compile(file_get_contents($inputFile));
+        $css = $compiler->compile(Tools::file_get_contents($inputFile));
         file_put_contents($outputFile, $css);
     }
 }

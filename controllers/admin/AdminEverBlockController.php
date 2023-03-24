@@ -28,7 +28,6 @@ class AdminEverBlockController extends ModuleAdminController
         $this->bootstrap = true;
         $this->lang = true;
         $this->table = 'everblock';
-        $this->module_name = 'everblock';
         $this->className = 'EverBlockClass';
         $this->context = Context::getContext();
         $this->identifier = "id_everblock";
@@ -164,11 +163,11 @@ class AdminEverBlockController extends ModuleAdminController
 
         $lists = parent::renderList();
 
-        $blog_instance = Module::getInstanceByName($this->module_name);
-        $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/' . $this->module_name . '/views/templates/admin/header.tpl');
-        if ($blog_instance->checkLatestEverModuleVersion($this->module_name, $blog_instance->version)) {
+        $moduleInstance = Module::getInstanceByName($this->table);
+        $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/header.tpl');
+        if ($moduleInstance->checkLatestEverModuleVersion($this->table, $moduleInstance->version)) {
             $this->html .= $this->context->smarty->fetch(
-                _PS_MODULE_DIR_ . '/' . $this->module_name . '/views/templates/admin/upgrade.tpl');
+                _PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/upgrade.tpl');
         }
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
@@ -471,7 +470,7 @@ class AdminEverBlockController extends ModuleAdminController
         $helper = new HelperForm();
         $helper->show_toolbar = false;
         $helper->module = $this;
-        $helper->name_controller = $this->name;
+        $helper->name_controller = $this->table;
         $helper->toolbar_scroll = true;
         $lang = new Language((int) Configuration::get('PS_LANG_DEFAULT'));
         $helper->default_form_language = $lang->id;
@@ -748,24 +747,33 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->active = Tools::getValue('active');
             $everblock = Module::getInstanceByName('everblock');
             foreach (Language::getLanguages(false) as $language) {
-                $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_' . $language['id_lang']);
-                $everblock_obj->custom_code[$language['id_lang']] = Tools::getValue('custom_code_' . $language['id_lang']);
+                $everblock_obj->content[$language['id_lang']] = pSQL(
+                    Tools::getValue('content_' . $language['id_lang']),
+                    true
+                );
+                $everblock_obj->custom_code[$language['id_lang']] = pSQL(
+                    Tools::getValue('custom_code_' . $language['id_lang'])
+                );
             }
             if (!count($this->errors)) {
-                $everblock_obj->save();
-                $everblock->registerHook(
-                    $hook_name
-                );
-                if ((bool)Tools::isSubmit('stay') === true) {
-                    Tools::redirectAdmin(
-                        self::$currentIndex
-                        . '&updateeverblock=&id_everblock='
-                        . (int) $everblock_obj->id
-                        . '&token='
-                        . $this->token
+                try {
+                    $everblock_obj->save();
+                    $everblock->registerHook(
+                        $hook_name
                     );
+                    if ((bool)Tools::isSubmit('stay') === true) {
+                        Tools::redirectAdmin(
+                            self::$currentIndex
+                            . '&updateeverblock=&id_everblock='
+                            . (int) $everblock_obj->id
+                            . '&token='
+                            . $this->token
+                        );
+                    }
+                    Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update save block');
                 }
-                Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
             }
         }
     }
