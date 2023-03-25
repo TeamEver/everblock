@@ -125,7 +125,7 @@ class EverblockShortcode extends ObjectModel
                 'id_shop = ' . (int) $id_shop
             );
             $return = new self(
-                (int)Db::getInstance()->getValue($sql),
+                (int) Db::getInstance()->getValue($sql),
                 (int) $id_lang,
                 (int) $id_shop
             );
@@ -157,7 +157,7 @@ class EverblockShortcode extends ObjectModel
                 'id_shop = ' . (int) $id_shop
             );
             $shortcode = new self(
-                (int)Db::getInstance()->getValue($sql),
+                (int) Db::getInstance()->getValue($sql),
                 (int) $id_lang,
                 (int) $id_shop
             );

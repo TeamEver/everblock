@@ -151,7 +151,7 @@ class AdminEverBlockHookController extends ModuleAdminController
         if (Context::getContext()->shop->getContext() != Shop::CONTEXT_SHOP
             && Shop::isFeatureActive()
         ) {
-            $this->errors[] = $this->l('You have to select a shop before creating or editing new blocks.');
+            $this->errors[] = $this->l('You have to select a shop before creating or editing new hooks.');
         }
         if (count($this->errors)) {
             return false;

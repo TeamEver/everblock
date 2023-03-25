@@ -71,6 +71,8 @@ class Everblock extends Module
 
     public function install()
     {
+        Configuration::updateValue('EVERPSCSS_P_LLOREM_NUMBER', 5);
+        Configuration::updateValue('EVERPSCSS_S_LLOREM_NUMBER', 5);
         // Install SQL
         $sql = [];
         include dirname(__FILE__).'/sql/install.php';
@@ -112,6 +114,12 @@ class Everblock extends Module
         // Uninstall SQL
         $sql = [];
         include dirname(__FILE__).'/sql/uninstall.php';
+        Configuration::deleteByName('EVERPSCSS_CACHE');
+        Configuration::deleteByName('EVERPSCSS_LINKS');
+        Configuration::deleteByName('EVERPSJS_LINKS');
+        Configuration::deleteByName('EVERPSCSS_P_LLOREM_NUMBER');
+        Configuration::deleteByName('EVERPSCSS_S_LLOREM_NUMBER');
+        Configuration::deleteByName('EVERBLOCK_TINYMCE');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlock')
@@ -182,7 +190,7 @@ class Everblock extends Module
             $tab->id_parent = Tab::getIdFromClassName('IMPROVE');
             $tab->position = Tab::getNewLastPosition($tab->id_parent);
             // Les noms des onglets doivent être traduits dans toutes les langues du site
-            $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->l('Ever Block');
+            $tab->name[(int) Configuration::get('PS_LANG_DEFAULT')] = $this->l('Ever Block');
             $tab->add();
         }
         // Vérifier si l'onglet "AdminEverBlock" existe déjà
@@ -195,7 +203,7 @@ class Everblock extends Module
             $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
             $tab->position = Tab::getNewLastPosition($tab->id_parent);
             // Les noms des onglets doivent être traduits dans toutes les langues du site
-            $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->l('HTML blocks management');
+            $tab->name[(int) Configuration::get('PS_LANG_DEFAULT')] = $this->l('HTML blocks management');
             $tab->add();
         }
         // Vérifier si l'onglet "Hook management" existe déjà
@@ -208,7 +216,7 @@ class Everblock extends Module
             $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
             $tab->position = Tab::getNewLastPosition($tab->id_parent);
             // Les noms des onglets doivent être traduits dans toutes les langues du site
-            $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->l('Hook management');
+            $tab->name[(int) Configuration::get('PS_LANG_DEFAULT')] = $this->l('Hook management');
             $tab->add();
         }
         // Vérifier si l'onglet "Hook management" existe déjà
@@ -221,7 +229,7 @@ class Everblock extends Module
             $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
             $tab->position = Tab::getNewLastPosition($tab->id_parent);
             // Les noms des onglets doivent être traduits dans toutes les langues du site
-            $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->l('Shortcodes management');
+            $tab->name[(int) Configuration::get('PS_LANG_DEFAULT')] = $this->l('Shortcodes management');
             $tab->add();
         }
         $this->registerHook('actionOutputHTMLBefore');
@@ -400,13 +408,6 @@ class Everblock extends Module
                     ],
                 ],
                 'buttons' => [
-                    'createHook' => [
-                        'name' => 'submitCreateHook',
-                        'type' => 'submit',
-                        'class' => 'btn btn-info pull-right',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Create hook'),
-                    ],
                     'emptyCache' => [
                         'name' => 'submitEmptyCache',
                         'type' => 'submit',
@@ -692,7 +693,9 @@ class Everblock extends Module
             $currentBlock = [];
             foreach ($everblock as $block) {
                 // Check device
-                if ((int) $block['device'] > 0 && (int) $this->context->getDevice() != (int) $block['device']) {
+                if ((int) $block['device'] > 0
+                    && (int) $this->context->getDevice() != (int) $block['device']
+                ) {
                     continue;
                 }
                 // Is block only for homepage ?
@@ -739,7 +742,9 @@ class Everblock extends Module
                     }
                 }
 
-                if ((bool) $continue === true || empty($block['id_hook'])) {
+                if ((bool) $continue === true
+                    || empty($block['id_hook'])
+                ) {
                     continue;
                 }
 
@@ -783,7 +788,9 @@ class Everblock extends Module
             $currentBlock = [];
             foreach ($everblock as $block) {
                 $continue = false;
-                if ((int) $block['device'] > 0 && (int) $this->context->getDevice() != (int) $block['device']) {
+                if ((int) $block['device'] > 0
+                    && (int) $this->context->getDevice() != (int) $block['device']
+                ) {
                     $continue = true;
                 }
                 if ((bool) $block['only_home'] === true
@@ -1063,6 +1070,43 @@ class Everblock extends Module
                 }
             }
         }
+
+        // Ajoute les colonnes manquantes à la table everblock_shortcode
+        $columnsToAdd = [
+            'shortcode' => 'text DEFAULT NULL',
+            'id_shop' => 'int(10) unsigned NOT NULL',
+        ];
+
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_shortcode` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_shortcode` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block database');
+                }
+            }
+        }
+
+        // Ajoute les colonnes manquantes à la table everblock_shortcode_lang
+        $columnsToAdd = [
+            'id_lang' => 'int(10) unsigned NOT NULL',
+            'title' => 'text DEFAULT NULL',
+            'content' => 'text DEFAULT NULL',
+        ];
+
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_shortcode_lang` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_shortcode_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block database');
+                }
+            }
+        }
     }
 
     protected function compressCSSCode($css)
@@ -1111,7 +1155,7 @@ class Everblock extends Module
             $paragraph = '<p>';
             for ($j = 0; $j < $lloremSentencesNum; $j++) {
                 $sentence = $sentences[array_rand($sentences)];
-                $paragraph .= $sentence.' ';
+                $paragraph .= $sentence . ' ';
             }
             $paragraph .= '</p>';
             $paragraphs[] = $paragraph;

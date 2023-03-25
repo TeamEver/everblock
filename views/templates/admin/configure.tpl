@@ -11,11 +11,7 @@
     <p>{l s='A hook is a location where you can "plug" a module. Very numerous on Prestashop, they are saved in your database, and displayed by your theme and your modules.' mod='everblock'}</p>
     <p>{l s='These hooks are available both on your site, but also in the administration of your store.' mod='everblock'}</p>
     <p>{l s='You can personalize the messages using the secure shortcodes offered by Ever Block' mod='everblock'}</p>
-    <p>{l s='You can find the list of hooks (or positions) in your store by going to the tab:' mod='everblock'}</p>
-    <ul>
-        <li>{l s='"Appearance" => "Positions" on Prestashop 1.7' mod='everblock'}</li>
-        <li>{l s='"Modules" => "Positions" on Prestashop 1.6' mod='everblock'}</li>
-    </ul>
+    <p>{l s='You can modify, add and delete display hooks by going to the "Ever Block" tab then "Hook management"' mod='everblock'}</p>
     <p>{l s='If you have some troubles, don\'t forget to ask on our website, we\'ll be glad to help.' mod='everblock'}</p>
     <br>
     <h4>{l s='Where do I manage my blocks ?' mod='everblock'}</h3>
