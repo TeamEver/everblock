@@ -2,7 +2,7 @@
 
 HTML module for Prestashop, hooks everywhere on your shop
 
-Prestashop administrators can create HTML blocks hooked to any available display hook on shop. Works on Prestashop 1.6 and Prestashop 1.7 (recommanded)
+Prestashop administrators can create HTML blocks hooked to any available display hook on shop. Works on Prestashop 1.7 and Prestashop 8 (recommanded)
 
 https://www.team-ever.com/prestashop-module-bloc-editeur-html-illimite-shortcode/
 
