@@ -40,7 +40,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.6.1';
+        $this->version = '4.6.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -668,7 +668,14 @@ class Everblock extends Module
         }
         // Get current hook name based on method name, first letter to lowercase
         $id_hook = Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
-        $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook . '-controller-' . Tools::getValue('controller') . '-device-' . $this->context->getDevice());
+        $hookName = lcfirst(str_replace('hook', '', $method));
+        if (Tools::getValue('id_product')) {
+            $idObj = Tools::getValue('id_product');
+        }
+        if (Tools::getValue('id_category')) {
+            $idObj = Tools::getValue('id_category');
+        }
+        $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook . '-controller-' . Tools::getValue('controller') . '-hookName' . $hookName . '-idObj-' . $idObj . '-device-' . $this->context->getDevice());
         if (!$this->isCached('everblock.tpl', $cacheId)) {
             if (Context::getContext()->controller->controller_type === 'front') {
                 if (Context::getContext()->customer->id) {
@@ -711,40 +718,22 @@ class Everblock extends Module
                 }
                 // Only category management
                 if ((bool) $block['only_category'] === true
-                    && !$this->context->controller instanceof CategoryController
-                ) {
-                    continue;
-                }
-                if ((bool) $block['only_category'] === true
                     && Tools::getValue('controller') != 'category'
                 ) {
                     continue;
                 }
-                $continue = false;
 
+                $continue = true;
                 if ((bool) $block['only_category'] === true) {
                     $categories = json_decode($block['categories'], true);
                     $categoryId = (int) Tools::getValue('id_category');
-                    $isCategorySelected = !empty($categoryId) && !empty($categories) && in_array($categoryId, $categories);
-
-                    if (Tools::getValue('id_product')) {
-                        $product = new Product((int) Tools::getValue('id_product'));
-                        $isProductSelected = (bool) Validate::isLoadedObject($product);
-                    } else {
-                        $isProductSelected = false;
-                    }
-
-                    if (!$isCategorySelected) {
-                        $continue = true;
-                    }
-                    if (!$isProductSelected) {
-                        $continue = true;
+                    foreach ($categories as $catId) {
+                        if ((int) $catId == (int) $categoryId) {
+                            $continue = false;
+                        }
                     }
                 }
-
-                if ((bool) $continue === true
-                    || empty($block['id_hook'])
-                ) {
+                if ((bool) $continue === true) {
                     continue;
                 }
 
