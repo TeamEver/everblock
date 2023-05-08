@@ -40,7 +40,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.6.2';
+        $this->version = '4.6.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -101,7 +101,7 @@ class Everblock extends Module
             $hook->save();
         }
         return (parent::install()
-            && $this->registerHook('header')
+            && $this->registerHook('displayHeader')
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
             && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
@@ -233,7 +233,7 @@ class Everblock extends Module
             $tab->add();
         }
         $this->registerHook('actionOutputHTMLBefore');
-        $this->registerHook('header');
+        $this->registerHook('displayHeader');
         $this->registerHook('actionAdminControllerSetMedia');
         $this->registerHook('actionRegisterBlock');
     }
@@ -748,7 +748,7 @@ class Everblock extends Module
         return $this->display(__FILE__, 'everblock.tpl', $cacheId);
     }
 
-    public function hookHeader()
+    public function hookdisplayHeader()
     {
         $idShop = (int) Context::getContext()->shop->id;
         $this->context->controller->addCss(
