@@ -82,9 +82,12 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_a9555fd9adb4026033e4ff
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_914cc7f0106a06a9d1b92c11a37a5dbc'] = 'Uniquement sur une ou plusieurs catégories spécifiques ?';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_e02c29ebb9c07ddbecc6c4d0eb9cf834'] = 'Seulement si le hook sélectionné est disponible sur une page de catégorie';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c7cbc66652799838ed0a9ba1e26f7791'] = 'Mettez à non pour afficher le bloc sur n\'importe quelle catégorie';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_c86d0641511b17cc482556d2c990f248'] = 'Uniquement sur des produits avec des catégories spécifiques';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_2c31c46afc3a9e9a557fb86467c907d3'] = 'Seulement si le hook est disponible sur des produits avec des catégories précises';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_39b4844c49d0d295194419d893aae419'] = 'Mettez à non pour ne pas tenir compte de produits avec des catégories spécifiques';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_5fbf1bdf6b91f64e3f03d8c9e19baa17'] = 'Limiter à une ou plusieurs catégories ?';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_e61788a80f444d91773c575556e7f1b7'] = 'Seulement si le hook est présent sur les catégories sélectionnées';
-$_MODULE['<{everblock}prestashop>admineverblockcontroller_e7a350a08c68015bbd63220c2ae0966b'] = 'Dépend également du réglage précédent';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_e7a350a08c68015bbd63220c2ae0966b'] = 'Dépend également des réglages précédents';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c41d907fd5a5197209171188d5f0f24a'] = 'Simple rappel dans l\'administration ';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_104f9d219084486ae4193df017459bc6'] = 'Ce rappel sera uniquement affiché dans l\'administration de votre boutique';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_7c843db3dc99974980d882893afd7303'] = 'Gestion des appareils';
@@ -118,7 +121,9 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_14c8a37f72fd430c391a04
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_ed125cb85fe7e955163f1f4a305131e4'] = 'Le hook n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_9e215cebc1c3a45bd780ff6f74bc847a'] = '\"Uniquement sur la home\" n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_dc072554aec608b9c6d4767eafab1d5d'] = '\"Uniquement sur les catégories\" n\'est pas valide';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_1efc59c49ea37992aa3a4410d62ee66a'] = '\"Seulement sur des pages produits avec des catégories précises\" n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_b295772e411c3327fbdd3e4f368cb2b7'] = '\"Uniquement sur la home\" et \"Uniquement sur les catégories\" sont tous les deux sélectionnés ';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_c41d1ad491c8a46dd2adf469f41ff3ff'] = '\"Uniquement sur la home\" et \"Uniquement sur les produits avec des catégories précises\" sont tous les deux sélectionnés ';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_7e8b62aa399a3eb3f8220a0cfd9e72c9'] = 'Les catégories ne sont pas valides';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c32d9968f3071dc2f7f55c8cf28ea48b'] = 'La position n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_2dfae56804a20b70fbf2bac261ae7ec0'] = 'La couleur de fond n\'est pas valide';

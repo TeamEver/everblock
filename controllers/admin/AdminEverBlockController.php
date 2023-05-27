@@ -322,6 +322,27 @@ class AdminEverBlockController extends ModuleAdminController
                         ],
                     ],
                     [
+                        'type' => 'switch',
+                        'label' => $this->l('Only on specific product categories ?'),
+                        'desc' => $this->l('Only if hook is available on product categories'),
+                        'hint' => $this->l('Set to no to show this block on each product pages on specific categories'),
+                        'name' => 'only_category_product',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                    [
                         'type' => 'select',
                         'class' => 'chosen',
                         'multiple' => true,
@@ -547,6 +568,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'only_category' => (!empty(Tools::getValue('only_category')))
                 ? Tools::getValue('only_category')
                 : $obj->only_category,
+                'only_category_product' => (!empty(Tools::getValue('only_category_product')))
+                ? Tools::getValue('only_category_product')
+                : $obj->only_category_product,
                 'position' => (!empty(Tools::getValue('position')))
                 ? Tools::getValue('position')
                 : $obj->position,
@@ -612,6 +636,9 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'only_category' => (!empty(Tools::getValue('only_category')))
                 ? Tools::getValue('only_category')
+                : '',
+                'only_category_product' => (!empty(Tools::getValue('only_category_product')))
+                ? Tools::getValue('only_category_product')
                 : '',
                 'position' => (!empty(Tools::getValue('position')))
                 ? Tools::getValue('position')
@@ -685,10 +712,20 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Only category is not valid');
             }
+            if (Tools::getValue('only_category_product')
+                && !Validate::isBool(Tools::getValue('only_category_product'))
+            ) {
+                $this->errors[] = $this->l('Only product page with specific categories is not valid');
+            }
             if (Tools::getValue('only_home')
                 && Tools::getValue('only_category')
             ) {
                 $this->errors[] = $this->l('"Only category" and "Only home" ae both selected');
+            }
+            if (Tools::getValue('only_home')
+                && Tools::getValue('only_category_product')
+            ) {
+                $this->errors[] = $this->l('"Only product categories" and "Only home" ae both selected');
             }
             if (Tools::getValue('categories')
                 && !Validate::isArrayWithIds(Tools::getValue('categories'))
@@ -733,6 +770,7 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->id_hook = (int) Tools::getValue('id_hook');
             $everblock_obj->only_home = (bool) Tools::getValue('only_home');
             $everblock_obj->only_category = (bool) Tools::getValue('only_category');
+            $everblock_obj->only_category_product = (bool) Tools::getValue('only_category_product');
             $everblock_obj->categories = json_encode(
                 Tools::getValue('categories')
             );
@@ -845,12 +883,13 @@ class AdminEverBlockController extends ModuleAdminController
         $newBlock->custom_code = $everBlock->custom_code;
         $newBlock->only_home = $everBlock->only_home;
         $newBlock->only_category = $everBlock->only_category;
+        $newBlock->only_category_product = $everBlock->only_category_product;
         $newBlock->id_hook = $everBlock->id_hook;
         $newBlock->device = $everBlock->device;
         $newBlock->id_shop = $everBlock->id_shop;
         $newBlock->categories = $everBlock->categories;
         $newBlock->groups = $everBlock->groups;
-        $newBlock->active = $everBlock->active;
+        $newBlock->active = false;
         $newBlock->position = $everBlock->position;
 
         if (!$newBlock->save()) {

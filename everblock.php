@@ -40,7 +40,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.6.4';
+        $this->version = '4.7.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -700,6 +700,10 @@ class Everblock extends Module
             );
             $currentBlock = [];
             foreach ($everblock as $block) {
+                // Check hook
+                $currentHook = new Hook(
+                    $block['id_hook']
+                );
                 // Check device
                 if ((int) $block['device'] > 0
                     && (int) $this->context->getDevice() != (int) $block['device']
@@ -724,14 +728,31 @@ class Everblock extends Module
                     continue;
                 }
 
-                $continue = true;
-                if ((bool) $block['only_category'] === true) {
-                    $categories = json_decode($block['categories'], true);
-                    $categoryId = (int) Tools::getValue('id_category');
-                    foreach ($categories as $catId) {
-                        if ((int) $catId == (int) $categoryId) {
-                            $continue = false;
-                        }
+                $continue = false;
+                if ((bool)$block['only_category'] === true && Tools::getValue('controller') === 'category') {
+                    $categories = json_decode($block['categories']);
+                    if (!in_array((int)Tools::getValue('id_category'), $categories)) {
+                        $continue = true;
+                    } else {
+                        $continue = false;
+                    }
+                }
+                if (Tools::getValue('id_product')
+                    && Tools::getValue('controller') === 'product'
+                    && (bool)$block['only_category'] === true
+                    && (bool)$block['only_category_product'] === true
+                ) {
+                    $product = new Product(
+                        (int) Tools::getValue('id_product')
+                    );
+                    $currentHook = new Hook(
+                        $block['id_hook']
+                    );
+                    $categories = json_decode($block['categories']);
+                    $productCategories = $product->getCategories();
+                    if ($categories && is_array($categories)) {
+                        $allowedCategory = array_intersect($categories, $productCategories);
+                        $continue = empty($allowedCategory);
                     }
                 }
                 if ((bool) $continue === true) {
@@ -1017,6 +1038,7 @@ class Everblock extends Module
             'id_hook' => 'int(10) unsigned NOT NULL',
             'only_home' => 'int(10) unsigned DEFAULT NULL',
             'only_category' => 'int(10) unsigned DEFAULT NULL',
+            'only_category_product' => 'int(10) unsigned DEFAULT NULL',
             'device' => 'int(10) unsigned NOT NULL DEFAULT 0',
             'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
             'position' => 'int(10) unsigned DEFAULT 0',

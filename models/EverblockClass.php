@@ -28,6 +28,7 @@ class EverBlockClass extends ObjectModel
     public $custom_code;
     public $only_home;
     public $only_category;
+    public $only_category_product;
     public $id_hook;
     public $device;
     public $groups;
@@ -63,6 +64,11 @@ class EverBlockClass extends ObjectModel
                 'validate' => 'isBool',
             ],
             'only_category' => [
+                'type' => self::TYPE_BOOL,
+                'lang' => false,
+                'validate' => 'isBool',
+            ],
+            'only_category_product' => [
                 'type' => self::TYPE_BOOL,
                 'lang' => false,
                 'validate' => 'isBool',
