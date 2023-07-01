@@ -40,7 +40,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.7.1';
+        $this->version = '4.7.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -782,12 +782,13 @@ class Everblock extends Module
             'all'
         );
         $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
+        // $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
+        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
         if (file_exists($custom_css)) {
             $this->context->controller->addCSS($this->_path . '/views/css/custom-compressed' . $idShop . '.css');
         }
         if (file_exists($custom_js)) {
-            $this->context->controller->addJS($this->_path . '/views/js/custom-compressed' . $idShop . '.js');
+            $this->context->controller->addJS($this->_path . '/views/js/custom' . $idShop . '.js');
         }
         // Get current hook name based on method name, first letter to lowercase
         $cacheId = $this->getCacheId($this->name . '-custom-header-' . date('Ymd'));
