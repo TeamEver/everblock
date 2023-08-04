@@ -1,21 +1,21 @@
 {
-    "name": "teamever/everblock",
-    "type": "prestashop-module",
-    "description": "Ever Block Prestashop module",
-    "license": "proprietary",
-    "authors": [
-        {
-            "name": "Team Ever",
-            "email": "info@team-ever.com"
-        }
-    ],
-    "require": {
-        "php": ">=7.1",
-        "scssphp/scssphp": "1.4.1"
-    },
-    "autoload": {
-        "psr-4": {
-            "Everblock\\": "src/"
-        }
+  "name": "team-ever/everblock",
+  "description": "Ever Block",
+  "type": "prestashop-module",
+  "authors": [
+    {
+      "name": "Team Ever",
+      "email": "info@team-ever.com"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Everblock\\Tools\\": "src/"
+    },
+    "exclude-from-classmap": []
+  },
+  "config": {
+    "preferred-install": "dist",
+    "prepend-autoloader": false
+  }
 }

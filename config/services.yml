@@ -1,0 +1,23 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    everblock.tools.import:
+        class: Everblock\Tools\Command\ImportFileCommand
+        public: true
+        tags:
+            - { name: 'console.command' }
+
+    everblock.tools.export:
+        class: Everblock\Tools\Command\ExportFileCommand
+        public: true
+        tags:
+            - { name: 'console.command' }
+
+    everblock.tools.execute_action:
+        class: Everblock\Tools\Command\ExecuteAction
+        public: true
+        tags:
+            - { name: 'console.command' }
+

@@ -40,7 +40,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.7.2';
+        $this->version = '4.8.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -676,6 +676,7 @@ class Everblock extends Module
         if (Tools::getValue('id_category')) {
             $idObj = Tools::getValue('id_category');
         }
+        // Let's cache
         $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook . '-controller-' . Tools::getValue('controller') . '-hookName' . $hookName . '-idObj-' . $idObj . '-device-' . $this->context->getDevice());
         if (!$this->isCached('everblock.tpl', $cacheId)) {
             if (Context::getContext()->controller->controller_type === 'front') {
