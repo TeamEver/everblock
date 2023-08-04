@@ -156,15 +156,23 @@ class EverBlockClass extends ObjectModel
 
     public static function getAllBlocks($id_lang, $id_shop)
     {
-        $sql = new DbQuery();
-        $sql->select('*');
-        $sql->from('everblock', 'eb');
-        $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
-        $sql->where('ebl.id_lang = ' . (int)$id_lang);
-        $sql->where('eb.id_shop = ' . (int)$id_shop);
-        $sql->orderBy('eb.position ASC');
+        $cacheId = 'EverBlockClass::getAllBlocks_'
+        . (int) $idLang
+        . '_'
+        . (int) $idShop;
+        if (!Cache::isStored($cacheId)) {
+            $sql = new DbQuery();
+            $sql->select('*');
+            $sql->from('everblock', 'eb');
+            $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
+            $sql->where('ebl.id_lang = ' . (int) $id_lang);
+            $sql->where('eb.id_shop = ' . (int) $id_shop);
+            $sql->orderBy('eb.position ASC');
 
-        $allBlocks = Db::getInstance()->executeS($sql);
+            $allBlocks = Db::getInstance()->executeS($sql);
+            Cache::store($cacheId, $allBlocks);
+            return $allBlocks;
+        }
 
         return $allBlocks;
     }
@@ -272,50 +280,56 @@ class EverBlockClass extends ObjectModel
         return Cache::retrieve($cacheId);
     }
 
-    public static function getBootstrapColClass($colNumber) {
-        // die(var_dump($colNumber));
-        $class = 'col-';
-        switch ($colNumber) {
-            case 1:
-                $class .= '12';
-                break;
-            case 2:
-                $class .= '6';
-                break;
-            case 3:
-                $class .= '4';
-                break;
-            case 4:
-                $class .= '3';
-                break;
-            case 6:
-                $class .= '2';
-                break;
-            default:
-                $class .= '12';
-                break;
+    public static function getBootstrapColClass($colNumber)
+    {
+        $cacheId = 'EverBlockClass::getBootstrapColClass_'
+        . (int) $colNumber;
+        if (!Cache::isStored($cacheId)) {
+            $class = 'col-';
+            switch ($colNumber) {
+                case 1:
+                    $class .= '12';
+                    break;
+                case 2:
+                    $class .= '6';
+                    break;
+                case 3:
+                    $class .= '4';
+                    break;
+                case 4:
+                    $class .= '3';
+                    break;
+                case 6:
+                    $class .= '2';
+                    break;
+                default:
+                    $class .= '12';
+                    break;
+            }
+            $class .= ' col-md-';
+            switch ($colNumber) {
+                case 1:
+                    $class .= '12';
+                    break;
+                case 2:
+                    $class .= '6';
+                    break;
+                case 3:
+                    $class .= '4';
+                    break;
+                case 4:
+                    $class .= '3';
+                    break;
+                case 6:
+                    $class .= '2';
+                    break;
+                default:
+                    $class .= '12';
+                    break;
+            }
+            Cache::store($cacheId, $class);
+            return $class;
         }
-        $class .= ' col-md-';
-        switch ($colNumber) {
-            case 1:
-                $class .= '12';
-                break;
-            case 2:
-                $class .= '6';
-                break;
-            case 3:
-                $class .= '4';
-                break;
-            case 4:
-                $class .= '3';
-                break;
-            case 6:
-                $class .= '2';
-                break;
-            default:
-                $class .= '12';
-                break;
-        }
-        return $class;
+        return Cache::retrieve($cacheId);
     }
 }

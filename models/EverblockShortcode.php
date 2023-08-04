@@ -87,15 +87,15 @@ class EverblockShortcode extends ObjectModel
         return Cache::retrieve($cache_id);
     }
 
-    public static function getAllShortcodeIds($id_shop)
+    public static function getAllShortcodeIds($idShop)
     {
         $cache_id = 'EverblockShortcode::getAllShortcodeIds_'
-        . (int) $id_shop;
+        . (int) $idShop;
         if (!Cache::isStored($cache_id)) {
             $sql = new DbQuery();
             $sql->select('*');
             $sql->from('everblock_shortcode');
-            $sql->where('id_shop = ' . (int) $id_shop);
+            $sql->where('id_shop = ' . (int) $idShop);
             $return = Db::getInstance()->executeS($sql);
             Cache::store($cache_id, $return);
             return $return;

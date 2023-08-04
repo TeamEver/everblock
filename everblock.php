@@ -770,7 +770,7 @@ class Everblock extends Module
         return $this->display(__FILE__, 'everblock.tpl', $cacheId);
     }
 
-    public function hookdisplayHeader()
+    public function hookDisplayHeader()
     {
         $idShop = (int) Context::getContext()->shop->id;
         $this->context->controller->addCss(
@@ -781,11 +781,12 @@ class Everblock extends Module
             _PS_MODULE_DIR_ . $this->name . '/views/js/everblock.js',
             'all'
         );
-        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
+        // $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
+        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom' . $idShop . '.css';
         // $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
         if (file_exists($custom_css)) {
-            $this->context->controller->addCSS($this->_path . '/views/css/custom-compressed' . $idShop . '.css');
+            $this->context->controller->addCSS($this->_path . '/views/css/custom' . $idShop . '.css');
         }
         if (file_exists($custom_js)) {
             $this->context->controller->addJS($this->_path . '/views/js/custom' . $idShop . '.js');
