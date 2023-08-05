@@ -28,7 +28,6 @@ use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
-use ScssPhp\ScssPhp\Compiler;
 
 class Everblock extends Module
 {
@@ -40,7 +39,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.9.0';
+        $this->version = '4.9.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -1204,13 +1203,5 @@ class Everblock extends Module
             $paragraphs[] = $paragraph;
         }
         return implode("\n\n", $paragraphs);
-    }
-
-    protected function compileScss($inputFile, $outputFile)
-    {
-        $compiler = new Compiler();
-        $compiler->setOutputStyle(\ScssPhp\ScssPhp\OutputStyle::COMPRESSED);
-        $css = $compiler->compile(Tools::file_get_contents($inputFile));
-        file_put_contents($outputFile, $css);
     }
 }
