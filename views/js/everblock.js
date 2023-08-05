@@ -19,4 +19,18 @@ $(document).ready(function(){
     if ($('.everblock').length && $('.everblock').data('everhook') == 'hookDisplayBanner') {
         // Add your own code here depending on hook
     }
+    // Recherchez tous les éléments avec l'attribut data-obflink
+    $('[data-obflink]').click(function(event) {
+        event.preventDefault(); // Empêche le comportement par défaut du lien
+
+        // Récupérez l'URL encodée en base64 depuis l'attribut data-obflink
+        var encodedLink = $(this).attr('data-obflink');
+
+        // Décodez l'URL à partir de base64
+        var decodedLink = atob(encodedLink);
+
+        // Redirigez l'internaute vers l'URL décodée
+        window.location.href = decodedLink;
+    });
+    $('.everModalAutoTrigger').modal('show');
 });

@@ -20,8 +20,8 @@
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-    <div class="everblock {$block.settings.css_class|escape:'htmlall':'UTF-8'} {$block.settings.bootstrap_class|escape:'htmlall':'UTF-8'}" {if isset($block.settings.bg_color) && $block.settings.bg_color} style="background-color:{$block.settings.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-        {$block.settings.content nofilter}
+    <div class="everblock" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+        {$block.settings.shortcode nofilter}
     </div>
     {if $block.settings.default.container}
         </div>

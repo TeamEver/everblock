@@ -16,6 +16,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 <!-- Module Ever Block -->
+{if isset($block.settings.manufacturer) && isset($smarty.get.id_manufacturer) && $smarty.get.id_manufacturer == $block.settings.manufacturer.id}
 <div class="{if $block.settings.default.container}container{/if}">
     {if $block.settings.default.container}
         <div class="row">
@@ -27,4 +28,5 @@
         </div>
     {/if}
 </div>
+{/if}
 <!-- /Module Ever Block -->

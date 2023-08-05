@@ -39,7 +39,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.9.1';
+        $this->version = '4.9.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -970,16 +970,95 @@ class Everblock extends Module
 
     public function hookActionRegisterBlock($params)
     {
+        $m = Module::getInstanceByName('prettyblocks');
+        $m->registerHook('displayContentWrapperBottom');
+        $defaultTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_everblock.tpl';
+        $modalTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_modal.tpl';
+        $shortcodeTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_shortcode.tpl';
+        $iframeTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_iframe.tpl';
+        $loginTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_login.tpl';
+        $contactTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_contact.tpl';
+        $hookTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_hook.tpl';
+        $categoryTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_category.tpl';
+        $manufacturerTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_manufacturer.tpl';
+        $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/logo.png';
         $blocks = [];
         // Get all blocks
         $allBlocks = EverblockClass::getAllBlocks(
             (int) $this->context->language->id,
             (int) $this->context->shop->id
         );
-        $shortcodes = $this->getAllShortcodes();
+        $allShortcodes = EverblockShortcode::getAllShortcodes(
+            (int) $this->context->language->id,
+            (int) $this->context->shop->id
+        );
+        $allHooks = Hook::getHooks(false, true);
+        $prettyBlocksHooks = [];
+        foreach ($allHooks as $hook) {
+            $prettyBlocksHooks[$hook['id_hook']] = $hook['name'];
+        }
+        $prettyBlocksShortcodes = [];
+        foreach ($allBlocks as $block) {
+            $blocks[] =  [
+                'name' => $this->displayName . ' - ' . $block['name'],
+                'description' => $this->description,
+                'code' => $block['id_everblock'],
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $defaultTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'name' => [
+                            'type' => 'text',
+                            'label' => $block['name'],
+                            'default' => $block['name'],
+                        ],
+                        'content' => [
+                            'type' => 'editor',
+                            'label' => 'Block content',
+                            'default' => $block['content'],
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => 'Custom CSS class',
+                            'default' => $block['css_class'],
+                        ],
+                        'bootstrap_class' => [
+                            'type' => 'text',
+                            'label' => 'Custom Bootstrap class',
+                            'default' => $block['bootstrap_class'],
+                        ],
+                    ],
+                ],
+            ];
+        }
+        foreach ($allShortcodes as $shortcode) {
+            $prettyBlocksShortcodes[$shortcode->id] = $shortcode->shortcode;
+        }
 
-        $defaultTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_everblock.tpl';
-        $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/logo.png';
+        $blocks[] =  [
+            'name' => $this->displayName . ' Shortcodes',
+            'description' => $this->l('Ever block shortcodes'),
+            'code' => 'everblock_shortcode',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $shortcodeTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'shortcode' => [
+                        'type' => 'select', // type of field
+                        'label' => 'Choose a value', // label to display
+                        'default' => '', // default value (String)
+                        'choices' => $prettyBlocksShortcodes
+                    ],
+                ],
+            ],
+        ];
 
         $blocks[] =  [
             'name' => $this->displayName,
@@ -997,20 +1076,6 @@ class Everblock extends Module
                         'type' => 'text',
                         'label' => 'Block name (as a reminder)',
                         'default' => '',
-                    ],
-                    'category' => [
-                        'type' => 'selector',
-                        'label' => 'Only on specific category',
-                        'collection' => 'Category',
-                        'default' => 'default value',
-                        'selector' => '{id} - {name}'
-                    ],
-                    'groups' => [
-                        'type' => 'selector',
-                        'label' => 'Only for specific group',
-                        'collection' => 'Group',
-                        'default' => 'default value',
-                        'selector' => '{id} - {name}'
                     ],
                     'content' => [
                         'type' => 'editor',
@@ -1030,6 +1095,251 @@ class Everblock extends Module
                 ],
             ],
         ];
+
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('modal'),
+            'description' => $this->l('Add custom modal'),
+            'code' => 'everblock_modal',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $modalTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'name' => [
+                        'type' => 'text',
+                        'label' => 'Modal title',
+                        'default' => '',
+                    ],
+                    'open_name' => [
+                        'type' => 'text',
+                        'label' => 'Open modal button text',
+                        'default' => $this->l('Open'),
+                    ],
+                    'close_name' => [
+                        'type' => 'text',
+                        'label' => 'Close modal button text',
+                        'default' => $this->l('Close'),
+                    ],
+                    'content' => [
+                        'type' => 'editor',
+                        'label' => 'Modal content',
+                        'default' => '[llorem]',
+                    ],
+                    'auto_trigger_modal' => [
+                        'type' => 'radio_group', // type of field
+                        'label' => $this->l('Auto trigger modal'), // label to display
+                        'default' => 'No', // default value (String)
+                        'choices' => [
+                            '1' =>'No',
+                            '2' => 'Auto',
+                        ]
+                    ],
+                    'modal_title_color' => [
+                        'tab' => 'design',
+                        'type' => 'color',
+                        'default' => '#000000',
+                        'label' => $this->l('Modal title color')
+                    ],
+                    'open_modal_button_bg_color' => [
+                        'tab' => 'design',
+                        'type' => 'color',
+                        'default' => '#000000',
+                        'label' => $this->l('Open modal button background color')
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => 'Custom CSS class',
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => 'Custom Bootstrap class',
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('video iframe'),
+            'description' => $this->l('Add video iframe using embed link'),
+            'code' => 'everblock_iframe',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $iframeTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'iframe_link' => [
+                        'type' => 'text',
+                        'label' => 'Iframe embed code (like https://www.youtube.com/embed/jfKfPfyJRdk)',
+                        'default' => 'https://www.youtube.com/embed/jfKfPfyJRdk',
+                    ],
+                    'iframe_source' => [
+                        'type' => 'radio_group', // type of field
+                        'label' => $this->l('Iframe source'), // label to display
+                        'default' => 'No', // default value (String)
+                        'choices' => [
+                            '1' =>'youtube',
+                            '2' => 'vimeo',
+                            '3' => 'dailymotion',
+                            '4' => 'vidyard',
+                        ]
+                    ],
+                    'height' => [
+                        'type' => 'text',
+                        'label' => $this->l('Iframe height (like 250px)'),
+                        'default' => '500px',
+                    ],
+                    'width' => [
+                        'type' => 'text',
+                        'label' => $this->l('Iframe width (like 250px or 50%)'),
+                        'default' => '100%',
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('login form'),
+            'description' => $this->l('Add contact form'),
+            'code' => 'everblock_login',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $loginTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'title' => [
+                        'type' => 'text',
+                        'label' => 'Block title',
+                        'default' => $this->l('Login'),
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('contact form'),
+            'description' => $this->l('Add login form (default contact module must be installed)'),
+            'code' => 'everblock_contact',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $contactTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'title' => [
+                        'type' => 'text',
+                        'label' => 'Block title',
+                        'default' => $this->l('Login'),
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('hook'),
+            'description' => $this->l('Add hook on zone'),
+            'code' => 'everblock_hook',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $hookTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'hook_name' => [
+                        'type' => 'select', // type of field
+                        'label' => 'Choose a value', // label to display
+                        'default' => '', // default value (String)
+                        'choices' => $prettyBlocksHooks
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('category text'),
+            'description' => $this->l('Add text on specific category page'),
+            'code' => 'everblock_category',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $categoryTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'category' => [
+                        'type' => 'selector',
+                        'label' => 'Please select a category',
+                        'collection' => 'Category',
+                        'default' => 'default value',
+                        'selector' => '{id} - {name}'
+                    ],
+                    'content' => [
+                        'type' => 'editor',
+                        'label' => 'Category content',
+                        'default' => '[llorem]',
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => 'Custom CSS class',
+                        'default' => $block['css_class'],
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => 'Custom Bootstrap class',
+                        'default' => $block['bootstrap_class'],
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('manufacturer text'),
+            'description' => $this->l('Add text on specific manufacturer page'),
+            'code' => 'everblock_manufacturer',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $manufacturerTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'manufacturer' => [
+                        'type' => 'selector',
+                        'label' => 'Please select a manufacturer',
+                        'collection' => 'Manufacturer',
+                        'default' => 'default value',
+                        'selector' => '{id} - {name}'
+                    ],
+                    'content' => [
+                        'type' => 'editor',
+                        'label' => 'Manufacturer content',
+                        'default' => '[llorem]',
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => 'Custom CSS class',
+                        'default' => $block['css_class'],
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => 'Custom Bootstrap class',
+                        'default' => $block['bootstrap_class'],
+                    ],
+                ],
+            ],
+        ];
+
         return $blocks;
     }
 
