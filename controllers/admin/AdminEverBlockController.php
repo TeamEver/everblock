@@ -820,6 +820,10 @@ class AdminEverBlockController extends ModuleAdminController
                             . $this->token
                         );
                     }
+                    if (Module::isInstalled('prettyblocks')) {
+                        $m = Module::getInstanceByName('prettyblocks');
+                        $m->registerHook($hook_name);
+                    }
                     Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
                 } catch (Exception $e) {
                     PrestaShopLogger::addLog('Unable to update save block');

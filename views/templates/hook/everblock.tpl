@@ -16,6 +16,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
+{widget name="prettyblocks" zone_name='everBlock_'|cat:$everhook}
 <!-- Module Ever Block -->
 {if isset($everblock) && $everblock}
     <div class="container">

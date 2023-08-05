@@ -1292,12 +1292,12 @@ class Everblock extends Module
                     'css_class' => [
                         'type' => 'text',
                         'label' => 'Custom CSS class',
-                        'default' => $block['css_class'],
+                        'default' => '',
                     ],
                     'bootstrap_class' => [
                         'type' => 'text',
                         'label' => 'Custom Bootstrap class',
-                        'default' => $block['bootstrap_class'],
+                        'default' => '',
                     ],
                 ],
             ],
@@ -1329,12 +1329,12 @@ class Everblock extends Module
                     'css_class' => [
                         'type' => 'text',
                         'label' => 'Custom CSS class',
-                        'default' => $block['css_class'],
+                        'default' => '',
                     ],
                     'bootstrap_class' => [
                         'type' => 'text',
                         'label' => 'Custom Bootstrap class',
-                        'default' => $block['bootstrap_class'],
+                        'default' => '',
                     ],
                 ],
             ],
