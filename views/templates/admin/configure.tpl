@@ -35,4 +35,27 @@
     <h4>{l s='Is it really free ?' mod='everblock'}</h3>
     <p>{l s='This module has always been free and will always be.' mod='everblock'}</p>
     <p>{l s='You can support our free modules developpment by making a donation. This will help us make more free modules and help e-merchants. Thanks for your support !' mod='everblock'}</p>
+    <br>
+    <h4>{l s='Shortcodes list' mod='everblock'}</h3>
+    <p>[product 1] {l s='to show product ID 1' mod='everblock'}</p>
+    <p>[entity_lastname] {l s='for customer or employee lastname' mod='everblock'}</p>
+    <p>[entity_firstname] {l s='for customer or employee firstname' mod='everblock'}</p>
+    <p>[entity_gender] {l s='for customer or employee gender' mod='everblock'}</p>
+    <p>[start_cart_link] {l s='for starting link to cart page' mod='everblock'}</p>
+    <p>[end_cart_link] {l s='for ending link to cart page' mod='everblock'}</p>
+    <p>[start_shop_link] {l s='for starting link to shop' mod='everblock'}</p>
+    <p>[end_shop_link] {l s='for ending link to shop' mod='everblock'}</p>
+    <p>[start_contact_link] {l s='for starting link to contact page' mod='everblock'}</p>
+    <p>[end_contact_link] {l s='for ending link to contact page' mod='everblock'}</p>
+    <p>[llorem] {l s='will generate fake text' mod='everblock'}</p>
+    <p>[shop_url] {l s='for shop url' mod='everblock'}</p>
+    <p>[shop_name] {l s='for shop name' mod='everblock'}</p>
+    <p>[theme_uri] {l s='for current theme url' mod='everblock'}</p>
+    <br>
+    <h4>{l s='Using PrettyBlocks' mod='everblock'}</h3>
+    <p>{l s='You can also use the shortcodes with the Pretty Blocks page builder' mod='everblock'}</p>
+    <p>
+    {l s='Pretty Blocks is freely accessible here:' mod='everblock'}
+    <a href="https://prettyblocks.io/" target="_blank">https://prettyblocks.io/</a>
+    </p>
 </div>

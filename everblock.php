@@ -40,7 +40,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.8.0';
+        $this->version = '4.9.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -61,6 +61,7 @@ class Everblock extends Module
             'front',
             'modulefront',
         ];
+        
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
         }
@@ -976,33 +977,60 @@ class Everblock extends Module
             (int) $this->context->language->id,
             (int) $this->context->shop->id
         );
+        $shortcodes = $this->getAllShortcodes();
 
-        $template = 'module:' . $this->name . '/views/templates/hook/everblock.tpl';
-        // Add each block to the array
-        foreach ($allBlocks as $block) {
-            // Add block to the array
-            $blocks[] =  [
-                'name' => $this->displayName,
-                'description' => $block['title'],
-                'code' => $block['content'],
-                'tab' => 'general',
-                'icon' => 'DocumentTextIcon',
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $template,
-                ],
-                'config' => [
-                    'fields' => [
-                        'text' => [
-                            'type' => 'editor',
-                            'label' => 'Text HTML',
-                            'default' => $block['content'],
-                        ],
+        $defaultTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_everblock.tpl';
+        $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/logo.png';
+
+        $blocks[] =  [
+            'name' => $this->displayName,
+            'description' => $this->description,
+            'code' => 'everblock',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $defaultTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'name' => [
+                        'type' => 'text',
+                        'label' => 'Block name (as a reminder)',
+                        'default' => '',
+                    ],
+                    'category' => [
+                        'type' => 'selector',
+                        'label' => 'Only on specific category',
+                        'collection' => 'Category',
+                        'default' => 'default value',
+                        'selector' => '{id} - {name}'
+                    ],
+                    'groups' => [
+                        'type' => 'selector',
+                        'label' => 'Only for specific group',
+                        'collection' => 'Group',
+                        'default' => 'default value',
+                        'selector' => '{id} - {name}'
+                    ],
+                    'content' => [
+                        'type' => 'editor',
+                        'label' => 'Block content',
+                        'default' => '',
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => 'Custom CSS class',
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => 'Custom Bootstrap class',
+                        'default' => '',
                     ],
                 ],
-            ];
-        }
-        die(var_dump($blocks));
+            ],
+        ];
         return $blocks;
     }
 
