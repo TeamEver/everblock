@@ -28,6 +28,7 @@ use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use ScssPhp\ScssPhp\Compiler;
 
 class Everblock extends Module
 {
@@ -39,7 +40,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.9.2';
+        $this->version = '4.9.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -103,6 +104,8 @@ class Everblock extends Module
         return (parent::install()
             && $this->registerHook('displayHeader')
             && $this->registerHook('actionAdminControllerSetMedia')
+            && $this->registerHook('actionRegisterBlock')
+            && $this->registerHook('beforeRenderingEverblockProduct')
             && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
             && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
             && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
@@ -373,6 +376,13 @@ class Everblock extends Module
                     ],
                     [
                         'type' => 'textarea',
+                        'label' => $this->l('Custom SASS'),
+                        'desc' => $this->l('Add here your custom SASS rules that will be added after CSS rules'),
+                        'hint' => $this->l('Webdesigners here can manage SASS rules'),
+                        'name' => 'EVERPSSASS',
+                    ],
+                    [
+                        'type' => 'textarea',
                         'label' => $this->l('Custom Javascript'),
                         'desc' => $this->l('Add here your custom Javascript rules'),
                         'hint' => $this->l('Webdesigners here can manage Javascript rules'),
@@ -429,12 +439,16 @@ class Everblock extends Module
         $custom_css = Tools::file_get_contents(
             _PS_MODULE_DIR_.'/' . $this->name . '/views/css/custom' . $idShop . '.css'
         );
+        $custom_sass = Tools::file_get_contents(
+            _PS_MODULE_DIR_.'/' . $this->name . '/views/css/custom' . $idShop . '.scss'
+        );
         $custom_js = Tools::file_get_contents(
             _PS_MODULE_DIR_.'/' . $this->name . '/views/js/custom' . $idShop . '.js'
         );
         return [
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERPSCSS' => $custom_css,
+            'EVERPSSASS' => $custom_sass,
             'EVERPSJS' => $custom_js,
             'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
             'EVERPSJS_LINKS' => Configuration::get('EVERPSJS_LINKS'),
@@ -474,13 +488,19 @@ class Everblock extends Module
     protected function postProcess()
     {
         $idShop = Context::getContext()->shop->id;
-        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom' . $idShop . '.css';
-        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
+        $custom_css = _PS_MODULE_DIR_ . $this->name . '/views/css/custom' . $idShop . '.css';
+        $custom_js = _PS_MODULE_DIR_ . $this->name . '/views/js/custom' . $idShop . '.js';
         // Compressed
-        $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
+        $compressedCss = _PS_MODULE_DIR_ . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
+        $compressedJs = _PS_MODULE_DIR_ . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         $cssCode = Tools::getValue('EVERPSCSS');
+        $scssCode = Tools::getValue('EVERPSSASS');
         $jsCode = Tools::getValue('EVERPSJS');
+        // Compile SASS code
+        $compiledCss = $this->compileSass(
+            $scssCode
+        );
+        $cssCode .= $compiledCss;
         // Compress CSS code
         $compressedCssCode = $this->compressCSSCode(
             $cssCode
@@ -774,23 +794,34 @@ class Everblock extends Module
     public function hookDisplayHeader()
     {
         $idShop = (int) Context::getContext()->shop->id;
-        $this->context->controller->addCss(
-            _PS_MODULE_DIR_ . $this->name . '/views/css/everblock.css',
-            'all'
+        // Register your CSS file
+        $this->context->controller->registerStylesheet(
+            'module-everblock-css',
+            'modules/' . $this->name . '/views/css/everblock.css',
+            ['media' => 'all', 'priority' => 200, 'version' => $this->version]
         );
-        $this->context->controller->addJs(
-            _PS_MODULE_DIR_ . $this->name . '/views/js/everblock.js',
-            'all'
+        $this->context->controller->registerJavascript(
+            'module-everblock-js',
+            'modules/' . $this->name . '/views/js/everblock.js',
+            ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
         );
         // $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom' . $idShop . '.css';
+        $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
         // $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
-        $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
-        if (file_exists($custom_css)) {
-            $this->context->controller->addCSS($this->_path . '/views/css/custom' . $idShop . '.css');
+        $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
+        if (file_exists($compressedCss)) {
+            $this->context->controller->registerStylesheet(
+                'module-everblock-custom-css',
+                'modules/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css',
+                ['media' => 'all', 'priority' => 200, 'version' => $this->version]
+            );
         }
-        if (file_exists($custom_js)) {
-            $this->context->controller->addJS($this->_path . '/views/js/custom' . $idShop . '.js');
+        if (file_exists($compressedJs)) {
+            $this->context->controller->registerJavascript(
+                'module-everblock-js',
+                'modules/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js',
+                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+            );
         }
         // Get current hook name based on method name, first letter to lowercase
         $cacheId = $this->getCacheId($this->name . '-custom-header-' . date('Ymd'));
@@ -972,6 +1003,9 @@ class Everblock extends Module
     {
         $m = Module::getInstanceByName('prettyblocks');
         $m->registerHook('displayContentWrapperBottom');
+        $m->registerHook('displayReassurance');
+        $m->registerHook('displayFooterProduct');
+        $m->registerHook('displayShoppingCartFooter');
         $defaultTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_everblock.tpl';
         $modalTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_modal.tpl';
         $shortcodeTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_shortcode.tpl';
@@ -980,7 +1014,11 @@ class Everblock extends Module
         $contactTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_contact.tpl';
         $hookTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_hook.tpl';
         $categoryTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_category.tpl';
+        $productTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_product.tpl';
         $manufacturerTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_manufacturer.tpl';
+        $shoppingCartTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_shopping_cart.tpl';
+        $shareTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_sharer.tpl';
+        $accordeonTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_accordeon.tpl';
         $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/logo.png';
         $blocks = [];
         // Get all blocks
@@ -1023,12 +1061,12 @@ class Everblock extends Module
                         ],
                         'css_class' => [
                             'type' => 'text',
-                            'label' => 'Custom CSS class',
+                            'label' => $this->l('Custom CSS class'),
                             'default' => $block['css_class'],
                         ],
                         'bootstrap_class' => [
                             'type' => 'text',
-                            'label' => 'Custom Bootstrap class',
+                            'label' => $this->l('Custom Bootstrap class'),
                             'default' => $block['bootstrap_class'],
                         ],
                     ],
@@ -1084,12 +1122,12 @@ class Everblock extends Module
                     ],
                     'css_class' => [
                         'type' => 'text',
-                        'label' => 'Custom CSS class',
+                        'label' => $this->l('Custom CSS class'),
                         'default' => '',
                     ],
                     'bootstrap_class' => [
                         'type' => 'text',
-                        'label' => 'Custom Bootstrap class',
+                        'label' => $this->l('Custom Bootstrap class'),
                         'default' => '',
                     ],
                 ],
@@ -1151,12 +1189,12 @@ class Everblock extends Module
                     ],
                     'css_class' => [
                         'type' => 'text',
-                        'label' => 'Custom CSS class',
+                        'label' => $this->l('Custom CSS class'),
                         'default' => '',
                     ],
                     'bootstrap_class' => [
                         'type' => 'text',
-                        'label' => 'Custom Bootstrap class',
+                        'label' => $this->l('Custom Bootstrap class'),
                         'default' => '',
                     ],
                 ],
@@ -1200,6 +1238,16 @@ class Everblock extends Module
                         'type' => 'text',
                         'label' => $this->l('Iframe width (like 250px or 50%)'),
                         'default' => '100%',
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
                     ],
                 ],
             ],
@@ -1291,12 +1339,12 @@ class Everblock extends Module
                     ],
                     'css_class' => [
                         'type' => 'text',
-                        'label' => 'Custom CSS class',
+                        'label' => $this->l('Custom CSS class'),
                         'default' => '',
                     ],
                     'bootstrap_class' => [
                         'type' => 'text',
-                        'label' => 'Custom Bootstrap class',
+                        'label' => $this->l('Custom Bootstrap class'),
                         'default' => '',
                     ],
                 ],
@@ -1328,19 +1376,171 @@ class Everblock extends Module
                     ],
                     'css_class' => [
                         'type' => 'text',
-                        'label' => 'Custom CSS class',
+                        'label' => $this->l('Custom CSS class'),
                         'default' => '',
                     ],
                     'bootstrap_class' => [
                         'type' => 'text',
-                        'label' => 'Custom Bootstrap class',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('shopping cart'),
+            'description' => $this->l('Add dropdown shopping cart'),
+            'code' => 'everblock_shopping_cart',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $shoppingCartTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('share buttons'),
+            'description' => $this->l('Add share buttons to Twitter, Facebook and Pinterest'),
+            'code' => 'everblock_sharer',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $shareTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
                         'default' => '',
                     ],
                 ],
             ],
         ];
 
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('accordeons'),
+            'description' => 'Add horizontal accordeon',
+            'code' => 'everblock_accordeon',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $accordeonTemplate
+            ],
+            'repeater' => [
+                'name' => 'Accordeon',
+                'nameFrom' => 'name',
+                'groups' => [
+                    'name' => [
+                        'type' => 'text',
+                        'label' => 'Accordeon title',
+                        'default' => '',
+                    ],
+                    'content' => [
+                        'type' => 'editor',
+                        'label' => 'Accordeon content',
+                        'default' => '',
+                    ],
+                    'title_color' => [
+                        'tab' => 'design',
+                        'type' => 'color',
+                        'default' => '#000000',
+                        'label' => $this->l('Accordeon title color')
+                    ],
+                    'title_bg_color' => [
+                        'tab' => 'design',
+                        'type' => 'color',
+                        'default' => '#000000',
+                        'label' => $this->l('Accordeon background color')
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('product'),
+            'description' => $this->l('Add specific product'),
+            'code' => 'everblock_product',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $productTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'product' => [
+                        'type' => 'selector',
+                        'label' => $this->l('Please select a product'),
+                        'collection' => 'Product',
+                        'default' => 'default value',
+                        'selector' => '{id} - {name}'
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
         return $blocks;
+    }
+
+    public function hookBeforeRenderingEverblockProduct($params)
+    {
+        $settings = $params['block']['settings'];
+        $block = $params['block'];
+        if ($settings) {
+            if (isset($settings['product']['id'])) {
+                $product = new Product(
+                    (int) $settings['product']['id'],
+                    false,
+                    Context::getContext()->language->id,
+                    Context::getContext()->shop->id
+                );
+                if (Validate::isLoadedObject($product)) {
+                    $everPrettyPresentProduct = $this->everPresentProducts([$product->id]);
+                    return ['presented' => $everPrettyPresentProduct[0]];
+                }
+            }
+        }
+        return $settings;
     }
 
     public function checkLatestEverModuleVersion($module, $version)
@@ -1513,5 +1713,21 @@ class Everblock extends Module
             $paragraphs[] = $paragraph;
         }
         return implode("\n\n", $paragraphs);
+    }
+
+    protected function compileSass($sassCode)
+    {
+        // Create a new instance of the ScssPhp Compiler
+        $compiler = new \ScssPhp\ScssPhp\Compiler();
+
+        try {
+            // Compile the SASS code
+            $compiledCss = $compiler->compile($sassCode);
+            $this->postSuccess[] = $this->l('SASS compilation successful!');
+            return $compiledCss;
+
+        } catch (\Exception $e) {
+            PrestaShopLogger::addLog('SASS Compilation Error: ' . $e->getMessage());
+        }
     }
 }

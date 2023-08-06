@@ -17,6 +17,12 @@
  */
 
 $(document).ready(function() {
+    var scssTextarea = document.getElementById("EVERPSSASS");
+    var scssEditor = CodeMirror.fromTextArea(scssTextarea, {
+      mode: "text/css",
+      theme: "dracula",
+      lineNumbers: true
+    });
     var cssTextarea = document.getElementById("EVERPSCSS");
     var cssEditor = CodeMirror.fromTextArea(cssTextarea, {
       mode: "text/css",
@@ -28,13 +34,5 @@ $(document).ready(function() {
       mode: "text/javascript",
       theme: "dracula",
       lineNumbers: true
-    });
-});
-$(function () {
-    var myTextarea = document.getElementById("EVERPSCSS");
-    var editor = CodeMirror.fromTextArea(myTextarea, {
-        mode: "javascript",
-        theme: "dracula",
-        lineNumbers: true
     });
 });

@@ -1,1 +1,62 @@
 /*Add here your own custom CSS*/
+
+/* Style pour le panier déroulant */
+.ever-shopping-cart .dropdown-menu.cart-dropdown-content {
+  padding: 15px;
+  min-width: 200px;
+  max-width: 300px;
+  margin-top: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Ajoutez une ombre pour mettre en relief le panier */
+  border: 1px solid #dee2e6; /* Ajoutez une bordure */
+  border-radius: 5px; /* Ajoutez des coins arrondis */
+  background-color: #fff; /* Changez la couleur de fond */
+}
+
+.ever-shopping-cart .cart-product {
+  margin-bottom: 10px;
+}
+
+.ever-shopping-cart .product-name {
+  font-weight: bold;
+}
+
+.ever-shopping-cart .cart-total {
+  margin-top: 10px;
+  text-align: right;
+  font-weight: bold;
+}
+/* Style pour les boutons de partage */
+
+.everblock-sharer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 10px;
+}
+
+.everblock-sharer a {
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+.everblock-sharer a:last-child {
+  margin-right: 0;
+}
+
+.everblock-sharer .social-share-button {
+  background-color: #fff;
+  border-radius: 50%;
+  padding: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.everblock-sharer .social-share-button:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.everblock-sharer .social-share-button img {
+  width: 24px;
+  height: 24px;
+}
