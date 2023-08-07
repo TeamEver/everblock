@@ -20,5 +20,8 @@ Please check ps_hook table on your database to see every available hook on your 
 The module having greatly evolved, it is no longer compatible with Prestashop 1.6 in favor of Prestashop 8
 Please update your store to benefit from the new features and advantages of the latest version of the EverBlock HTML block module.
 
+## Pretty Blocks compatibility
+This module is now compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
+
 ## Documentation (French only)
 Available at https://www.team-ever.com/prestashop-utilisation-du-module-ever-block-html/
