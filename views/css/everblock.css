@@ -1,5 +1,7 @@
-/*Add here your own custom CSS*/
-
+/* Obfuscation */
+[data-obflink] {
+  cursor: pointer;
+}
 /* Style pour le panier déroulant */
 .ever-shopping-cart .dropdown-menu.cart-dropdown-content {
   padding: 15px;

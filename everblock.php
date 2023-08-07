@@ -40,7 +40,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.9.3';
+        $this->version = '4.9.4';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -805,9 +805,7 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/js/everblock.js',
             ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
         );
-        // $custom_css = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        // $custom_js = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         if (file_exists($compressedCss)) {
             $this->context->controller->registerStylesheet(
@@ -879,6 +877,7 @@ class Everblock extends Module
                 }
             }
             $this->smarty->assign([
+                'device' => $this->context->getDevice(),
                 'everhook' => 'header',
                 'everblock' => $currentBlock,
             ]);
@@ -1002,12 +1001,16 @@ class Everblock extends Module
     public function hookActionRegisterBlock($params)
     {
         $m = Module::getInstanceByName('prettyblocks');
+        $m->registerHook('displayTop');
         $m->registerHook('displayContentWrapperBottom');
         $m->registerHook('displayReassurance');
         $m->registerHook('displayFooterProduct');
         $m->registerHook('displayShoppingCartFooter');
+        $m->registerHook('displayCMSDisputeInformation');
+        $m->registerHook('displayCMSPrintButton');
         $defaultTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_everblock.tpl';
         $modalTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_modal.tpl';
+        $alertTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_alert.tpl';
         $shortcodeTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_shortcode.tpl';
         $iframeTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_iframe.tpl';
         $loginTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_login.tpl';
@@ -1017,8 +1020,10 @@ class Everblock extends Module
         $productTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_product.tpl';
         $manufacturerTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_manufacturer.tpl';
         $shoppingCartTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_shopping_cart.tpl';
-        $shareTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_sharer.tpl';
         $accordeonTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_accordeon.tpl';
+        $textAndImageTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_text_and_image.tpl';
+        $layoutTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_layout.tpl';
+        $menuTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblock_menu.tpl';
         $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/logo.png';
         $blocks = [];
         // Get all blocks
@@ -1413,17 +1418,37 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('share buttons'),
-            'description' => $this->l('Add share buttons to Twitter, Facebook and Pinterest'),
-            'code' => 'everblock_sharer',
+            'name' => $this->displayName . ' ' . $this->l('alert message'),
+            'description' => $this->l('Add alert message'),
+            'code' => 'everblock_alert',
             'tab' => 'general',
             'icon_path' => $defaultLogo,
             'need_reload' => true,
             'templates' => [
-                'default' => $shareTemplate,
+                'default' => $alertTemplate,
             ],
             'config' => [
                 'fields' => [
+                    'content' => [
+                        'type' => 'editor',
+                        'label' => 'Alert message content',
+                        'default' => '[llorem]',
+                    ],
+                    'alert_type' => [
+                        'type' => 'radio_group', // type of field
+                        'label' => $this->l('Alert type'), // label to display
+                        'default' => 'primary', // default value (String)
+                        'choices' => [
+                            '1' =>'primary',
+                            '2' => 'secondary',
+                            '3' => 'success',
+                            '4' => 'danger',
+                            '5' => 'warning',
+                            '6' => 'info',
+                            '7' => 'light',
+                            '8' => 'dark',
+                        ]
+                    ],
                     'css_class' => [
                         'type' => 'text',
                         'label' => $this->l('Custom CSS class'),
@@ -1437,7 +1462,6 @@ class Everblock extends Module
                 ],
             ],
         ];
-
         $blocks[] =  [
             'name' => $this->displayName . ' ' . $this->l('accordeons'),
             'description' => 'Add horizontal accordeon',
@@ -1505,6 +1529,139 @@ class Everblock extends Module
                         'collection' => 'Product',
                         'default' => 'default value',
                         'selector' => '{id} - {name}'
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('text and image'),
+            'description' => 'Add image & text layout',
+            'code' => 'everblock_text_and_image',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $textAndImageTemplate
+            ],
+            'repeater' => [
+                'name' => 'Menu',
+                'nameFrom' => 'name',
+                'groups' => [
+                    'name' => [
+                        'type' => 'text',
+                        'label' => 'Layout title',
+                        'default' => '',
+                    ],
+                    'order' => [
+                        'type' => 'select',
+                        'label' => 'Layout order', 
+                        'default' => '1',
+                        'choices' => [
+                            '1' => 'First image, then text',
+                            '2' => 'First text, then image',
+                        ]
+                    ],
+                    'image' => [
+                        'type' => 'fileupload',
+                        'label' => 'Layout image',
+                        'path' => '$/modules/everblock/views/img/prettyblocks/',
+                        'default' => [
+                            'url' => 'https://via.placeholder.com/1100x213',
+                        ],
+                    ],
+                    'content' => [
+                        'type' => 'editor',
+                        'label' => 'Layout content',
+                        'default' => '[llorem]',
+                    ],
+                    'link' => [
+                        'type' => 'text',
+                        'label' => 'Layout link',
+                        'default' => '',
+                    ],
+                    'obfuscate' => [
+                        'type' => 'checkbox', // type of field
+                        'label' => $this->l('Obfuscate link'), // label to display
+                        'default' => '0', // default value (String)
+                    ],
+                    'target_blank' => [
+                        'type' => 'checkbox', // type of field
+                        'label' => $this->l('Open in new tab (only if not obfuscated)'), // label to display
+                        'default' => '0', // default value (String)
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('layout'),
+            'description' => 'Add layout',
+            'code' => 'everblock_layout',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $layoutTemplate
+            ],
+            'repeater' => [
+                'name' => 'Menu',
+                'nameFrom' => 'name',
+                'groups' => [
+                    'name' => [
+                        'type' => 'text',
+                        'label' => 'Layout title',
+                        'default' => '',
+                    ],
+                    'order' => [
+                        'type' => 'select',
+                        'label' => 'Layout width', 
+                        'default' => 'col-12',
+                        'choices' => [
+                            'col-12' => '100%',
+                            'col-12 col-md-6' => '50%',
+                            'col-12 col-md-4' => '33,33%',
+                            'col-12 col-md-3' => '25%',
+                            'col-12 col-md-2' => '16,67%',
+                        ]
+                    ],
+                    'content' => [
+                        'type' => 'editor',
+                        'label' => 'Layout content',
+                        'default' => '[llorem]',
+                    ],
+                    'link' => [
+                        'type' => 'text',
+                        'label' => 'Layout link',
+                        'default' => '',
+                    ],
+                    'obfuscate' => [
+                        'type' => 'checkbox', // type of field
+                        'label' => $this->l('Obfuscate link'), // label to display
+                        'default' => '0', // default value (String)
+                    ],
+                    'target_blank' => [
+                        'type' => 'checkbox', // type of field
+                        'label' => $this->l('Open in new tab (only if not obfuscated)'), // label to display
+                        'default' => '0', // default value (String)
                     ],
                     'css_class' => [
                         'type' => 'text',
