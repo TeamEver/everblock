@@ -504,7 +504,6 @@ class AdminEverBlockController extends ModuleAdminController
         $helper->currentIndex = AdminController::$currentIndex;
         $helper->token = Tools::getValue('token');
         $helper->submit_action = 'save';
-        // die(var_dump($this->getConfigFormValues($obj)));
         $helper->tpl_vars = [
             'fields_value' => $this->getConfigFormValues($obj),
             'languages' => $this->context->controller->getLanguages(),

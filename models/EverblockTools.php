@@ -47,4 +47,34 @@ class EverblockTools extends ObjectModel
         }
         return false;
     }
+
+    public static function getProductIdsBySupplier($supplierId, $limit = false)
+    {
+        $sql = new DbQuery();
+        $sql->select('id_product');
+        $sql->from('product');
+        $sql->where('id_supplier = ' . (int) $supplierId);
+        if ($limit) {
+            $sql->limit($limit);
+        }
+
+        $productIds = Db::getInstance()->executeS($sql);
+
+        return array_column($productIds, 'id_product');
+    }
+
+    public static function getProductIdsByManufacturer($manufacturerId, $limit = false)
+    {
+        $sql = new DbQuery();
+        $sql->select('id_product');
+        $sql->from('product');
+        $sql->where('id_manufacturer = ' . (int) $manufacturerId);
+        if ($limit) {
+            $sql->limit($limit);
+        }
+
+        $productIds = Db::getInstance()->executeS($sql);
+
+        return array_column($productIds, 'id_product');
+    }
 }

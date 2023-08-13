@@ -33,4 +33,22 @@ $(document).ready(function(){
         window.location.href = decodedLink;
     });
     $('.everModalAutoTrigger').modal('show');
+
+    // Sélectionner tous les éléments avec la classe "ever-slide"
+    var sliders = $('.ever-slide');
+
+    // Parcourir chaque élément slider
+    sliders.each(function() {
+        // Récupérer la valeur de data-duration en tant qu'attribut de l'élément
+        var durationAttr = $(this).data('duration');
+        
+        // Convertir en entier en utilisant parseInt
+        var intervalDuration = parseInt(durationAttr);
+
+        // Initialiser le slider Bootstrap avec l'intervalle personnalisé
+        $(this).carousel({
+            interval: intervalDuration,
+            wrap: true
+        });
+    });
 });
