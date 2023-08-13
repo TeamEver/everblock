@@ -29,7 +29,7 @@
     {/if}
     <div class="col-12 col-md-6 {$state.css_class|escape:'htmlall':'UTF-8'} {$state.bootstrap_class|escape:'htmlall':'UTF-8'}">
       {if $state.order == 1}
-      <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block"{if $state.image.width > 0} width="{$state.image.width}"{/if}{if $state.image.height > 0} height="{$state.image.height}"{/if}>
+      <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"{if $state.image.width > 0} width="{$state.image.width}"{/if}{if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
       {else}
       {$state.content nofilter}
       {/if}
@@ -38,7 +38,7 @@
       {if $state.order == 1}
       {$state.content nofilter}
       {else}
-      <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block"{if $state.image.width > 0} width="{$state.image.width}"{/if}{if $state.image.height > 0} height="{$state.image.height}"{/if}>
+      <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"{if $state.image.width > 0} width="{$state.image.width}"{/if}{if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
       {/if}
     </div>
     {if $state.link}

@@ -49,7 +49,7 @@
 
                     <div class="col-md-3">
                         <div class="card">
-                            <img src="{$product.cover.bySize.home_default.url}" class="card-img-top" alt="{$product.name}">
+                            <img src="{$product.cover.bySize.home_default.url}" class="card-img-top lazyload" alt="{$product.name}" loading="lazy">
                             <div class="card-body">
                                 <h5 class="card-title">{$product.name}</h5>
                                 <p class="card-text">Price: {$product.price}</p>

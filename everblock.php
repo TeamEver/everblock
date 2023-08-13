@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.9.5';
+        $this->version = '4.9.6';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -1036,6 +1036,8 @@ class Everblock extends Module
         $imgSliderTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_img_slider.tpl';
         $tabTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_tab.tpl';
         $dividerTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
+        $galleryTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_gallery.tpl';
+        $testimonialTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial.tpl';
         $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/logo.png';
         $blocks = [];
         // Get all blocks
@@ -1837,7 +1839,7 @@ class Everblock extends Module
         ];
         $blocks[] =  [
             'name' => $this->displayName . ' ' . $this->l('Images slider'),
-            'description' => $this->l('Show images slider'),
+            'description' => $this->l('Show images slider (images must have same size)'),
             'code' => 'everblock_img_slider',
             'tab' => 'general',
             'icon_path' => $defaultLogo,
@@ -1961,6 +1963,104 @@ class Everblock extends Module
                         'type' => 'text',
                         'label' => $this->l('Slide duration (in milliseconds)'),
                         'default' => '2500',
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('gallery'),
+            'description' => $this->l('Show image gallery (images must have same size)'),
+            'code' => 'everblock_gallery',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $galleryTemplate,
+            ],
+            'repeater' => [
+                'name' => 'Tab',
+                'nameFrom' => 'name',
+                'groups' => [
+                    'name' => [
+                        'type' => 'text',
+                        'label' => 'Image title',
+                        'default' => Configuration::get('PS_SHOP_NAME'),
+                    ],
+                    'image' => [
+                        'type' => 'fileupload',
+                        'label' => 'Image',
+                        'path' => '$/modules/everblock/views/img/prettyblocks/',
+                        'default' => [
+                            'url' => 'https://via.placeholder.com/150',
+                        ],
+                    ],
+                ],
+            ],
+            'config' => [
+                'fields' => [
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->displayName . ' ' . $this->l('testimonials'),
+            'description' => $this->l('Show custom testimonials'),
+            'code' => 'everblock_testimonial',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $testimonialTemplate,
+            ],
+            'repeater' => [
+                'name' => 'Tab',
+                'nameFrom' => 'name',
+                'groups' => [
+                    'name' => [
+                        'type' => 'text',
+                        'label' => 'testimonial title',
+                        'default' => Configuration::get('PS_SHOP_NAME'),
+                    ],
+                    'image' => [
+                        'type' => 'fileupload',
+                        'label' => 'Image',
+                        'path' => '$/modules/everblock/views/img/prettyblocks/',
+                        'default' => [
+                            'url' => 'https://via.placeholder.com/60',
+                        ],
+                    ],
+                    'content' => [
+                        'type' => 'editor',
+                        'label' => 'Tab content',
+                        'default' => '[llorem]',
+                    ],
+                ],
+            ],
+            'config' => [
+                'fields' => [
+                    'name' => [
+                        'type' => 'text',
+                        'label' => 'Block title',
+                        'default' => $this->l('Testimonials'),
                     ],
                     'css_class' => [
                         'type' => 'text',

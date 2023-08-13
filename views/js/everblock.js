@@ -51,4 +51,19 @@ $(document).ready(function(){
             wrap: true
         });
     });
+    // Gallery modals
+    $('.everblock-gallery img').on('click', function() {
+        var imageSrc = $(this).attr('data-src');
+        var imageAlt = $(this).attr('alt');
+        var modalId = $(this).closest('.everblock-gallery').find('.modal').attr('id');
+        
+        $('#' + modalId + ' img').attr('src', imageSrc);
+        $('#' + modalId + ' .modal-title').text(imageAlt); // Met à jour le titre de la modal
+    });
+
+    // Empêcher la fermeture automatique des modales lors du clic sur le fond
+    $('.everblock-gallery .modal').modal({
+        backdrop: true,
+        show: false
+    });
 });

@@ -58,7 +58,7 @@
                                         <a href="{$state.link}" title="{$state.name}" {if $state.target_blank} target="_blank"{/if}>
                                         {/if}
                                         {/if}
-                                            <img src="{$state.image.url}" title="{$state.name}" alt="{$state.name}" class="img img-fluid">
+                                            <img src="{$state.image.url}" title="{$state.name}" alt="{$state.name}" class="img img-fluid lazyload" loading="lazy">
                                         {if $state.link}
                                         {if $state.obfuscate}
                                         </span>

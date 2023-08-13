@@ -62,3 +62,10 @@
   width: 24px;
   height: 24px;
 }
+.everblock-gallery img {
+    cursor: pointer;
+}
+.everblock-gallery-modal .modal-header,
+.everblock-testimonial .text-center {
+  text-align: center;
+}
