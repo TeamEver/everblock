@@ -809,16 +809,16 @@ class Everblock extends Module
         );
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
         $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
-        if (file_exists($compressedCss)) {
+        if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
             $this->context->controller->registerStylesheet(
-                'module-everblock-custom-compressed-css',
+                'module-everblock-custom-css',
                 'modules/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css',
                 ['media' => 'all', 'priority' => 200, 'version' => $this->version]
             );
         }
-        if (file_exists($compressedJs)) {
+        if (file_exists($compressedJs) && filesize($compressedJs) > 0) {
             $this->context->controller->registerJavascript(
-                'module-everblock-compressed-js',
+                'module-everblock-custom-js',
                 'modules/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js',
                 ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
             );
