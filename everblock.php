@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.9.6';
+        $this->version = '4.9.7';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -657,6 +657,8 @@ class Everblock extends Module
             ];
             $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
             $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
+            $shortcodes = array_merge($shortcodes, $this->getCategoryShortcodes($txt));
+            $shortcodes = array_merge($shortcodes, $this->getManufacturerShortcodes($txt));
             $shortcodes = array_merge($shortcodes, $this->getEverShortcodes($txt));
             foreach ($shortcodes as $key => $value) {
                 $txt = preg_replace(
@@ -948,6 +950,100 @@ class Everblock extends Module
         }
 
         return $productShortcodes;
+    }
+
+    protected function getCategoryShortcodes($message)
+    {
+        $categoryShortcodes = [];
+        preg_match_all('/\[category\s+id="(\d+)"\s+nb="(\d+)"\]/i', $message, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $categoryId = (int) $match[1];
+            $productCount = (int) $match[2];
+
+            // Récupérez ici les produits de la catégorie $categoryId
+            $categoryProducts = $this->getProductsByCategoryId($categoryId, $productCount);
+            if (!empty($categoryProducts)) {
+                $productIds = [];
+                foreach ($categoryProducts as $categoryProduct) {
+                    $productIds[] = $categoryProduct['id_product'];
+                }
+                $everPresentProducts = $this->everPresentProducts($productIds);
+                $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $categoryShortcodes[$match[0]] = $this->context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
+            }
+        }
+        return $categoryShortcodes;
+    }
+
+    protected function getProductsByCategoryId($categoryId, $limit)
+    {
+        $cacheId = $this->name . '::getProductsByCategoryId_'
+        . (int) $categoryId
+        . '_'
+        . (int) $limit;
+        if (!Cache::isStored($cacheId)) {
+            $category = new Category($categoryId);
+            $return = [];
+            if (Validate::isLoadedObject($category)) {
+                $products = $category->getProducts(Context::getContext()->language->id, 1, $limit, 'id_product', 'ASC');
+                $return = $products;
+            }
+
+            Cache::store($cacheId, $return);
+            return $return;
+        }
+
+        return Cache::retrieve($cacheId);
+    }
+
+    protected function getManufacturerShortcodes($message)
+    {
+        $manufacturerShortcodes = [];
+        preg_match_all('/\[manufacturer\s+id="(\d+)"\s+nb="(\d+)"\]/i', $message, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $manufacturerId = (int) $match[1];
+            $productCount = (int) $match[2];
+            // Récupérez ici les produits du fabricant $manufacturerId
+            $manufacturerProducts = $this->getProductsByManufacturerId($manufacturerId, $productCount);
+            if (!empty($manufacturerProducts)) {
+                $productIds = [];
+                foreach ($manufacturerProducts as $manufacturerProduct) {
+                    $productIds[] = $manufacturerProduct['id_product'];
+                }
+                $everPresentProducts = $this->everPresentProducts($productIds);
+                $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $manufacturerShortcodes[$match[0]] = $this->context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
+            }
+        }
+        return $manufacturerShortcodes;
+    }
+
+    protected function getProductsByManufacturerId($manufacturerId, $limit)
+    {
+        $cacheId = $this->name . '::getProductsByManufacturerId_'
+        . (int) $manufacturerId
+        . '_'
+        . (int) $limit;
+        if (!Cache::isStored($cacheId)) {
+            $manufacturer = new Manufacturer($manufacturerId);
+            $return = [];
+            if (Validate::isLoadedObject($manufacturer)) {
+                $products = Manufacturer::getProducts(
+                    $manufacturer->id,
+                    Context::getContext()->language->id,
+                    1,
+                    $limit,
+                    'id_product',
+                    'ASC'
+                );
+                $return = $products;
+            }
+
+            Cache::store($cacheId, $return);
+            return $return;
+        }
+
+        return Cache::retrieve($cacheId);
     }
 
     protected function getEverShortcodes($message)

@@ -21,7 +21,7 @@
 <section class="featured-products clearfix">
     <div class="products row">
         {foreach $everPresentProducts as $product}
-            {include file="catalog/_partials/miniatures/product.tpl" product=$product}
+            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-12 col-xs-12 col-sm-6 col-xl-3"}
         {/foreach}
     </div>
 </section>

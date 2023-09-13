@@ -33,6 +33,8 @@
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
             <p class="dropdown-item px-2">[product 1] {l s='to show product ID 1' mod='everblock'}</p>
+            <p class="dropdown-item px-2">[category id="8" nb="8"] {l s='to show 8 products from category ID 8' mod='everblock'}</p>
+            <p class="dropdown-item px-2">[manufacturer id="2" nb="8"] {l s='to show 8 products from manufacturer ID 2' mod='everblock'}</p>
             <p class="dropdown-item px-2">[entity_lastname] {l s='for customer or employee lastname' mod='everblock'}</p>
             <p class="dropdown-item px-2">[entity_firstname] {l s='for customer or employee firstname' mod='everblock'}</p>
             <p class="dropdown-item px-2">[entity_gender] {l s='for customer or employee gender' mod='everblock'}</p>
