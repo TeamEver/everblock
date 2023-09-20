@@ -58,12 +58,28 @@ $(document).ready(function(){
         var modalId = $(this).closest('.everblock-gallery').find('.modal').attr('id');
         
         $('#' + modalId + ' img').attr('src', imageSrc);
-        $('#' + modalId + ' .modal-title').text(imageAlt); // Met à jour le titre de la modal
+        $('#' + modalId + ' .modal-title').text(imageAlt); // Mets à jour le titre de la modal
     });
 
-    // Empêcher la fermeture automatique des modales lors du clic sur le fond
     $('.everblock-gallery .modal').modal({
         backdrop: true,
         show: false
+    });
+    // Parallax
+    $('.everblock-parallax .parallax-container').each(function() {
+        var $container = $(this);
+        var $bg = $container.find('.parallax-bg');
+        var containerTop = $container.offset().top;
+        var windowHeight = $(window).height();
+
+        $(window).on('scroll', function() {
+            var scrollPosition = $(this).scrollTop();
+            var parallaxOffset = (scrollPosition - containerTop) * 0.2;
+
+            $bg.css({
+                'transform': 'translateY(' + parallaxOffset + 'px)',
+                'height': windowHeight + parallaxOffset + 'px'
+            });
+        });
     });
 });

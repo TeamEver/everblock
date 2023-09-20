@@ -29,6 +29,12 @@ class EverBlockClass extends ObjectModel
     public $only_home;
     public $only_category;
     public $only_category_product;
+    public $only_manufacturer;
+    public $only_supplier;
+    public $only_cms_category;
+    public $obfuscate_link;
+    public $add_container;
+    public $lazyload;
     public $id_hook;
     public $device;
     public $groups;
@@ -37,6 +43,9 @@ class EverBlockClass extends ObjectModel
     public $bootstrap_class;
     public $id_shop;
     public $categories;
+    public $manufacturers;
+    public $suppliers;
+    public $cms_categories;
     public $date_start;
     public $date_end;
     public $active;
@@ -73,6 +82,36 @@ class EverBlockClass extends ObjectModel
                 'lang' => false,
                 'validate' => 'isBool',
             ],
+            'only_manufacturer' => [
+                'type' => self::TYPE_BOOL,
+                'lang' => false,
+                'validate' => 'isBool',
+            ],
+            'only_supplier' => [
+                'type' => self::TYPE_BOOL,
+                'lang' => false,
+                'validate' => 'isBool',
+            ],
+            'only_cms_category' => [
+                'type' => self::TYPE_BOOL,
+                'lang' => false,
+                'validate' => 'isBool',
+            ],
+            'obfuscate_link' => [
+                'type' => self::TYPE_BOOL,
+                'lang' => false,
+                'validate' => 'isBool',
+            ],
+            'add_container' => [
+                'type' => self::TYPE_BOOL,
+                'lang' => false,
+                'validate' => 'isBool',
+            ],
+            'lazyload' => [
+                'type' => self::TYPE_BOOL,
+                'lang' => false,
+                'validate' => 'isBool',
+            ],
             'device' => [
                 'type' => self::TYPE_INT,
                 'lang' => false,
@@ -80,6 +119,24 @@ class EverBlockClass extends ObjectModel
                 'required' => false,
             ],
             'categories' => [
+                'type' => self::TYPE_STRING,
+                'lang' => false,
+                'validate' => 'isJson',
+                'required' => false,
+            ],
+            'manufacturers' => [
+                'type' => self::TYPE_STRING,
+                'lang' => false,
+                'validate' => 'isJson',
+                'required' => false,
+            ],
+            'suppliers' => [
+                'type' => self::TYPE_STRING,
+                'lang' => false,
+                'validate' => 'isJson',
+                'required' => false,
+            ],
+            'cms_categories' => [
                 'type' => self::TYPE_STRING,
                 'lang' => false,
                 'validate' => 'isJson',

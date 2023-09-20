@@ -15,15 +15,12 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-
-<!-- Module Ever Block Header -->
 {if isset($everPresentProducts) && $everPresentProducts}
-<section class="featured-products clearfix">
+<section class="featured-products clearfix mt-3">
     <div class="products row">
-        {foreach $everPresentProducts as $product}
-            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-12 col-xs-12 col-sm-6 col-xl-3"}
-        {/foreach}
+    {foreach $everPresentProducts item=product}
+        {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
+    {/foreach}
     </div>
 </section>
 {/if}
-<!-- /Module Ever Block Header -->

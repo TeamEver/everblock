@@ -17,7 +17,7 @@
 *}
 <div class="panel row">
     <h3><i class="icon icon-smile"></i> {l s='Ever Block' mod='everblock'}</h3>
-    <div class="col-md-6">
+    <div class="col-md-12">
         <img id="everlogo" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" style="max-width: 120px;">
         <p>{l s='Thanks for using Team Ever\'s modules' mod='everblock'}.<br /></p>
         {if isset($block_admin_link) && $block_admin_link}
@@ -35,6 +35,7 @@
             <p class="dropdown-item px-2">[product 1] {l s='to show product ID 1' mod='everblock'}</p>
             <p class="dropdown-item px-2">[category id="8" nb="8"] {l s='to show 8 products from category ID 8' mod='everblock'}</p>
             <p class="dropdown-item px-2">[manufacturer id="2" nb="8"] {l s='to show 8 products from manufacturer ID 2' mod='everblock'}</p>
+            <p class="dropdown-item px-2">[brands nb="8"] {l s='to show 8 brands name with their associated logos' mod='everblock'}</p>
             <p class="dropdown-item px-2">[entity_lastname] {l s='for customer or employee lastname' mod='everblock'}</p>
             <p class="dropdown-item px-2">[entity_firstname] {l s='for customer or employee firstname' mod='everblock'}</p>
             <p class="dropdown-item px-2">[entity_gender] {l s='for customer or employee gender' mod='everblock'}</p>
@@ -50,16 +51,5 @@
             <p class="dropdown-item px-2">[theme_uri] {l s='for current theme url' mod='everblock'}</p>
           </div>
         </div>
-    </div>
-    <div class="col-md-6">
-        <p class="alert alert-warning">
-            {l s='This module is free and will always be ! You can support our free modules by making a donation by clicking the button below' mod='everblock'}
-        </p>
-        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" style="display: flex;justify-content: center;">
-        <input type="hidden" name="cmd" value="_s-xclick" />
-        <input type="hidden" name="hosted_button_id" value="3LE8ABFYJKP98" />
-        <input type="image" src="https://www.team-ever.com/wp-content/uploads/2019/06/appel_a_dons-1.jpg" border="0" name="submit" title="Soutenez le développement des modules gratuits de Team Ever !" alt="Soutenez le développement des modules gratuits de Team Ever !" style="width: 150px;" />
-        <img alt="" border="0" src="https://www.paypal.com/fr_FR/i/scr/pixel.gif" width="1" height="1" />
-        </form>
     </div>
 </div>

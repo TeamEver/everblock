@@ -15,14 +15,18 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+{if isset($brands) && $brands}
+<section class="featured-brands clearfix mt-3">
+    <div class="brands row">
+        {foreach from=$brands item=brand}
+        <div class="col-md-3 mb-3">
+            <a href="{$brand.url}" title="{$brand.name}" class="brand-link">
+                <img src="{$brand.logo}" alt="{$brand.name}" class="brand-image lazyload" loading="lazy">
+                <div class="brand-name">{$brand.name}</div>
+            </a>
+        </div>
+        {/foreach}
+    </div>
+</section>
+{/if}
 
-<div class="panel">
-    <h3><i class="icon icon-smile"></i> {l s='Ever Block' mod='everblock'}</h3>
-    <a href="#everlogotop">
-        <img id="everlogobottom" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" style="max-width: 120px;">
-    </a>
-    <p>
-        <strong>{l s='Thank you for your confidence :-)' mod='everblock'}</strong><br />
-        {l s='Feel free to contact us for more support or help' mod='everblock'}
-    </p>
-</div>

@@ -22,7 +22,7 @@
     <div class="card">
       <div class="card-header" id="heading{$counter}" {if isset($state.title_bg_color) && $state.title_bg_color} style="background-color:{$state.title_bg_color};"{/if}>
         <span class="mb-0 h2">
-          <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse{$counter}" aria-expanded="true" aria-controls="collapse{$counter}">
+          <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#everblock-{$block.id_prettyblocks}-collapse{$counter}" aria-expanded="true" aria-controls="everblock-{$block.id_prettyblocks}-collapse{$counter}">
             {if isset($state.title_color) && $state.title_color}
             <span style="background-color:{$state.title_color};">
             {/if}
@@ -33,7 +33,7 @@
           </button>
         </span>
       </div>
-      <div id="collapse{$counter}" class="collapse {if $key == 1}show{/if}" aria-labelledby="heading{$counter}" data-parent="#prettyAccordion-{$block.id_prettyblocks}">
+      <div id="everblock-{$block.id_prettyblocks}-collapse{$counter}" class="collapse {if $key == 1}show{/if}" aria-labelledby="heading{$counter}" data-parent="#prettyAccordion-{$block.id_prettyblocks}">
         <div class="card-body">
           {$state.content nofilter}
         </div>

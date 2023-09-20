@@ -38,12 +38,12 @@
                   <input class="is_required validate account_input form-control" id="email" name="email" value="" type="text" />
               </div>
           <div class="form-group">
-              <label>{l s='Mot de passe' mod='everblock'}</label>
+              <label>{l s='Pasword' mod='everblock'}</label>
               <input class="form-control js-child-focus js-visible-password" type="password" id="password" name="password" value="" />
           </div>
           {* Le lien "Mot de passe oublié ?" pour les patates *}
           <p class="lost_password form-group">
-              <a href="{$link->getPageLink('password', true)|escape:'htmlall':'UTF-8'}" title="{l s='Recover your forgotten password' mod='everblock'}">{l s='Mot de passe oublié ?' mod='everblock'}</a>
+              <a href="{$link->getPageLink('password', true)|escape:'htmlall':'UTF-8'}" title="{l s='Recover your forgotten password' mod='everblock'}">{l s='Forgotten password ?' mod='everblock'}</a>
           </p>
           <p class="submit">
               <input type="hidden" name="submitLogin" value="1">

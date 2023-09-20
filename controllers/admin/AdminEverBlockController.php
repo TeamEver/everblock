@@ -197,6 +197,15 @@ class AdminEverBlockController extends ModuleAdminController
             true,
             false
         );
+        $manufacturersList = Manufacturer::getLiteManufacturersList(
+            (int) $this->context->language->id
+        );
+        $suppliersList = Supplier::getLiteSuppliersList(
+            (int) $this->context->language->id
+        );
+        $cmsCategoriesList = CMSCategory::getSimpleCategories(
+            (int) $this->context->language->id
+        );
         // IDs are set depending on context values
         $devices = [
             [
@@ -355,6 +364,177 @@ class AdminEverBlockController extends ModuleAdminController
                             'query' => $categories_list,
                             'id' => 'id_category',
                             'name' => 'name',
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Only on specific manufacturer ?'),
+                        'desc' => $this->l('Only if hook is available on manufacturers'),
+                        'hint' => $this->l('Set to now to show this block on each manufacturer'),
+                        'name' => 'only_manufacturer',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'select',
+                        'class' => 'chosen',
+                        'multiple' => true,
+                        'label' => $this->l('Limit on manufacturers ?'),
+                        'desc' => $this->l('Only if chosen hook is on manufacturers'),
+                        'hint' => $this->l('Depends on previous setting'),
+                        'name' => 'manufacturers[]',
+                        'required' => false,
+                        'options' => [
+                            'query' => $manufacturersList,
+                            'id' => 'id',
+                            'name' => 'name',
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Only on specific supplier ?'),
+                        'desc' => $this->l('Only if hook is available on suppliers'),
+                        'hint' => $this->l('Set to now to show this block on each supplier'),
+                        'name' => 'only_supplier',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'select',
+                        'class' => 'chosen',
+                        'multiple' => true,
+                        'label' => $this->l('Limit on suppliers ?'),
+                        'desc' => $this->l('Only if chosen hook is on suppliers'),
+                        'hint' => $this->l('Depends on previous setting'),
+                        'name' => 'suppliers[]',
+                        'required' => false,
+                        'options' => [
+                            'query' => $suppliersList,
+                            'id' => 'id',
+                            'name' => 'name',
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Only on specific CMS category ?'),
+                        'desc' => $this->l('Only if hook is available on CMS categories'),
+                        'hint' => $this->l('Set to now to show this block on each CMS categories'),
+                        'name' => 'only_cms_category',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'select',
+                        'class' => 'chosen',
+                        'multiple' => true,
+                        'label' => $this->l('Limit on CMS categories ?'),
+                        'desc' => $this->l('Only if chosen hook is on CMS categories'),
+                        'hint' => $this->l('Depends on previous setting'),
+                        'name' => 'cms_categories[]',
+                        'required' => false,
+                        'options' => [
+                            'query' => $cmsCategoriesList,
+                            'id' => 'id_cms_category',
+                            'name' => 'name',
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Obfuscate all links on block content ?'),
+                        'desc' => $this->l('Will obfuscate all links found on block content'),
+                        'hint' => $this->l('Else links will remain as set on content'),
+                        'name' => 'obfuscate_link',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Add div with class container on block ?'),
+                        'desc' => $this->l('The block will be in a div with the class container'),
+                        'hint' => $this->l('Otherwise the block will not be in a div with the class container'),
+                        'name' => 'add_container',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Lazyload images on block content ?'),
+                        'desc' => $this->l('Will add lazyload class and lazy value to loading attribute'),
+                        'hint' => $this->l('Else images will remain as set on content'),
+                        'name' => 'lazyload',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate'),
+                            ],
                         ],
                     ],
                     [
@@ -561,15 +741,42 @@ class AdminEverBlockController extends ModuleAdminController
                 'categories[]' => (!empty(Tools::getValue('categories')))
                 ? Tools::getValue('categories')
                 : json_decode($obj->categories),
+                'manufacturers[]' => (!empty(Tools::getValue('manufacturers')))
+                ? Tools::getValue('manufacturers')
+                : json_decode($obj->manufacturers),
+                'suppliers[]' => (!empty(Tools::getValue('suppliers')))
+                ? Tools::getValue('suppliers')
+                : json_decode($obj->suppliers),
+                'cms_categories[]' => (!empty(Tools::getValue('cms_categories')))
+                ? Tools::getValue('cms_categories')
+                : json_decode($obj->cms_categories),
                 'only_home' => (!empty(Tools::getValue('only_home')))
                 ? Tools::getValue('only_home')
                 : $obj->only_home,
                 'only_category' => (!empty(Tools::getValue('only_category')))
                 ? Tools::getValue('only_category')
                 : $obj->only_category,
+                'only_manufacturer' => (!empty(Tools::getValue('only_manufacturer')))
+                ? Tools::getValue('only_manufacturer')
+                : $obj->only_manufacturer,
+                'only_supplier' => (!empty(Tools::getValue('only_supplier')))
+                ? Tools::getValue('only_supplier')
+                : $obj->only_supplier,
+                'only_cms_category' => (!empty(Tools::getValue('only_cms_category')))
+                ? Tools::getValue('only_cms_category')
+                : $obj->only_cms_category,
                 'only_category_product' => (!empty(Tools::getValue('only_category_product')))
                 ? Tools::getValue('only_category_product')
                 : $obj->only_category_product,
+                'obfuscate_link' => (!empty(Tools::getValue('obfuscate_link')))
+                ? Tools::getValue('obfuscate_link')
+                : $obj->obfuscate_link,
+                'add_container' => (!empty(Tools::getValue('add_container')))
+                ? Tools::getValue('add_container')
+                : $obj->add_container,
+                'lazyload' => (!empty(Tools::getValue('lazyload')))
+                ? Tools::getValue('lazyload')
+                : $obj->lazyload,                
                 'position' => (!empty(Tools::getValue('position')))
                 ? Tools::getValue('position')
                 : $obj->position,
@@ -630,6 +837,15 @@ class AdminEverBlockController extends ModuleAdminController
                 'categories[]' => (!empty(Tools::getValue('categories')))
                 ? Tools::getValue('categories')
                 :'',
+                'manufacturers[]' => (!empty(Tools::getValue('manufacturers')))
+                ? Tools::getValue('manufacturers')
+                :'',
+                'suppliers[]' => (!empty(Tools::getValue('suppliers')))
+                ? Tools::getValue('suppliers')
+                :'',
+                'cms_categories[]' => (!empty(Tools::getValue('cms_categories')))
+                ? Tools::getValue('cms_categories')
+                :'',
                 'only_home' => (!empty(Tools::getValue('only_home')))
                 ? Tools::getValue('only_home')
                 : '',
@@ -638,6 +854,21 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'only_category_product' => (!empty(Tools::getValue('only_category_product')))
                 ? Tools::getValue('only_category_product')
+                : '',
+                'only_manufacturer' => (!empty(Tools::getValue('only_manufacturer')))
+                ? Tools::getValue('only_manufacturer')
+                : '',
+                'only_supplier' => (!empty(Tools::getValue('only_supplier')))
+                ? Tools::getValue('only_supplier')
+                : '',
+                'obfuscate_link' => (!empty(Tools::getValue('obfuscate_link')))
+                ? Tools::getValue('obfuscate_link')
+                : '',
+                'add_container' => (!empty(Tools::getValue('add_container')))
+                ? Tools::getValue('add_container')
+                : '',
+                'lazyload' => (!empty(Tools::getValue('lazyload')))
+                ? Tools::getValue('lazyload')
                 : '',
                 'position' => (!empty(Tools::getValue('position')))
                 ? Tools::getValue('position')
@@ -711,10 +942,30 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Only category is not valid');
             }
+            if (Tools::getValue('only_manufacturer')
+                && !Validate::isBool(Tools::getValue('only_manufacturer'))
+            ) {
+                $this->errors[] = $this->l('Only manufacturer is not valid');
+            }
+            if (Tools::getValue('only_supplier')
+                && !Validate::isBool(Tools::getValue('only_supplier'))
+            ) {
+                $this->errors[] = $this->l('Only supplier is not valid');
+            }
             if (Tools::getValue('only_category_product')
                 && !Validate::isBool(Tools::getValue('only_category_product'))
             ) {
                 $this->errors[] = $this->l('Only product page with specific categories is not valid');
+            }
+            if (Tools::getValue('obfuscate_link')
+                && !Validate::isBool(Tools::getValue('obfuscate_link'))
+            ) {
+                $this->errors[] = $this->l('Obfuscate links is not valid');
+            }
+            if (Tools::getValue('add_container')
+                && !Validate::isBool(Tools::getValue('add_container'))
+            ) {
+                $this->errors[] = $this->l('Add div with class container is not valid');
             }
             if (Tools::getValue('only_home')
                 && Tools::getValue('only_category')
@@ -770,8 +1021,23 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->only_home = (bool) Tools::getValue('only_home');
             $everblock_obj->only_category = (bool) Tools::getValue('only_category');
             $everblock_obj->only_category_product = (bool) Tools::getValue('only_category_product');
+            $everblock_obj->only_manufacturer = (bool) Tools::getValue('only_manufacturer');
+            $everblock_obj->only_supplier = (bool) Tools::getValue('only_supplier');
+            $everblock_obj->only_cms_category = (bool) Tools::getValue('only_cms_category');
+            $everblock_obj->obfuscate_link = (bool) Tools::getValue('obfuscate_link');
+            $everblock_obj->add_container = (bool) Tools::getValue('add_container');
+            $everblock_obj->lazyload = (bool) Tools::getValue('lazyload');
             $everblock_obj->categories = json_encode(
                 Tools::getValue('categories')
+            );
+            $everblock_obj->manufacturers = json_encode(
+                Tools::getValue('manufacturers')
+            );
+            $everblock_obj->suppliers = json_encode(
+                Tools::getValue('suppliers')
+            );
+            $everblock_obj->cms_categories = json_encode(
+                Tools::getValue('cms_categories')
             );
             $everblock_obj->position = (int) Tools::getValue('position');
             $everblock_obj->background =  pSQL(Tools::getValue('background'));

@@ -15,14 +15,14 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-
-<div class="panel">
-    <h3><i class="icon icon-smile"></i> {l s='Ever Block' mod='everblock'}</h3>
-    <a href="#everlogotop">
-        <img id="everlogobottom" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" style="max-width: 120px;">
-    </a>
-    <p>
-        <strong>{l s='Thank you for your confidence :-)' mod='everblock'}</strong><br />
-        {l s='Feel free to contact us for more support or help' mod='everblock'}
-    </p>
+<!-- Module Ever Block -->
+<div class="{if $block.settings.default.container}container{/if}">
+    {if $block.settings.default.container}
+        <div class="row">
+    {/if}
+    <img src="{$urls.base_url}modules/everblock/views/img/tartiflette.jpg" class="lazyload img img-fluid" alt="{l s='In tartiflette we trust' mod='everblock'}" title="{l s='In tartiflette we trust' mod='everblock'}" loading="lazy">
+    {if $block.settings.default.container}
+        </div>
+    {/if}
 </div>
+<!-- /Module Ever Block -->

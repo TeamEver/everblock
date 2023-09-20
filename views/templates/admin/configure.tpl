@@ -51,6 +51,9 @@
     <p>[shop_url] {l s='for shop url' mod='everblock'}</p>
     <p>[shop_name] {l s='for shop name' mod='everblock'}</p>
     <p>[theme_uri] {l s='for current theme url' mod='everblock'}</p>
+    <p>[category id="8" nb="8"] {l s='to show 8 products from category ID 8' mod='everblock'}</p>
+    <p>[manufacturer id="2" nb="8"] {l s='to show 8 products from manufacturer ID 2' mod='everblock'}</p>
+    <p>[brands nb="8"] {l s='to show 8 brands name with their associated logos' mod='everblock'}</p>
     <br>
     <h4>{l s='Using PrettyBlocks' mod='everblock'}</h3>
     <p>{l s='You can also use the shortcodes with the Pretty Blocks page builder' mod='everblock'}</p>

@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.9.7';
+        $this->version = '4.10.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -587,7 +587,10 @@ class Everblock extends Module
     public function hookActionAdminControllerSetMedia()
     {
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
-        if (Tools::getValue('id_everblock') || Tools::getValue('configure') == $this->name) {
+        if (Tools::getValue('id_everblock')
+            || Tools::getIsset('addeverblock')
+            || Tools::getValue('configure') == $this->name
+        ) {
             /* Chargement des fichiers CSS */
             $this->context->controller->addCSS(
                 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/codemirror.min.css',
@@ -659,6 +662,7 @@ class Everblock extends Module
             $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
             $shortcodes = array_merge($shortcodes, $this->getCategoryShortcodes($txt));
             $shortcodes = array_merge($shortcodes, $this->getManufacturerShortcodes($txt));
+            $shortcodes = array_merge($shortcodes, $this->getBrandsShortcode($txt));
             $shortcodes = array_merge($shortcodes, $this->getEverShortcodes($txt));
             foreach ($shortcodes as $key => $value) {
                 $txt = preg_replace(
@@ -752,8 +756,27 @@ class Everblock extends Module
                 ) {
                     continue;
                 }
+                // Only manufacturer management
+                if ((bool) $block['only_manufacturer'] === true
+                    && Tools::getValue('controller') != 'manufacturer'
+                ) {
+                    continue;
+                }
+                // Only supplier management
+                if ((bool) $block['only_supplier'] === true
+                    && Tools::getValue('controller') != 'supplier'
+                ) {
+                    continue;
+                }
+                // Only CMS category management
+                if ((bool) $block['only_cms_category'] === true
+                    && !Tools::getValue('id_cms_category')
+                ) {
+                    continue;
+                }
 
                 $continue = false;
+                // Only category pages
                 if ((bool)$block['only_category'] === true && Tools::getValue('controller') === 'category') {
                     $categories = json_decode($block['categories']);
                     if (!in_array((int)Tools::getValue('id_category'), $categories)) {
@@ -762,6 +785,37 @@ class Everblock extends Module
                         $continue = false;
                     }
                 }
+                // Only manufacturer pages
+                if ((bool)$block['only_manufacturer'] === true && Tools::getValue('controller') === 'manufacturer') {
+                    $manufacturers = json_decode($block['manufacturers']);
+                    if (!in_array((int)Tools::getValue('id_manufacturer'), $manufacturers)) {
+                        $continue = true;
+                    } else {
+                        $continue = false;
+                    }
+                }
+                // Only supplier pages
+                if ((bool)$block['only_supplier'] === true && Tools::getValue('controller') === 'supplier') {
+                    $suppliers = json_decode($block['suppliers']);
+                    if (!in_array((int)Tools::getValue('id_supplier'), $suppliers)) {
+                        $continue = true;
+                    } else {
+                        $continue = false;
+                    }
+                }
+                // Only CMS category pages
+                if ((bool)$block['only_cms_category'] === true
+                    && Tools::getValue('controller') === 'cms'
+                    && Tools::getValue('id_cms_category')
+                ) {
+                    $cms_categories = json_decode($block['cms_categories']);
+                    if (!in_array((int)Tools::getValue('id_cms_category'), $cms_categories)) {
+                        $continue = true;
+                    } else {
+                        $continue = false;
+                    }
+                }
+                // Only products pages with specific category
                 if (Tools::getValue('id_product')
                     && Tools::getValue('controller') === 'product'
                     && (bool)$block['only_category'] === true
@@ -783,7 +837,16 @@ class Everblock extends Module
                 if ((bool) $continue === true) {
                     continue;
                 }
-
+                if ((bool) $block['obfuscate_link'] === true) {
+                    $block['content'] = $this->obfuscateText(
+                        $block['content']
+                    );
+                }
+                if ((bool) $block['lazyload'] === true) {
+                    $block['content'] = $this->addLazyLoadToImages(
+                        $block['content']
+                    );
+                }
                 $currentBlock[] = ['block' => $block];
             }
             $this->smarty->assign([
@@ -811,16 +874,16 @@ class Everblock extends Module
         );
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
         $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
-        if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
+        if (file_exists($compressedCss)) {
             $this->context->controller->registerStylesheet(
-                'module-everblock-custom-css',
+                'module-everblock-custom-compressed-css',
                 'modules/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css',
                 ['media' => 'all', 'priority' => 200, 'version' => $this->version]
             );
         }
-        if (file_exists($compressedJs) && filesize($compressedJs) > 0) {
+        if (file_exists($compressedJs)) {
             $this->context->controller->registerJavascript(
-                'module-everblock-custom-js',
+                'module-everblock-compressed-js',
                 'modules/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js',
                 ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
             );
@@ -929,21 +992,76 @@ class Everblock extends Module
         return $entityShortcodes;
     }
 
+    protected function getBrandsShortcode($message)
+    {
+        $brandsShortcodes = [];
+        preg_match_all('/\[brands\s+nb="(\d+)"\]/i', $message, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $brandCount = (int) $match[1];
+            
+            $brands = $this->getBrandsData($brandCount);
+            
+            if (!empty($brands)) {
+                $this->context->smarty->assign('brands', $brands);
+                $brandsShortcodes[$match[0]] = $this->context->smarty->fetch($this->getTemplatePath('ever_brand.tpl'));
+            }
+        }
+        return $brandsShortcodes;
+    }
+
+    protected function getBrandsData($limit)
+    {
+        $cacheId = $this->name . '::getBrandsData_'
+        . (int) $this->context->language->id
+        . '_'
+        . (int) $limit;
+        if (!Cache::isStored($cacheId)) {
+            $brands = Manufacturer::getLiteManufacturersList(
+                (int) $this->context->language->id
+            );
+
+            $limitedBrands = [];
+
+            // Limite du nombre de marques en fonction du paramètre $limit
+            if (!empty($brands)) {
+                $brands = array_slice($brands, 0, $limit);
+
+                foreach ($brands as $brand) {
+                    $name = $brand['name'];
+                    $logo = $this->context->link->getManufacturerImageLink(
+                        (int) $brand['id']
+                    );
+                    $url = $brand['link'];
+
+                    $limitedBrands[] = [
+                        'id' => $brand['id'],
+                        'name' => $name,
+                        'logo' => $logo,
+                        'url' => $url,
+                    ];
+                }
+            }
+            Cache::store($cacheId, $limitedBrands);
+            return $limitedBrands;
+        }
+
+        return Cache::retrieve($cacheId);
+    }
+
     protected function getProductShortcodes($message)
     {
+        $message = strip_tags($message);
         $productShortcodes = [];
-        preg_match_all('/(\[product\s+\d+\])/i', $message, $matches);
+        preg_match_all('/(\[product\s+[0-9,\s]+\])/i', $message, $matches);
 
         foreach ($matches[0] as $match) {
-            $productId = (int) substr($match, 9, -1);
-            $product = new Product(
-                $productId,
-                false,
-                Context::getContext()->language->id,
-                Context::getContext()->shop->id
-            );
-            if (Validate::isLoadedObject($product)) {
-                $everPresentProducts = $this->everPresentProducts([$product->id]);
+            $productIds = preg_replace('/\[product\s+|\s+\]/i', '', $match);
+            $productIdsArray = explode(',', $productIds);
+            
+            $everPresentProducts = $this->everPresentProducts($productIdsArray); // Utilisez la méthode une fois ici
+            
+            if (!empty($everPresentProducts)) {
                 $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
                 $productShortcodes[$match] = $this->context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
             }
@@ -1112,6 +1230,7 @@ class Everblock extends Module
         $defaultTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_everblock.tpl';
         $modalTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_modal.tpl';
         $alertTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_alert.tpl';
+        $buttonTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_button.tpl';
         $gmapTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_gmap.tpl';
         $shortcodeTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_shortcode.tpl';
         $iframeTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_iframe.tpl';
@@ -1134,6 +1253,9 @@ class Everblock extends Module
         $dividerTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
         $galleryTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_gallery.tpl';
         $testimonialTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial.tpl';
+        $parallaxTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_parallax.tpl';
+        $overlayTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_overlay.tpl';
+        $tartifletteTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_tartiflette.tpl';
         $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/logo.png';
         $blocks = [];
         // Get all blocks
@@ -1250,7 +1372,7 @@ class Everblock extends Module
         ];
 
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('modal'),
+            'name' => $this->l('Modal'),
             'description' => $this->l('Add custom modal'),
             'code' => 'everblock_modal',
             'tab' => 'general',
@@ -1317,7 +1439,7 @@ class Everblock extends Module
         ];
 
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('video iframe'),
+            'name' => $this->l('Video iframe'),
             'description' => $this->l('Add video iframe using embed link'),
             'code' => 'everblock_iframe',
             'tab' => 'general',
@@ -1368,8 +1490,8 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('login form'),
-            'description' => $this->l('Add contact form'),
+            'name' => $this->l('Login form'),
+            'description' => $this->l('Add login form'),
             'code' => 'everblock_login',
             'tab' => 'general',
             'icon_path' => $defaultLogo,
@@ -1388,7 +1510,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('contact form'),
+            'name' => $this->l('Native contact form'),
             'description' => $this->l('Add login form (default contact module must be installed)'),
             'code' => 'everblock_contact',
             'tab' => 'general',
@@ -1408,7 +1530,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('hook'),
+            'name' => $this->l('Hook'),
             'description' => $this->l('Add hook on zone'),
             'code' => 'everblock_hook',
             'tab' => 'general',
@@ -1429,7 +1551,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('category text'),
+            'name' => $this->l('Category text'),
             'description' => $this->l('Add text on specific category page'),
             'code' => 'everblock_category',
             'tab' => 'general',
@@ -1466,7 +1588,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('manufacturer text'),
+            'name' => $this->l('Manufacturer text'),
             'description' => $this->l('Add text on specific manufacturer page'),
             'code' => 'everblock_manufacturer',
             'tab' => 'general',
@@ -1503,7 +1625,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('shopping cart'),
+            'name' => $this->l('Shopping cart'),
             'description' => $this->l('Add dropdown shopping cart'),
             'code' => 'everblock_shopping_cart',
             'tab' => 'general',
@@ -1528,7 +1650,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('Google Map'),
+            'name' => $this->l('Google Map'),
             'description' => $this->l('Add Google Map'),
             'code' => 'everblock_gmap',
             'tab' => 'general',
@@ -1568,7 +1690,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('alert message'),
+            'name' => $this->l('Alert message'),
             'description' => $this->l('Add alert message'),
             'code' => 'everblock_alert',
             'tab' => 'general',
@@ -1613,7 +1735,73 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('accordeons'),
+            'name' => $this->l('Button'),
+            'description' => $this->l('Add simple button'),
+            'code' => 'everblock_button',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $buttonTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'button_type' => [
+                        'type' => 'radio_group', // type of field
+                        'label' => $this->l('Button type'), // label to display
+                        'default' => 'primary', // default value (String)
+                        'choices' => [
+                            '1' =>'primary',
+                            '2' => 'secondary',
+                            '3' => 'success',
+                            '4' => 'danger',
+                            '5' => 'warning',
+                            '6' => 'info',
+                            '7' => 'light',
+                            '8' => 'dark',
+                        ]
+                    ],
+                    'button_size' => [
+                        'type' => 'radio_group', // type of field
+                        'label' => $this->l('Button type'), // label to display
+                        'default' => 'btn-normal', // default value (String)
+                        'choices' => [
+                            '1' =>'normal',
+                            '2' => 'sm',
+                            '3' => 'lg',
+                            '4' => 'block',
+                        ]
+                    ],
+                    'button_content' => [
+                        'type' => 'text',
+                        'label' => $this->l('Button text'),
+                        'default' => '',
+                    ],
+                    'button_link' => [
+                        'type' => 'text',
+                        'label' => $this->l('Button link'),
+                        'default' => '',
+                    ],
+                    'obfuscate' => [
+                        'type' => 'checkbox', // type of field
+                        'label' => $this->l('Obfuscate link'), // label to display
+                        'default' => '0', // default value (String)
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+        $blocks[] =  [
+            'name' => $this->l('Accordeons'),
             'description' => 'Add horizontal accordeon',
             'code' => 'everblock_accordeon',
             'tab' => 'general',
@@ -1662,7 +1850,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('product'),
+            'name' => $this->l('Product'),
             'description' => $this->l('Add specific product'),
             'code' => 'everblock_product',
             'tab' => 'general',
@@ -1694,7 +1882,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('text and image'),
+            'name' => $this->l('Text and image'),
             'description' => 'Add image & text layout',
             'code' => 'everblock_text_and_image',
             'tab' => 'general',
@@ -1763,7 +1951,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('layout'),
+            'name' => $this->l('Layout'),
             'description' => 'Add layout',
             'code' => 'everblock_layout',
             'tab' => 'general',
@@ -1827,7 +2015,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('supplier product list'),
+            'name' => $this->l('Supplier product list'),
             'description' => $this->l('Show supplier product list'),
             'code' => 'everblock_supplier_product_list',
             'tab' => 'general',
@@ -1859,7 +2047,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('manufacturer product list'),
+            'name' => $this->l('Manufacturer product list'),
             'description' => $this->l('Show manufacturer product list'),
             'code' => 'everblock_manufacturer_product_list',
             'tab' => 'general',
@@ -1891,7 +2079,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('products slider'),
+            'name' => $this->l('Products slider'),
             'description' => $this->l('Show products slider'),
             'code' => 'everblock_product_slider',
             'tab' => 'general',
@@ -1934,7 +2122,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('Images slider'),
+            'name' => $this->l('Images slider'),
             'description' => $this->l('Show images slider (images must have same size)'),
             'code' => 'everblock_img_slider',
             'tab' => 'general',
@@ -1998,7 +2186,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('Tabs'),
+            'name' => $this->l('Tabs'),
             'description' => $this->l('Show custom tabs'),
             'code' => 'everblock_tab',
             'tab' => 'general',
@@ -2044,7 +2232,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('Divider'),
+            'name' => $this->l('Divider'),
             'description' => $this->l('Show divider'),
             'code' => 'everblock_divider',
             'tab' => 'general',
@@ -2055,11 +2243,6 @@ class Everblock extends Module
             ],
             'config' => [
                 'fields' => [
-                    'slide_duration' => [
-                        'type' => 'text',
-                        'label' => $this->l('Slide duration (in milliseconds)'),
-                        'default' => '2500',
-                    ],
                     'css_class' => [
                         'type' => 'text',
                         'label' => $this->l('Custom CSS class'),
@@ -2074,7 +2257,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('gallery'),
+            'name' => $this->l('Gallery'),
             'description' => $this->l('Show image gallery (images must have same size)'),
             'code' => 'everblock_gallery',
             'tab' => 'general',
@@ -2118,7 +2301,7 @@ class Everblock extends Module
             ],
         ];
         $blocks[] =  [
-            'name' => $this->displayName . ' ' . $this->l('testimonials'),
+            'name' => $this->l('Testimonials'),
             'description' => $this->l('Show custom testimonials'),
             'code' => 'everblock_testimonial',
             'tab' => 'general',
@@ -2157,6 +2340,134 @@ class Everblock extends Module
                         'type' => 'text',
                         'label' => 'Block title',
                         'default' => $this->l('Testimonials'),
+                    ],
+                    'css_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom CSS class'),
+                        'default' => '',
+                    ],
+                    'bootstrap_class' => [
+                        'type' => 'text',
+                        'label' => $this->l('Custom Bootstrap class'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+        // $blocks[] =  [
+        //     'name' => $this->l('Images parallax'),
+        //     'description' => $this->l('Show blocks with parallax'),
+        //     'code' => 'everblock_parallax',
+        //     'tab' => 'general',
+        //     'icon_path' => $defaultLogo,
+        //     'need_reload' => true,
+        //     'templates' => [
+        //         'default' => $parallaxTemplate,
+        //     ],
+        //     'repeater' => [
+        //         'name' => 'Tab',
+        //         'nameFrom' => 'name',
+        //         'groups' => [
+        //             'name' => [
+        //                 'type' => 'text',
+        //                 'label' => 'Parallax title',
+        //                 'default' => Configuration::get('PS_SHOP_NAME'),
+        //             ],
+        //             'title_color' => [
+        //                 'tab' => 'design',
+        //                 'type' => 'color',
+        //                 'default' => '#ffffff',
+        //                 'label' => $this->l('Parallax title color')
+        //             ],
+        //             'image' => [
+        //                 'type' => 'fileupload',
+        //                 'label' => $this->l('Image (must be large enough to cover the full height of the content)'),
+        //                 'path' => '$/modules/everblock/views/img/prettyblocks/',
+        //                 'default' => [
+        //                     'url' => 'https://via.placeholder.com/1200x800',
+        //                 ],
+        //             ],
+        //             'content' => [
+        //                 'type' => 'editor',
+        //                 'label' => 'Tab content',
+        //                 'default' => '[llorem]',
+        //             ],
+        //         ],
+        //     ],
+        //     'config' => [
+        //         'fields' => [
+        //             'css_class' => [
+        //                 'type' => 'text',
+        //                 'label' => $this->l('Custom CSS class'),
+        //                 'default' => '',
+        //             ],
+        //             'bootstrap_class' => [
+        //                 'type' => 'text',
+        //                 'label' => $this->l('Custom Bootstrap class'),
+        //                 'default' => '',
+        //             ],
+        //         ],
+        //     ],
+        // ];
+        // $blocks[] =  [
+        //     'name' => $this->l('Text with overlay image'),
+        //     'description' => $this->l('Add custom text with image overlay'),
+        //     'code' => 'everblock_overlay',
+        //     'tab' => 'general',
+        //     'icon_path' => $defaultLogo,
+        //     'need_reload' => true,
+        //     'templates' => [
+        //         'default' => $overlayTemplate,
+        //     ],
+        //     'config' => [
+        //         'fields' => [
+        //             'name' => [
+        //                 'type' => 'text',
+        //                 'label' => $this->l('Overlay title (will be used for image alt & title)'),
+        //                 'default' => Configuration::get('PS_SHOP_NAME'),
+        //             ],
+        //             'content' => [
+        //                 'type' => 'editor',
+        //                 'label' => 'Overlay content',
+        //                 'default' => '[llorem]',
+        //             ],
+        //             'image' => [
+        //                 'type' => 'fileupload',
+        //                 'label' => $this->l('Image (must be large enough to cover the full height of the content)'),
+        //                 'path' => '$/modules/everblock/views/img/prettyblocks/',
+        //                 'default' => [
+        //                     'url' => 'https://via.placeholder.com/1200x800',
+        //                 ],
+        //             ],
+        //             'css_class' => [
+        //                 'type' => 'text',
+        //                 'label' => $this->l('Custom CSS class'),
+        //                 'default' => '',
+        //             ],
+        //             'bootstrap_class' => [
+        //                 'type' => 'text',
+        //                 'label' => $this->l('Custom Bootstrap class'),
+        //                 'default' => '',
+        //             ],
+        //         ],
+        //     ],
+        // ];
+        $blocks[] =  [
+            'name' => $this->l('Tartiflette'),
+            'description' => $this->l('Show a tartiflette'),
+            'code' => 'everblock_tartiflette',
+            'tab' => 'general',
+            'icon_path' => $defaultLogo,
+            'need_reload' => true,
+            'templates' => [
+                'default' => $tartifletteTemplate,
+            ],
+            'config' => [
+                'fields' => [
+                    'name' => [
+                        'type' => 'text',
+                        'label' => 'In tartiflette we trust',
+                        'default' => 'Tartiflette',
                     ],
                     'css_class' => [
                         'type' => 'text',
@@ -2319,10 +2630,19 @@ class Everblock extends Module
             'only_home' => 'int(10) unsigned DEFAULT NULL',
             'only_category' => 'int(10) unsigned DEFAULT NULL',
             'only_category_product' => 'int(10) unsigned DEFAULT NULL',
+            'only_manufacturer' => 'int(10) unsigned DEFAULT NULL',
+            'only_supplier' => 'int(10) unsigned DEFAULT NULL',
+            'only_cms_category' => 'int(10) unsigned DEFAULT NULL',
+            'obfuscate_link' => 'int(10) unsigned DEFAULT NULL',
+            'add_container' => 'int(10) unsigned DEFAULT NULL',
+            'lazyload' => 'int(10) unsigned DEFAULT NULL',
             'device' => 'int(10) unsigned NOT NULL DEFAULT 0',
             'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
             'position' => 'int(10) unsigned DEFAULT 0',
             'categories' => 'text DEFAULT NULL',
+            'manufacturers' => 'text DEFAULT NULL',
+            'suppliers' => 'text DEFAULT NULL',
+            'cms_categories' => 'text DEFAULT NULL',
             'groups' => 'text DEFAULT NULL',
             'background' => 'varchar(255) DEFAULT NULL',
             'css_class' => 'varchar(255) DEFAULT NULL',
@@ -2469,5 +2789,58 @@ class Everblock extends Module
         } catch (\Exception $e) {
             PrestaShopLogger::addLog('SASS Compilation Error: ' . $e->getMessage());
         }
+    }
+
+    protected function obfuscateText($text)
+    {
+        // Rechercher toutes les balises <a href> dans le texte
+        $pattern = '/<a\s+(?:[^>]*)href="([^"]*)"([^>]*)>/i';
+        preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
+
+        // Parcourir les correspondances et remplacer les balises <a> par des balises <span>
+        foreach ($matches as $match) {
+            $linkUrl = $match[1];
+            $linkAttributes = $match[2];
+            $encodedLink = base64_encode($linkUrl);
+            
+            // Obtenir les classes existantes de la balise <a>
+            preg_match('/class="([^"]*)"/i', $match[0], $classMatches);
+            $existingClasses = !empty($classMatches[1]) ? $classMatches[1] : '';
+
+            // Ajouter la classe 'obflink' aux classes existantes
+            $classesWithObflink = $existingClasses . ' obflink';
+
+            // Construire la nouvelle balise <span> avec les classes existantes et les attributs de lien
+            $newTag = '<span class="' . $classesWithObflink . '" data-obflink="' . $encodedLink . '"' . $linkAttributes . '>';
+            $text = str_replace($match[0], $newTag, $text);
+        }
+
+        return $text;
+    }
+    protected function addLazyLoadToImages($text)
+    {
+        // Rechercher toutes les balises <img> dans le texte
+        $pattern = '/<img\s+(?:[^>]*)src="([^"]*)"([^>]*)>/i';
+        preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
+
+        // Parcourir les correspondances et ajouter la classe 'lazyload' et l'attribut 'loading="lazy"'
+        foreach ($matches as $match) {
+            $imageUrl = $match[1];
+            $imageAttributes = $match[2];
+            
+            // Vérifier si la balise <img> contient déjà la classe 'lazyload'
+            if (stripos($imageAttributes, 'class=') === false || stripos($imageAttributes, 'lazyload') === false) {
+                // Ajouter la classe 'lazyload' aux classes existantes
+                $imageAttributesWithLazyLoad = 'class="lazyload ' . $imageAttributes . '"';
+            } else {
+                $imageAttributesWithLazyLoad = $imageAttributes;
+            }
+
+            // Construire la nouvelle balise <img> avec la classe 'lazyload' et l'attribut 'loading="lazy"'
+            $newTag = '<img src="' . $imageUrl . '" ' . $imageAttributesWithLazyLoad . ' loading="lazy">';
+            $text = str_replace($match[0], $newTag, $text);
+        }
+
+        return $text;
     }
 }
