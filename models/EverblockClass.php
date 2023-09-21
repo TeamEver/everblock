@@ -298,7 +298,11 @@ class EverBlockClass extends ObjectModel
             $return = [];
             $now = new DateTime();
             $now = $now->format('Y-m-d H:i:s');
-            $customerGroups = Customer::getGroupsStatic((int) Context::getContext()->customer->id);
+
+            $controllerTypes = array('admin', 'moduleadmin');
+            if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
+                $customerGroups = Customer::getGroupsStatic((int) Context::getContext()->customer->id);
+            }
             $sql = new DbQuery;
             $sql->select('*');
             $sql->from('everblock', 'eb');
@@ -317,7 +321,10 @@ class EverBlockClass extends ObjectModel
                     continue;
                 }
                 $allowedGroups = json_decode($block['groups'], true);
-                if (!empty($allowedGroups) && !array_intersect($allowedGroups, $customerGroups)) {
+                if (isset($customerGroups)
+                    && !empty($allowedGroups)
+                    && !array_intersect($allowedGroups, $customerGroups)
+                ) {
                     continue;
                 }
                 $block['bootstrap_class'] = self::getBootstrapColClass(

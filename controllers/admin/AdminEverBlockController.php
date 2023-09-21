@@ -56,15 +56,45 @@ class AdminEverBlockController extends ModuleAdminController
                 'align' => 'left',
                 'width' => 'auto',
             ],
+            'hname' => [
+                'title' => $this->l('Hook'),
+                'align' => 'left',
+                'width' => 'auto',
+            ],
             'position' => [
                 'title' => $this->l('Position'),
                 'align' => 'left',
                 'width' => 'auto',
             ],
-            'hname' => [
-                'title' => $this->l('Hook'),
+            'only_home' => [
+                'title' => $this->l('Home only'),
                 'align' => 'left',
                 'width' => 'auto',
+                'type' => 'bool',
+            ],
+            'only_category' => [
+                'title' => $this->l('Category only'),
+                'align' => 'left',
+                'width' => 'auto',
+                'type' => 'bool',
+            ],
+            'only_manufacturer' => [
+                'title' => $this->l('Manufacturer only'),
+                'align' => 'left',
+                'width' => 'auto',
+                'type' => 'bool',
+            ],
+            'only_supplier' => [
+                'title' => $this->l('Supplier only'),
+                'align' => 'left',
+                'width' => 'auto',
+                'type' => 'bool',
+            ],
+            'only_cms_category' => [
+                'title' => $this->l('CMS category only'),
+                'align' => 'left',
+                'width' => 'auto',
+                'type' => 'bool',
             ],
             'date_start' => [
                 'title' => $this->l('Date start'),
@@ -860,6 +890,9 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'only_supplier' => (!empty(Tools::getValue('only_supplier')))
                 ? Tools::getValue('only_supplier')
+                : '',
+                'only_cms_category' => (!empty(Tools::getValue('only_cms_category')))
+                ? Tools::getValue('only_cms_category')
                 : '',
                 'obfuscate_link' => (!empty(Tools::getValue('obfuscate_link')))
                 ? Tools::getValue('obfuscate_link')

@@ -18,7 +18,9 @@
 <div class="panel row">
     <h3><i class="icon icon-smile"></i> {l s='Ever Block' mod='everblock'}</h3>
     <div class="col-md-12">
-        <img id="everlogo" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" style="max-width: 120px;">
+        <a href="#everlogobottom">
+          <img id="everlogotop" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" style="max-width: 120px;">
+        </a>
         <p>{l s='Thanks for using Team Ever\'s modules' mod='everblock'}.<br /></p>
         {if isset($block_admin_link) && $block_admin_link}
         <a href="{$block_admin_link|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-success">{l s='Manage blocks' mod='everblock'}</a>

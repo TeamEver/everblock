@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.10.0';
+        $this->version = '4.10.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -1224,6 +1224,22 @@ class Everblock extends Module
         $m->registerHook('displayShoppingCartFooter');
         $m->registerHook('displayCMSDisputeInformation');
         $m->registerHook('displayCMSPrintButton');
+
+        $m->registerHook('displayBeforeCMSSubcategories');
+        $m->registerHook('displayBeforeCMSSubcategory');
+        $m->registerHook('displayAfterCMSSubcategory');
+        $m->registerHook('displayAfterCMSSubcategories');
+        $m->registerHook('displayBeforeCMSCategoryPages');
+        $m->registerHook('displayBeforeCMSPage');
+        $m->registerHook('displayAfterCMSPage');
+        $m->registerHook('displayAfterCMSCategoryPages');
+        $m->registerHook('displayBeforeCMSContent');
+        $m->registerHook('displayAfterCMSContent');
+        $m->registerHook('displayBeforeSitemapPage');
+        $m->registerHook('displayAfterSitemapPage');
+        $m->registerHook('displayBeforeStoresList');
+        $m->registerHook('displayAfterStoresList');
+
         $this->registerHook('beforeRenderingEverblockSupplierProductList');
         $this->registerHook('beforeRenderingEverblockManufacturerProductList');
         $this->registerHook('beforeRenderingEverblockProductSlider');
@@ -1258,11 +1274,6 @@ class Everblock extends Module
         $tartifletteTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_tartiflette.tpl';
         $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/logo.png';
         $blocks = [];
-        // Get all blocks
-        $allBlocks = EverblockClass::getAllBlocks(
-            (int) $this->context->language->id,
-            (int) $this->context->shop->id
-        );
         $allShortcodes = EverblockShortcode::getAllShortcodes(
             (int) $this->context->language->id,
             (int) $this->context->shop->id
@@ -1273,43 +1284,6 @@ class Everblock extends Module
             $prettyBlocksHooks[$hook['id_hook']] = $hook['name'];
         }
         $prettyBlocksShortcodes = [];
-        foreach ($allBlocks as $block) {
-            $blocks[] =  [
-                'name' => $this->displayName . ' - ' . $block['name'],
-                'description' => $this->description,
-                'code' => $block['id_everblock'],
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $defaultTemplate,
-                ],
-                'config' => [
-                    'fields' => [
-                        'name' => [
-                            'type' => 'text',
-                            'label' => $block['name'],
-                            'default' => $block['name'],
-                        ],
-                        'content' => [
-                            'type' => 'editor',
-                            'label' => 'Block content',
-                            'default' => $block['content'],
-                        ],
-                        'css_class' => [
-                            'type' => 'text',
-                            'label' => $this->l('Custom CSS class'),
-                            'default' => $block['css_class'],
-                        ],
-                        'bootstrap_class' => [
-                            'type' => 'text',
-                            'label' => $this->l('Custom Bootstrap class'),
-                            'default' => $block['bootstrap_class'],
-                        ],
-                    ],
-                ],
-            ];
-        }
         foreach ($allShortcodes as $shortcode) {
             $prettyBlocksShortcodes[$shortcode->id] = $shortcode->shortcode;
         }
