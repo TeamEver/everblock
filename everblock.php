@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.10.2';
+        $this->version = '4.10.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -885,14 +885,14 @@ class Everblock extends Module
         );
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
         $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
-        if (file_exists($compressedCss)) {
+        if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
             $this->context->controller->registerStylesheet(
                 'module-everblock-custom-compressed-css',
                 'modules/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css',
                 ['media' => 'all', 'priority' => 200, 'version' => $this->version]
             );
         }
-        if (file_exists($compressedJs)) {
+        if (file_exists($compressedJs) && filesize($compressedJs) > 0) {
             $this->context->controller->registerJavascript(
                 'module-everblock-compressed-js',
                 'modules/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js',
