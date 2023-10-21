@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.10.3';
+        $this->version = '4.11.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -245,6 +245,7 @@ class Everblock extends Module
 
     public function getContent()
     {
+        $this->registerHook('beforeRenderingEverblockLayout');
         $this->checkAndFixDatabase();
         $this->checkHooks();
         $this->html = '';
@@ -257,6 +258,14 @@ class Everblock extends Module
 
         if ((bool)Tools::isSubmit('submitEmptyCache') === true) {
             $this->emptyAllCache();
+        }
+
+        if ((bool)Tools::isSubmit('submitAddHooksToTheme') === true) {
+            EverblockTools::addHooksToTheme();
+        }
+
+        if ((bool)Tools::isSubmit('submitRegisterObjectsIdHooks') === true) {
+            EverblockTools::createObjectIdHooks();
         }
         if (count($this->postErrors)) {
             // Pour chaque erreur trouvée
@@ -426,6 +435,20 @@ class Everblock extends Module
                         'class' => 'btn btn-info pull-right',
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Empty cache'),
+                    ],
+                    'addHooksToTheme' => [
+                        'name' => 'submitAddHooksToTheme',
+                        'type' => 'submit',
+                        'class' => 'btn btn-info pull-right',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Add objects ID hooks into theme'),
+                    ],
+                    'registerObjectsIdHooks' => [
+                        'name' => 'submitRegisterObjectsIdHooks',
+                        'type' => 'submit',
+                        'class' => 'btn btn-info pull-right',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Register hooks for objects ID'),
                     ],
                 ],
                 'submit' => [
@@ -662,6 +685,7 @@ class Everblock extends Module
                     '[my_account_link]' => $myAccountLink,
                     '[llorem]' => $this->generateLoremIpsum(),
                     '[theme_uri]' => $theme_uri,
+                    '[storelocator]' => EverblockTools::generateGoogleMap(),
                 ];
                 $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
                 $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
@@ -680,6 +704,7 @@ class Everblock extends Module
                 Cache::store($cacheId, $txt);
                 return $params['html'];
             } catch (Exception $e) {
+                die(var_dump($e->getMessage()));
                 PrestaShopLogger::addLog(
                     'Ever Block : unable to rewrite HTML page'
                 );
@@ -688,7 +713,6 @@ class Everblock extends Module
         }
 
         return Cache::retrieve($cacheId);
-
     }
 
     public function everHook($method, $args)
@@ -860,11 +884,27 @@ class Everblock extends Module
                 }
                 $currentBlock[] = ['block' => $block];
             }
+            Hook::exec(
+                'actionRenderBlockBefore',
+                [
+                    'everhook' => trim($method),
+                    'everblock' => &$currentBlock,
+                    'args' => $args,
+                ]
+            );
             $this->smarty->assign([
                 'everhook' => trim($method),
                 'everblock' => $currentBlock,
                 'args' => $args,
             ]);
+            Hook::exec(
+                'actionRenderBlockAfter',
+                [
+                    'everhook' => trim($method),
+                    'everblock' => $currentBlock,
+                    'args' => $args,
+                ]
+            );
         }
         return $this->display(__FILE__, 'everblock.tpl', $cacheId);
     }
@@ -1199,6 +1239,7 @@ class Everblock extends Module
             $parallaxTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_parallax.tpl';
             $overlayTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_overlay.tpl';
             $tartifletteTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_tartiflette.tpl';
+            $storeLocatorTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_store_locator.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -1784,7 +1825,7 @@ class Everblock extends Module
             ];
             $blocks[] =  [
                 'name' => $this->l('Text and image'),
-                'description' => 'Add image & text layout',
+                'description' => $this->l('Add image & text layout'),
                 'code' => 'everblock_text_and_image',
                 'tab' => 'general',
                 'icon_path' => $defaultLogo,
@@ -1853,7 +1894,7 @@ class Everblock extends Module
             ];
             $blocks[] =  [
                 'name' => $this->l('Layout'),
-                'description' => 'Add layout',
+                'description' => $this->l('Add layout'),
                 'code' => 'everblock_layout',
                 'tab' => 'general',
                 'icon_path' => $defaultLogo,
@@ -2285,11 +2326,27 @@ class Everblock extends Module
                     ],
                 ],
             ];
+            $blocks[] =  [
+                'name' => $this->l('Store locator'),
+                'description' => $this->l('Add a store locator'),
+                'code' => 'everblock_storelocator',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $storeLocatorTemplate,
+                ],
+            ];
             Cache::store($cacheId, $blocks);
             return $blocks;
         }
 
         return Cache::retrieve($cacheId);
+    }
+
+    public function hookActionObjectCmsAddAfter($params)
+    {
+        EverblockTools::createCmsHooks();
     }
 
     public function hookBeforeRenderingEverblockProduct($params)

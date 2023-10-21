@@ -15,10 +15,20 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<!-- Module Ever Block -->
-<div class="{if $block.settings.default.container}container{/if}">
-    {foreach from=$block.states item=state key=key}
-    <div {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+<div class="{if $block.settings.default.container}container{/if}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+    {foreach from=$block.states item=state key=key}{if $state.order == '100%'}
+        {assign var="bootstrapClass" value="col-12"}
+    {elseif $state.order == '50%'}
+        {assign var="bootstrapClass" value="col-12 col-md-6"}
+    {elseif $state.order == '33,33%'}
+        {assign var="bootstrapClass" value="col-12 col-md-4"}
+    {elseif $state.order == '25%'}
+        {assign var="bootstrapClass" value="col-12 col-md-3"}
+    {elseif $state.order == '16,67%'}
+        {assign var="bootstrapClass" value="col-12 col-md-2"}
+    {else}
+        {assign var="bootstrapClass" value="col-12"}
+    {/if}
     {if $state.link}
     {if $state.obfuscate}
     {assign var="obflink" value=$state.link|base64_encode}
@@ -27,7 +37,7 @@
     <a href="{$state.link}" title="{$state.name}"{if $state.target_blank} target="_blank"{/if}>
     {/if}
     {/if}
-    <div class="{$state.order}">
+    <div class="{$bootstrapClass}">
       {$state.content nofilter}
     </div>
     {if $state.link}
@@ -37,7 +47,5 @@
     </a>
     {/if}
     {/if}
-    </div>
     {/foreach}
 </div>
-<!-- /Module Ever Block -->

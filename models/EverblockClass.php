@@ -219,7 +219,7 @@ class EverBlockClass extends ObjectModel
             $sql->where('eb.id_shop = ' . (int) $idShop);
             $sql->orderBy('eb.position ASC');
 
-            $allBlocks = Db::getInstance()->executeS($sql);
+            $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
             Cache::store($cacheId, $allBlocks);
             return $allBlocks;
         }
