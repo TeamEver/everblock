@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '4.11.0';
+        $this->version = '4.11.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -264,9 +264,6 @@ class Everblock extends Module
             EverblockTools::addHooksToTheme();
         }
 
-        if ((bool)Tools::isSubmit('submitRegisterObjectsIdHooks') === true) {
-            EverblockTools::createObjectIdHooks();
-        }
         if (count($this->postErrors)) {
             // Pour chaque erreur trouvée
             foreach ($this->postErrors as $error) {
@@ -338,6 +335,34 @@ class Everblock extends Module
                     'icon' => 'icon-smile',
                 ],
                 'input' => [
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Redirect all users except registered IP'),
+                        'desc' => $this->l('Will redirect all users based on maintenance IP'),
+                        'hint' => $this->l('Enable if you have troubles with maintenance mode'),
+                        'name' => 'EVERPS_MAINTENANCE',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Redirect users to this URL if SEO maintenance is ON'),
+                        'desc' => $this->l('Will redirect to this URL only if SEO maintenance is ON'),
+                        'hint' => $this->l('Default will be google.com'),
+                        'name' => 'EVERPS_MAINTENANCE_URL',
+                        'lang' => false,
+                    ],
                     [
                         'type' => 'switch',
                         'label' => $this->l('Empty cache on saving ?'),
@@ -441,14 +466,7 @@ class Everblock extends Module
                         'type' => 'submit',
                         'class' => 'btn btn-info pull-right',
                         'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Add objects ID hooks into theme'),
-                    ],
-                    'registerObjectsIdHooks' => [
-                        'name' => 'submitRegisterObjectsIdHooks',
-                        'type' => 'submit',
-                        'class' => 'btn btn-info pull-right',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Register hooks for objects ID'),
+                        'title' => $this->l('Add Pretty Block widgets into theme'),
                     ],
                 ],
                 'submit' => [
@@ -471,6 +489,8 @@ class Everblock extends Module
             _PS_MODULE_DIR_.'/' . $this->name . '/views/js/custom' . $idShop . '.js'
         );
         return [
+            'EVERPS_MAINTENANCE' => Configuration::get('EVERPS_MAINTENANCE'),
+            'EVERPS_MAINTENANCE_URL' => Configuration::get('EVERPS_MAINTENANCE_URL'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERPSCSS' => $custom_css,
             'EVERPSSASS' => $custom_sass,
@@ -576,6 +596,14 @@ class Everblock extends Module
             $compressedJsCode
         );
         Configuration::updateValue(
+            'EVERPS_MAINTENANCE',
+            Tools::getValue('EVERPS_MAINTENANCE')
+        );
+        Configuration::updateValue(
+            'EVERPS_MAINTENANCE_URL',
+            Tools::getValue('EVERPS_MAINTENANCE_URL')
+        );
+        Configuration::updateValue(
             'EVERPSCSS_LINKS',
             Tools::getValue('EVERPSCSS_LINKS')
         );
@@ -644,9 +672,29 @@ class Everblock extends Module
         }
     }
 
+    public function hookActionDispatcherBefore()
+    {
+        if ((bool) Configuration::get('EVERPS_MAINTENANCE') === true) {
+            if ((bool) EverblockTools::isMaintenanceIpAddress() === false
+                && (bool) EverblockTools::isEmployee() === false
+            ) {
+                if (!Configuration::get('EVERPS_MAINTENANCE_URL')) {
+                    $maintenanceUrl = 'https://www.google.com';
+                } else {
+                    $maintenanceUrl = Configuration::get('EVERPS_MAINTENANCE_URL');
+                }
+                if (!Tools::getValue('qcd') || Tools::getValue('qcd') != 'gone') {
+                    Tools::redirect(
+                        $maintenanceUrl
+                    );
+                }
+            }
+        }
+    }
+
     public function hookActionOutputHTMLBefore($params)
     {
-        $cacheId = 'EverBlockClass::getAllBlocks_'
+        $cacheId = 'EverBlockClass::hookActionOutputHTMLBefore_'
         . (int) $this->context->language->id
         . '_'
         . (int) $this->context->shop->id;

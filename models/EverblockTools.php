@@ -242,161 +242,6 @@ class EverblockTools extends ObjectModel
         self::addHooksToLayouts();
     }
 
-    public static function createObjectIdHooks()
-    {
-        self::createCmsHooks();
-        self::createCmsCategoriesHooks();
-        self::createProductHooks();
-        self::createCategoryHooks();
-        self::createManufacturerHooks();
-        self::createSupplierHooks();
-    }
-
-    public static function createCmsHooks()
-    {
-        $cms = CMS::getCMSPages();
-        foreach ($cms as $c) {
-            if (!Hook::getIdByName('displayCmsId' . $c['id_cms'])) {
-                $hook = new Hook();
-                $hook->name = 'displayCmsId' . $c['id_cms'];
-                $hook->title = 'Before CMS ID' . $c['id_cms'] . ' is rendered';
-                $hook->description = 'This hook triggers before CMS ID' . $c['id_cms'] . ' is rendered';
-                $hook->save();
-                self::registerPrettyBlockHook($hook->name);
-            }
-        }
-    }
-
-    public static function createCmsCategoriesHooks()
-    {
-        $cmsCategories = CMSCategory::getSimpleCategories(
-            (int) Context::getContext()->language->id
-        );
-        foreach ($cmsCategories as $c) {
-            if (!Hook::getIdByName('displayCmsCategoryId' . $c['id_cms_category'])) {
-                $hook = new Hook();
-                $hook->name = 'displayCmsCategoryId' . $c['id_cms_category'];
-                $hook->title = 'Before CMS ID ' . $c['id_cms_category'] . ' is rendered';
-                $hook->description = 'This hook triggers before CMS ID ' . $c['id_cms_category'] . ' is rendered';
-                $hook->save();
-                self::registerPrettyBlockHook($hook->name);
-            }
-        }
-    }
-
-    public static function createCategoryHooks()
-    {
-        $categories = Category::getSimpleCategories(
-            (int) Context::getContext()->language->id
-        );
-        foreach ($categories as $c) {
-            if (!Hook::getIdByName('displayCategoryId' . $c['id_category'])) {
-                $hook = new Hook();
-                $hook->name = 'displayCategoryId' . $c['id_category'];
-                $hook->title = 'Before category ID ' . $c['id_category'] . ' is rendered';
-                $hook->description = 'This hook triggers before category ID ' . $c['id_category'] . ' is rendered';
-                $hook->save();
-                self::registerPrettyBlockHook($hook->name);
-            }
-            if (!Hook::getIdByName('displayWrapperBottomCategoryId' . $c['id_category'])) {
-                $hook = new Hook();
-                $hook->name = 'displayWrapperBottomCategoryId' . $c['id_category'];
-                $hook->title = 'Wrapper bottom on category ID ' . $c['id_category'] . ' is rendered';
-                $hook->description = 'This hook triggers on wrapper bottom on category ID ' . $c['id_category'] . ' is rendered';
-                $hook->save();
-                self::registerPrettyBlockHook($hook->name);
-            }
-        }
-    }
-
-    public static function createManufacturerHooks()
-    {
-        $manufacturers = Manufacturer::getManufacturers();
-        foreach ($manufacturers as $m) {
-            if (!Hook::getIdByName('displayManufacturerId' . $m['id_manufacturer'])) {
-                $hook = new Hook();
-                $hook->name = 'displayManufacturerId' . $m['id_manufacturer'];
-                $hook->title = 'Before manufacturer ID ' . $m['id_manufacturer'] . ' is rendered';
-                $hook->description = 'This hook triggers before manufacturer ID ' . $m['id_manufacturer'] . ' is rendered';
-                $hook->save();
-                self::registerPrettyBlockHook($hook->name);
-            }
-            if (!Hook::getIdByName('displayWrapperBottomManufacturerId' . $m['id_manufacturer'])) {
-                $hook = new Hook();
-                $hook->name = 'displayWrapperBottomManufacturerId' . $m['id_manufacturer'];
-                $hook->title = 'Wrapper bottom on manufacturer ID ' . $m['id_manufacturer'] . ' is rendered';
-                $hook->description = 'This hook triggers on wrapper bottom on manufacturer ID ' . $m['id_manufacturer'] . ' is rendered';
-                $hook->save();
-                self::registerPrettyBlockHook($hook->name);
-            }
-        }
-    }
-
-    public static function createSupplierHooks()
-    {
-        $suppliers = Supplier::getSuppliers();
-        foreach ($suppliers as $s) {
-            if (!Hook::getIdByName('displaySupplierId' . $s['id_supplier'])) {
-                $hook = new Hook();
-                $hook->name = 'displaySupplierId' . $s['id_supplier'];
-                $hook->title = 'Before manufacturer ID ' . $s['id_supplier'] . ' is rendered';
-                $hook->description = 'This hook triggers before manufacturer ID ' . $s['id_supplier'] . ' is rendered';
-                $hook->save();
-                self::registerPrettyBlockHook($hook->name);
-            }
-            if (!Hook::getIdByName('displayWrapperBottomSupplierId' . $s['id_supplier'])) {
-                $hook = new Hook();
-                $hook->name = 'displayWrapperBottomSupplierId' . $s['id_supplier'];
-                $hook->title = 'Wrapper bottom on manufacturer ID ' . $s['id_supplier'] . ' is rendered';
-                $hook->description = 'This hook triggers on wrapper bottom on manufacturer ID ' . $s['id_supplier'] . ' is rendered';
-                $hook->save();
-                self::registerPrettyBlockHook($hook->name);
-            }
-        }
-    }
-
-    public static function createProductHooks()
-    {
-        $sql = 'SELECT id_product FROM ' . _DB_PREFIX_ . 'product';
-        $products = Db::getInstance()->executeS($sql);
-
-        foreach ($products as $product) {
-            $productId = (int)$product['id_product'];
-
-            // Générez les noms de hook avec le suffixe de l'ID du produit
-            $reassuranceHookName = 'displayReassuranceProductId' . $productId;
-            $descriptionHookName = 'displayDescriptionProductId' . $productId;
-            $shortDescriptionHookName = 'displayDescriptionShortProductId' . $productId;
-            // Créez les hooks s'ils n'existent pas déjà
-            if (!Hook::getIdByName($reassuranceHookName)) {
-                $hook = new Hook();
-                $hook->name = $reassuranceHookName;
-                $hook->title = 'Reassurance hook for product ID ' . $productId;
-                $hook->description = 'This hooks is triggered only for product ID ' . $productId;
-                $hook->save();
-            }
-
-            if (!Hook::getIdByName($descriptionHookName)) {
-                $hook = new Hook();
-                $hook->name = $descriptionHookName;
-                $hook->title = 'Description hook for product ID ' . $productId;
-                $hook->description = 'This hooks is triggered only for product ID ' . $productId;
-                $hook->save();
-            }
-
-            if (!Hook::getIdByName($shortDescriptionHookName)) {
-                $hook = new Hook();
-                $hook->name = $shortDescriptionHookName;
-                $hook->title = 'Short description hook for product ID ' . $productId;
-                $hook->description = 'This hooks is triggered only for product ID ' . $productId;
-                $hook->save();
-            }
-            self::registerPrettyBlockHook($reassuranceHookName);
-            self::registerPrettyBlockHook($descriptionHookName);
-            self::registerPrettyBlockHook($shortDescriptionHookName);
-        }
-    }
-
     public static function addHookCmsContent()
     {
         $theme = Context::getContext()->shop->theme;
@@ -406,7 +251,8 @@ class EverblockTools extends ObjectModel
 
         if (file_exists($pageTplPath)) {
             $pageTplContent = file_get_contents($pageTplPath);
-            $newContent = "{block name='hook_cms_id'}{hook h=\"displayCmsId`\$cms.id`\"}{/block}\n{block name='cms_content'}";
+
+            $newContent = "{widget name='custom_cms_widget' cms_id=\$cms.id}\n{block name='cms_content'}";
             if ((bool) self::stringExistsInFileContent($newContent, $pageTplContent) === false) {
                 $modifiedContent = str_replace("{block name='cms_content'}", $newContent, $pageTplContent);
 
@@ -431,13 +277,15 @@ class EverblockTools extends ObjectModel
 
         if (file_exists($categoryTplPath)) {
             $categoryTplContent = file_get_contents($categoryTplPath);
-            $newContent = "{block name='hook_cms_category_id'}{hook h=\"displayCmsCategoryId`\$cms_category.id`\"}{/block}\n{block name='page_content'}";
+            
+            $newContent = "{widget name='custom_cms_category_widget' cms_category_id=\$cms_category.id}\n{block name='page_content'}";
             if ((bool) self::stringExistsInFileContent($newContent, $categoryTplContent) === false) {
                 $modifiedContent = str_replace("{block name='page_content'}", $newContent, $categoryTplContent);
 
                 file_put_contents($categoryTplPath, $modifiedContent);
 
                 Tools::clearSmartyCache();
+                return true;
             }
             return false;
         }
@@ -455,24 +303,24 @@ class EverblockTools extends ObjectModel
         if (file_exists($productTplPath)) {
             $productTplContent = file_get_contents($productTplPath);
             
-            // Ajouter le hook displayDescriptionShortProductId
-            $newContent = "{block name='hook_display_description_short_product_id'}{hook h=\"displayDescriptionShortProductId`\$product.id`\"}{/block}\n{block name='product_description_short'}";
+            // Ajouter le widget pour le hook displayDescriptionShortProductId
+            $newContent = "{widget name='custom_product_description_short_widget' product_id=\$product.id}\n{block name='product_description_short'}";
             if ((bool) self::stringExistsInFileContent($newContent, $productTplContent) === false) {
                 $modifiedContent = str_replace("{block name='product_description_short'}", $newContent, $productTplContent);
                 file_put_contents($productTplPath, $modifiedContent);
             }
 
-            // Ajouter le hook displayDescriptionProductId
+            // Ajouter le widget pour le hook displayDescriptionProductId
             $productTplContent = file_get_contents($productTplPath);
-            $newContent = "{block name='hook_display_description_product_id'}{hook h=\"displayDescriptionProductId`\$product.id`\"}{/block}\n{block name='product_description'}";
+            $newContent = "{widget name='custom_product_description_widget' product_id=\$product.id}\n{block name='product_description'}";
             if ((bool) self::stringExistsInFileContent($newContent, $productTplContent) === false) {
                 $modifiedContent = str_replace("{block name='product_description'}", $newContent, $productTplContent);
                 file_put_contents($productTplPath, $modifiedContent);
             }
 
-            // Ajouter le hook displayReassuranceProductId
+            // Ajouter le widget pour le hook displayReassuranceProductId
             $productTplContent = file_get_contents($productTplPath);
-            $newContent = "{block name='hook_reassurance_product_id'}{hook h=\"displayReassuranceProductId`\$product.id`\"}{/block}\n{block name='hook_display_reassurance'}";
+            $newContent = "{widget name='custom_product_reassurance_widget' product_id=\$product.id}\n{block name='hook_display_reassurance'}";
             if ((bool) self::stringExistsInFileContent($newContent, $productTplContent) === false) {
                 $modifiedContent = str_replace("{block name='hook_display_reassurance'}", $newContent, $productTplContent);
                 file_put_contents($productTplPath, $modifiedContent);
@@ -499,7 +347,8 @@ class EverblockTools extends ObjectModel
             if (file_exists($layoutPath)) {
                 $layoutContent = file_get_contents($layoutPath);
 
-                $newContent = "{if isset(\$category) && is_array(\$category)}{block name='hook_wrapper_bottom_category_id'}{hook h=\"displayWrapperBottomCategoryId`\$category.id`\"}{/block}{/if}{if isset(\$manufacturer) && is_array(\$manufacturer)}{block name='hook_wrapper_bottom_manufacturer_id'}{hook h=\"displayWrapperBottomManufacturerId`\$manufacturer.id`\"}{/block}{/if}{if isset(\$supplier) && is_array(\$supplier)}{block name='hook_wrapper_bottom_supplier_id'}{hook h=\"displayWrapperBottomSupplierId`\$supplier.id`\"}{/block}{/if}{hook h=\"displayContentWrapperBottom\"}";
+                // Ajouter le widget pour le hook displayWrapperBottomCategoryId
+                $newContent = "{widget name='custom_wrapper_bottom_category_widget' category_id=\$category.id}\n{if isset(\$manufacturer) && is_array(\$manufacturer)}{block name='hook_wrapper_bottom_manufacturer_id'}{hook h=\"displayWrapperBottomManufacturerId`\$manufacturer.id`\"}{/block}{/if}{if isset(\$supplier) && is_array(\$supplier)}{block name='hook_wrapper_bottom_supplier_id'}{hook h=\"displayWrapperBottomSupplierId`\$supplier.id`\"}{/block}{/if}{widget name='custom_content_wrapper_bottom_widget'}";
                 if ((bool) self::stringExistsInFileContent($newContent, $layoutContent) === false) {
                     $modifiedContent = preg_replace('/\{hook h="displayContentWrapperBottom"\}/', $newContent, $layoutContent);
 
@@ -517,7 +366,8 @@ class EverblockTools extends ObjectModel
         if (file_exists($manufacturerTplPath)) {
             $manufacturerTplContent = file_get_contents($manufacturerTplPath);
 
-            $newContent = "{block name='hook_supplier_id'}{hook h=\"displaySupplierId`\$supplier.id`\"}{/block}{block name='product_list'}";
+            // Ajouter le widget pour le hook displaySupplierId
+            $newContent = "{widget name='custom_supplier_id_widget' supplier_id=\$supplier.id}\n{block name='product_list'}";
 
             if ((bool) self::stringExistsInFileContent($newContent, $manufacturerTplContent) === false) {
                 $modifiedContent = preg_replace('/\{block name="product_list"\}/', $newContent, $manufacturerTplContent);
