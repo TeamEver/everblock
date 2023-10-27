@@ -151,6 +151,9 @@ class EverblockTools extends ObjectModel
 
     private static function generateOsmScript($markers)
     {
+        if (!$markers) {
+            return;
+        }
         $mapCode = '
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -182,6 +185,9 @@ class EverblockTools extends ObjectModel
 
     private static function generateGoogleMapScript($markers)
     {
+        if (!$markers) {
+            return;
+        }
         // Code pour générer une carte Google Maps ici
         // Utilisez la documentation de Google Maps JavaScript API pour cela
         // Assurez-vous d'inclure le code nécessaire pour initialiser la carte Google Maps
@@ -374,5 +380,49 @@ class EverblockTools extends ObjectModel
                 file_put_contents($manufacturerTplPath, $modifiedContent);
             }
         }
+    }
+
+    /**
+    * Get IP address for current visitor
+    * @return string IP address
+    */
+    public static function getIpAddress()
+    {
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+        return $ip;
+    }
+
+    /**
+    * Get all maintenance IP address
+    * @return array of IP
+    */
+    public static function getMaintenanceIpAddress()
+    {
+        if (!Configuration::get('PS_MAINTENANCE_IP')) {
+            return '::1';
+        }
+        $maintenance_ip = explode(
+            ',',
+            Configuration::get('PS_MAINTENANCE_IP')
+        );
+        return $maintenance_ip;
+    }
+
+    /**
+    * If IP address is on maintenance
+    * @return bool
+    */
+    public static function isMaintenanceIpAddress()
+    {
+        if (in_array(self::getIpAddress(), self::getMaintenanceIpAddress())) {
+            return true;
+        }
+        return false;
     }
 }
