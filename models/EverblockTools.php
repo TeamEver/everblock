@@ -425,4 +425,9 @@ class EverblockTools extends ObjectModel
         }
         return false;
     }
+
+    public static function isEmployee(): bool
+    {
+        return !empty((new Cookie('psAdmin'))->id_employee);
+    }
 }
