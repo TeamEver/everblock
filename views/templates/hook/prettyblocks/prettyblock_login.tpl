@@ -16,9 +16,9 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
-<!-- Module Ever Block -->
 {if !$customer.is_logged}
-<div class="{if $block.settings.default.container}container{/if}">
+{prettyblocks_zone zone_name="block-login-{$block.id_prettyblocks}-before"}
+<div class="{if $block.settings.default.container}container{/if}" {if isset($block.settings.bg_color) && $block.settings.bg_color} style="background-color:{$block.settings.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
     {if $block.settings.default.container}
         <div class="row">
     {/if}
@@ -60,5 +60,5 @@
         </div>
     {/if}
 </div>
+{prettyblocks_zone zone_name="block-login-{$block.id_prettyblocks}-after"}
 {/if}
-<!-- /Module Ever Block -->

@@ -20,13 +20,16 @@
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-    <div class="everblock {$block.settings.css_class|escape:'htmlall':'UTF-8'} {$block.settings.bootstrap_class|escape:'htmlall':'UTF-8'}" {if isset($block.settings.bg_color) && $block.settings.bg_color} style="background-color:{$block.settings.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+    {prettyblocks_zone zone_name="block-gmap-{$block.id_prettyblocks}-before"}
+    <div class="everblock {$block.settings.css_class|escape:'htmlall':'UTF-8'}" {if isset($block.settings.bg_color) && $block.settings.bg_color} style="background-color:{$block.settings.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+        {$block|var_dump}
         {if isset($block.extra.iframe) && $block.extra.iframe}
         {$block.extra.iframe nofilter}
         {else}
         {$block.settings.iframe nofilter}
         {/if}
     </div>
+    {prettyblocks_zone zone_name="block-gmap-{$block.id_prettyblocks}-after"}
     {if $block.settings.default.container}
         </div>
     {/if}

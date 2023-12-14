@@ -12,23 +12,53 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    Team Ever <https://www.team-ever.com/>
- *  @copyright 2019-2021 Team Ever
+ *  @copyright 2019-2023 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<div id="everblock-storelocator" class="everblock-storelocator visible">
+{if isset($prettyblocks_installed) && $prettyblocks_installed}
+{widget name="prettyblocks" zone_name="everStoreLocatorBefore"}
+{/if}
+<div id="everblock-storelocator" class="everblock-storelocator visible row">
+    map
+</div>
+<div id="store-search-block" class="mt-3">
+    {if isset($prettyblocks_installed) && $prettyblocks_installed}
+    {widget name="prettyblocks" zone_name="everStoreLocatorBeforeSearch"}
+    {/if}
+    <div class="input-group">
+        <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
+    </div>
+    {if isset($prettyblocks_installed) && $prettyblocks_installed}
+    {widget name="prettyblocks" zone_name="everStoreLocatorAfterSearch"}
+    {/if}
+</div>
+<div id="everblock-storelist" class="everblock-storelocator visible row">
+    {widget name="prettyblocks" zone_name="everStoreLocatorBeforeStoreList"}
     {foreach from=$everblock_stores item=item name=store_loop}
-        <div class="col-md-4">
-            <div class="store-block">
-                <h2>{$item.name}</h2>
-                <p>Address: {$item.address1}, {$item.city}, {$item.postcode}</p>
-                <p>Phone: {$item.phone}</p>
+        <div class="col-12 col-md-4 mt-3">
+            <div class="card card-block store-block store-ever-id-{$item.city|escape:'htmlall':'UTF-8'}">
+                <h2>{$item.name|escape:'htmlall':'UTF-8'}</h2>
+                <p class="store-address">{$item.address1|escape:'htmlall':'UTF-8'}</p>
+                <p class="store-city">{$item.postcode|escape:'htmlall':'UTF-8'} {$item.city|escape:'htmlall':'UTF-8'}</p>
+                <p class="store-phone">{$item.phone|escape:'htmlall':'UTF-8'}</p>
                 <!-- Ajoutez d'autres informations ici selon vos besoins -->
-                <a href="{url entity='store' id=$item.id}" class="btn btn-primary">Voir plus</a>
+                {if isset($prettyblocks_installed) && $prettyblocks_installed}
+                {widget name="prettyblocks" zone_name="everStoreLocatorStoreId{$item.id}"}
+                {/if}
+                <img src="{$urls.img_store_url|escape:'htmlall':'UTF-8'}{$item.id|escape:'htmlall':'UTF-8'}.jpg" class="everblock-store-{$item.id|escape:'htmlall':'UTF-8'} img img-fluid w-100 lazyload" loading="lazy">
+                <a href="{url entity='store' id=$item.id}" class="btn btn-primary text-center text-white">
+                    {l s='See more' mod='everblock'}
+                </a>
             </div>
         </div>
         {if $smarty.foreach.store_loop.iteration % 3 == 0}
             <div class="clearfix"></div>
         {/if}
     {/foreach}
+    {if isset($prettyblocks_installed) && $prettyblocks_installed}
+    {widget name="prettyblocks" zone_name="everStoreLocatorAfterStoreList"}
+    {/if}
 </div>
-{$mapCode nofilter}
+{if isset($prettyblocks_installed) && $prettyblocks_installed}
+{widget name="prettyblocks" zone_name="everStoreLocatorAfter"}
+{/if}

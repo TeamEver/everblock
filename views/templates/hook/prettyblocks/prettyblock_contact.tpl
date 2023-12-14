@@ -16,6 +16,6 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
-<!-- Module Ever Block -->
+{prettyblocks_zone zone_name="block-contact-{$block.id_prettyblocks}-before"}
 {widget name="contactform"}
-<!-- /Module Ever Block -->
+{prettyblocks_zone zone_name="block-contact-{$block.id_prettyblocks}-after"}

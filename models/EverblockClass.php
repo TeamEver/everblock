@@ -248,7 +248,7 @@ class EverBlockClass extends ObjectModel
             $sql->where('eb.id_shop = ' . (int) $idShop);
             $sql->where('eb.active = 1');
             $sql->orderBy('eb.position ASC');
-            $allBlocks = Db::getInstance()->executeS($sql);
+            $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
             foreach ($allBlocks as $block) {
                 if (!empty($block['date_start']) && $block['date_start'] !== '0000-00-00 00:00:00' && $block['date_start'] > $now) {
                     continue;

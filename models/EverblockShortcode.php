@@ -71,7 +71,7 @@ class EverblockShortcode extends ObjectModel
             $sql = new DbQuery();
             $sql->select('*');
             $sql->from('everblock_shortcode');
-            $shortcodes = Db::getInstance()->executeS($sql);
+            $shortcodes = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
             $return = [];
             foreach ($shortcodes as $short_array) {
                 $shortcode = new self(
@@ -96,7 +96,7 @@ class EverblockShortcode extends ObjectModel
             $sql->select('*');
             $sql->from('everblock_shortcode');
             $sql->where('id_shop = ' . (int) $idShop);
-            $return = Db::getInstance()->executeS($sql);
+            $return = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
             Cache::store($cache_id, $return);
             return $return;
         }
@@ -125,7 +125,7 @@ class EverblockShortcode extends ObjectModel
                 'id_shop = ' . (int) $id_shop
             );
             $return = new self(
-                (int) Db::getInstance()->getValue($sql),
+                (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql),
                 (int) $id_lang,
                 (int) $id_shop
             );
@@ -157,7 +157,7 @@ class EverblockShortcode extends ObjectModel
                 'id_shop = ' . (int) $id_shop
             );
             $shortcode = new self(
-                (int) Db::getInstance()->getValue($sql),
+                (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql),
                 (int) $id_lang,
                 (int) $id_shop
             );

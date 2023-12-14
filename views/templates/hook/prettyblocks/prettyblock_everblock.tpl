@@ -15,16 +15,20 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<!-- Module Ever Block -->
-<div class="{if $block.settings.default.container}container{/if}">
+<div class="mt-2{if $block.settings.default.container} container{/if}" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-    <div class="everblock {$block.settings.css_class|escape:'htmlall':'UTF-8'} {$block.settings.bootstrap_class|escape:'htmlall':'UTF-8'}" {if isset($block.settings.bg_color) && $block.settings.bg_color} style="background-color:{$block.settings.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-        {$block.settings.content nofilter}
+    {if isset($block.states) && $block.states}
+    <div class="col-12{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+        {foreach from=$block.states item=state key=key}
+            <div id="block-{$block.id_prettyblocks}-{$key}">
+                {$state.content nofilter}
+            </div>
+        {/foreach}
     </div>
+    {/if}
     {if $block.settings.default.container}
         </div>
     {/if}
 </div>
-<!-- /Module Ever Block -->

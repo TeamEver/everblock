@@ -15,72 +15,55 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<!-- Module Ever Block -->
-<div class="{if $block.settings.default.container}container{/if}">
+<div class="mt-2{if $block.settings.default.container} container{/if}" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
     {if $block.settings.default.container}
         <div class="row">
     {/if}
     {if isset($block.states) && $block.states}
-    <div class="mt-4" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-        <div id="imgGallerySlideshow{$block.id_prettyblocks}" class="carousel slide ever-slide {$block.settings.css_class|escape:'htmlall':'UTF-8'} {$block.settings.bootstrap_class|escape:'htmlall':'UTF-8'}" data-ride="carousel" {if isset($block.settings.slide_duration) && $block.settings.slide_duration} data-duration="{$block.settings.slide_duration}"{else} data-duration="2000"{/if}>
-                    <div class="direction" aria-label="Boutons du carrousel">
-                        <a class="left carousel-control" href="#imgGallerySlideshow{$block.id_prettyblocks}" role="button" data-slide="prev" aria-label="Précédent">
-                            <span class="icon-prev" aria-hidden="true">
-                                <i class="material-icons">&#xE5CB;</i>
-                            </span>
-                        </a>
-                        <a class="right carousel-control" href="#imgGallerySlideshow{$block.id_prettyblocks}" role="button" data-slide="next" aria-label="Suivant">
-                            <span class="icon-next" aria-hidden="true">
-                                <i class="material-icons">&#xE5CC;</i>
-                            </span>
-                        </a>
-                    </div>
-                    
-                    <div class="carousel-inner h-100">
-                        {assign var="numProductsPerSlide" value=4}
-                        {foreach from=$block.states item=state key=key}
-                            {if $key % $numProductsPerSlide == 0}
-                                {if $key == 0}
-                                    <div class="carousel-item active">
+        {assign var="slideCount" value=0}
+        <div class="pretty-gallery">
+            <div id="imgGallerySlideshow{$block.id_prettyblocks}" class="carousel slide ever-slide" data-ride="carousel" data-duration="2000">
+                <div class="direction" aria-label="Boutons du carrousel">
+                    <a class="left carousel-control" href="#imgGallerySlideshow{$block.id_prettyblocks}" role="button" data-slide="prev" aria-label="Précédent">
+                        <span class="icon-prev" aria-hidden="true">
+                            <i class="material-icons">&#xE5CB;</i>
+                        </span>
+                    </a>
+                    <a class="right carousel-control" href="#imgGallerySlideshow{$block.id_prettyblocks}" role="button" data-slide="next" aria-label="Suivant">
+                        <span class="icon-next" aria-hidden="true">
+                            <i class="material-icons">&#xE5CC;</i>
+                        </span>
+                    </a>
+                </div>
+                <div class="carousel-inner h-100">
+                    {foreach from=$block.states item=state key=key}
+                        <div class="carousel-item{if $slideCount == 0} active{/if}">
+                            <div class="col-12">
+                                {if $state.link}
+                                {if $state.obfuscate}
+                                {assign var="obflink" value=$state.link|base64_encode}
+                                <span class="obflink" data-obflink="{$obflink}">
                                 {else}
-                                    <div class="carousel-item">
+                                <a href="{$state.link}" title="{$state.name}" {if $state.target_blank} target="_blank"{/if}>
                                 {/if}
-                                <div class="row">
-                            {/if}
-                            <div class="col-md-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        {if $state.link}
-                                        {if $state.obfuscate}
-                                        {assign var="obflink" value=$state.link|base64_encode}
-                                        <span class="obflink" data-obflink="{$obflink}">
-                                        {else}
-                                        <a href="{$state.link}" title="{$state.name}" {if $state.target_blank} target="_blank"{/if}>
-                                        {/if}
-                                        {/if}
-                                            <img src="{$state.image.url}" title="{$state.name}" alt="{$state.name}" class="img img-fluid lazyload" loading="lazy">
-                                        {if $state.link}
-                                        {if $state.obfuscate}
-                                        </span>
-                                        {else}
-                                        </a>
-                                        {/if}
-                                        {/if}
-                                    </div>
-                                </div>
+                                {/if}
+                                    <img src="{$state.image.url}" title="{$state.name}" alt="{$state.name}" class="img img-fluid lazyload" loading="lazy">
+                                {if $state.link}
+                                {if $state.obfuscate}
+                                </span>
+                                {else}
+                                </a>
+                                {/if}
+                                {/if}
                             </div>
-                            {if ($key + 1) % $numProductsPerSlide == 0 || $key == count($block.states) - 1}
-                                </div>
-                            </div>
-                            {/if}
-                        {/foreach}
+                        </div>
+                        {assign var="slideCount" value=$slideCount+1}
+                    {/foreach}
                 </div>
             </div>
-    </div>
+        </div>
     {/if}
     {if $block.settings.default.container}
         </div>
     {/if}
 </div>
-<!-- /Module Ever Block -->
-

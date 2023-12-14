@@ -15,18 +15,20 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<!-- Module Ever Block -->
 <div class="{if $block.settings.default.container}container{/if}">
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-    <div class="everblock {$block.settings.css_class|escape:'htmlall':'UTF-8'} {$block.settings.bootstrap_class|escape:'htmlall':'UTF-8'}" {if isset($block.settings.bg_color) && $block.settings.bg_color} style="background-color:{$block.settings.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-        {if isset($block.extra.presented) && $block.extra.presented}
-        {include file="catalog/_partials/miniatures/product.tpl" product=$block.extra.presented}
+    {foreach from=$block.states item=state key=key}
+        <div id="block-{$block.id_prettyblocks}-{$key}" class="everblock{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}"{/if}>
+          <div class="alert alert-{$state.alert_type}" role="alert">
+        {if isset($state.extra.presented) && $state.extra.presented}
+        {include file="catalog/_partials/miniatures/product.tpl" product=$state.extra.presented}
         {/if}
-    </div>
+          </div>
+        </div>
+    {/foreach}
     {if $block.settings.default.container}
         </div>
     {/if}
 </div>
-<!-- /Module Ever Block -->

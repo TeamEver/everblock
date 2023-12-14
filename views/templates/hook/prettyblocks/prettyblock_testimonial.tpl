@@ -16,14 +16,14 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 <!-- Module Ever Block -->
-<div class="{if $block.settings.default.container}container{/if}">
+<div class="mt-2 {if $block.settings.default.container} container{/if}">
     {if $block.settings.default.container}
         <div class="row">
     {/if}
     {if isset($block.states) && $block.states}
-    <div id="testimonial-{$block.id_prettyblocks}" class="everblock-testimonial mt-4" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-        <div class="container mt-5">
-            <div class="text-center row mb-2">
+    <div id="testimonial-{$block.id_prettyblocks}" class="everblock-testimonial" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+        <div class="container">
+            <div class="text-center row">
                 <div class="col-md-12">
                     <span class="mb-2 h2">{$block.settings.name}</span>
                 </div>

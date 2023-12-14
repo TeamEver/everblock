@@ -15,15 +15,20 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-
-<div class="{if $block.settings.default.container}container{/if}" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+<div class="mt-2{if $block.settings.default.container} container{/if}" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-    {prettyblocks_zone zone_name="block-divider-{$block.id_prettyblocks}-before"}
-	<hr id="{$block.id_prettyblocks}" class="everblock everblock-divider">
+    {if isset($block.states) && $block.states}
+    <div class="col-12{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+        {foreach from=$block.states item=state key=key}
+            <div id="block-{$block.id_prettyblocks}-{$key}">
+                {eval $state.content}
+            </div>
+        {/foreach}
+    </div>
+    {/if}
     {if $block.settings.default.container}
         </div>
     {/if}
-    {prettyblocks_zone zone_name="block-divider-{$block.id_prettyblocks}-after"}
 </div>

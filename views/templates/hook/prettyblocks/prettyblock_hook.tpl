@@ -15,7 +15,18 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+<div class="{if $block.settings.default.container}container{/if}">
+    {if $block.settings.default.container}
+        <div class="row">
+    {/if}
+    {foreach from=$block.states item=state key=key}
+        <div id="block-{$block.id_prettyblocks}-{$key}" class="everblock{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}"{/if}>
+{$state|var_dump}
 
-<!-- Module Ever Block -->
-{hook h=$block.settings.hook_name}
-<!-- /Module Ever Block -->
+        	{* {hook h=$state.hook_name} *}
+        </div>
+    {/foreach}
+    {if $block.settings.default.container}
+        </div>
+    {/if}
+</div>

@@ -15,64 +15,55 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<!-- Module Ever Block -->
-<div class="{if $block.settings.default.container}container{/if}">
-    {if $block.settings.default.container}
-        <div class="row">
-    {/if}
-    <div class="featured-products clearfix mt-3 everblock {$block.settings.css_class|escape:'htmlall':'UTF-8'} {$block.settings.bootstrap_class|escape:'htmlall':'UTF-8'}" {if isset($block.settings.bg_color) && $block.settings.bg_color} style="background-color:{$block.settings.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-
-        <div class="products row">
-            {if isset($block.extra.presenteds) && $block.extra.presenteds}
-            {include file="catalog/_partials/productlist.tpl" products=$block.extra.presenteds cssClass="row" productClass="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
-            {/if}
-        </div>
-    </div>
-    {if $block.settings.default.container}
-        </div>
-    {/if}
-</div>
 {if isset($block.extra.presenteds) && $block.extra.presenteds}
     <div class="container mt-4">
-        <div id="productSlideshow" class="carousel slide" data-ride="carousel">
-            <div class="carousel-inner">
-                {assign var="numProductsPerSlide" value=4}
-                {foreach from=$block.extra.presenteds item=product key=key}
-                    {if $key % $numProductsPerSlide == 0}
-                        {if $key == 0}
-                            <div class="carousel-item active">
-                        {else}
-                            <div class="carousel-item">
+        {if isset($block.settings.is_slider) && $block.settings.is_slider}
+            <div id="productSlideshow-{$block.id_prettyblocks}" class="carousel slide" data-ride="carousel">
+                <div class="carousel-inner">
+                    {assign var="numProductsPerSlide" value=4}
+                    {foreach from=$block.extra.presenteds item=product key=key}
+                        {if $key % $numProductsPerSlide == 0}
+                            {if $key == 0}
+                                <div class="carousel-item active">
+                            {else}
+                                <div class="carousel-item">
+                            {/if}
+                            <div class="row">
                         {/if}
-                        <div class="row">
-                    {/if}
 
-                    <div class="col-md-3">
-                        <div class="card">
-                            <img src="{$product.cover.bySize.home_default.url}" class="card-img-top lazyload" alt="{$product.name}" loading="lazy">
-                            <div class="card-body">
-                                <h5 class="card-title">{$product.name}</h5>
-                                <p class="card-text">Price: {$product.price}</p>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <img src="{$product.cover.bySize.home_default.url}" class="card-img-top lazyload" alt="{$product.name}" loading="lazy">
+                                <div class="card-body">
+                                    <h5 class="card-title">{$product.name}</h5>
+                                    <p class="card-text">Price: {$product.price}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {if ($key + 1) % $numProductsPerSlide == 0 || $key == count($block.extra.presenteds) - 1}
+                        {if ($key + 1) % $numProductsPerSlide == 0 || $key == count($block.extra.presenteds) - 1}
+                            </div>
                         </div>
-                    </div>
-                    {/if}
-                {/foreach}
+                        {/if}
+                    {/foreach}
+                </div>
+                <a class="carousel-control-prev" href="#productSlideshow-{$block.id_prettyblocks}" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#productSlideshow-{$block.id_prettyblocks}" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
             </div>
-            <a class="carousel-control-prev" href="#productSlideshow" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#productSlideshow" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="sr-only">Next</span>
-            </a>
+        {else}
+        <div class="products row align-items-center grid">
+            {foreach from=$block.extra.presenteds item=product key=key}
+              {block name='product_miniature'}
+                {include file='catalog/_partials/miniatures/product.tpl' product=$product}
+              {/block}
+            {/foreach}
         </div>
+        {/if}
     </div>
 {/if}
-
-<!-- /Module Ever Block -->

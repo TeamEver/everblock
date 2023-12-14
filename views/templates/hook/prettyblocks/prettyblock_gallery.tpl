@@ -17,13 +17,13 @@
 *}
 
 <!-- Module Ever Block -->
-<div class="{if $block.settings.default.container}container{/if}">
+<div class="mt-2{if $block.settings.default.container} container{/if}" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
     {if $block.settings.default.container}
         <div class="row">
     {/if}
     {if isset($block.states) && $block.states}
-    <div id="gallery-{$block.id_prettyblocks}" class="everblock-gallery mt-4" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-        <div class="container mt-5">
+    <div id="gallery-{$block.id_prettyblocks}" class="everblock-gallery">
+        <div class="container mt-2">
             {assign var="numPerRow" value=4}
             {assign var="count" value=0}
             {foreach from=$block.states item=state key=key}
@@ -31,7 +31,7 @@
                     <div class="row justify-content-center">
                 {/if}
                 
-                <div class="col-md-3 mb-4">
+                <div class="col-md-3">
                     <div class="card">
                         <img src="{$state.image.url}" class="img img-fluid card-img-top cursor-pointer lazyload" alt="{$state.name}" title="{$state.name}"
                         data-toggle="modal" data-target="#imageModal-{$block.id_prettyblocks}" data-src="{$state.image.url}" data-slide-to="{$key}" loading="lazy">

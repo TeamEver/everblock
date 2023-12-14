@@ -15,8 +15,7 @@
  *  @copyright 2019-2021 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<!-- Module Ever Block -->
-<div class="{if $block.settings.default.container}container{/if}">
+<div class="{if $block.settings.default.container}container{/if}" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
     {foreach from=$block.states item=state key=key}
     <div class="row" {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
     {if $state.link}
@@ -27,15 +26,15 @@
     <a href="{$state.link}" title="{$state.name}"{if $state.target_blank} target="_blank"{/if}>
     {/if}
     {/if}
-    <div class="col-12 col-md-6 {$state.css_class|escape:'htmlall':'UTF-8'} {$state.bootstrap_class|escape:'htmlall':'UTF-8'}">
-      {if $state.order == 1}
+    <div class="col-12 col-md-6 p-2 {$state.css_class|escape:'htmlall':'UTF-8'} {$state.bootstrap_class|escape:'htmlall':'UTF-8'}">
+      {if $state.order == 'First image, then text'}
       <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"{if $state.image.width > 0} width="{$state.image.width}"{/if}{if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
       {else}
       {$state.content nofilter}
       {/if}
     </div>
-    <div class="col-12 col-md-6">
-      {if $state.order == 1}
+    <div class="col-12 col-md-6 p-2">
+      {if $state.order == 'First image, then text'}
       {$state.content nofilter}
       {else}
       <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"{if $state.image.width > 0} width="{$state.image.width}"{/if}{if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
@@ -51,4 +50,3 @@
     </div>
     {/foreach}
 </div>
-<!-- /Module Ever Block -->
