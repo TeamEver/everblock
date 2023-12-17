@@ -33,7 +33,9 @@
     {/if}
 </div>
 <div id="everblock-storelist" class="everblock-storelocator visible row">
+    {if isset($prettyblocks_installed) && $prettyblocks_installed}
     {widget name="prettyblocks" zone_name="everStoreLocatorBeforeStoreList"}
+    {/if}
     {foreach from=$everblock_stores item=item name=store_loop}
         <div class="col-12 col-md-4 mt-3">
             <div class="card card-block store-block store-ever-id-{$item.city|escape:'htmlall':'UTF-8'}">

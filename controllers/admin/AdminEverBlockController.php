@@ -922,12 +922,12 @@ class AdminEverBlockController extends ModuleAdminController
     {
         if (Tools::getIsset('duplicate'.$this->table)) {
             $this->duplicate(
-                (int)Tools::getValue($this->identifier)
+                (int) Tools::getValue($this->identifier)
             );
         }
         if (Tools::isSubmit('deleteeverblock')) {
             $everblock_obj = new EverBlockClass(
-                (int)Tools::getValue('id_everblock')
+                (int) Tools::getValue($this->identifier)
             );
             if (!$everblock_obj->delete()) {
                 $this->errors[] = Tools::displayError('An error has occurred: Can\'t delete the current object');
@@ -935,7 +935,7 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::isSubmit('save') || Tools::isSubmit('stay')) {
             $everblock_obj = new EverBlockClass(
-                (int)Tools::getValue('id_everblock')
+                (int) Tools::getValue($this->identifier)
             );
             if (!Tools::getValue('name')
                 || !Validate::isGenericName(Tools::getValue('name'))
@@ -1087,9 +1087,16 @@ class AdminEverBlockController extends ModuleAdminController
             if (!count($this->errors)) {
                 try {
                     $everblock_obj->save();
-                    $everblock->registerHook(
+                    if ((bool) Configuration::get('EVERPSCSS_CACHE') === true) {
+                        Tools::clearAllCache();
+                    }
+                    $hooked = $everblock->registerHook(
                         $hook_name
                     );
+                    if (Module::isInstalled('prettyblocks')) {
+                        $m = Module::getInstanceByName('prettyblocks');
+                        $m->registerHook($hook_name);
+                    }
                     if ((bool)Tools::isSubmit('stay') === true) {
                         Tools::redirectAdmin(
                             self::$currentIndex
@@ -1099,13 +1106,9 @@ class AdminEverBlockController extends ModuleAdminController
                             . $this->token
                         );
                     }
-                    if (Module::isInstalled('prettyblocks')) {
-                        $m = Module::getInstanceByName('prettyblocks');
-                        $m->registerHook($hook_name);
-                    }
                     Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
                 } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update save block');
+                    PrestaShopLogger::addLog($e->getMessage());
                 }
             }
         }

@@ -19,9 +19,239 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
+use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
+use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
+use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
+use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
+use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 
 class EverblockTools extends ObjectModel
 {
+    public static function renderShortcodes($txt)
+    {
+        try {
+            $txt = self::getEverBlockShortcode($txt);
+            $txt = self::getSubcategoriesShortcode($txt);
+            $txt = self::getStoreShortcode($txt);
+            $txt = self::getVideoShortcode($txt);
+            $txt = self::getQcdAcfCode($txt);
+            $txt = self::getBestSalesShortcode($txt);
+            $txt = self::getLastProductsShortcode($txt);
+            $txt = self::renderSmartyVars($txt);
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('Everblock : ' . $e->getMessage());
+        }
+        return $txt;
+    }
+
+    public static function getEverBlockShortcode($txt)
+    {
+        $context = Context::getContext();
+
+        // Recherche des shortcodes [everblock X]
+        preg_match_all('/\[everblock\s+(\d+)\]/i', $txt, $matches);
+
+        foreach ($matches[1] as $match) {
+            $everblockId = (int)$match;
+
+            // Initialise la classe EverblockClass avec l'ID spécifié
+            $everblock = new EverblockClass(
+                (int) $everblockId,
+                (int) $context->language->id,
+                (int) $context->shop->id
+            );
+
+            if (Validate::isLoadedObject($everblock)) {
+                // Remplace le shortcode par le contenu de l'objet EverblockClass
+                $replacement = $everblock->content;
+                $shortcode = '[everblock ' . $everblockId . ']';
+                $txt = str_replace($shortcode, $replacement, $txt);
+            } else {
+                $txt = str_replace($shortcode, '', $txt);
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getLastProductsShortcode($txt)
+    {
+        $context = Context::getContext();
+
+        // Recherche des shortcodes [last-products X]
+        preg_match_all('/\[last-products\s+(\d+)\]/i', $txt, $matches);
+
+        foreach ($matches[1] as $match) {
+            $limit = (int)$match;
+
+            // Requête SQL pour obtenir les X derniers produits basés sur date_add
+            $sql = 'SELECT p.id_product
+                    FROM ' . _DB_PREFIX_ . 'product_shop p
+                    WHERE p.id_shop = ' . (int)$context->shop->id . '
+                    ORDER BY p.date_add DESC
+                    LIMIT ' . $limit;
+
+            $productIds = Db::getInstance()->executeS($sql);
+
+            if (!empty($productIds)) {
+                // Convertir les ID de produit en un tableau d'entiers
+                $productIdsArray = array_map(function($row) {
+                    return (int)$row['id_product'];
+                }, $productIds);
+
+                $everPresentProducts = self::everPresentProducts($productIdsArray);
+
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                    $module = Module::getInstanceByName('everblock');
+                    $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+                    $replacement = $context->smarty->fetch($templatePath);
+                    $shortcode = '[last-products ' . $limit . ']';
+                    $txt = str_replace($shortcode, $replacement, $txt);
+                }
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getBestSalesShortcode($txt)
+    {
+        $context = Context::getContext();
+
+        // Recherche des shortcodes [best-sales X]
+        preg_match_all('/\[best-sales\s+(\d+)\]/i', $txt, $matches);
+        foreach ($matches[1] as $match) {
+            $limit = (int)$match;
+
+            // Requête SQL pour obtenir les ID des produits les mieux vendus
+            $sql = 'SELECT product_id, SUM(product_quantity) AS total_quantity
+                    FROM ' . _DB_PREFIX_ . 'order_detail
+                    GROUP BY product_id
+                    ORDER BY total_quantity DESC
+                    LIMIT ' . $limit;
+
+            $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+
+            if (!empty($productIds)) {
+                // Convertir les ID de produit en un tableau d'entiers
+                $productIdsArray = array_map(function($row) {
+                    return (int)$row['product_id'];
+                }, $productIds);
+
+                $everPresentProducts = self::everPresentProducts($productIdsArray);
+
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                    $module = Module::getInstanceByName('everblock');
+                    $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+                    $replacement = $context->smarty->fetch($templatePath);
+                    $shortcode = '[best-sales ' . $limit . ']';
+                    $txt = str_replace($shortcode, $replacement, $txt);
+                }
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getSubcategoriesShortcode($txt)
+    {
+        $categoryShortcodes = [];
+        $context = Context::getContext();
+        preg_match_all('/\[subcategories\s+id="(\d+)"\s+nb="(\d+)"\]/i', $txt, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $categoryId = (int) $match[1];
+            $categoryCount = (int) $match[2];
+            $category = new Category(
+                (int) $categoryId,
+                (int) $context->language->id,
+                (int) $context->shop->id
+            );
+            if (!Validate::isLoadedObject($category) || (bool) $category->active === false) {
+                continue;
+            }
+            $subCategories = $category->getSubCategories(
+                (int) $context->language->id
+            );
+            if (count($subCategories) > $categoryCount) {
+                $subCategories = array_slice($subCategories, 0, $categoryCount);
+            }
+            foreach ($subCategories as &$subCategory) {
+                $imageLink = $context->link->getCatImageLink(
+                    'category_default',
+                    (int) $subCategory['id_category']
+                );
+                $categoryLink = $context->link->getCategoryLink(
+                    (int) $subCategory['id_category'],
+                    null,
+                    $context->language->id
+                );
+                $subCategory['link'] = $categoryLink;
+                $subCategory['image_link'] = $imageLink;
+            }
+            $context->smarty->assign('everSubCategories', $subCategories);
+            $module = Module::getInstanceByName('everblock');
+            $templatePath = $module->getLocalPath() . 'views/templates/hook/subcategories.tpl';
+            $replacement = $context->smarty->fetch($templatePath);
+            $txt = str_replace($match[0], $replacement, $txt);
+        }
+        return $txt;
+    }
+
+    public static function getStoreShortcode($txt)
+    {
+        $context = Context::getContext();
+        preg_match_all('/\[everstore\s+(\d+)\]/i', $txt, $matches);
+        foreach ($matches[1] as $match) {
+            $storeIds = explode(',', $match);
+            $storeInfo = [];
+            foreach ($storeIds as $storeId) {
+                $store = new Store(
+                    (int) $storeId,
+                    (int) $context->language->id,
+                    (int) $context->shop->id
+                );
+                if (!Validate::isLoadedObject($store)) {
+                    continue;
+                }
+                $storeInfo[] = array(
+                    'id_store' => $store->id,
+                    'image_link' => $context->link->getStoreImageLink('medium_default', $store->id),
+                    'name' => $store->name,
+                    'address1' => $store->address1,
+                    'address2' => $store->address2,
+                    'postcode' => $store->postcode,
+                    'city' => $store->city,
+                    'latitude' => $store->latitude,
+                    'longitude' => $store->longitude,
+                    'hours' => $store->hours,
+                    'phone' => $store->phone,
+                    'fax' => $store->fax,
+                    'note' => $store->note,
+                    'email' => $store->email,
+                    'date_add' => $store->date_add,
+                    'date_upd' => $store->date_upd,
+                );
+            }
+            $context->smarty->assign('storeInfos', $storeInfo);
+            $module = Module::getInstanceByName('everblock');
+            $templatePath = $module->getLocalPath() . 'views/templates/hook/store.tpl';
+            $replacement = $context->smarty->fetch($templatePath);
+
+            // Utilisez preg_replace_callback pour gérer le remplacement de manière plus précise
+            $txt = preg_replace_callback(
+                '/\[everstore\s+' . preg_quote($match) . '\]/i',
+                function () use ($replacement) {
+                    return $replacement;
+                },
+                $txt
+            );
+        }
+
+        return $txt;
+    }
+
     /**
      * Search & replace QCD ACF shortcodes from 410 Gone module
      * @param $txt : full DOM
@@ -94,7 +324,6 @@ class EverblockTools extends ObjectModel
                 // Appeler récursivement la méthode pour traiter les tableaux imbriqués
                 $txt = self::renderSmartyVarsInArray($txt, $elementSearch, $value);
             } else {
-            // die(var_dump($elementSearch));
                 // Remplacer les occurrences dans le texte
                 $txt = str_replace($elementSearch, $value, $txt);
             }
@@ -131,7 +360,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'Content of CMS rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -154,7 +383,7 @@ class EverblockTools extends ObjectModel
             )';
 
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'meta_title of CMS rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -176,7 +405,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'meta_description of CMS rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -199,7 +428,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'description of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -222,7 +451,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'name of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -245,7 +474,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'description_short of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -265,7 +494,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'meta_title of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -288,7 +517,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'meta_description of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -311,7 +540,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'description of category rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -334,7 +563,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'meta_title of category rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -357,7 +586,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'meta_description of category rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -380,7 +609,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance()->execute($sql);
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
             $querySuccess[] = 'EverBlock table rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -393,11 +622,27 @@ class EverblockTools extends ObjectModel
             'querySuccess' => $querySuccess,
         ];
     }
+    
+    public static function getVideoShortcode($txt)
+    {
+        preg_match_all('/\[video\s+(.*?)\]/i', $txt, $videoMatches);
+        foreach ($videoMatches[0] as $shortcode) {
+            $videoUrl = preg_replace('/\[video\s+|\]/i', '', $shortcode); // Récupérer l'URL à partir du shortcode
+            $iframe = self::detectVideoSite($videoUrl);
+            if ($iframe) {
+                $txt = str_replace($shortcode, $iframe, $txt);
+            }
+        }
+
+        return $txt;
+    }
 
     public static function detectVideoSite($url)
     {
         $patterns = [
             'youtube' => '/^(?:https?:\/\/)?(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]+)(?:\S+)?$/',
+            'youtube_embed' => '/^(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([\w\-\_]+)(?:\S+)?$/',
+            'youtube_live' => '/^(?:https?:\/\/)?(?:www\.)?youtube\.com\/live\/([\w\-\_]+)(?:\S+)?$/',
             'vimeo' => '/^(?:https?:\/\/)?(?:www\.)?vimeo\.com\/([0-9]+)$/i',
             'dailymotion' => '/^(?:https?:\/\/)?(?:www\.)?dailymotion\.com\/video\/([a-z0-9]+)$/i',
             'vidyard' => '/^(?:https?:\/\/)?(?:embed\.)?vidyard.com\/(?:watch\/)?([a-zA-Z0-9\-\_]+)$/'
@@ -407,13 +652,15 @@ class EverblockTools extends ObjectModel
             if (preg_match($pattern, $url, $matches)) {
                 switch ($key) {
                     case 'youtube':
-                        return '<iframe width="560" height="315" src="https://www.youtube.com/embed/' . $matches[1] . '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+                    case 'youtube_embed':
+                    case 'youtube_live':
+                        return '<iframe width="100%" height="315" src="https://www.youtube.com/embed/' . $matches[1] . '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
                     case 'vimeo':
-                        return '<iframe src="https://player.vimeo.com/video/' . $matches[1] . '?color=ffffff&title=0&byline=0&portrait=0" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
+                        return '<iframe src="https://player.vimeo.com/video/' . $matches[1] . '?color=ffffff&title=0&byline=0&portrait=0" width="100%" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
                     case 'dailymotion':
-                        return '<iframe frameborder="0" width="480" height="270" src="//www.dailymotion.com/embed/video/' . $matches[1] . '" allowfullscreen></iframe>';
+                        return '<iframe frameborder="0" width="100%" height="270" src="//www.dailymotion.com/embed/video/' . $matches[1] . '" allowfullscreen></iframe>';
                     case 'vidyard':
-                        return '<iframe src="https://play.vidyard.com/' . $matches[1] . '.html?v=3.1.1&type=lightbox" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
+                        return '<iframe src="https://play.vidyard.com/' . $matches[1] . '.html?v=3.1.1&type=lightbox" width="100%" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
                 }
             }
         }
@@ -817,7 +1064,7 @@ class EverblockTools extends ObjectModel
 
             $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
-            $products = array();
+            $products = [];
 
             if ($result) {
                 foreach ($result as $row) {
@@ -850,7 +1097,7 @@ class EverblockTools extends ObjectModel
 
             $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
-            $manufacturers = array();
+            $manufacturers = [];
 
             if ($result) {
                 foreach ($result as $row) {
@@ -884,7 +1131,7 @@ class EverblockTools extends ObjectModel
 
             $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
-            $suppliers = array();
+            $suppliers = [];
 
             if ($result) {
                 foreach ($result as $row) {
@@ -1014,7 +1261,7 @@ class EverblockTools extends ObjectModel
 
     public static function checkAndFixDatabase()
     {
-        $db = Db::getInstance();
+        $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
         // Ajoute les colonnes manquantes à la table ps_everblock
         $columnsToAdd = [
             'only_home' => 'int(10) unsigned DEFAULT NULL',
@@ -1111,5 +1358,50 @@ class EverblockTools extends ObjectModel
                 }
             }
         }
+    }
+
+    public static function everPresentProducts($result)
+    {
+        $products = [];
+        if (!empty($result)) {
+            $assembler = new ProductAssembler(Context::getContext());
+            $presenterFactory = new ProductPresenterFactory(Context::getContext());
+            $presentationSettings = $presenterFactory->getPresentationSettings();
+            $presenter = new ProductListingPresenter(
+                new ImageRetriever(
+                    Context::getContext()->link
+                ),
+                Context::getContext()->link,
+                new PriceFormatter(),
+                new ProductColorsRetriever(),
+                Context::getContext()->getTranslator()
+            );
+            $presentationSettings->showPrices = true;
+            foreach ($result as $productId) {
+                $psProduct = new Product(
+                    (int) $productId
+                );
+                if (!Validate::isLoadedObject($psProduct)) {
+                    continue;
+                }
+                if ((bool) $psProduct->active === false) {
+                    continue;
+                }
+                $rawProduct = [
+                    'id_product' => $productId,
+                    'id_lang' => Context::getContext()->language->id,
+                    'id_shop' => Context::getContext()->shop->id,
+                ];
+                $pproduct = $assembler->assembleProduct($rawProduct);
+                if (Product::checkAccessStatic((int) $productId, false)) {
+                    $products[] = $presenter->present(
+                        $presentationSettings,
+                        $pproduct,
+                        Context::getContext()->language
+                    );
+                }
+            }
+        }
+        return $products;
     }
 }

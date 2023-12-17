@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.0.1';
+        $this->version = '5.2.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -846,7 +846,6 @@ class Everblock extends Module
         . (int) $this->context->shop->id;
         if (!Cache::isStored($cacheId)) {
             $txt = $params['html'];
-            try {
                 $context = Context::getContext();
                 $contactLink = $context->link->getPageLink('contact');
                 if (Context::getContext()->customer->isLogged()) {
@@ -881,6 +880,7 @@ class Everblock extends Module
                     '[theme_uri]' => $theme_uri,
                     '[storelocator]' => EverblockTools::generateGoogleMap(),
                 ];
+                $txt = EverblockTools::renderShortcodes($txt);
                 $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
                 $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
                 $shortcodes = array_merge($shortcodes, $this->getCategoryShortcodes($txt));
@@ -894,14 +894,13 @@ class Everblock extends Module
                         $txt
                     );
                 }
-                $txt = EverblockTools::getQcdAcfCode($txt);
-                $txt = EverblockTools::renderSmartyVars($txt);
                 $params['html'] = $txt;
+            try {
                 Cache::store($cacheId, $txt);
                 return $params['html'];
             } catch (Exception $e) {
                 PrestaShopLogger::addLog(
-                    'Ever Block : unable to rewrite HTML page'
+                    'Ever Block : ' . $e->getMessage()
                 );
                 return $params['html'];
             }
