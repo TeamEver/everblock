@@ -1,6 +1,6 @@
 <?php
 /**
- * 2019-2023 Team Ever
+ * 2019-2024 Team Ever
  *
  * NOTICE OF LICENSE
  *
@@ -13,7 +13,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    Team Ever <https://www.team-ever.com/>
- *  @copyright 2019-2021 Team Ever
+ *  @copyright 2019-2024 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 if (!defined('_PS_VERSION_')) {
@@ -30,7 +30,7 @@ class AdminEverBlockController extends ModuleAdminController
         $this->table = 'everblock';
         $this->className = 'EverBlockClass';
         $this->context = Context::getContext();
-        $this->identifier = "id_everblock";
+        $this->identifier = 'id_everblock';
         $this->isSeven = Tools::version_compare(_PS_VERSION_, '1.7', '>=') ? true : false;
         $this->name = 'AdminEverBlockController';
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
@@ -141,6 +141,11 @@ class AdminEverBlockController extends ModuleAdminController
             'desc' => $this->l('Add new element'),
             'icon' => 'process-icon-new',
         ];
+        $this->page_header_toolbar_btn['clear'] = [
+            'href' => self::$currentIndex . '&clearcache=1&token=' . $this->token,
+            'desc' => $this->l('Clear cache'),
+            'icon' => 'process-icon-refresh',
+        ];
         parent::initPageHeaderToolbar();
     }
 
@@ -173,6 +178,13 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::isSubmit('submitBulkduplicateall' . $this->table)) {
             $this->processBulkDuplicate();
+        }
+        if (Tools::getValue('clearcache')) {
+            Tools::clearAllCache();
+            Tools::redirectAdmin(self::$currentIndex . '&cachecleared=1&token=' . $this->token);
+        }
+        if (Tools::getValue('cachecleared')) {
+            $this->confirmations[] = $this->l('Cache has been cleared');
         }
         if (Tools::isSubmit('status' . $this->table)) {
             $db = Db::getInstance();
@@ -1095,6 +1107,13 @@ class AdminEverBlockController extends ModuleAdminController
                     $everblock->registerHook(
                         $hook_name
                     );
+                    if (Module::isInstalled('prettyblocks')) {
+                        $m = Module::getInstanceByName('prettyblocks');
+                        $m->registerHook($hook_name);
+                    }
+                    if ((bool) Configuration::get('EVERPSCSS_CACHE') === true) {
+                        Tools::clearAllCache();
+                    }
                     if ((bool)Tools::isSubmit('stay') === true) {
                         Tools::redirectAdmin(
                             self::$currentIndex
@@ -1103,14 +1122,11 @@ class AdminEverBlockController extends ModuleAdminController
                             . '&token='
                             . $this->token
                         );
+                    } else {
+                        Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
                     }
-                    if (Module::isInstalled('prettyblocks')) {
-                        $m = Module::getInstanceByName('prettyblocks');
-                        $m->registerHook($hook_name);
-                    }
-                    Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
                 } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update save block');
+                    PrestaShopLogger::addLog('Unable to update save block : ' . $e->getMessage());
                 }
             }
         }

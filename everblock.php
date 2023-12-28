@@ -1,6 +1,6 @@
 <?php
 /**
- * 2019-2023 Team Ever
+ * 2019-2024 Team Ever
  *
  * NOTICE OF LICENSE
  *
@@ -13,7 +13,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    Team Ever <https://www.team-ever.com/>
- *  @copyright 2019-2023 Team Ever
+ *  @copyright 2019-2024 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 if (!defined('_PS_VERSION_')) {
@@ -313,6 +313,16 @@ class Everblock extends Module
                 $this->postErrors[] = $this->l('Restore failed');
             }
         }
+        if ((bool) Tools::isSubmit('submitCreateProduct') === true) {
+            $created = EverblockTools::generateProducts(
+                (int) $this->context->shop->id
+            );
+            if ((bool) $created === true) {
+                $this->postSuccess[] = $this->l('Products creation done');
+            } else {
+                $this->postErrors[] = $this->l('Products creation failed');
+            }
+        }
         if ((bool) Tools::isSubmit('submitMigrateUrls') === true
             && Tools::getValue('EVERPS_OLD_URL')
             && Tools::getValue('EVERPS_NEW_URL')
@@ -351,7 +361,7 @@ class Everblock extends Module
         $block_admin_link  = 'index.php?controller=AdminEverBlock&token=';
         $block_admin_link .= Tools::getAdminTokenLite('AdminEverBlock');
         $this->context->smarty->assign([
-            'everblock_dir' => $this->_path,
+            $this->name . '_dir' => $this->_path,
             'block_admin_link' => $block_admin_link,
         ]);
 
@@ -373,6 +383,7 @@ class Everblock extends Module
 
         return $this->html;
     }
+
     protected function renderForm()
     {
         $helper = new HelperForm();
@@ -538,6 +549,14 @@ class Everblock extends Module
                     ],
                     [
                         'type' => 'text',
+                        'label' => $this->l('Number of fictitious products to create during product generation'),
+                        'desc' => $this->l('Will generate this number of dummy products when generating'),
+                        'hint' => $this->l('Default will be 5'),
+                        'name' => 'EVERPS_DUMMY_NBR',
+                        'lang' => false,
+                    ],
+                    [
+                        'type' => 'text',
                         'label' => $this->l('Default number of paragraphs when [llorem] shortcode is detected'),
                         'desc' => $this->l('Will generate this number of paragraphs when the [llorem] shortcode is detected'),
                         'hint' => $this->l('Leaving this value blank will generate five paragraphs'),
@@ -571,37 +590,44 @@ class Everblock extends Module
                     'emptyCache' => [
                         'name' => 'submitEmptyCache',
                         'type' => 'submit',
-                        'class' => 'btn btn-info pull-right',
+                        'class' => 'btn btn-light',
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Empty cache'),
                     ],
                     'addHooksToTheme' => [
                         'name' => 'submitAddHooksToTheme',
                         'type' => 'submit',
-                        'class' => 'btn btn-info pull-right',
+                        'class' => 'btn btn-light',
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Add Pretty Block widgets into theme'),
                     ],
                     'migrateUrls' => [
                         'name' => 'submitMigrateUrls',
                         'type' => 'submit',
-                        'class' => 'btn btn-info pull-right',
+                        'class' => 'btn btn-light',
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Migrate URLS'),
                     ],
                     'backupBlocks' => [
                         'name' => 'submitBackupBlocks',
                         'type' => 'submit',
-                        'class' => 'btn btn-info pull-right',
+                        'class' => 'btn btn-light',
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Backup all blocks'),
                     ],
                     'restoreBackup' => [
                         'name' => 'submitRestoreBackup',
                         'type' => 'submit',
-                        'class' => 'btn btn-info pull-right',
+                        'class' => 'btn btn-light',
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Restore backup'),
+                    ],
+                    'createProducts' => [
+                        'name' => 'submitCreateProduct',
+                        'type' => 'submit',
+                        'class' => 'btn btn-light',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Create fake products'),
                     ],
                 ],
                 'submit' => [
@@ -634,6 +660,7 @@ class Everblock extends Module
             'EVERPSJS' => $custom_js,
             'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
             'EVERPSJS_LINKS' => Configuration::get('EVERPSJS_LINKS'),
+            'EVERPS_DUMMY_NBR' => Configuration::get('EVERPS_DUMMY_NBR'),
             'EVERPSCSS_P_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_P_LLOREM_NUMBER'),
             'EVERPSCSS_S_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_S_LLOREM_NUMBER'),
             'EVERBLOCK_TINYMCE' => Configuration::get('EVERBLOCK_TINYMCE'),
@@ -759,6 +786,10 @@ class Everblock extends Module
             Tools::getValue('EVERPSJS_LINKS')
         );
         Configuration::updateValue(
+            'EVERPS_DUMMY_NBR',
+            Tools::getValue('EVERPS_DUMMY_NBR')
+        );
+        Configuration::updateValue(
             'EVERPSCSS_P_LLOREM_NUMBER',
             Tools::getValue('EVERPSCSS_P_LLOREM_NUMBER')
         );
@@ -790,13 +821,13 @@ class Everblock extends Module
                 $gmapScript = EverblockTools::generateGoogleMapScript($markers);
                 if ($gmapScript) {
                     $filename = 'store-locator-' . $idShop . '.js';
-                    $filePath = _PS_MODULE_DIR_ . 'everblock/views/js/' . $filename;
+                    $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
                     file_put_contents($filePath, $gmapScript);
                 }
             }
         } else {
             $filename = 'store-locator-' . $idShop . '.js';
-            $filePath = _PS_MODULE_DIR_ . 'everblock/views/js/' . $filename;
+            $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
@@ -813,8 +844,8 @@ class Everblock extends Module
     public function hookActionAdminControllerSetMedia()
     {
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
-        if (Tools::getValue('id_everblock')
-            || Tools::getIsset('addeverblock')
+        if (Tools::getValue('id_' . $this->name)
+            || Tools::getIsset('add' . $this->name)
             || Tools::getValue('configure') == $this->name
         ) {
             /* Chargement des fichiers CSS */
@@ -930,7 +961,7 @@ class Everblock extends Module
                 return $params['html'];
             } catch (Exception $e) {
                 PrestaShopLogger::addLog(
-                    'Ever Block : unable to rewrite HTML page'
+                    'Ever Block hookActionOutputHTMLBefore : ' . $e->getMessage()
                 );
                 return $params['html'];
             }
@@ -972,7 +1003,7 @@ class Everblock extends Module
         }
         // Let's cache
         $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook . '-controller-' . Tools::getValue('controller') . '-hookName' . $hookName . '-idObj-' . $idObj . '-device-' . $this->context->getDevice());
-        if (!$this->isCached('everblock.tpl', $cacheId)) {
+        if (!$this->isCached($this->name . '.tpl', $cacheId)) {
             if (Context::getContext()->controller->controller_type === 'front') {
                 if (Context::getContext()->customer->id) {
                     $id_entity = (int)Context::getContext()->customer->id;
@@ -1132,7 +1163,7 @@ class Everblock extends Module
                 ]
             );
         }
-        return $this->display(__FILE__, 'everblock.tpl', $cacheId);
+        return $this->display(__FILE__, $this->name . '.tpl', $cacheId);
     }
 
     public function hookDisplayHeader()

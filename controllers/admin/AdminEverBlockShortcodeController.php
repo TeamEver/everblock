@@ -1,6 +1,6 @@
 <?php
 /**
- * 2019-2023 Team Ever
+ * 2019-2024 Team Ever
  *
  * NOTICE OF LICENSE
  *
@@ -13,7 +13,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    Team Ever <https://www.team-ever.com/>
- *  @copyright 2019-2021 Team Ever
+ *  @copyright 2019-2024 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 if (!defined('_PS_VERSION_')) {
@@ -99,6 +99,11 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
             'desc' => $this->l('Add new shortcode'),
             'icon' => 'process-icon-new',
         ];
+        $this->page_header_toolbar_btn['clear'] = [
+            'href' => self::$currentIndex . '&clearcache=1&token=' . $this->token,
+            'desc' => $this->l('Clear cache'),
+            'icon' => 'process-icon-refresh',
+        ];
         parent::initPageHeaderToolbar();
     }
 
@@ -108,9 +113,14 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
 
         $this->addRowAction('edit');
         $this->addRowAction('delete');
-
         $this->toolbar_title = $this->l('Registered shortcodes');
-
+        if (Tools::getValue('clearcache')) {
+            Tools::clearAllCache();
+            Tools::redirectAdmin(self::$currentIndex . '&cachecleared=1&token=' . $this->token);
+        }
+        if (Tools::getValue('cachecleared')) {
+            $this->confirmations[] = $this->l('Cache has been cleared');
+        }
         $lists = parent::renderList();
 
         $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/header.tpl');

@@ -1,5 +1,5 @@
 {*
- * 2019-2023 Team Ever
+ * 2019-2024 Team Ever
  *
  * NOTICE OF LICENSE
  *
@@ -12,7 +12,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    Team Ever <https://www.team-ever.com/>
- *  @copyright 2019-2021 Team Ever
+ *  @copyright 2019-2024 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 <div class="mt-2 mb-2{if $block.settings.default.container} container{/if}" {if isset($block.settings.bg_color) && $block.settings.bg_color} style="background-color:{$block.settings.bg_color|escape:'htmlall':'UTF-8'};"{/if}>

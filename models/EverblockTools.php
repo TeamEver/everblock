@@ -1,6 +1,6 @@
 <?php
 /**
- * 2019-2023 Team Ever
+ * 2019-2024 Team Ever
  *
  * NOTICE OF LICENSE
  *
@@ -13,7 +13,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    Team Ever <https://www.team-ever.com/>
- *  @copyright 2019-2021 Team Ever
+ *  @copyright 2019-2024 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 if (!defined('_PS_VERSION_')) {
@@ -1998,7 +1998,40 @@ class EverblockTools extends ObjectModel
             }
         }
 
-        // Retourne False si le fichier de sauvegarde n'existe pas
         return false;
+    }
+
+    public static function generateProducts($idShop)
+    {
+        $numProducts = (int) Configuration::get('EVERPS_DUMMY_NBR');
+        if ($numProducts <= 0) {
+            $numProducts = 5;
+        }
+        try {
+            for ($i = 0; $i < $numProducts; $i++) {
+                $product = new Product();
+                $product->id_shop_default = $idShop;
+                $product->price = rand(10, 100);
+                $product->quantity = rand(1, 100);
+
+                // Générez d'autres propriétés de produit fictives selon vos besoins
+                $product->name = 'Product ' . ($i + 1);
+                $product->description = 'Description for Product ' . ($i + 1);
+                $product->reference = 'PRD_DUMMY' . str_pad($i + 1, 4, '0', STR_PAD_LEFT);
+
+                if ($product->add()) {
+                    $categories = array(2);
+                    $product->addToCategories($categories);
+                    StockAvailable::setQuantity($product->id, 0, $product->quantity);
+                } else {
+                    PrestaShopLogger::addLog('Failed to create Product ' . ($i + 1), 3); // Niveau d'erreur : 3 (erreur)
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('Error: ' . $e->getMessage(), 3); // Niveau d'erreur : 3 (erreur)
+            return false;
+        }
     }
 }
