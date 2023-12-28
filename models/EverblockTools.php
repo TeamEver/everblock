@@ -1891,6 +1891,9 @@ class EverblockTools extends ObjectModel
                 foreach ($result as $row) {
                     $sqlData .= "INSERT INTO `$tableName` (";
                     $escapedKeys = array_map(array(Db::getInstance(), 'escape'), array_keys($row));
+                    $escapedKeys = array_map(function($key) {
+                        return "`$key`";
+                    }, $escapedKeys); // Ajout des backticks aux noms de colonnes
                     $sqlData .= implode(',', $escapedKeys);
                     $sqlData .= ") VALUES (";
 
@@ -1900,7 +1903,7 @@ class EverblockTools extends ObjectModel
                         if (is_null($value)) {
                             $escapedValues[] = 'NULL';
                         } elseif (is_numeric($value)) {
-                            $escapedValues[] = $value;
+                            $escapedValues[] = (int) $value;
                         } else {
                             $escapedValues[] = "'" . pSQL($value) . "'";
                         }

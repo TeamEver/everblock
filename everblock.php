@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.3.1';
+        $this->version = '5.3.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -300,17 +300,17 @@ class Everblock extends Module
         if ((bool) Tools::isSubmit('submitBackupBlocks') === true) {
             $backuped = EverblockTools::exportModuleTablesSQL();
             if ((bool) $backuped === true) {
-                $this->postSuccess = $this->l('Backup done');
+                $this->postSuccess[] = $this->l('Backup done');
             } else {
-                $this->postSuccess = $this->l('Backup failed');
+                $this->postErrors[] = $this->l('Backup failed');
             }
         }
         if ((bool) Tools::isSubmit('submitRestoreBackup') === true) {
             $restored = EverblockTools::restoreModuleTablesFromBackup();
             if ((bool) $restored === true) {
-                $this->postSuccess = $this->l('Backup done');
+                $this->postSuccess[] = $this->l('Restore done');
             } else {
-                $this->postSuccess = $this->l('Backup failed');
+                $this->postErrors[] = $this->l('Restore failed');
             }
         }
         if ((bool) Tools::isSubmit('submitMigrateUrls') === true
@@ -326,13 +326,13 @@ class Everblock extends Module
                 && isset($migration['postErrors'])
                 && count($migration['postErrors']) > 0
             ) {
-                $this->postErrors = $migration['postErrors'];
+                $this->postErrors[] = $migration['postErrors'];
             }
             if (is_array($migration)
                 && isset($migration['querySuccess'])
                 && count($migration['querySuccess']) > 0
             ) {
-                $this->postSuccess = $migration['querySuccess'];
+                $this->postSuccess[] = $migration['querySuccess'];
             }
         }
         if (count($this->postErrors)) {
