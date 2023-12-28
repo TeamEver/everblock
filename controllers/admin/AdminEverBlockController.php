@@ -276,6 +276,10 @@ class AdminEverBlockController extends ModuleAdminController
                 'id_bootstrap' => 1,
                 'size' => $this->l('100%')
             ],
+            [
+                'id_bootstrap' => 0,
+                'size' => $this->l('None')
+            ],
         ];
         $everblock_obj = $this->loadObject(true);
         $everblock_obj->categories = json_decode($everblock_obj->categories);
@@ -922,12 +926,12 @@ class AdminEverBlockController extends ModuleAdminController
     {
         if (Tools::getIsset('duplicate'.$this->table)) {
             $this->duplicate(
-                (int) Tools::getValue($this->identifier)
+                (int)Tools::getValue($this->identifier)
             );
         }
         if (Tools::isSubmit('deleteeverblock')) {
             $everblock_obj = new EverBlockClass(
-                (int) Tools::getValue($this->identifier)
+                (int)Tools::getValue('id_everblock')
             );
             if (!$everblock_obj->delete()) {
                 $this->errors[] = Tools::displayError('An error has occurred: Can\'t delete the current object');
@@ -935,7 +939,7 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::isSubmit('save') || Tools::isSubmit('stay')) {
             $everblock_obj = new EverBlockClass(
-                (int) Tools::getValue($this->identifier)
+                (int)Tools::getValue('id_everblock')
             );
             if (!Tools::getValue('name')
                 || !Validate::isGenericName(Tools::getValue('name'))
@@ -992,7 +996,8 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('"Only product categories" and "Only home" ae both selected');
             }
-            if (Tools::getValue('categories')
+            if (Tools::getValue('only_category')
+                && Tools::getValue('categories')
                 && !Validate::isArrayWithIds(Tools::getValue('categories'))
             ) {
                 $this->errors[] = $this->l('Categories are not valid');
@@ -1087,16 +1092,9 @@ class AdminEverBlockController extends ModuleAdminController
             if (!count($this->errors)) {
                 try {
                     $everblock_obj->save();
-                    if ((bool) Configuration::get('EVERPSCSS_CACHE') === true) {
-                        Tools::clearAllCache();
-                    }
-                    $hooked = $everblock->registerHook(
+                    $everblock->registerHook(
                         $hook_name
                     );
-                    if (Module::isInstalled('prettyblocks')) {
-                        $m = Module::getInstanceByName('prettyblocks');
-                        $m->registerHook($hook_name);
-                    }
                     if ((bool)Tools::isSubmit('stay') === true) {
                         Tools::redirectAdmin(
                             self::$currentIndex
@@ -1106,9 +1104,13 @@ class AdminEverBlockController extends ModuleAdminController
                             . $this->token
                         );
                     }
+                    if (Module::isInstalled('prettyblocks')) {
+                        $m = Module::getInstanceByName('prettyblocks');
+                        $m->registerHook($hook_name);
+                    }
                     Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
                 } catch (Exception $e) {
-                    PrestaShopLogger::addLog($e->getMessage());
+                    PrestaShopLogger::addLog('Unable to update save block');
                 }
             }
         }

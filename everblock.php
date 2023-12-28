@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.2.1';
+        $this->version = '5.3.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -297,7 +297,22 @@ class Everblock extends Module
         if ((bool) Tools::isSubmit('submitAddHooksToTheme') === true) {
             EverblockTools::addHooksToTheme();
         }
-
+        if ((bool) Tools::isSubmit('submitBackupBlocks') === true) {
+            $backuped = EverblockTools::exportModuleTablesSQL();
+            if ((bool) $backuped === true) {
+                $this->postSuccess = $this->l('Backup done');
+            } else {
+                $this->postSuccess = $this->l('Backup failed');
+            }
+        }
+        if ((bool) Tools::isSubmit('submitRestoreBackup') === true) {
+            $restored = EverblockTools::restoreModuleTablesFromBackup();
+            if ((bool) $restored === true) {
+                $this->postSuccess = $this->l('Backup done');
+            } else {
+                $this->postSuccess = $this->l('Backup failed');
+            }
+        }
         if ((bool) Tools::isSubmit('submitMigrateUrls') === true
             && Tools::getValue('EVERPS_OLD_URL')
             && Tools::getValue('EVERPS_NEW_URL')
@@ -318,21 +333,6 @@ class Everblock extends Module
                 && count($migration['querySuccess']) > 0
             ) {
                 $this->postSuccess = $migration['querySuccess'];
-            }
-        }
-        if ((bool) Tools::isSubmit('submitDropUnusedLangs')) {
-            $dropped = EverblockTools::dropUnusedLangs();
-            if (is_array($dropped)
-                && isset($dropped['postErrors'])
-                && count($dropped['postErrors']) > 0
-            ) {
-                $this->postErrors = $dropped['postErrors'];
-            }
-            if (is_array($dropped)
-                && isset($dropped['querySuccess'])
-                && count($dropped['querySuccess']) > 0
-            ) {
-                $this->postSuccess = $dropped['querySuccess'];
             }
         }
         if (count($this->postErrors)) {
@@ -589,12 +589,19 @@ class Everblock extends Module
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Migrate URLS'),
                     ],
-                    'dropUnusedLangs' => [
-                        'name' => 'submitDropUnusedLangs',
+                    'backupBlocks' => [
+                        'name' => 'submitBackupBlocks',
                         'type' => 'submit',
                         'class' => 'btn btn-info pull-right',
                         'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Drop unused langs on database'),
+                        'title' => $this->l('Backup all blocks'),
+                    ],
+                    'restoreBackup' => [
+                        'name' => 'submitRestoreBackup',
+                        'type' => 'submit',
+                        'class' => 'btn btn-info pull-right',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Restore backup'),
                     ],
                 ],
                 'submit' => [
@@ -868,6 +875,7 @@ class Everblock extends Module
         . (int) $this->context->shop->id;
         if (!Cache::isStored($cacheId)) {
             $txt = $params['html'];
+            try {
                 $context = Context::getContext();
                 $contactLink = $context->link->getPageLink('contact');
                 if (Context::getContext()->customer->isLogged()) {
@@ -902,7 +910,6 @@ class Everblock extends Module
                     '[theme_uri]' => $theme_uri,
                     '[storelocator]' => EverblockTools::generateGoogleMap(),
                 ];
-                $txt = EverblockTools::renderShortcodes($txt);
                 $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
                 $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
                 $shortcodes = array_merge($shortcodes, $this->getCategoryShortcodes($txt));
@@ -916,13 +923,14 @@ class Everblock extends Module
                         $txt
                     );
                 }
+                $txt = EverblockTools::getQcdAcfCode($txt);
+                $txt = EverblockTools::renderSmartyVars($txt);
                 $params['html'] = $txt;
-            try {
                 Cache::store($cacheId, $txt);
                 return $params['html'];
             } catch (Exception $e) {
                 PrestaShopLogger::addLog(
-                    'Ever Block : ' . $e->getMessage()
+                    'Ever Block : unable to rewrite HTML page'
                 );
                 return $params['html'];
             }

@@ -29,7 +29,6 @@ class EverblockTools extends ObjectModel
 {
     public static function renderShortcodes($txt)
     {
-        try {
             $txt = self::replaceHook($txt);
             $txt = self::getEverBlockShortcode($txt);
             $txt = self::getSubcategoriesShortcode($txt);
@@ -41,6 +40,7 @@ class EverblockTools extends ObjectModel
             $txt = self::getCartShortcode($txt);
             $txt = self::getContactShortcode($txt);
             $txt = self::renderSmartyVars($txt);
+        try {
         } catch (Exception $e) {
             PrestaShopLogger::addLog('Everblock : ' . $e->getMessage());
         }
@@ -1835,5 +1835,167 @@ class EverblockTools extends ObjectModel
             'postErrors' => $postErrors,
             'querySuccess' => $querySuccess,
         ];
+    }
+
+    /**
+     * Exporte les données des tables de module dans un fichier SQL.
+     * 
+     * @return bool True en cas de succès, sinon False.
+     */
+    public static function exportModuleTablesSQL()
+    {
+        // Liste des tables de module sans préfixe
+        $tables = [
+            _DB_PREFIX_ . 'everblock',
+            _DB_PREFIX_ . 'everblock_lang',
+            _DB_PREFIX_ . 'everblock_shortcode',
+            _DB_PREFIX_ . 'everblock_shortcode_lang'
+        ];
+
+        // Valider et nettoyer les noms de table (vous pouvez ajouter d'autres vérifications ici)
+        $validTables = array();
+        foreach ($tables as $table) {
+            $table = trim($table);
+            if (!empty($table)) {
+                if (self::ifTableExists($table)) {
+                    $validTables[] = pSQL($table);
+                }
+            }
+        }
+        if (empty($validTables)) {
+            return false;
+        }
+
+        // Générer une requête SQL pour extraire les tables spécifiées
+        $tablesString = implode(',', $validTables);
+
+        // Exécutez la requête SQL pour récupérer les données de la base de données PrestaShop
+        $db = Db::getInstance();
+        $sqlData = "";
+        foreach ($validTables as $tableName) {
+            // Obtenir la structure de la table (inclut les contraintes et les index)
+            $createTableSql = self::getTableStructure($tableName);
+
+            // Ajoutez DROP TABLE
+            $sqlData .= "DROP TABLE IF EXISTS `$tableName`;\n";
+
+            // Ajoutez CREATE TABLE avec la structure
+            $sqlData .= "$createTableSql;\n";
+
+            // Exécutez la requête SQL pour extraire les données de la table
+            $sql = "SELECT * FROM `$tableName`";
+            $result = $db->executeS($sql);
+
+            if ($result) {
+                // Ajoutez INSERT INTO
+                foreach ($result as $row) {
+                    $sqlData .= "INSERT INTO `$tableName` (";
+                    $escapedKeys = array_map(array(Db::getInstance(), 'escape'), array_keys($row));
+                    $sqlData .= implode(',', $escapedKeys);
+                    $sqlData .= ") VALUES (";
+
+                    // Échappez et formatez correctement les valeurs
+                    $escapedValues = array();
+                    foreach ($row as $value) {
+                        if (is_null($value)) {
+                            $escapedValues[] = 'NULL';
+                        } elseif (is_numeric($value)) {
+                            $escapedValues[] = $value;
+                        } else {
+                            $escapedValues[] = "'" . pSQL($value) . "'";
+                        }
+                    }
+
+                    $sqlData .= implode(',', $escapedValues);
+                    $sqlData .= ");\n";
+                }
+            }
+        }
+
+        // Chemin du fichier de sauvegarde
+        $moduleDir = _PS_MODULE_DIR_ . 'everblock';
+        $filePath = "$moduleDir/dump.sql";
+
+        // Enregistrez les données dans un fichier
+        if (file_put_contents($filePath, $sqlData)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Récupère la structure d'une table dans la base de données.
+     *
+     * @param string $tableName Nom de la table.
+     * @return string|null Structure de la table en SQL, ou null en cas d'erreur.
+     */
+    protected static function getTableStructure($tableName)
+    {
+        $db = Db::getInstance();
+        $sql = "SHOW CREATE TABLE $tableName";
+        $result = $db->executeS($sql);
+
+        if ($result && isset($result[0]['Create Table'])) {
+            return $result[0]['Create Table'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Vérifie si une table existe dans la base de données.
+     *
+     * @param string $tableName Nom de la table à vérifier.
+     * @return bool True si la table existe, sinon False.
+     */
+    protected static function ifTableExists($tableName)
+    {
+        $db = Db::getInstance();
+
+        $result = $db->executeS("SHOW TABLES LIKE '" . pSQL($tableName) . "'");
+
+        return !empty($result);
+    }
+
+    /**
+     * Teste si le fichier SQL de sauvegarde existe et restaure les tables et données si possible.
+     *
+     * @return bool True si la restauration réussie, sinon False.
+     */
+    public static function restoreModuleTablesFromBackup()
+    {
+        // Chemin du fichier de sauvegarde
+        $moduleDir = _PS_MODULE_DIR_ . 'everblock';
+        $filePath = "$moduleDir/dump.sql";
+
+        if (file_exists($filePath)) {
+            try {
+                // Exécute les requêtes SQL du fichier de sauvegarde
+                $sqlContent = file_get_contents($filePath);
+                $db = Db::getInstance();
+                $queries = preg_split("/;\n/", $sqlContent);
+                foreach ($queries as $query) {
+                    if (!empty($query)) {
+                        $db->execute($query);
+                    }
+                }
+
+                // Log de la réussite de la restauration dans PrestaShop Logger
+                PrestaShopLogger::addLog("Tables and data of Ever Block module have been successfully restored from backup.", 1);
+
+                // Retourne True en cas de succès
+                return true;
+            } catch (Exception $e) {
+                // En cas d'erreur, log l'erreur dans PrestaShop Logger
+                PrestaShopLogger::addLog("Error during Ever Block module tables restoration: " . $e->getMessage(), 3);
+
+                // Retourne False en cas d'échec
+                return false;
+            }
+        }
+
+        // Retourne False si le fichier de sauvegarde n'existe pas
+        return false;
     }
 }

@@ -284,9 +284,12 @@ class EverBlockClass extends ObjectModel
     {
         $cacheId = 'EverBlockClass::getBootstrapColClass_'
         . (int) $colNumber;
+
         if (!Cache::isStored($cacheId)) {
             $class = 'col-';
             switch ($colNumber) {
+                case 0:
+                    break;
                 case 1:
                     $class .= '12';
                     break;
@@ -308,6 +311,8 @@ class EverBlockClass extends ObjectModel
             }
             $class .= ' col-md-';
             switch ($colNumber) {
+                case 0:
+                    break;
                 case 1:
                     $class .= '12';
                     break;
