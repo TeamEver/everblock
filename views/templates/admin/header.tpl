@@ -98,6 +98,9 @@
                 <li><p>[best-sales 4] {l s='to display the 4 best-selling products in your store' mod='everblock'}</p></li>
                 <li><p>[everstore 4] {l s='to display store information id 1' mod='everblock'}</p></li>
                 <li><p>[video [video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj]] {l s='to display a YouTube iframe of the video whose sharing URL is in parameter (also works with Vimeo, Dailymotion, and Vidyard)' mod='everblock'}</p></li>
+                <li><p>[evercart] {l s='to display dropdown cart' mod='everblock'}</p></li>
+                <li><p>[evercontact] {l s='to display Prestashop native contact form' mod='everblock'}</p></li>
+                <li><p>[everstore 4] {l s='to display store information id 1' mod='everblock'}</p></li>
             </ul>
         </div>
     </div>

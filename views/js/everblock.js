@@ -16,9 +16,6 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 $(document).ready(function(){
-    if ($('.everblock').length && $('.everblock').data('everhook') == 'hookDisplayBanner') {
-        // Add your own code here depending on hook
-    }
     // Recherchez tous les éléments avec l'attribut data-obflink
     $('[data-obflink]').click(function(event) {
         event.preventDefault(); // Empêche le comportement par défaut du lien
@@ -64,22 +61,5 @@ $(document).ready(function(){
     $('.everblock-gallery .modal').modal({
         backdrop: true,
         show: false
-    });
-    // Parallax
-    $('.everblock-parallax .parallax-container').each(function() {
-        var $container = $(this);
-        var $bg = $container.find('.parallax-bg');
-        var containerTop = $container.offset().top;
-        var windowHeight = $(window).height();
-
-        $(window).on('scroll', function() {
-            var scrollPosition = $(this).scrollTop();
-            var parallaxOffset = (scrollPosition - containerTop) * 0.2;
-
-            $bg.css({
-                'transform': 'translateY(' + parallaxOffset + 'px)',
-                'height': windowHeight + parallaxOffset + 'px'
-            });
-        });
     });
 });

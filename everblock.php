@@ -320,6 +320,21 @@ class Everblock extends Module
                 $this->postSuccess = $migration['querySuccess'];
             }
         }
+        if ((bool) Tools::isSubmit('submitDropUnusedLangs')) {
+            $dropped = EverblockTools::dropUnusedLangs();
+            if (is_array($dropped)
+                && isset($dropped['postErrors'])
+                && count($dropped['postErrors']) > 0
+            ) {
+                $this->postErrors = $dropped['postErrors'];
+            }
+            if (is_array($dropped)
+                && isset($dropped['querySuccess'])
+                && count($dropped['querySuccess']) > 0
+            ) {
+                $this->postSuccess = $dropped['querySuccess'];
+            }
+        }
         if (count($this->postErrors)) {
             // Pour chaque erreur trouvée
             foreach ($this->postErrors as $error) {
@@ -573,6 +588,13 @@ class Everblock extends Module
                         'class' => 'btn btn-info pull-right',
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Migrate URLS'),
+                    ],
+                    'dropUnusedLangs' => [
+                        'name' => 'submitDropUnusedLangs',
+                        'type' => 'submit',
+                        'class' => 'btn btn-info pull-right',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Drop unused langs on database'),
                     ],
                 ],
                 'submit' => [

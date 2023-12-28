@@ -30,6 +30,7 @@ class EverblockTools extends ObjectModel
     public static function renderShortcodes($txt)
     {
         try {
+            $txt = self::replaceHook($txt);
             $txt = self::getEverBlockShortcode($txt);
             $txt = self::getSubcategoriesShortcode($txt);
             $txt = self::getStoreShortcode($txt);
@@ -37,10 +38,61 @@ class EverblockTools extends ObjectModel
             $txt = self::getQcdAcfCode($txt);
             $txt = self::getBestSalesShortcode($txt);
             $txt = self::getLastProductsShortcode($txt);
+            $txt = self::getCartShortcode($txt);
+            $txt = self::getContactShortcode($txt);
             $txt = self::renderSmartyVars($txt);
         } catch (Exception $e) {
             PrestaShopLogger::addLog('Everblock : ' . $e->getMessage());
         }
+        return $txt;
+    }
+
+    public static function replaceHook($content)
+    {
+        // Recherche du hook dans le contenu
+        preg_match_all('/\{hook h=\'(.*?)\'\}/', $content, $matches);
+
+        // Si des hooks sont trouvés
+        if (!empty($matches[1])) {
+            foreach ($matches[1] as $hookName) {
+                // Récupération du résultat du hook
+                $hookContent = Hook::exec($hookName, array(), null, true);
+                $hookContentString = '';
+                // Vérification si le résultat est un tableau
+                if (is_array($hookContent)) {
+                    foreach ($hookContent as $hcontent) {
+                        $hookContentString .= $hcontent;
+                    }
+                } else {
+                    // Utiliser le résultat directement comme une chaîne de caractères
+                    $hookContentString = (string)$hookContent;
+                }
+
+                // Remplacement du hook par le résultat dans le contenu
+                $content = str_replace("{hook h='$hookName'}", $hookContentString, $content);
+            }
+        }
+
+        return $content;
+    }
+
+    public static function getContactShortcode($txt)
+    {
+        $context = Context::getContext();
+        $module = Module::getInstanceByName('everblock');
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/contact.tpl';
+        $replacement = $context->smarty->fetch($templatePath);
+        $txt = str_replace('[evercontact]', $replacement, $txt);
+        return $txt;
+    }
+
+    public static function getCartShortcode($txt)
+    {
+        $context = Context::getContext();
+        $module = Module::getInstanceByName('everblock');
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/cart.tpl';
+        $replacement = $context->smarty->fetch($templatePath);
+        $txt = str_replace('[evercart]', $replacement, $txt);
         return $txt;
     }
 
@@ -52,7 +104,7 @@ class EverblockTools extends ObjectModel
         preg_match_all('/\[everblock\s+(\d+)\]/i', $txt, $matches);
 
         foreach ($matches[1] as $match) {
-            $everblockId = (int)$match;
+            $everblockId = (int) $match;
 
             // Initialise la classe EverblockClass avec l'ID spécifié
             $everblock = new EverblockClass(
@@ -61,10 +113,10 @@ class EverblockTools extends ObjectModel
                 (int) $context->shop->id
             );
 
+            $shortcode = '[everblock ' . $everblockId . ']';
             if (Validate::isLoadedObject($everblock)) {
                 // Remplace le shortcode par le contenu de l'objet EverblockClass
                 $replacement = $everblock->content;
-                $shortcode = '[everblock ' . $everblockId . ']';
                 $txt = str_replace($shortcode, $replacement, $txt);
             } else {
                 $txt = str_replace($shortcode, '', $txt);
@@ -82,7 +134,7 @@ class EverblockTools extends ObjectModel
         preg_match_all('/\[last-products\s+(\d+)\]/i', $txt, $matches);
 
         foreach ($matches[1] as $match) {
-            $limit = (int)$match;
+            $limit = (int) $match;
 
             // Requête SQL pour obtenir les X derniers produits basés sur date_add
             $sql = 'SELECT p.id_product
@@ -96,7 +148,7 @@ class EverblockTools extends ObjectModel
             if (!empty($productIds)) {
                 // Convertir les ID de produit en un tableau d'entiers
                 $productIdsArray = array_map(function($row) {
-                    return (int)$row['id_product'];
+                    return (int) $row['id_product'];
                 }, $productIds);
 
                 $everPresentProducts = self::everPresentProducts($productIdsArray);
@@ -122,21 +174,21 @@ class EverblockTools extends ObjectModel
         // Recherche des shortcodes [best-sales X]
         preg_match_all('/\[best-sales\s+(\d+)\]/i', $txt, $matches);
         foreach ($matches[1] as $match) {
-            $limit = (int)$match;
+            $limit = (int) $match;
 
             // Requête SQL pour obtenir les ID des produits les mieux vendus
             $sql = 'SELECT product_id, SUM(product_quantity) AS total_quantity
                     FROM ' . _DB_PREFIX_ . 'order_detail
                     GROUP BY product_id
                     ORDER BY total_quantity DESC
-                    LIMIT ' . $limit;
+                    LIMIT ' . (int) $limit;
 
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
             if (!empty($productIds)) {
                 // Convertir les ID de produit en un tableau d'entiers
                 $productIdsArray = array_map(function($row) {
-                    return (int)$row['product_id'];
+                    return (int) $row['product_id'];
                 }, $productIds);
 
                 $everPresentProducts = self::everPresentProducts($productIdsArray);
@@ -337,12 +389,34 @@ class EverblockTools extends ObjectModel
      * @param string $oldUrl
      * @param string $newUrl
      * @param int $id_shop
-     * @return array of success/error txts
+     * @return array of success/error messages
     */
     public static function migrateUrls($oldUrl, $newUrl, $id_shop)
     {
         $postErrors = [];
         $querySuccess = [];
+        $jsonEncodedOldUrl = json_encode($oldUrl);
+        $jsonEncodedNewUrl = json_encode($newUrl);
+        // Configuration
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'configuration
+            SET value =
+            REPLACE(
+                value,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                value,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Configuration table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
         // CMS content
         $sql =
             'UPDATE ' . _DB_PREFIX_ . 'cms_lang
@@ -360,7 +434,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'Content of CMS rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -383,7 +457,7 @@ class EverblockTools extends ObjectModel
             )';
 
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'meta_title of CMS rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -405,7 +479,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'meta_description of CMS rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -428,7 +502,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'description of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -451,7 +525,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'name of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -474,7 +548,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'description_short of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -494,7 +568,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'meta_title of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -517,7 +591,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'meta_description of product rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -540,7 +614,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'description of category rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -563,7 +637,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'meta_title of category rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -586,7 +660,7 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'meta_description of category rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
@@ -609,8 +683,325 @@ class EverblockTools extends ObjectModel
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
         try {
-            Db::getInstance(_PS_USE_SQL_SLAVE_)->execute($sql);
+            Db::getInstance()->execute($sql);
             $querySuccess[] = 'EverBlock table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'everblock_shortcode_lang
+            SET content =
+            REPLACE(
+                content,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                content,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_everblock_shortcode IN (
+                SELECT id_everblock_shortcode FROM ' . _DB_PREFIX_ . 'everblock_shortcode
+                WHERE id_shop = ' . (int) $id_shop . '
+            )';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'EverBlock table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // Everblog
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'ever_blog_post_lang
+            SET content =
+            REPLACE(
+                content,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                content,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_ever_post IN (
+                SELECT id_ever_post FROM ' . _DB_PREFIX_ . 'ever_blog_post
+                WHERE id_shop = ' . (int) $id_shop . '
+            )';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'EverBlock table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // Prestacrea slider
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pte_slider
+            SET description =
+            REPLACE(
+                description,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                description,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Prestacrea slider table rewrited (description)';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // Prestacrea slider
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pte_slider
+            SET link =
+            REPLACE(
+                link,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                link,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Prestacrea slider table rewrited (link)';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // Prestacrea blocks
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pte_blocks
+            SET description =
+            REPLACE(
+                description,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                description,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Prestacrea blocks table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pte_blocks
+            SET link =
+            REPLACE(
+                link,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                link,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Prestacrea blocks table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // Prestacrea footer text
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pte_footer_text
+            SET content =
+            REPLACE(
+                content,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                content,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Prestacrea footer text table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // Prestacrea footer links
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pte_footer_links
+            SET url =
+            REPLACE(
+                url,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                url,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Prestacrea footer links table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // Advanced top menu
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pm_advancedtopmenu_columns_lang
+            SET link =
+            REPLACE(
+                link,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                link,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Advanced top menu columns table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pm_advancedtopmenu_elements_lang
+            SET link =
+            REPLACE(
+                link,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                link,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Advanced top menu elements table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // QCD Redirect
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'qcdredirect
+            SET not_found =
+            REPLACE(
+                not_found,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                not_found,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'QCD Redirect not_found column rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'qcdredirect
+            SET redirection =
+            REPLACE(
+                redirection,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                redirection,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'QCD Redirect redirection column rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // QCD Obfuscation
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'qcdobfuscation
+            SET link =
+            REPLACE(
+                link,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                link,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'QCD Obfuscation table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // QCD ACF
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'qcdacf_value
+            SET value =
+            REPLACE(
+                value,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                value,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_shop = ' . (int) $id_shop . '';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'QCD Obfuscation table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'lgcanonicalurls_lang
+            SET canonical_url =
+            REPLACE(
+                canonical_url,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                canonical_url,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'LG Canonical URL table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // Pretty Blocks
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'prettyblocks
+            SET config =
+            REPLACE(
+                config,
+                "' . pSQL($jsonEncodedOldUrl) . '",
+                "' . pSQL($jsonEncodedNewUrl) . '"
+            )
+            WHERE INSTR(
+                config,
+                "' . pSQL($jsonEncodedOldUrl) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Prettyblocks table rewrited';
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
         }
@@ -1403,5 +1794,46 @@ class EverblockTools extends ObjectModel
             }
         }
         return $products;
+    }
+
+    public static function dropUnusedLangs()
+    {
+        $postErrors = [];
+        $querySuccess = [];
+        $pstable = [
+            'category_lang',
+            'product_lang',
+            'image_lang',
+            'cms_lang',
+            'meta_lang',
+            'manufacturer_lang',
+            'supplier_lang',
+            'group_lang',
+            'gender_lang',
+            'feature_lang',
+            'feature_value_lang',
+            'customization_field_lang',
+            'country_lang',
+            'cart_rule_lang',
+            'carrier_lang',
+            'attachment_lang',
+            'attribute_lang',
+            'attribute_group_lang',
+        ];
+        foreach ($pstable as $table) {
+            $sql = 'DELETE FROM ' . _DB_PREFIX_ . pSQL($table) . '
+            WHERE id_lang NOT IN
+            (SELECT id_lang FROM ' . _DB_PREFIX_ . 'lang)';
+            try {
+                Db::getInstance()->Execute($sql);
+                $querySuccess[] = 'Unknown lang dropped from table ' . _DB_PREFIX_ . $table;
+            } catch (Exception $e) {
+                $postErrors[] = $e->getMessage();
+            }
+        }
+        return [
+            'postErrors' => $postErrors,
+            'querySuccess' => $querySuccess,
+        ];
     }
 }
