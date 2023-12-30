@@ -29,28 +29,111 @@ class EverblockTools extends ObjectModel
 {
     public static function renderShortcodes($txt)
     {
-            $txt = self::replaceHook($txt);
-            $txt = self::getEverBlockShortcode($txt);
-            $txt = self::getSubcategoriesShortcode($txt);
-            $txt = self::getStoreShortcode($txt);
-            $txt = self::getVideoShortcode($txt);
-            $txt = self::getQcdAcfCode($txt);
-            $txt = self::getBestSalesShortcode($txt);
-            $txt = self::getLastProductsShortcode($txt);
-            $txt = self::getCartShortcode($txt);
-            $txt = self::getContactShortcode($txt);
-            $txt = self::renderSmartyVars($txt);
-        try {
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog('Everblock : ' . $e->getMessage());
-        }
+        $txt = self::replaceHook($txt);
+        $txt = self::getEverBlockShortcode($txt);
+        $txt = self::getSubcategoriesShortcode($txt);
+        $txt = self::getStoreShortcode($txt);
+        $txt = self::getVideoShortcode($txt);
+        $txt = self::getQcdAcfCode($txt);
+        $txt = self::getBestSalesShortcode($txt);
+        $txt = self::getLastProductsShortcode($txt);
+        $txt = self::getCartShortcode($txt);
+        $txt = self::getContactShortcode($txt);
+        $txt = self::renderSmartyVars($txt);
+        $txt = self::removeHtmlComments($txt);
+        $txt = self::addAltTagsIfNeeded($txt);
+        $txt = self::addTitleAttributeIfNeeded($txt);
+        $txt = self::removeAllLineBreaks($txt);
         return $txt;
     }
 
-    public static function replaceHook($content)
+    /**
+     * Vérifie si l'attribut "title" est manquant dans les balises <a> et l'ajoute si nécessaire.
+     * Utilise le texte cliquable comme valeur de l'attribut "title" si l'attribut "title" est manquant.
+     *
+     * @param string $txt La chaîne de caractères HTML à traiter.
+     * @return string La chaîne de caractères HTML avec les attributs "title" ajoutés si manquants.
+     */
+    public static function addTitleAttributeIfNeeded($txt)
+    {
+        // Utilise une expression régulière pour rechercher les balises <a> sans attribut "title"
+        $aPattern = '/<a((?![\w-]+=["\'].*title=["\'].*["\']).*?)>(.*?)<\/a>/si';
+        $cleanedHtml = preg_replace_callback($aPattern, function ($matches) {
+            $aTag = $matches[0];
+            
+            // Vérifie si le tableau $matches contient au moins trois éléments
+            if (count($matches) >= 3) {
+                // Récupère le texte cliquable à l'intérieur de la balise <a>
+                $texteCliquable = strip_tags($matches[2]);
+            } else {
+                $texteCliquable = Configuration::get('PS_SHOP_NAME');
+            }
+
+            // Ajoute l'attribut "title" avec le texte cliquable comme valeur
+            $aTagWithTitle = preg_replace('/<a(.*?)>/', '<a$1 title="' . htmlentities($texteCliquable, ENT_QUOTES, 'UTF-8') . '">', $aTag);
+            return $aTagWithTitle;
+        }, $txt);
+
+        return $cleanedHtml;
+    }
+
+    /**
+     * Vérifie si l'attribut "alt" est manquant dans les balises <img> et l'ajoute si nécessaire.
+     *
+     * @param string $txt La chaîne de caractères HTML à traiter.
+     * @return string La chaîne de caractères HTML avec les attributs "alt" ajoutés si manquants.
+     */
+    public static function addAltTagsIfNeeded($txt)
+    {
+        $titlePattern = '/<title[^>]*>(.*?)<\/title>/si';
+        preg_match($titlePattern, $txt, $titleMatches);
+
+        // Récupérez le titre de la page à partir de la capture de la regex
+        $pageTitle = !empty($titleMatches[1]) ? $titleMatches[1] : '';
+
+        // Utilise une expression régulière pour rechercher les balises <img> sans attribut "alt"
+        $pattern = '/<img((?![\w-]+=["\'].*alt=["\'].*["\']).*?)>/';
+        $replacement = '<img$1 alt="' . htmlentities($pageTitle, ENT_QUOTES, 'UTF-8') . '">';
+
+        // Remplace les balises <img> sans attribut "alt" par celles avec "alt" ajouté
+        $cleanedHtml = preg_replace($pattern, $replacement, $txt);
+
+        return $cleanedHtml;
+    }
+
+    /**
+     * Supprime les commentaires HTML d'une chaîne de caractères.
+     *
+     * @param string $html La chaîne de caractères HTML à traiter.
+     * @return string La chaîne de caractères HTML sans les commentaires.
+     */
+    public static function removeHtmlComments($html)
+    {
+        // Utilise une expression régulière pour supprimer les commentaires HTML
+        $pattern = '/<!--(.*?)-->/s';
+        $cleanedHtml = preg_replace($pattern, '', $html);
+
+        return $cleanedHtml;
+    }
+
+    /**
+     * Supprime tous les sauts de ligne d'une chaîne de caractères HTML.
+     *
+     * @param string $html La chaîne de caractères HTML à traiter.
+     * @return string La chaîne de caractères HTML sans les sauts de ligne.
+     */
+    public static function removeAllLineBreaks($html)
+    {
+        // Utilise str_replace pour remplacer tous les sauts de ligne par une chaîne vide
+        $cleanedHtml = str_replace(array("\n", "\r", "\r\n"), '', $html);
+
+        return $cleanedHtml;
+    }
+
+    public static function replaceHook($txt)
     {
         // Recherche du hook dans le contenu
-        preg_match_all('/\{hook h=\'(.*?)\'\}/', $content, $matches);
+        preg_match_all('/\{hook h=\'(.*?)\'\}/', $txt, $matches);
 
         // Si des hooks sont trouvés
         if (!empty($matches[1])) {
@@ -69,11 +152,11 @@ class EverblockTools extends ObjectModel
                 }
 
                 // Remplacement du hook par le résultat dans le contenu
-                $content = str_replace("{hook h='$hookName'}", $hookContentString, $content);
+                $txt = str_replace("{hook h='$hookName'}", $hookContentString, $txt);
             }
         }
 
-        return $content;
+        return $txt;
     }
 
     public static function getContactShortcode($txt)

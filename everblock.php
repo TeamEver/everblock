@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.3.2';
+        $this->version = '5.4.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -81,13 +81,15 @@ class Everblock extends Module
         return $return;
     }
 
+
     public function __call($method, $args)
     {
         $controllerTypes = [
             'admin',
             'moduleadmin',
         ];
-        if (in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
+        $context = Context::getContext();
+        if (in_array($context->controller->controller_type, $controllerTypes)) {
             return;
         }
         if (php_sapi_name() == 'cli') {
@@ -100,7 +102,7 @@ class Everblock extends Module
             'modulefront',
         ];
         
-        if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
+        if (!in_array($context->controller->controller_type, $controllerTypes)) {
             return;
         }
         if (Hook::isDisplayHookName(lcfirst(str_replace('hook', '', $method)))) {
@@ -900,74 +902,65 @@ class Everblock extends Module
 
     public function hookActionOutputHTMLBefore($params)
     {
-        $cacheId = 'EverBlockClass::hookActionOutputHTMLBefore_'
-        . (int) $this->context->language->id
-        . '_'
-        . (int) $this->context->shop->id;
-        if (!Cache::isStored($cacheId)) {
-            $txt = $params['html'];
-            try {
-                $context = Context::getContext();
-                $contactLink = $context->link->getPageLink('contact');
-                if (Context::getContext()->customer->isLogged()) {
-                    $myAccountLink = $context->link->getPageLink('my-account');
-                } else {
-                    $myAccountLink = $context->link->getPageLink('authentication');
-                }
-
-                $cartLink = $context->link->getPageLink('cart', null, null, ['action' => 'show']);
-                if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
-                    $theme_uri = Tools::getShopDomainSsl(true) . _PS_THEME_URI_;
-                } else {
-                    $theme_uri = Tools::getShopDomainSsl(true) . _PS_PARENT_THEME_URI_;
-                }
-                $shopName = Configuration::get('PS_SHOP_NAME');
-                $defaultShortcodes = [
-                    '[shop_url]' => Tools::getShopDomainSsl(true) . __PS_BASE_URI__,
-                    '[shop_name]'=> $shopName,
-                    '[start_cart_link]' => '<a href="'
-                    . $cartLink
-                    . '" target="_blank" rel="nofollow" title="' . $shopName . '">',
-                    '[end_cart_link]' => '</a>',
-                    '[start_shop_link]' => '<a href="'
-                    . Tools::getShopDomainSsl(true) . __PS_BASE_URI__
-                    . '">',
-                    '[start_contact_link]' => '<a href="' . $contactLink . '" target="_blank" title="' . $shopName . '">',
-                    '[end_shop_link]' => '</a>',
-                    '[end_contact_link]' => '</a>',
-                    '[contact_link]'=> $contactLink,
-                    '[my_account_link]' => $myAccountLink,
-                    '[llorem]' => EverblockTools::generateLoremIpsum(),
-                    '[theme_uri]' => $theme_uri,
-                    '[storelocator]' => EverblockTools::generateGoogleMap(),
-                ];
-                $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
-                $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
-                $shortcodes = array_merge($shortcodes, $this->getCategoryShortcodes($txt));
-                $shortcodes = array_merge($shortcodes, $this->getManufacturerShortcodes($txt));
-                $shortcodes = array_merge($shortcodes, $this->getBrandsShortcode($txt));
-                $shortcodes = array_merge($shortcodes, $this->getEverShortcodes($txt));
-                foreach ($shortcodes as $key => $value) {
-                    $txt = preg_replace(
-                        '/(?<!\w|[&\'"])' . preg_quote($key, '/') . '(?!\w|;)/',
-                        $value,
-                        $txt
-                    );
-                }
-                $txt = EverblockTools::getQcdAcfCode($txt);
-                $txt = EverblockTools::renderSmartyVars($txt);
-                $params['html'] = $txt;
-                Cache::store($cacheId, $txt);
-                return $params['html'];
-            } catch (Exception $e) {
-                PrestaShopLogger::addLog(
-                    'Ever Block hookActionOutputHTMLBefore : ' . $e->getMessage()
-                );
-                return $params['html'];
+        $context = Context::getContext();
+        $txt = $params['html'];
+        try {
+            $context = Context::getContext();
+            $contactLink = $context->link->getPageLink('contact');
+            if ($context->customer->isLogged()) {
+                $myAccountLink = $context->link->getPageLink('my-account');
+            } else {
+                $myAccountLink = $context->link->getPageLink('authentication');
             }
-        }
 
-        return Cache::retrieve($cacheId);
+            $cartLink = $context->link->getPageLink('cart', null, null, ['action' => 'show']);
+            if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
+                $theme_uri = Tools::getShopDomainSsl(true) . _PS_THEME_URI_;
+            } else {
+                $theme_uri = Tools::getShopDomainSsl(true) . _PS_PARENT_THEME_URI_;
+            }
+            $shopName = Configuration::get('PS_SHOP_NAME');
+            $defaultShortcodes = [
+                '[shop_url]' => Tools::getShopDomainSsl(true) . __PS_BASE_URI__,
+                '[shop_name]'=> $shopName,
+                '[start_cart_link]' => '<a href="'
+                . $cartLink
+                . '" target="_blank" rel="nofollow" title="' . $shopName . '">',
+                '[end_cart_link]' => '</a>',
+                '[start_shop_link]' => '<a href="'
+                . Tools::getShopDomainSsl(true) . __PS_BASE_URI__
+                . '">',
+                '[start_contact_link]' => '<a href="' . $contactLink . '" target="_blank" title="' . $shopName . '">',
+                '[end_shop_link]' => '</a>',
+                '[end_contact_link]' => '</a>',
+                '[contact_link]'=> $contactLink,
+                '[my_account_link]' => $myAccountLink,
+                '[llorem]' => EverblockTools::generateLoremIpsum(),
+                '[theme_uri]' => $theme_uri,
+                '[storelocator]' => EverblockTools::generateGoogleMap(),
+            ];
+            $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
+            $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
+            $shortcodes = array_merge($shortcodes, $this->getCategoryShortcodes($txt));
+            $shortcodes = array_merge($shortcodes, $this->getManufacturerShortcodes($txt));
+            $shortcodes = array_merge($shortcodes, $this->getBrandsShortcode($txt));
+            $shortcodes = array_merge($shortcodes, $this->getEverShortcodes($txt));
+            foreach ($shortcodes as $key => $value) {
+                $txt = preg_replace(
+                    '/(?<!\w|[&\'"])' . preg_quote($key, '/') . '(?!\w|;)/',
+                    $value,
+                    $txt
+                );
+            }
+            $txt = EverblockTools::renderShortcodes($txt);
+            $params['html'] = $txt;
+            return $params['html'];
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog(
+                'Ever Block hookActionOutputHTMLBefore : ' . $e->getMessage()
+            );
+            return $params['html'];
+        }
     }
 
     public function everHook($method, $args)
@@ -1730,38 +1723,6 @@ class Everblock extends Module
                     ],
                 ],
             ];
-            // $blocks[] =  [
-            //     'name' => $this->l('Native smarty code'),
-            //     'description' => $this->l('Add native smarty code'),
-            //     'code' => 'smarty',
-            //     'tab' => 'general',
-            //     'icon_path' => $defaultLogo,
-            //     'need_reload' => true,
-            //     'templates' => [
-            //         'default' => $smartyTemplate,
-            //     ],
-            //     'repeater' => [
-            //         'name' => 'Smarty',
-            //         'nameFrom' => 'name',
-            //         'groups' => [
-            //             'name' => [
-            //                 'type' => 'text',
-            //                 'label' => 'Smarty block title',
-            //                 'default' => Configuration::get('PS_SHOP_NAME'),
-            //             ],
-            //             'content' => [
-            //                 'type' => 'text',
-            //                 'label' => 'Smarty block variable',
-            //                 'default' => '',
-            //             ],
-            //             'css_class' => [
-            //                 'type' => 'text',
-            //                 'label' => $this->l('Custom CSS class'),
-            //                 'default' => '',
-            //             ],
-            //         ],
-            //     ],
-            // ];
             $blocks[] =  [
                 'name' => $this->l('Video iframe'),
                 'description' => $this->l('Add video iframe using embed link'),
