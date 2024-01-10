@@ -122,6 +122,19 @@
         <li><p>[video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj] {l s='to display a YouTube iframe of the video whose sharing URL is in parameter (also works with Vimeo, Dailymotion, and Vidyard)' mod='everblock'}</p></li>
     </ul>
     <br>
+    <h4>{l s='Create a custom contact form using shortcodes' mod='everblock'}</h3>
+    <p>{l s='A contact form must start with the shortcode [evercontactform_open] and end with the shortcode [evercontactform_close]' mod='everblock'}</p>
+    <p>{l s='You can add the following fields between these two shortcodes:' mod='everblock'}</p>
+    <ul>
+        <li><p>[evercontact type="text" label="Your name"] {l s='to display a text input field with the label "Your name"' mod='everblock'}</p></li>
+        <li><p>[evercontact type="number" label="Your age"] {l s='to display a number input field with the label "Your age"' mod='everblock'}</p></li>
+        <li><p>[evercontact type="textarea" label="Message"] {l s='to display a textarea input field with the label "Message"' mod='everblock'}</p></li>
+        <li><p>[evercontact type="select" label="You are" values="Man,Woman,Other"] {l s='to display a select field with the label "Your are" and options "Man,Woman,Other"' mod='everblock'}</p></li>
+        <li><p>[evercontact type="radio" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using radio buttons instead of select' mod='everblock'}</p></li>
+        <li><p>[evercontact type="checkbox" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using checkbox buttons instead of select' mod='everblock'}</p></li>
+        <li><p>[evercontact type="submit" label="Submit"] {l s='to show a submit button for your custom contact form' mod='everblock'}</p></li>
+    </ul>
+    <br>
     <h4>{l s='Using PrettyBlocks (from PrestaSafe)' mod='everblock'}</h3>
     <p>{l s='You can also use the shortcodes with the Pretty Blocks page builder' mod='everblock'}</p>
     <p>
