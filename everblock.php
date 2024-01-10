@@ -42,7 +42,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.4.1';
+        $this->version = '5.4.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -84,15 +84,15 @@ class Everblock extends Module
 
     public function __call($method, $args)
     {
+        if (php_sapi_name() == 'cli') {
+            return;
+        }
         $controllerTypes = [
             'admin',
             'moduleadmin',
         ];
         $context = Context::getContext();
         if (in_array($context->controller->controller_type, $controllerTypes)) {
-            return;
-        }
-        if (php_sapi_name() == 'cli') {
             return;
         }
         $controllerTypes = [
@@ -904,7 +904,6 @@ class Everblock extends Module
     {
         $context = Context::getContext();
         $txt = $params['html'];
-        try {
             $context = Context::getContext();
             $contactLink = $context->link->getPageLink('contact');
             if ($context->customer->isLogged()) {
@@ -955,6 +954,7 @@ class Everblock extends Module
             $txt = EverblockTools::renderShortcodes($txt);
             $params['html'] = $txt;
             return $params['html'];
+        try {
         } catch (Exception $e) {
             PrestaShopLogger::addLog(
                 'Ever Block hookActionOutputHTMLBefore : ' . $e->getMessage()
@@ -1230,6 +1230,15 @@ class Everblock extends Module
                 );
             }
         }
+        Media::addJsDef([
+            'evercontact_link' => $this->context->link->getModuleLink(
+                $this->name,
+                'contact',
+                array(
+                    'token' => Tools::encrypt($this->name.'/token'),
+                )
+            ),
+        ]);
     }
 
     protected function getEntityShortcodes($id_entity)

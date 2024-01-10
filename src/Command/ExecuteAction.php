@@ -37,7 +37,9 @@ class ExecuteAction extends Command
     public const ABORTED = 3;
 
     private $allowedActions = [
-        'getrandomcomment'
+        'getrandomcomment',
+        'saveblocks',
+        'restoreblocks'
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -51,7 +53,6 @@ class ExecuteAction extends Command
         $this->setDescription('Execute action');
         $this->addArgument('action', InputArgument::REQUIRED, sprintf('Action to execute (Allowed actions: %s).', implode(' / ', $this->allowedActions)));
         $this->addArgument('idshop id', InputArgument::OPTIONAL, 'Shop ID');
-        $this->logFile = dirname(__FILE__) . '/../../output/logs/log-everblock-execute-action-' . date('Y-m-d') . '.log';
         $this->module = \Module::getInstanceByName('everblock');;
     }
 
@@ -66,7 +67,7 @@ class ExecuteAction extends Command
                 (int) $idShop
             );
             if (!\Validate::isLoadedObject($shop)) {
-                $output->writeln('<comment>Shop not found</comment>');
+                $output->writeln('<error>Shop not found</error>');
                 return self::ABORTED;
             }
         } else {
@@ -76,7 +77,7 @@ class ExecuteAction extends Command
             }
         }
         if (!in_array($action, $this->allowedActions)) {
-            $output->writeln('<comment>Unkown action</comment>');
+            $output->writeln('<error>Unkown action</error>');
             return self::ABORTED;
         }
         if ($action === 'getrandomcomment') {
@@ -85,25 +86,39 @@ class ExecuteAction extends Command
             );
             return self::SUCCESS;
         }
+        if ($action === 'saveblocks') {
+            $backuped = EverblockTools::exportModuleTablesSQL();
+            if ((bool) $backuped === true) {
+                $output->writeln(
+                    '<success>Backup done</success>'
+                );
+                return self::SUCCESS;
+            } else {
+                $output->writeln(
+                    '<error>Backup failed</error>'
+                );
+                return self::FAILURE;
+            }
+        }
+        if ($action === 'restoreblocks') {
+            $restored = EverblockTools::restoreModuleTablesFromBackup();
+            if ((bool) $restored === true) {
+                $output->writeln(
+                    '<success>Blocks restoration done</success>'
+                );
+                return self::SUCCESS;
+            } else {
+                $output->writeln(
+                    '<error>Blocks restoration done</error>'
+                );
+                return self::FAILURE;
+            }
+        }
         if ($action === 'myCustomCommand') {
             $output->writeln('<comment>My custom command action !</comment>');
             return self::ABORTED;
         }
 
-    }
-
-    protected function logCommand($msg)
-    {
-        $log  = 'Msg: ' . $msg . PHP_EOL .
-                date('j.n.Y') . PHP_EOL .
-                '-------------------------' . PHP_EOL;
-
-        //Save string to log, use FILE_APPEND to append.
-        file_put_contents(
-            $this->logFile,
-            $log,
-            FILE_APPEND
-        );
     }
 
     /**
