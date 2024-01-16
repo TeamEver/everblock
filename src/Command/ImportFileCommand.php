@@ -19,6 +19,10 @@
 
 namespace Everblock\Tools\Command;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -43,10 +47,14 @@ class ImportFileCommand extends ContainerAwareCommand
 
     protected function configure()
     {
-        $this->setName('everblock:seo:import');
+        $this->setName('everblock:tools:import');
         $this->setDescription('Update SEO datas for categories & products');
-        $this->filename = dirname(__FILE__) . '/../../input/everblock.xlsx';
-        $this->logFile = dirname(__FILE__) . '/../../output/logs/log-everblock-import-' . date('Y-m-d') . '.log';
+        $this->filename = _PS_MODULE_DIR_ . 'everblock/input/everblock.xlsx';
+        $this->logFile = _PS_ROOT_DIR_ . '/var/logs/log-everblock-import-' . date('Y-m-d') . '.log';
+        $help = sprintf(
+            'File must be set on ' . _PS_MODULE_DIR_ . 'everblock/input/everblock.xlsx'
+        );
+        $this->setHelp($help);
         $this->module = \Module::getInstanceByName('everblock');
     }
 
@@ -76,12 +84,13 @@ class ImportFileCommand extends ContainerAwareCommand
             $output->writeln(
                 $this->getRandomFunnyComment($output)
             );
+            return self::SUCCESS;
         } else {
             $output->writeln(sprintf(
                 '<info>Everblock file does not exists</info>'
             ));
+            return self::INVALID;
         }
-        return self::SUCCESS;
     }
 
     protected function updateEverblocks($line, $output)

@@ -1,4 +1,5 @@
-{*
+<?php
+/**
  * 2019-2024 Team Ever
  *
  * NOTICE OF LICENSE
@@ -14,12 +15,14 @@
  *  @author    Team Ever <https://www.team-ever.com/>
  *  @copyright 2019-2024 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*}
+ */
 
-<!-- Module Ever Block Header -->
-{if isset($everblock) && $everblock}
-    {foreach from=$everblock item=item}
-		{$item.block.custom_code nofilter}
-    {/foreach}
-{/if}
-<!-- /Module Ever Block Header -->
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+
+header('Location: ../');
+exit;

@@ -19,6 +19,10 @@
 
 namespace Everblock\Tools\Command;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Command\Command;
@@ -53,13 +57,15 @@ class ExportFileCommand extends Command
     protected function configure()
     {
         $this->setName('everblock:tools:export');
-        $this->setDescription('Export Ever Block datas');
+        $this->setDescription('Export Ever Block datas into xlsx file');
         $this->addArgument('action', InputArgument::OPTIONAL, sprintf('Action to execute (Allowed actions: %s).', implode(' / ', $this->allowedActions)));
         $this->addArgument('idshop id', InputArgument::OPTIONAL, 'Shop ID');
         $this->addArgument('lang id', InputArgument::OPTIONAL, 'Language ID');
-        $this->logFile = dirname(__FILE__) . '/../../output/logs/log-everblock-export-' . date('Y-m-d') . '.log';
+        $help = sprintf("Allowed actions: %s\n", implode(' / ', $this->allowedActions));
+        $this->setHelp($help);
+        $this->logFile = _PS_ROOT_DIR_ . '/var/logs/log-everblock-export-' . date('Y-m-d') . '.log';
         $this->module = \Module::getInstanceByName('everblock');
-        $this->filename = dirname(__FILE__) . '/../../output/everblock.xlsx';
+        $this->filename = _PS_MODULE_DIR_ . 'everblock/output/everblock.xlsx';
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

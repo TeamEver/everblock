@@ -19,6 +19,10 @@
 
 namespace Everblock\Tools\Command;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use PrestaShop\PrestaShop\Adapter\LegacyContext as ContextAdapter;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -53,6 +57,8 @@ class ExecuteAction extends Command
         $this->setDescription('Execute action');
         $this->addArgument('action', InputArgument::REQUIRED, sprintf('Action to execute (Allowed actions: %s).', implode(' / ', $this->allowedActions)));
         $this->addArgument('idshop id', InputArgument::OPTIONAL, 'Shop ID');
+        $help = sprintf("Allowed actions: %s\n", implode(' / ', $this->allowedActions));
+        $this->setHelp($help);
         $this->module = \Module::getInstanceByName('everblock');;
     }
 
@@ -118,7 +124,6 @@ class ExecuteAction extends Command
             $output->writeln('<comment>My custom command action !</comment>');
             return self::ABORTED;
         }
-
     }
 
     /**

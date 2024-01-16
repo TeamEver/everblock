@@ -19,6 +19,7 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
 
 class AdminEverBlockController extends ModuleAdminController
 {
@@ -116,7 +117,7 @@ class AdminEverBlockController extends ModuleAdminController
         ];
         $this->_where = 'AND a.id_shop =' . (int) $this->context->shop->id;
         $this->colorOnBackground = true;
-
+        EverblockTools::checkAndFixDatabase();
         parent::__construct();
     }
 
@@ -216,6 +217,7 @@ class AdminEverBlockController extends ModuleAdminController
             }
         }
         $this->html .= $lists;
+        $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/configure.tpl');
         $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/footer.tpl');
 
         return $this->html;
@@ -741,8 +743,8 @@ class AdminEverBlockController extends ModuleAdminController
             }
         }
         $render .= $helper->generateForm($fields_form);
+        $render .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/configure.tpl');
         $render .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/footer.tpl');
-
 
         return $render;
     }
@@ -1083,7 +1085,7 @@ class AdminEverBlockController extends ModuleAdminController
                     (int)$this->context->language->id,
                     (int)$this->context->shop->id
                 );
-                $groupCondition = array();
+                $groupCondition = [];
                 foreach ($groups as $group) {
                     $groupCondition[] = (int) $group['id_group'];
                 }

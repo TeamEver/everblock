@@ -29,22 +29,23 @@ class EverblockTools extends ObjectModel
 {
     public static function renderShortcodes($txt)
     {
-        $txt = self::replaceHook($txt);
-        $txt = self::getEverBlockShortcode($txt);
-        $txt = self::getSubcategoriesShortcode($txt);
-        $txt = self::getStoreShortcode($txt);
-        $txt = self::getVideoShortcode($txt);
-        $txt = self::getQcdAcfCode($txt);
-        $txt = self::getBestSalesShortcode($txt);
-        $txt = self::getLastProductsShortcode($txt);
-        $txt = self::getCartShortcode($txt);
-        $txt = self::getNativeContactShortcode($txt);
-        $txt = self::getFormShortcode($txt);
-        $txt = self::renderSmartyVars($txt);
-        // $txt = self::removeHtmlComments($txt);
-        // $txt = self::addAltTagsIfNeeded($txt);
-        // $txt = self::addTitleAttributeIfNeeded($txt);
-        // $txt = self::removeAllLineBreaks($txt);
+        $txt = static::replaceHook($txt);
+        $txt = static::getEverBlockShortcode($txt);
+        $txt = static::getSubcategoriesShortcode($txt);
+        $txt = static::getStoreShortcode($txt);
+        $txt = static::getVideoShortcode($txt);
+        $txt = static::getQcdAcfCode($txt);
+        $txt = static::getBestSalesShortcode($txt);
+        $txt = static::getLastProductsShortcode($txt);
+        $txt = static::getCartShortcode($txt);
+        $txt = static::getNativeContactShortcode($txt);
+        $txt = static::getFormShortcode($txt);
+        $txt = static::renderSmartyVars($txt);
+        $txt = static::getRandomProductsShortcode($txt);
+        // $txt = static::removeHtmlComments($txt);
+        // $txt = static::addAltTagsIfNeeded($txt);
+        // $txt = static::addTitleAttributeIfNeeded($txt);
+        // $txt = static::removeAllLineBreaks($txt);
         return $txt;
     }
 
@@ -54,7 +55,7 @@ class EverblockTools extends ObjectModel
         preg_match_all('/(\w+)\s*=\s*"([^"]+)"|(\w+)\s*=\s*([^"\s,]+)/', $shortcode, $matches, PREG_SET_ORDER);
 
         // Initialisez le tableau des attributs
-        $attributes = array();
+        $attributes = [];
         // Initialisez un compteur pour les identifiants uniques
         static $uniqueIdentifier = 0;
 
@@ -133,8 +134,8 @@ class EverblockTools extends ObjectModel
                 $values = explode(",", $attributes['values']);
                 $template = '<div class="form-group"><label>' . $label . '</label><div class="form-check">';
                 foreach ($values as $value) {
-                    $uniqueIdentifier++; // Incrémentation du compteur
-                    $checkboxId = 'checkbox_' . $uniqueIdentifier; // Identifiant unique
+                    $uniqueIdentifier++;
+                    $checkboxId = 'checkbox_' . $uniqueIdentifier;
                     $template .= '<div class="form-check-inline"><input type="checkbox" class="form-check-input" name="' . $label . '[]" value="' . trim($value) . '" id="' . $checkboxId . '"';
                     if ($isRequired) {
                         $template .= ' required';
@@ -153,6 +154,9 @@ class EverblockTools extends ObjectModel
             case "submit":
                 $template = '<button type="submit" class="btn btn-success evercontactsubmit">' . $label . '</button>';
                 break;
+            case "hidden":
+                $template = '<input type="hidden" name="' . $label . '" value="' . $label . '">';
+                break;
             default:
                 // Type de champ inconnu
                 $template = 'Type de champ inconnu : ' . $field_type;
@@ -164,13 +168,12 @@ class EverblockTools extends ObjectModel
 
     public static function getFormShortcode($txt)
     {
-        $txt = str_replace('[evercontactform_open]', '<form method="POST" class="evercontactform" action="#">', $txt);
-        $txt = str_replace('[evercontactform_close]', '</form', $txt);
-        // Utilisez une expression régulière pour rechercher et remplacer les shortcodes de formulaire de contact
+        $txt = str_replace('[evercontactform_open]', '<div class="container"><form method="POST" class="evercontactform" action="#">', $txt);
+        $txt = str_replace('[evercontactform_close]', '</form></div>', $txt);
         $pattern = '/\[evercontact\s[^\]]+\]/';
         $result = preg_replace_callback($pattern, function ($matches) {
             // $matches[0] contient le shortcode trouvé
-            return self::generateFormFromShortcode($matches[0]);
+            return static::generateFormFromShortcode($matches[0]);
         }, $txt);
 
         return $result;
@@ -254,37 +257,28 @@ class EverblockTools extends ObjectModel
     public static function removeAllLineBreaks($html)
     {
         // Utilise str_replace pour remplacer tous les sauts de ligne par une chaîne vide
-        $cleanedHtml = str_replace(array("\n", "\r", "\r\n"), '', $html);
+        $cleanedHtml = str_replace(["\n", "\r", "\r\n"], '', $html);
 
         return $cleanedHtml;
     }
 
     public static function replaceHook($txt)
     {
-        // Recherche du hook dans le contenu
         preg_match_all('/\{hook h=\'(.*?)\'\}/', $txt, $matches);
-
-        // Si des hooks sont trouvés
         if (!empty($matches[1])) {
             foreach ($matches[1] as $hookName) {
-                // Récupération du résultat du hook
-                $hookContent = Hook::exec($hookName, array(), null, true);
+                $hookContent = Hook::exec($hookName, [], null, true);
                 $hookContentString = '';
-                // Vérification si le résultat est un tableau
                 if (is_array($hookContent)) {
                     foreach ($hookContent as $hcontent) {
                         $hookContentString .= $hcontent;
                     }
                 } else {
-                    // Utiliser le résultat directement comme une chaîne de caractères
                     $hookContentString = (string)$hookContent;
                 }
-
-                // Remplacement du hook par le résultat dans le contenu
                 $txt = str_replace("{hook h='$hookName'}", $hookContentString, $txt);
             }
         }
-
         return $txt;
     }
 
@@ -338,6 +332,43 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
+    public static function getRandomProductsShortcode($txt)
+    {
+        $context = Context::getContext();
+
+        // Recherche des shortcodes [random_product nb="X"]
+        preg_match_all('/\[random_product\s+nb="(\d+)"\]/i', $txt, $matches);
+        foreach ($matches[1] as $match) {
+            $limit = (int) $match;
+            // Requête SQL pour obtenir X produits au hasard
+            $sql = 'SELECT p.id_product
+                    FROM ' . _DB_PREFIX_ . 'product_shop p
+                    WHERE p.id_shop = ' . (int)$context->shop->id . '
+                    ORDER BY RAND()
+                    LIMIT ' . $limit;
+
+            $productIds = Db::getInstance()->executeS($sql);
+
+            if (!empty($productIds)) {
+                // Convertir les ID de produit en un tableau d'entiers
+                $productIdsArray = array_map(function($row) {
+                    return (int) $row['id_product'];
+                }, $productIds);
+                $everPresentProducts = static::everPresentProducts($productIdsArray);
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                    $module = Module::getInstanceByName('everblock');
+                    $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+                    $replacement = $context->smarty->fetch($templatePath);
+                    $shortcode = '[random_product nb="' . $limit . '"]';
+                    $txt = str_replace($shortcode, $replacement, $txt);
+                }
+            }
+        }
+
+        return $txt;
+    }
+
     public static function getLastProductsShortcode($txt)
     {
         $context = Context::getContext();
@@ -363,7 +394,7 @@ class EverblockTools extends ObjectModel
                     return (int) $row['id_product'];
                 }, $productIds);
 
-                $everPresentProducts = self::everPresentProducts($productIdsArray);
+                $everPresentProducts = static::everPresentProducts($productIdsArray);
 
                 if (!empty($everPresentProducts)) {
                     $context->smarty->assign('everPresentProducts', $everPresentProducts);
@@ -403,7 +434,7 @@ class EverblockTools extends ObjectModel
                     return (int) $row['product_id'];
                 }, $productIds);
 
-                $everPresentProducts = self::everPresentProducts($productIdsArray);
+                $everPresentProducts = static::everPresentProducts($productIdsArray);
 
                 if (!empty($everPresentProducts)) {
                     $context->smarty->assign('everPresentProducts', $everPresentProducts);
@@ -443,7 +474,7 @@ class EverblockTools extends ObjectModel
             }
             foreach ($subCategories as &$subCategory) {
                 $imageLink = $context->link->getCatImageLink(
-                    'category_default',
+                    ImageType::getFormattedName('category'),
                     (int) $subCategory['id_category']
                 );
                 $categoryLink = $context->link->getCategoryLink(
@@ -479,9 +510,9 @@ class EverblockTools extends ObjectModel
                 if (!Validate::isLoadedObject($store)) {
                     continue;
                 }
-                $storeInfo[] = array(
+                $storeInfo[] = [
                     'id_store' => $store->id,
-                    'image_link' => $context->link->getStoreImageLink('medium_default', $store->id),
+                    'image_link' => $context->link->getStoreImageLink(ImageType::getFormattedName('medium'), $store->id),
                     'name' => $store->name,
                     'address1' => $store->address1,
                     'address2' => $store->address2,
@@ -496,7 +527,7 @@ class EverblockTools extends ObjectModel
                     'email' => $store->email,
                     'date_add' => $store->date_add,
                     'date_upd' => $store->date_upd,
-                );
+                ];
             }
             $context->smarty->assign('storeInfos', $storeInfo);
             $module = Module::getInstanceByName('everblock');
@@ -567,7 +598,7 @@ class EverblockTools extends ObjectModel
             // Vérifier si la valeur est un tableau
             if (is_array($value)) {
                 // Appeler récursivement la méthode pour traiter les tableaux imbriqués
-                $txt = self::renderSmartyVarsInArray($txt, $search, $value);
+                $txt = static::renderSmartyVarsInArray($txt, $search, $value);
             } elseif (is_string($value)) {
                 // Remplacer les occurrences dans le texte
                 $txt = str_replace($search, $value, $txt);
@@ -586,7 +617,7 @@ class EverblockTools extends ObjectModel
             // Vérifier si la valeur est un tableau
             if (is_array($value)) {
                 // Appeler récursivement la méthode pour traiter les tableaux imbriqués
-                $txt = self::renderSmartyVarsInArray($txt, $elementSearch, $value);
+                $txt = static::renderSmartyVarsInArray($txt, $elementSearch, $value);
             } else {
                 // Remplacer les occurrences dans le texte
                 $txt = str_replace($elementSearch, $value, $txt);
@@ -922,6 +953,52 @@ class EverblockTools extends ObjectModel
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
         }
+        // Everblock tabs title
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'everblock_tabs_lang
+            SET title =
+            REPLACE(
+                title,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                title,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_everblock_tabs IN (
+                SELECT id_everblock_tabs FROM ' . _DB_PREFIX_ . 'everblock_tabs
+                WHERE id_shop = ' . (int) $id_shop . '
+            )';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'EverBlock tabs title rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // Everblock tabs title
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'everblock_tabs_lang
+            SET content =
+            REPLACE(
+                content,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                content,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0
+            AND id_everblock_tabs IN (
+                SELECT id_everblock_tabs FROM ' . _DB_PREFIX_ . 'everblock_tabs
+                WHERE id_shop = ' . (int) $id_shop . '
+            )';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'EverBlock tabs content rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
         // Everblog
         $sql =
             'UPDATE ' . _DB_PREFIX_ . 'ever_blog_post_lang
@@ -1231,7 +1308,7 @@ class EverblockTools extends ObjectModel
         preg_match_all('/\[video\s+(.*?)\]/i', $txt, $videoMatches);
         foreach ($videoMatches[0] as $shortcode) {
             $videoUrl = preg_replace('/\[video\s+|\]/i', '', $shortcode); // Récupérer l'URL à partir du shortcode
-            $iframe = self::detectVideoSite($videoUrl);
+            $iframe = static::detectVideoSite($videoUrl);
             if ($iframe) {
                 $txt = str_replace($shortcode, $iframe, $txt);
             }
@@ -1305,7 +1382,7 @@ class EverblockTools extends ObjectModel
 
     public static function generateGoogleMap()
     {
-        $stores = self::getStoreLocatorData();
+        $stores = static::getStoreLocatorData();
 
         if (!empty($stores)) {
             $context = Context::getContext();
@@ -1454,11 +1531,11 @@ class EverblockTools extends ObjectModel
 
     public static function addHooksToTheme()
     {
-        self::addHookCmsContent();
-        self::addHookCmsCategoryContent();
-        self::addHookProductContent();
-        self::addHookToManufacturerTpl();
-        self::addHooksToLayouts();
+        static::addHookCmsContent();
+        static::addHookCmsCategoryContent();
+        static::addHookProductContent();
+        static::addHookToManufacturerTpl();
+        static::addHooksToLayouts();
     }
 
     public static function addHookCmsContent()
@@ -1469,10 +1546,10 @@ class EverblockTools extends ObjectModel
         $pageTplPath = $themePath . 'templates/cms/page.tpl';
 
         if (file_exists($pageTplPath)) {
-            $pageTplContent = file_get_contents($pageTplPath);
+            $pageTplContent = Tools::file_get_contents($pageTplPath);
 
             $newContent = "{prettyblocks_zone zone_name='cmsContent\$cms.id'}\n{block name='cms_content'}";
-            if ((bool) self::stringExistsInFileContent($newContent, $pageTplContent) === false) {
+            if ((bool) static::stringExistsInFileContent($newContent, $pageTplContent) === false) {
                 $modifiedContent = str_replace("{block name='cms_content'}", $newContent, $pageTplContent);
 
                 file_put_contents($pageTplPath, $modifiedContent);
@@ -1495,10 +1572,10 @@ class EverblockTools extends ObjectModel
         $categoryTplPath = $themePath . 'templates/cms/category.tpl';
 
         if (file_exists($categoryTplPath)) {
-            $categoryTplContent = file_get_contents($categoryTplPath);
+            $categoryTplContent = Tools::file_get_contents($categoryTplPath);
             
             $newContent = "{prettyblocks_zone zone_name='cmsCategory\$cms_category.id'}\n{block name='page_content'}";
-            if ((bool) self::stringExistsInFileContent($newContent, $categoryTplContent) === false) {
+            if ((bool) static::stringExistsInFileContent($newContent, $categoryTplContent) === false) {
                 $modifiedContent = str_replace("{block name='page_content'}", $newContent, $categoryTplContent);
 
                 file_put_contents($categoryTplPath, $modifiedContent);
@@ -1520,26 +1597,26 @@ class EverblockTools extends ObjectModel
         $productTplPath = $themePath . 'templates/catalog/product.tpl';
         
         if (file_exists($productTplPath)) {
-            $productTplContent = file_get_contents($productTplPath);
+            $productTplContent = Tools::file_get_contents($productTplPath);
             
             $newContent = "{prettyblocks_zone zone_name='shortDescription\$product.id'}\n{block name='product_description_short'}";
-            if ((bool) self::stringExistsInFileContent($newContent, $productTplContent) === false) {
+            if ((bool) static::stringExistsInFileContent($newContent, $productTplContent) === false) {
                 $modifiedContent = str_replace("{block name='product_description_short'}", $newContent, $productTplContent);
                 file_put_contents($productTplPath, $modifiedContent);
             }
 
             // Ajouter le widget pour le hook displayDescriptionProductId
-            $productTplContent = file_get_contents($productTplPath);
+            $productTplContent = Tools::file_get_contents($productTplPath);
             $newContent = "{prettyblocks_zone zone_name='description\$product.id'}\n{block name='product_description'}";
-            if ((bool) self::stringExistsInFileContent($newContent, $productTplContent) === false) {
+            if ((bool) static::stringExistsInFileContent($newContent, $productTplContent) === false) {
                 $modifiedContent = str_replace("{block name='product_description'}", $newContent, $productTplContent);
                 file_put_contents($productTplPath, $modifiedContent);
             }
 
             // Ajouter le widget pour le hook displayReassuranceProductId
-            $productTplContent = file_get_contents($productTplPath);
+            $productTplContent = Tools::file_get_contents($productTplPath);
             $newContent = "{prettyblocks_zone zone_name='reassurance\$product.id'}\n{block name='hook_display_reassurance'}";
-            if ((bool) self::stringExistsInFileContent($newContent, $productTplContent) === false) {
+            if ((bool) static::stringExistsInFileContent($newContent, $productTplContent) === false) {
                 $modifiedContent = str_replace("{block name='hook_display_reassurance'}", $newContent, $productTplContent);
                 file_put_contents($productTplPath, $modifiedContent);
             }
@@ -1552,34 +1629,34 @@ class EverblockTools extends ObjectModel
     public static function addHooksToLayouts()
     {
         // Liste des fichiers de mise en page où vous souhaitez ajouter les hooks
-        $layoutFiles = array(
+        $layoutFiles = [
             'layout-both-columns.tpl',
             'layout-content-only.tpl',
             'layout-full-width.tpl',
-            'layout-left-column.tpl'
-        );
+            'layout-left-column.tpl',
+        ];
 
         foreach ($layoutFiles as $layoutFile) {
             $layoutPath = _PS_ALL_THEMES_DIR_ . Context::getContext()->shop->theme->getName() . '/templates/layouts/' . $layoutFile;
             if (file_exists($layoutPath)) {
-                $layoutContent = file_get_contents($layoutPath);
+                $layoutContent = Tools::file_get_contents($layoutPath);
 
                 $newContent = "{if isset(\$manufacturer) && is_array(\$manufacturer)}{prettyblocks_zone zone_name='manufacturer\$manufacturer.id'}{/if}{if isset(\$supplier) && is_array(\$supplier)}{prettyblocks_zone zone_name='supplier\$supplier.id'}{/if}{if isset(\$category) && is_array(\$category)}{prettyblocks_zone zone_name='category\$category.id'}{/if}{hook h=\"displayContentWrapperBottom\"}";
-                if ((bool) self::stringExistsInFileContent($newContent, $layoutContent) === false) {
+                if ((bool) static::stringExistsInFileContent($newContent, $layoutContent) === false) {
                     $modifiedContent = preg_replace('/\{hook h="displayContentWrapperBottom"\}/', $newContent, $layoutContent);
 
                     file_put_contents($layoutPath, $modifiedContent);
                 }
 
                 $newContent = "{if isset(\$manufacturer) && is_array(\$manufacturer)}{prettyblocks_zone zone_name='manufacturer\$manufacturer.id'}{/if}{if isset(\$supplier) && is_array(\$supplier)}{prettyblocks_zone zone_name='supplier\$supplier.id'}{/if}{if isset(\$category) && is_array(\$category)}{prettyblocks_zone zone_name='category\$category.id'}{/if}{hook h=\"displayWrapperBottom\"}";
-                if ((bool) self::stringExistsInFileContent($newContent, $layoutContent) === false) {
+                if ((bool) static::stringExistsInFileContent($newContent, $layoutContent) === false) {
                     $modifiedContent = preg_replace('/\{hook h="displayWrapperBottom"\}/', $newContent, $layoutContent);
 
                     file_put_contents($layoutPath, $modifiedContent);
                 }
 
                 $newContent = "{if isset(\$manufacturer) && is_array(\$manufacturer)}{prettyblocks_zone zone_name='manufacturer\$manufacturer.id'}{/if}{if isset(\$supplier) && is_array(\$supplier)}{prettyblocks_zone zone_name='supplier\$supplier.id'}{/if}{if isset(\$category) && is_array(\$category)}{prettyblocks_zone zone_name='category\$category.id'}{/if}{hook h=\"displayWrapperTop\"}";
-                if ((bool) self::stringExistsInFileContent($newContent, $layoutContent) === false) {
+                if ((bool) static::stringExistsInFileContent($newContent, $layoutContent) === false) {
                     $modifiedContent = preg_replace('/\{hook h="displayWrapperTop"\}/', $newContent, $layoutContent);
 
                     $put = file_put_contents($layoutPath, $modifiedContent);
@@ -1595,10 +1672,10 @@ class EverblockTools extends ObjectModel
         $manufacturerTplPath = _PS_ALL_THEMES_DIR_ . Context::getContext()->shop->theme->getName() . '/templates/catalog/listing/manufacturer.tpl';
 
         if (file_exists($manufacturerTplPath)) {
-            $manufacturerTplContent = file_get_contents($manufacturerTplPath);
+            $manufacturerTplContent = Tools::file_get_contents($manufacturerTplPath);
 
             $newContent = "{prettyblocks_zone zone_name='supplier\$supplier.id'}\n{block name='product_list'}";
-            if ((bool) self::stringExistsInFileContent($newContent, $manufacturerTplContent) === false) {
+            if ((bool) static::stringExistsInFileContent($newContent, $manufacturerTplContent) === false) {
                 $modifiedContent = preg_replace('/\{block name="product_list"\}/', $newContent, $manufacturerTplContent);
                 file_put_contents($manufacturerTplPath, $modifiedContent);
 
@@ -1645,7 +1722,7 @@ class EverblockTools extends ObjectModel
     */
     public static function isMaintenanceIpAddress()
     {
-        if (in_array(self::getIpAddress(), self::getMaintenanceIpAddress())) {
+        if (in_array(static::getIpAddress(), static::getMaintenanceIpAddress())) {
             return true;
         }
         return false;
@@ -1772,9 +1849,7 @@ class EverblockTools extends ObjectModel
         if ($limit) {
             $sql->limit($limit);
         }
-
         $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-
         return array_column($productIds, 'id_product');
     }
 
@@ -1864,6 +1939,11 @@ class EverblockTools extends ObjectModel
 
     public static function checkAndFixDatabase()
     {
+        // Auto upgrade everblock
+        $m = Module::getInstanceByName('everblock');
+        if (Module::needUpgrade($m)) {
+            $m->runUpgradeModule();
+        }
         $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
         // Ajoute les colonnes manquantes à la table ps_everblock
         $columnsToAdd = [
@@ -1959,6 +2039,31 @@ class EverblockTools extends ObjectModel
                 } catch (Exception $e) {
                     PrestaShopLogger::addLog('Unable to update Ever Block database');
                 }
+            }
+        }
+        // Ajoute le contrôle de la table everblock_tabs
+        $sql = [];
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs` (
+             `id_everblock_tabs` int(10) unsigned NOT NULL auto_increment,
+             `id_product` int(10) unsigned NOT NULL,
+             `id_shop` int(10) unsigned DEFAULT 0,
+             PRIMARY KEY (`id_everblock_tabs`))
+             ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        // Ajoute le contrôle de la table everblock_tabs_lang
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs_lang` (
+             `id_everblock_tabs` int(10) unsigned NOT NULL,
+             `id_lang` int(10) unsigned NOT NULL,
+             `title` varchar(255) DEFAULT NULL,
+             `content` text DEFAULT NULL,
+             PRIMARY KEY (`id_everblock_tabs`, `id_lang`))
+             ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        foreach ($sql as $query) {
+            try {
+                $db->execute($query);
+            } catch (Exception $e) {
+                PrestaShopLogger::addLog('Unable to create or update Ever Block database tables');
             }
         }
     }
@@ -2065,11 +2170,11 @@ class EverblockTools extends ObjectModel
         ];
 
         // Valider et nettoyer les noms de table (vous pouvez ajouter d'autres vérifications ici)
-        $validTables = array();
+        $validTables = [];
         foreach ($tables as $table) {
             $table = trim($table);
             if (!empty($table)) {
-                if (self::ifTableExists($table)) {
+                if (static::ifTableExists($table)) {
                     $validTables[] = pSQL($table);
                 }
             }
@@ -2086,7 +2191,7 @@ class EverblockTools extends ObjectModel
         $sqlData = "";
         foreach ($validTables as $tableName) {
             // Obtenir la structure de la table (inclut les contraintes et les index)
-            $createTableSql = self::getTableStructure($tableName);
+            $createTableSql = static::getTableStructure($tableName);
 
             // Ajoutez DROP TABLE
             $sqlData .= "DROP TABLE IF EXISTS `$tableName`;\n";
@@ -2102,7 +2207,7 @@ class EverblockTools extends ObjectModel
                 // Ajoutez INSERT INTO
                 foreach ($result as $row) {
                     $sqlData .= "INSERT INTO `$tableName` (";
-                    $escapedKeys = array_map(array(Db::getInstance(), 'escape'), array_keys($row));
+                    $escapedKeys = array_map([Db::getInstance(), 'escape'], array_keys($row));
                     $escapedKeys = array_map(function($key) {
                         return "`$key`";
                     }, $escapedKeys); // Ajout des backticks aux noms de colonnes
@@ -2110,7 +2215,7 @@ class EverblockTools extends ObjectModel
                     $sqlData .= ") VALUES (";
 
                     // Échappez et formatez correctement les valeurs
-                    $escapedValues = array();
+                    $escapedValues = [];
                     foreach ($row as $value) {
                         if (is_null($value)) {
                             $escapedValues[] = 'NULL';
@@ -2187,7 +2292,7 @@ class EverblockTools extends ObjectModel
         if (file_exists($filePath)) {
             try {
                 // Exécute les requêtes SQL du fichier de sauvegarde
-                $sqlContent = file_get_contents($filePath);
+                $sqlContent = Tools::file_get_contents($filePath);
                 $db = Db::getInstance();
                 $queries = preg_split("/;\n/", $sqlContent);
                 foreach ($queries as $query) {
@@ -2232,7 +2337,7 @@ class EverblockTools extends ObjectModel
                 $product->reference = 'PRD_DUMMY' . str_pad($i + 1, 4, '0', STR_PAD_LEFT);
 
                 if ($product->add()) {
-                    $categories = array(2);
+                    $categories = [2];
                     $product->addToCategories($categories);
                     StockAvailable::setQuantity($product->id, 0, $product->quantity);
                 } else {
@@ -2245,5 +2350,40 @@ class EverblockTools extends ObjectModel
             PrestaShopLogger::addLog('Error: ' . $e->getMessage(), 3); // Niveau d'erreur : 3 (erreur)
             return false;
         }
+    }
+
+    public static function getPhpLicenceHeader()
+    {
+        return '<?php' . PHP_EOL .
+            '/**' . PHP_EOL .
+            ' * 2019-2024 Team Ever' . PHP_EOL .
+            ' *' . PHP_EOL .
+            ' * NOTICE OF LICENSE' . PHP_EOL .
+            ' *' . PHP_EOL .
+            ' * This source file is subject to the Academic Free License (AFL 3.0)' . PHP_EOL .
+            ' * that is bundled with this package in the file LICENSE.txt.' . PHP_EOL .
+            ' * It is also available through the world-wide-web at this URL:' . PHP_EOL .
+            ' * http://opensource.org/licenses/afl-3.0.php' . PHP_EOL .
+            ' * If you did not receive a copy of the license and are unable to' . PHP_EOL .
+            ' * obtain it through the world-wide-web, please send an email' . PHP_EOL .
+            ' * to license@prestashop.com so we can send you a copy immediately.' . PHP_EOL .
+            ' *' . PHP_EOL .
+            ' *  @author    Team Ever <https://www.team-ever.com/>' . PHP_EOL .
+            ' *  @copyright 2019-2024 Team Ever' . PHP_EOL .
+            ' *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)' . PHP_EOL .
+            ' */' . PHP_EOL .
+            'if (!defined(\'_PS_VERSION_\')) {' . PHP_EOL .
+            '    exit;' . PHP_EOL .
+            '}';
+    }
+
+    public static function getUpgradeMethod($version)
+    {
+        return 'function upgrade_module_' . str_replace('.', '_', $version) . '($module)' . PHP_EOL .
+            '{' . PHP_EOL .
+            '    EverblockTools::checkAndFixDatabase();' . PHP_EOL .
+            '    $module->checkHooks();' . PHP_EOL .
+            '    return true;' . PHP_EOL .
+            '}';
     }
 }

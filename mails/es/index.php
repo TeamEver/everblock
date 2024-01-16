@@ -17,15 +17,12 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 
-function upgrade_module_4_5_0($module)
-{
-    $tab = new Tab((int)Tab::getIdFromClassName('AdminEverBlock'));
-    $tab->delete();
-    $module->checkAndFixDatabase();
-    $module->checkHooks();
-    return true;
-}
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+
+header('Location: ../');
+exit;

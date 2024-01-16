@@ -34,11 +34,7 @@
     <br>
     <h4>{l s='How can I change blocks design ?' mod='everblock'}</h3>
     <p>{l s='Each block has specific class and identifiers. You can design the blocks with custom CSS code.' mod='everblock'}</p>
-    <p>{l s='CSS code should be added on :' mod='everblock'}</p>
-    <ul>
-        <li><code>/themes/YOUR_THEME/asssets/css/custom.css</code> {l s='for Prestashop 1.7' mod='everblock'}</li>
-        <li><code>/themes/YOUR_THEME/css/global.css</code> {l s='for Prestashop 1.6' mod='everblock'}</li>
-    </ul>
+    <p>{l s='CSS code should be added on :' mod='everblock'}<code>/themes/YOUR_THEME/asssets/css/custom.css</code></p>
     <p>{l s='However, you can add your personalized HTML code below, which will be cached and returned to your store while respecting Prestashop standards.' mod='everblock'}</p>
     <br>
     <h4>{l s='Can the shortcodes be used anywhere on my store?' mod='everblock'}</h3>
@@ -90,12 +86,14 @@
         <li><p>{literal}$urls.css_url{/literal} => {l s='the URL of your theme\'s CSS files, so /themes/yourtheme/assets/css' mod='everblock'}</p></li>
         <li><p>{literal}$urls.js_url{/literal} => {l s='the URL of your theme\'s javascript files, so /themes/yourtheme/assets/js' mod='everblock'}</p></li>
         <li><p>{literal}$urls.pic_url{/literal} => {l s='the URL of the /upload directory' mod='everblock'}</p></li>
+        <li><p>{literal}{hook h='displayFooter'}{/literal} => {l s='show displayFooter hook (you can try with every display hook' mod='everblock'}</p></li>
     </ul>
     <br>
     <h4>{l s='Shortcodes list' mod='everblock'}</h3>
     <ul>
         <li><p>[product 1] {l s='to show product ID 1' mod='everblock'}</p></li>
         <li><p>[product 1,2,3] {l s='to show products ID 1, 2 and 3' mod='everblock'}</p></li>
+        <li><p>[random_product nb="4"] {l s='to show 4 random products' mod='everblock'}</p></li>        
         <li><p>[entity_lastname] {l s='for customer lastname' mod='everblock'}</p></li>
         <li><p>[entity_firstname] {l s='for customer firstname' mod='everblock'}</p></li>
         <li><p>[entity_gender] {l s='for customer gender' mod='everblock'}</p></li>
@@ -132,8 +130,15 @@
         <li><p>[evercontact type="select" label="You are" values="Man,Woman,Other"] {l s='to display a select field with the label "Your are" and options "Man,Woman,Other"' mod='everblock'}</p></li>
         <li><p>[evercontact type="radio" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using radio buttons instead of select' mod='everblock'}</p></li>
         <li><p>[evercontact type="checkbox" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using checkbox buttons instead of select' mod='everblock'}</p></li>
+        <li><p>[evercontact type="file" label="Pièce jointe"] {l s='to display a file upload field' mod='everblock'}</p></li>
+        <li><p>[evercontact type="hidden" label="Champ caché"] {l s='to display a hidden field with value & label "Champ caché"' mod='everblock'}</p></li>
         <li><p>[evercontact type="submit" label="Submit"] {l s='to show a submit button for your custom contact form' mod='everblock'}</p></li>
     </ul>
+    <br>
+    <h4>{l s='Management of product tabs' mod='everblock'}</h3>
+    <p>{l s='You have an additional tab for each product.' mod='everblock'}</p>
+    <p>{l s='In your store administration, select the “Module” tab in the product sheet then select Everblock.' mod='everblock'}</p>
+    <p>{l s='You will be able to enter a title for the personalized tab as well as its content.' mod='everblock'}</p>
     <br>
     <h4>{l s='Using PrettyBlocks (from PrestaSafe)' mod='everblock'}</h3>
     <p>{l s='You can also use the shortcodes with the Pretty Blocks page builder' mod='everblock'}</p>

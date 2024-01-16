@@ -77,6 +77,22 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_shortcode_lan
         PRIMARY KEY (`id_everblock_shortcode`, `id_lang`)
     ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
 
+/* Create Tables in Database */
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs` (
+         `id_everblock_tabs` int(10) unsigned NOT NULL auto_increment,
+         `id_product` int(10) unsigned NOT NULL,
+         `id_shop` int(10) unsigned DEFAULT 0,
+         PRIMARY KEY (`id_everblock_tabs`))
+         ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs_lang` (
+         `id_everblock_tabs` int(10) unsigned NOT NULL,
+         `id_lang` int(10) unsigned NOT NULL,
+         `title` varchar(255) DEFAULT NULL,
+         `content` text DEFAULT NULL,
+         PRIMARY KEY (`id_everblock_tabs`, `id_lang`))
+         ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
 foreach ($sql as $s) {
     if (!Db::getInstance()->execute($s)) {
         return false;

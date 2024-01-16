@@ -9,6 +9,10 @@
 
 namespace Everblock\Tools\Service;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
 class ImportFile

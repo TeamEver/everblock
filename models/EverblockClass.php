@@ -235,7 +235,7 @@ class EverBlockClass extends ObjectModel
             $now = new DateTime();
             $now = $now->format('Y-m-d H:i:s');
 
-            $controllerTypes = array('admin', 'moduleadmin');
+            $controllerTypes = ['admin', 'moduleadmin'];
             if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
                 $customerGroups = Customer::getGroupsStatic((int) Context::getContext()->customer->id);
             }

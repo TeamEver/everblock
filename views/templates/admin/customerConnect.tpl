@@ -1,5 +1,4 @@
-<?php
-/**
+{*
  * 2019-2024 Team Ever
  *
  * NOTICE OF LICENSE
@@ -15,22 +14,17 @@
  *  @author    Team Ever <https://www.team-ever.com/>
  *  @copyright 2019-2024 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
+*}
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
-
-function upgrade_module_4_3_1()
-{
-    $result = true;
-    $sql[] =
-        'ALTER TABLE ' . _DB_PREFIX_ . 'everblock
-        ADD COLUMN `bootstrap_class` varchar(255) DEFAULT NULL
-        AFTER `css_class`
-    ';
-    foreach ($sql as $s) {
-        $result &= Db::getInstance()->execute($s);
-    }
-    return $result;
-}
+<div class="card col-lg-6 p-3">
+    <h3 class="bootstrap cardheader everpscustomerconnect">
+        {l s='Connect as this customer' mod='everpscustomerconnect'}
+    </h3>
+    <div class="bootstrap cardbody everpscustomerconnect">
+        <div class="panel-heading">
+        {if isset($login_link) && $login_customer}
+        <p><a href="{$login_link|escape:'htmlall':'UTF-8'}" target="_blank" class="btn btn-info btn-lg"><strong>{l s='Click here to log as' mod='everpscustomerconnect'} {$login_customer->firstname|escape:'htmlall':'UTF-8'} {$login_customer->lastname|escape:'htmlall':'UTF-8'}</strong></a></p>
+        {/if}
+        </div>
+    </div>
+</div>

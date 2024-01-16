@@ -9,6 +9,12 @@ services:
         tags:
             - { name: 'console.command' }
 
+    everblock.tools.import_tab:
+        class: Everblock\Tools\Command\ImportTabCommand
+        public: true
+        tags:
+            - { name: 'console.command' }
+
     everblock.tools.export:
         class: Everblock\Tools\Command\ExportFileCommand
         public: true

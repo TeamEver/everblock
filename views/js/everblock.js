@@ -16,33 +16,10 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 $(document).ready(function(){
-    var $forms = $('.evercontactform');
-    $forms.each(function() {
-        var $form = $(this);
-        $form.on('submit', function(e) {
-            e.preventDefault();
-            $.ajax({
-                url: evercontact_link,
-                type: 'POST',
-                data: $form.serialize(),
-                success: function(modal) {
-                    $(modal).insertAfter($form);
-
-                    $('#evercontactModal').modal('show');
-
-                    $('#evercontactModal').on('hidden.bs.modal', function () {
-                        $(this).remove();
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
-                }
-            });
-        });
-    });
-
-
-    // Recherchez tous les éléments obfusqués
+    if ($('.everblock').length && $('.everblock').data('everhook') == 'hookDisplayBanner') {
+        // Add your own code here depending on hook
+    }
+    // Recherchez tous les éléments obfusqués au premier chargement
     $('[data-ob]').attr('tabindex', 0);
     clickAndMousedownActions();
     $('.everModalAutoTrigger').modal('show');
@@ -97,54 +74,109 @@ $(document).ready(function(){
     });
 
     prestashop.on('updateProductList', function() {
-        clickAndMousedownActions();
+        clickAndMousedownActions('#js-product-list');
     });
 
     prestashop.on('updatedProduct', function() {
-        clickAndMousedownActions();
+        clickAndMousedownActions('.product-actions.js-product-actions');
     });
 
     prestashop.on('updatedCart', function() {
         clickAndMousedownActions();
     });
+    prestashop.on('updateShoppingCart', function() {
+        clickAndMousedownActions('.blockcart');
+    });
 });
 
-function clickAndMousedownActions() {
-  $('[data-obflink], [data-ob], span.url-obf').on('click mousedown', function(event) {
-      if (!$(this).hasClass('no-redirect')) {
-          event.preventDefault(); // Empêche le comportement par défaut du lien
 
-          // Initialisez la valeur du lien encodé
-          var encodedLink;
+function clickAndMousedownActions(selector) {
 
-          // Vérifiez si 'data-obflink' ou 'data-ob' ou 'data-href' sont définis
-          if (typeof $(this).attr('data-obflink') !== 'undefined') {
-              encodedLink = $(this).attr('data-obflink');
-          } else if (typeof $(this).data('ob') !== 'undefined') {
-              encodedLink = $(this).data('ob');
-          } else if (typeof $(this).attr('data-href') !== 'undefined') {
-              encodedLink = $(this).attr('data-href');
-          }
+    let globalSelector = '';
+    // si pas de selecteur on est dans un contexte global
+    if (typeof selector === 'undefined') {
+        globalSelector = '[data-obflink], [data-ob], span.url-obf';
+    } else {
+        globalSelector = selector + ' [data-obflink], ' + selector + ' [data-ob], ' + selector + ' span.url-obf';
+    }
+    let isDragging = false;
 
-          if (typeof encodedLink !== 'undefined') {
-              // Décodez l'URL à partir de base64
-              var decodedLink = atob(encodedLink);
+    $(globalSelector)
+        .on('mousedown', function(event) {
+            // cas spécifique du CTRL + click gauche et bouton central souris catch par mousedown
+            isDragging = false;
+            if (!$(this).hasClass('no-redirect')) {
+                event.preventDefault(); // Empêche le comportement par défaut du lien
 
-              // Vérifiez si l'élément a un attribut data-target="_blank"
-              var targetAttribute = $(this).attr('data-target');
+                // Initialisez la valeur du lien encodé
+                var encodedLink;
 
-              // Vérifiez si la touche CTRL est enfoncée avec un clique gauche
-              // OU si le clique est effectué avec le bouton centrale de la souris
-              // OU si target _blank
-              if (( (event.ctrlKey || event.metaKey ) && event.button === 0 ) || event.button === 1 || targetAttribute === '_blank') {
-                  // Ouvrez l'URL décodée dans un nouvel onglet
-                  window.open(decodedLink, targetAttribute);
-              } else if (event.button !== 2) {
-                  // Redirigez l'internaute vers l'URL décodée
-                  window.location.href = decodedLink;
-              }
-          }
+                // Vérifiez si 'data-obflink' ou 'data-ob' ou 'data-href' sont définis
+                if (typeof $(this).attr('data-obflink') !== 'undefined') {
+                    encodedLink = $(this).attr('data-obflink');
+                } else if (typeof $(this).data('ob') !== 'undefined') {
+                    encodedLink = $(this).data('ob');
+                } else if (typeof $(this).attr('data-href') !== 'undefined') {
+                    encodedLink = $(this).attr('data-href');
+                }
 
-      }
-  });
+                if (typeof encodedLink !== 'undefined') {
+                    // Décodez l'URL à partir de base64
+                    var decodedLink = atob(encodedLink);
+
+                    // Vérifiez si l'élément a un attribut data-target="_blank"
+                    var targetAttribute = $(this).attr('data-target');
+
+                    // Vérifiez si la touche CTRL est enfoncée avec un clique gauche
+                    // OU si le clique est effectué avec le bouton centrale de la souris
+                    // OU si target _blank
+                    if (( (event.ctrlKey || event.metaKey ) && event.button === 0 ) || event.button === 1 || targetAttribute === '_blank') {
+                        // Ouvrez l'URL décodée dans un nouvel onglet
+                        window.open(decodedLink, targetAttribute);
+                    }
+                }
+            }
+        })
+        .on('mousemove', function() {
+            isDragging = true;
+        })
+        .on('mouseup', function() {
+            isDragging = false;
+        })
+        .on('click', function(event) {
+            if (!$(this).hasClass('no-redirect') && !isDragging) {
+                event.preventDefault(); // Empêche le comportement par défaut du lien
+
+                // Initialisez la valeur du lien encodé
+                var encodedLink;
+
+                // Vérifiez si 'data-obflink' ou 'data-ob' ou 'data-href' sont définis
+                if (typeof $(this).attr('data-obflink') !== 'undefined') {
+                    encodedLink = $(this).attr('data-obflink');
+                } else if (typeof $(this).data('ob') !== 'undefined') {
+                    encodedLink = $(this).data('ob');
+                } else if (typeof $(this).attr('data-href') !== 'undefined') {
+                    encodedLink = $(this).attr('data-href');
+                }
+
+                if (typeof encodedLink !== 'undefined') {
+                    // Décodez l'URL à partir de base64
+                    var decodedLink = atob(encodedLink);
+
+                    // Vérifiez si l'élément a un attribut data-target="_blank"
+                    var targetAttribute = $(this).attr('data-target');
+
+                    // Vérifiez si la touche CTRL est enfoncée avec un clique gauche
+                    // OU si le clique est effectué avec le bouton centrale de la souris
+                    // OU si target _blank
+                    if (( (event.ctrlKey || event.metaKey ) && event.button === 0 ) || event.button === 1 || targetAttribute === '_blank') {
+                        // Ouvrez l'URL décodée dans un nouvel onglet
+                        window.open(decodedLink, targetAttribute);
+                    } else if (event.button !== 2) {
+                        // Redirigez l'internaute vers l'URL décodée
+                        window.location.href = decodedLink;
+                    }
+                }
+            }
+        });
 }

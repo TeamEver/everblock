@@ -27,28 +27,31 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
     {
         $this->isSeven = Tools::version_compare(_PS_VERSION_, '1.7', '>=') ? true : false;
         $this->ajax = true;
-        parent::initContent();
         return $this->formProcess();
     }
 
     protected function formProcess()
     {
         $validToken = Tools::encrypt($this->module->name.'/token');
-        
-        // Vérifiez si le jeton est valide
         if (!Tools::getValue('token') || Tools::getValue('token') != $validToken) {
             Tools::redirect('index.php');
         }
-
-        // Obtenez toutes les valeurs du formulaire
         $formData = Tools::getAllValues();
-
-        // Construisez la chaîne de données
+        // Use this for recaptcha validation
+        Hook::exec(
+            'actionEverblockContactBefore',
+            [
+                'formData' => &$formData,
+            ]
+        );
+        if (empty($formData)) {
+            $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
+            die($response);
+        }
         $messageContent = '';
         foreach ($formData as $key => $value) { 
             $key = str_replace('_', ' ', $key);
             if (is_array($value)) {
-                // Si la valeur est un tableau, bouclez à travers ses éléments
                 $messageContent .= $key . ': ' . "\n";
                 foreach ($value as $item) {
                     $messageContent .= '  - ' . $item . "\n";
@@ -58,7 +61,27 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
                 $messageContent .= $key . ': ' . $value . "\n";
             }
         }
+        $clientIP = Tools::getRemoteAddr();
+        $clientPlatform = Tools::getUserPlatform();
+        $clientBrowser = Tools::getUserBrowser();
+        $messageContent .= $this->module->l('Client IP:') . ' ' . $clientIP . "\n";
+        $messageContent .= $this->module->l('Client browser:') . ' ' . $clientBrowser . "\n";
+        $messageContent .= $this->module->l('Client platform:') . ' ' . $clientPlatform . "\n";
+        $attachments = [];
+        foreach ($_FILES as $fileKey => $fileData) {
+            if (!empty($fileData['name']) && is_uploaded_file($fileData['tmp_name'])) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mime = finfo_file($finfo, $fileData['tmp_name']);
+                finfo_close($finfo);
 
+                $attachment = [
+                    'content' => Tools::file_get_contents($fileData['tmp_name']),
+                    'name' => $fileData['name'],
+                    'mime' => $mime,
+                ];
+                $attachments[] = $attachment;
+            }
+        }
         $mailSubject = $this->module->l('New form submitted');
         $mailRecipient = Configuration::get('PS_SHOP_EMAIL');
         $mailSender = Configuration::get('PS_SHOP_EMAIL');
@@ -83,9 +106,15 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             null,
             $mailSender,
             null,
-            null,
+            !empty($attachments) ? $attachments : null,
             null,
             $mailFolder
+        );
+        Hook::exec(
+            'actionEverblockContactAfter',
+            [
+                'formData' => $formData,
+            ]
         );
         if ($sent) {
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/success.tpl');
