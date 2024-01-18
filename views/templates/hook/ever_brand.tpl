@@ -17,7 +17,6 @@
 *}
 {if isset($brands) && $brands}
 <section class="featured-brands clearfix mt-3">
-    {widget name="prettyblocks" zone_name="displayBeforeEverBlockBrand"}
     <div class="brands row owl-carousel">
         {foreach from=$brands item=brand}
         <div class="col-md-3 mb-3">
@@ -28,7 +27,6 @@
         </div>
         {/foreach}
     </div>
-    {widget name="prettyblocks" zone_name="displayAfterEverBlockBrand"}
 </section>
 {/if}
 
