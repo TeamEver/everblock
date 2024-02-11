@@ -36,7 +36,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="everblock_content_{$language.id_lang|escape:'htmlall':'UTF-8'}">{l s='Tab content for lang' mod='everblock'} {$language.iso_code}</label>
-                                <textarea id="everblock_content_{$language.id_lang|escape:'htmlall':'UTF-8'}" name="everblock_content_{$language.id_lang|escape:'htmlall':'UTF-8'}" class="form-control autoload_rte">{if isset({$everpstabs->content[$language.id_lang]}) && {$everpstabs->content[$language.id_lang]} != ''}{$everpstabs->content[$language.id_lang]|escape:'htmlall':'UTF-8'}{/if}</textarea>
+                                <textarea id="everblock_content_{$language.id_lang|escape:'htmlall':'UTF-8'}" name="everblock_content_{$language.id_lang|escape:'htmlall':'UTF-8'}" class="form-control autoload_rte">{if isset($everpstabs->content[$language.id_lang]) && $everpstabs->content[$language.id_lang] != ''}{$everpstabs->content[$language.id_lang]|escape:'htmlall':'UTF-8'}{/if}</textarea>
                             </div>
                         {/foreach}
                     </div>
