@@ -156,17 +156,33 @@ class AdminEverBlockController extends ModuleAdminController
         $this->addRowAction('delete');
         $this->addRowAction('duplicate');
         $this->toolbar_title = $this->l('HTML blocks Configuration');
-
-        $this->bulk_actions = [
-            'delete' => [
-                'text' => $this->l('Delete selected items'),
-                'confirm' => $this->l('Delete selected items ?'),
-            ],
-            'duplicateall' => [
-                'text' => $this->l('Duplicate selected items'),
-                'confirm' => $this->l('Duplicate selected items ?'),
-            ],
-        ];
+        if (Configuration::get('EVERGPT_API_KEY')) {
+            $this->bulk_actions = [
+                'delete' => [
+                    'text' => $this->l('Delete selected items'),
+                    'confirm' => $this->l('Delete selected items ?'),
+                ],
+                'duplicateall' => [
+                    'text' => $this->l('Duplicate selected items'),
+                    'confirm' => $this->l('Duplicate selected items ?'),
+                ],
+                'gptgenerate' => [
+                    'text' => $this->l('Generate content using chatGPT'),
+                    'confirm' => $this->l('Generate content using chatGPT ?'),
+                ],
+            ];
+        } else {
+            $this->bulk_actions = [
+                'delete' => [
+                    'text' => $this->l('Delete selected items'),
+                    'confirm' => $this->l('Delete selected items ?'),
+                ],
+                'duplicateall' => [
+                    'text' => $this->l('Duplicate selected items'),
+                    'confirm' => $this->l('Duplicate selected items ?'),
+                ],
+            ];
+        }
 
         if (Tools::isSubmit('submitBulkdelete' . $this->table)) {
             $this->processBulkDelete();
@@ -179,6 +195,9 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::isSubmit('submitBulkduplicateall' . $this->table)) {
             $this->processBulkDuplicate();
+        }
+        if (Tools::isSubmit('submitBulkgptgenerate' . $this->table)) {
+            $this->processBulkGptGenerate();
         }
         if (Tools::getValue('clearcache')) {
             Tools::clearAllCache();
@@ -232,7 +251,7 @@ class AdminEverBlockController extends ModuleAdminController
             return false;
         }
         $obj = new EverBlockClass(
-            (int)Tools::getValue('id_everblock')
+            (int) Tools::getValue('id_everblock')
         );
         $fields_form = [];
         $hooks_list = $this->getHooks(false, true);
@@ -945,7 +964,7 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::isSubmit('deleteeverblock')) {
             $everblock_obj = new EverBlockClass(
-                (int)Tools::getValue('id_everblock')
+                (int) Tools::getValue('id_everblock')
             );
             if (!$everblock_obj->delete()) {
                 $this->errors[] = Tools::displayError('An error has occurred: Can\'t delete the current object');
@@ -953,7 +972,7 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::isSubmit('save') || Tools::isSubmit('stay')) {
             $everblock_obj = new EverBlockClass(
-                (int)Tools::getValue('id_everblock')
+                (int) Tools::getValue('id_everblock')
             );
             if (!Tools::getValue('name')
                 || !Validate::isGenericName(Tools::getValue('name'))
@@ -1047,7 +1066,7 @@ class AdminEverBlockController extends ModuleAdminController
                 $this->errors[] = $this->l('Device is not valid');
             }
             $everblock_obj = new EverBlockClass(
-                (int)Tools::getValue('id_everblock')
+                (int) Tools::getValue('id_everblock')
             );
             $everblock_obj->name = pSQL(Tools::getValue('name'));
             $everblock_obj->id_shop = (int) $this->context->shop->id;
@@ -1199,6 +1218,39 @@ class AdminEverBlockController extends ModuleAdminController
 
         if (!$newBlock->save()) {
             $this->errors[] = $this->l('An error has occurred: Can\'t delete the current object');
+        }
+    }
+
+    protected function processBulkGptGenerate()
+    {
+        foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
+                $obj = new EverBlockClass(
+                    (int) $idEverBlock
+                );
+                $chatGPT = new EverblockGpt();
+                $chatGPT->initialize('text');
+                $results = [];
+                foreach (Language::getLanguages(true) as $language) {
+                    $prompt = EverblockGpt::getObjectPrompt(
+                        $obj,
+                        (int) $obj->id,
+                        (int) $language['id_lang'],
+                        (int) $this->context->shop->id
+                    );
+                    if ($prompt) {
+                        $requestResult = $chatGPT->createTextRequest($prompt);
+                        if ($requestResult) {
+                            $obj->content[$language['id_lang']] = $requestResult;
+                        }
+                    }
+                }
+                $obj->save();
+            try {
+            } catch (Exception $e) {
+                PrestaShopLogger::addLog(
+                    'Admin Everblock GPT : ' . $e->getMessage()
+                );
+            }
         }
     }
 

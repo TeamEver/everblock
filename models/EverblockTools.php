@@ -42,6 +42,7 @@ class EverblockTools extends ObjectModel
         $txt = static::getFormShortcode($txt);
         $txt = static::renderSmartyVars($txt);
         $txt = static::getRandomProductsShortcode($txt);
+        $txt = static::getWidgetShortcode($txt);
         // $txt = static::removeHtmlComments($txt);
         // $txt = static::addAltTagsIfNeeded($txt);
         // $txt = static::addTitleAttributeIfNeeded($txt);
@@ -49,22 +50,39 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
+    public static function getWidgetShortcode($txt)
+    {
+        $txt = preg_replace_callback('/\[widget moduleName="(.+?)" hookName="(.+?)"\]/', function ($matches) {
+            $moduleName = $matches[1];
+            $hookName = $matches[2];
+
+            if (Module::isInstalled($moduleName) && Module::isEnabled($moduleName)) {
+                $module = Module::getInstanceByName($moduleName);
+
+                if (method_exists($module, 'renderWidget')) {
+                    return $module->renderWidget($hookName, []);
+                } else {
+                    return '';
+                }
+            } else {
+                return '';
+            }
+        }, $txt);
+
+        return $txt;
+    }
+
     public static function generateFormFromShortcode($shortcode)
     {
-        // Définissez une expression régulière pour extraire les attributs et leurs valeurs
         preg_match_all('/(\w+)\s*=\s*"([^"]+)"|(\w+)\s*=\s*([^"\s,]+)/', $shortcode, $matches, PREG_SET_ORDER);
 
-        // Initialisez le tableau des attributs
         $attributes = [];
-        // Initialisez un compteur pour les identifiants uniques
         static $uniqueIdentifier = 0;
 
-        // Parcourez les correspondances et ajoutez les attributs au tableau
         foreach ($matches as $match) {
             $attribute_name = $match[1] ?: $match[3];
             $attribute_value = $match[2] ?: $match[4];
 
-            // Supprimez les guillemets doubles autour des valeurs
             $attribute_value = trim($attribute_value, "\"");
 
             // Ajoutez l'attribut au tableau
@@ -463,7 +481,9 @@ class EverblockTools extends ObjectModel
                 (int) $context->language->id,
                 (int) $context->shop->id
             );
-            if (!Validate::isLoadedObject($category) || (bool) $category->active === false) {
+            if (!Validate::isLoadedObject($category)
+                || (bool) $category->active === false
+            ) {
                 continue;
             }
             $subCategories = $category->getSubCategories(
@@ -1939,11 +1959,6 @@ class EverblockTools extends ObjectModel
 
     public static function checkAndFixDatabase()
     {
-        // Auto upgrade everblock
-        $m = Module::getInstanceByName('everblock');
-        if (Module::needUpgrade($m)) {
-            $m->runUpgradeModule();
-        }
         $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
         // Ajoute les colonnes manquantes à la table ps_everblock
         $columnsToAdd = [
@@ -2385,5 +2400,53 @@ class EverblockTools extends ObjectModel
             '    $module->checkHooks();' . PHP_EOL .
             '    return true;' . PHP_EOL .
             '}';
+    }
+
+    public static function isCacheStored($cacheKey)
+    {
+        $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
+        if (file_exists($cacheFilePath)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function cacheStore($cacheKey, $cacheValue)
+    {
+        $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
+        file_put_contents($cacheFilePath, serialize($cacheValue));
+    }
+
+    public static function cacheRetrieve($cacheKey)
+    {
+        $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
+        if (file_exists($cacheFilePath)) {
+            $cachedData = Tools::file_get_contents($cacheFilePath);
+            return unserialize($cachedData);
+        }
+        return false;
+    }
+
+    public static function setLog($logKey, $logValue)
+    {
+        $logFilePath = _PS_ROOT_DIR_ . 'logs/' . $logKey . '.log';
+        file_put_contents($logFilePath, $logValue);
+    }
+
+    public static function getLog($logKey)
+    {
+        $logFilePath = _PS_ROOT_DIR_ . 'logs/' . $logKey . '.log';
+        if (file_exists($logFilePath)) {
+            return Tools::file_get_contents($logFilePath);
+        }
+        return '';
+    }
+
+    public static function dropLog($logKey)
+    {
+        $logFilePath = _PS_ROOT_DIR_ . 'logs/' . $logKey . '.log';
+        if (file_exists($logFilePath)) {
+            unlink($logFilePath);
+        }
     }
 }

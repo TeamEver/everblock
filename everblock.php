@@ -45,7 +45,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.5.1';
+        $this->version = '5.5.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -270,42 +270,61 @@ class Everblock extends Module
     public function getContent()
     {
         $this->createUpgradeFile();
+        $this->secureModuleFolder();
         EverblockTools::checkAndFixDatabase();
         $this->checkHooks();
         $context = Context::getContext();
         if (Tools::getValue('evergpt')
-            && Tools::getValue('id_product')
-            && Tools::getValue('objectType')
+            && Tools::getValue('id_object')
+            && Tools::getValue('object_name')
         ) {
-            if (Tools::getValue('objectType') == 'EverblockTabsClass') {
-                $everpstabs = EverblockTabsClass::getByIdProduct(
-                    (int) Tools::getValue('id_product'),
+            $responseData = [];
+            $objectName = Tools::getValue('object_name');
+            $idObject = Tools::getValue('id_object');
+
+            if (!class_exists($objectName)) {
+                die(json_encode(['error' => $this->l('Not a valid class')]));
+            }
+
+            $object = new $objectName($idObject);
+            if (!Validate::isLoadedObject($object)) {
+                die(json_encode(['error' => $this->l('Object not valid or not loaded')]));
+            }
+
+            $chatGPT = new EverblockGpt();
+            $chatGPT->initialize('text');
+            $results = [];
+            foreach (Language::getLanguages(true) as $language) {
+                $prompt = EverblockGpt::getObjectPrompt(
+                    $object,
+                    (int) $idObject,
+                    (int) $language['id_lang'],
                     (int) $context->shop->id
                 );
-                $responseData = [];
-                foreach (Language::getLanguages(true) as $language) {
-                    $prompt = EverblockGpt::getProductPrompt(
-                        Tools::getValue('id_product'),
-                        $language['id_lang'],
-                        $context->shop->id
-                    );
-                    if ($prompt) {
-                        $everpstabs->title[$language['id_lang']] = $this->l('Benefits');
-                        $chatGPT = new EverblockGpt();
-                        $chatGPT->initialize('text');
-                        $everpstabs->content[$language['id_lang']] = $chatGPT->createTextRequest(
-                            $prompt
-                        );
-                    }
-                    $responseData[$language['id_lang']] = array(
-                        'title' => $this->l('Benefits'),
-                        'content' => $content
-                    );
-                    $everpstabs->id_shop = $context->shop->id;
-                    $everpstabs->save();
+                if ($prompt) {
+                    $requestResult = $chatGPT->createTextRequest($prompt);
+                    $results[$language['id_lang']] = $requestResult;
                 }
-                die(json_encode($responseData));
             }
+            // Fake obj
+            if (Tools::getValue('real_object_name')) {
+                $objectName = Tools::getValue('object_name');
+                $object = new $objectName();
+                $chatGPT->saveObjContent(
+                    $object,
+                    (int) $idObject,
+                    (int) $context->shop->id,
+                    $results
+                );
+            } else {
+                $chatGPT->saveObjContent(
+                    $object,
+                    (int) $idObject,
+                    (int) $context->shop->id,
+                    $results
+                );
+            }
+            die(json_encode(['results' => $results]));
         }
         $this->html = '';
         if (((bool) Tools::isSubmit('submit' . $this->name . 'Module')) == true) {
@@ -438,8 +457,8 @@ class Everblock extends Module
                     [
                         'type' => 'text',
                         'label' => $this->l('Chat GPT API key'),
-                        'desc' => $this->l('Add here your Chat GPT API key, it will be used for product tabs generator'),
-                        'hint' => $this->l('Without API key, product tabs generator won\'t work'),
+                        'desc' => $this->l('Add here your Chat GPT API key, it will be used for blocks generator'),
+                        'hint' => $this->l('Without API key, blocks generator won\'t work'),
                         'name' => 'EVERGPT_API_KEY',
                     ],
                     [
@@ -736,7 +755,6 @@ class Everblock extends Module
             'w+'
         );
         fclose($handle_js);
-
         Configuration::updateValue(
             'EVERPSCSS_CACHE',
             Tools::getValue('EVERPSCSS_CACHE')
@@ -862,7 +880,6 @@ class Everblock extends Module
                 $this->context->controller->addJs($this->_path . 'views/js/adminTinyMce.js');
             }
         }
-        $this->context->controller->addJs($this->_path . 'views/js/global.js');
     }
 
     public function hookActionOutputHTMLBefore($params)
@@ -870,7 +887,6 @@ class Everblock extends Module
         $context = Context::getContext();
         $txt = $params['html'];
         try {
-            $context = Context::getContext();
             $contactLink = $context->link->getPageLink('contact');
             if ($context->customer->isLogged()) {
                 $myAccountLink = $context->link->getPageLink('my-account');
@@ -903,7 +919,7 @@ class Everblock extends Module
                 '[theme_uri]' => $theme_uri,
                 '[storelocator]' => EverblockTools::generateGoogleMap(),
             ];
-            $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes(Context::getContext()->customer->id));
+            $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes($context->customer->id));
             $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
             $shortcodes = array_merge($shortcodes, $this->getCategoryShortcodes($txt));
             $shortcodes = array_merge($shortcodes, $this->getManufacturerShortcodes($txt));
@@ -938,7 +954,7 @@ class Everblock extends Module
             (int) $productId,
             (int) $this->context->shop->id
         );
-        $ever_ajax_url =  Context::getContext()->link->getAdminLink(
+        $everAjaxUrl =  Context::getContext()->link->getAdminLink(
             'AdminModules',
             true,
             [],
@@ -948,15 +964,17 @@ class Everblock extends Module
             'everpstabs' => $everpstabs,
             'default_language' => $this->context->employee->id_lang,
             'ever_languages' => Language::getLanguages(false),
-            'ever_ajax_url' => $ever_ajax_url,
+            'ever_ajax_url' => $everAjaxUrl,
             'ever_product_id' => $productId,
-            'use_gpt' => !empty(Configuration::get('EVERGPT_API_KEY')) ? 1 : 0,
         ]);
         return $this->display(__FILE__, 'views/templates/admin/productTab.tpl');
     }
 
     public function hookActionObjectProductUpdateAfter($params)
     {
+        if (php_sapi_name() == 'cli') {
+            return;
+        }
         $controllerTypes = ['admin', 'moduleadmin'];
         $context = Context::getContext();
         if (!in_array($context->controller->controller_type, $controllerTypes)) {
@@ -1048,11 +1066,11 @@ class Everblock extends Module
                 'everpstabs_content' => $content,
             ]
         );
-        $array = [];
-        $array[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
+        $tab = [];
+        $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
                 ->setTitle($title)
                 ->setContent($content);
-        return $array;
+        return $tab;
     }
 
     public function hookDisplayAdminCustomers($params)
@@ -1222,7 +1240,9 @@ class Everblock extends Module
                 }
                 $continue = false;
                 // Only category pages
-                if ((bool)$block['only_category'] === true && Tools::getValue('controller') === 'category') {
+                if ((bool) $block['only_category'] === true
+                    && Tools::getValue('controller') === 'category'
+                ) {
                     $categories = json_decode($block['categories']);
                     if (!in_array((int) Tools::getValue('id_category'), $categories)) {
                         $continue = true;
@@ -1231,7 +1251,9 @@ class Everblock extends Module
                     }
                 }
                 // Only manufacturer pages
-                if ((bool)$block['only_manufacturer'] === true && Tools::getValue('controller') === 'manufacturer') {
+                if ((bool)$block['only_manufacturer'] === true
+                    && Tools::getValue('controller') === 'manufacturer'
+                ) {
                     $manufacturers = json_decode($block['manufacturers']);
                     if (!in_array((int)Tools::getValue('id_manufacturer'), $manufacturers)) {
                         $continue = true;
@@ -1240,7 +1262,9 @@ class Everblock extends Module
                     }
                 }
                 // Only supplier pages
-                if ((bool)$block['only_supplier'] === true && Tools::getValue('controller') === 'supplier') {
+                if ((bool)$block['only_supplier'] === true
+                    && Tools::getValue('controller') === 'supplier'
+                ) {
                     $suppliers = json_decode($block['suppliers']);
                     if (!in_array((int)Tools::getValue('id_supplier'), $suppliers)) {
                         $continue = true;
@@ -1298,24 +1322,16 @@ class Everblock extends Module
                 'actionRenderBlockBefore',
                 [
                     'everhook' => trim($method),
-                    'everblock' => &$currentBlock,
+                    $this->name => &$currentBlock,
                     'args' => $args,
                 ]
             );
             $this->smarty->assign([
                 'prettyblocks_installed' => (bool) Module::isInstalled('prettyblocks') && (bool) Module::isEnabled('prettyblocks'),
                 'everhook' => trim($method),
-                'everblock' => $currentBlock,
+                $this->name => $currentBlock,
                 'args' => $args,
             ]);
-            Hook::exec(
-                'actionRenderBlockAfter',
-                [
-                    'everhook' => trim($method),
-                    'everblock' => $currentBlock,
-                    'args' => $args,
-                ]
-            );
         }
         return $this->display(__FILE__, $this->name . '.tpl', $cacheId);
     }
@@ -1325,27 +1341,27 @@ class Everblock extends Module
         $idShop = (int) $this->context->shop->id;
         // Register your CSS file
         $this->context->controller->registerStylesheet(
-            'module-everblock-css',
-            'modules/' . $this->name . '/views/css/everblock.css',
+            'module-' . $this->name . '-css',
+            'modules/' . $this->name . '/views/css/' . $this->name . '.css',
             ['media' => 'all', 'priority' => 200, 'version' => $this->version]
         );
         $this->context->controller->registerJavascript(
-            'module-everblock-js',
-            'modules/' . $this->name . '/views/js/everblock.js',
+            'module-' . $this->name . '-js',
+            'modules/' . $this->name . '/views/js/' . $this->name . '.js',
             ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
         );
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
         $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
             $this->context->controller->registerStylesheet(
-                'module-everblock-custom-compressed-css',
+                'module-' . $this->name . '-custom-compressed-css',
                 'modules/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css',
                 ['media' => 'all', 'priority' => 200, 'version' => $this->version]
             );
         }
         if (file_exists($compressedJs) && filesize($compressedJs) > 0) {
             $this->context->controller->registerJavascript(
-                'module-everblock-compressed-js',
+                'module-' . $this->name . '-compressed-js',
                 'modules/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js',
                 ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
             );
@@ -1356,7 +1372,7 @@ class Everblock extends Module
             $jsLinksArray = explode("\n", $externalJs);
             foreach ($jsLinksArray as $key => $value) {
                 $this->context->controller->registerJavascript(
-                    'module-everblock-custom-' . (int) $key . '-js',
+                    'module-' . $this->name . '-custom-' . (int) $key . '-js',
                     $value,
                     ['server' => 'remote', 'position' => 'bottom', 'priority' => 200, 'version' => $this->version]
                 );
@@ -1368,7 +1384,7 @@ class Everblock extends Module
             $cssLinksArray = explode("\n", $externalCss);
             foreach ($cssLinksArray as $key => $value) {
                 $this->context->controller->registerStylesheet(
-                    'module-everblock-custom-' . (int) $key . '-js',
+                    'module-' . $this->name . '-custom-' . (int) $key . '-js',
                     $value,
                     ['server' => 'remote', 'media' => 'all', 'priority' => 200, 'version' => $this->version]
                 );
@@ -1377,15 +1393,15 @@ class Everblock extends Module
         $apiKey = Configuration::get('EVERBLOCK_GMAP_KEY');
         if ($apiKey && Tools::getValue('controller') == 'cms') {
             $filename = 'store-locator-' . $idShop . '.js';
-            $filePath = _PS_MODULE_DIR_ . 'everblock/views/js/' . $filename;
+            $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
             if (file_exists($filePath) && filesize($filePath) > 0) {
                 $this->context->controller->registerJavascript(
-                    'module-everblock-custom-gmap-js',
+                    'module-' . $this->name . '-custom-gmap-js',
                     'https://maps.googleapis.com/maps/api/js?key=' . $apiKey . '&libraries=places,geometry',
                     ['server' => 'remote', 'position' => 'bottom', 'priority' => 300, 'version' => $this->version, 'attributes' => 'defer']
                 );
                 $this->context->controller->registerJavascript(
-                    'module-everblock-shop-gmap-js',
+                    'module-' . $this->name . '-shop-gmap-js',
                     'modules/' . $this->name . '/views/js/' . $filename,
                     ['server' => 'local', 'position' => 'bottom', 'priority' => 400, 'version' => $this->version, 'attributes' => 'defer']
                 );
@@ -1659,7 +1675,7 @@ class Everblock extends Module
         . '_'
         . (int) $this->context->shop->id;
         if (!Cache::isStored($cacheId)) {
-            $defaultTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_everblock.tpl';
+            $defaultTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_' . $this->name . '.tpl';
             $smartyTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_smarty.tpl';
             $modalTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_modal.tpl';
             $alertTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_alert.tpl';
@@ -1844,7 +1860,7 @@ class Everblock extends Module
             $blocks[] =  [
                 'name' => $this->displayName,
                 'description' => $this->description,
-                'code' => 'everblock',
+                'code' => $this->name,
                 'tab' => 'general',
                 'icon_path' => $defaultLogo,
                 'need_reload' => true,
@@ -1955,7 +1971,7 @@ class Everblock extends Module
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Layout image',
-                            'path' => '$/modules/everblock/views/img/prettyblocks/',
+                            'path' => '$/modules/' . $this->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -2110,7 +2126,7 @@ class Everblock extends Module
                         'banner' => [
                             'type' => 'fileupload',
                             'label' => 'Images',
-                            'path' => '$/modules/everblock/views/img/prettyblocks/',
+                            'path' => '$/modules/' . $this->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -2154,7 +2170,7 @@ class Everblock extends Module
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Layout image',
-                            'path' => '$/modules/everblock/views/img/prettyblocks/',
+                            'path' => '$/modules/' . $this->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -2209,7 +2225,7 @@ class Everblock extends Module
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Image',
-                            'path' => '$/modules/everblock/views/img/prettyblocks/',
+                            'path' => '$/modules/' . $this->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -2291,7 +2307,7 @@ class Everblock extends Module
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Image',
-                            'path' => '$/modules/everblock/views/img/prettyblocks/',
+                            'path' => '$/modules/' . $this->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -2379,7 +2395,7 @@ class Everblock extends Module
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Layout image',
-                            'path' => '$/modules/everblock/views/img/prettyblocks/',
+                            'path' => '$/modules/' . $this->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -2494,6 +2510,65 @@ class Everblock extends Module
             return true;
         } else {
             return false;
+        }
+    }
+
+    protected function secureModuleFolder()
+    {
+        $moduleName = $this->name;
+        $moduleAuthor = $this->author;
+
+        $indexContent = <<<PHP
+    <?php
+    /**
+     * Project : {$moduleName}
+     * @author {$moduleAuthor}
+     * @copyright {$moduleAuthor}
+     * @license   Tous droits réservés / Le droit d'auteur s'applique (All rights reserved / French copyright law applies)
+     * @link https://team-ever.com
+     */
+    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+    header('Cache-Control: post-check=0, pre-check=0', false);
+    header('Pragma: no-cache');
+
+    header('Location: ../');
+    exit;
+    PHP;
+
+        // Utiliser le chemin du module actuel comme point de départ
+        $moduleDir = $this->getLocalPath();
+
+        // Fonction récursive pour ajouter le fichier index.php
+        $this->addIndexFileRecursively($moduleDir, $indexContent);
+    }
+
+    /**
+     * Ajoute le fichier index.php récursivement dans tous les répertoires et sous-répertoires
+     * 
+     * @param string $dir Le répertoire de départ
+     * @param string $indexContent Le contenu à ajouter dans le fichier index.php
+     */
+    protected function addIndexFileRecursively($dir, $indexContent)
+    {
+        // Vérifier si le fichier index.php existe, sinon le créer
+        $indexPath = $dir . '/index.php';
+        if (!file_exists($indexPath)) {
+            file_put_contents($indexPath, $indexContent);
+        }
+
+        // Parcourir le répertoire pour trouver des sous-répertoires et appliquer la fonction récursivement
+        $files = new DirectoryIterator($dir);
+        foreach ($files as $file) {
+            if ($file->isDot()) {
+                continue;
+            }
+
+            if ($file->isDir()) {
+                $this->addIndexFileRecursively($file->getPathname(), $indexContent);
+            }
         }
     }
 }

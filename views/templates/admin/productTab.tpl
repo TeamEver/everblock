@@ -22,13 +22,6 @@
             <div class="row">
                 <div class="col-lg-12 col-xl-12">
                     <div class="translations">
-                        <div id="loader" style="display: none;">{l s='Loading...' mod='everblock'}</div>
-                        {if isset($use_gpt) && $use_gpt}
-                        <div class="form-group gpt_group">
-                            <label for="everblock_use_gpt">{l s='Use GPT for content generation' mod='everblock'}</label>
-                            <button type="button" id="everblock_use_gpt" name="everblock_use_gpt" class="btn btn-primary" data-id_product="{$ever_product_id}" data-link="{$ever_ajax_url}" data-type="EverblockTabsClass">{l s='Toggle GPT' mod='everblock'}</button>
-                        </div>
-                        {/if}
                         {foreach from=$ever_languages item=language}
                             <div class="form-group">
                                 <label for="everblock_title_{$language.id_lang|escape:'htmlall':'UTF-8'}">{l s='Tab title for lang' mod='everblock'} {$language.iso_code}</label>

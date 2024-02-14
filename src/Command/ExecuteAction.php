@@ -32,6 +32,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Everblock\Tools\Service\ImportFile;
+use Currency;
+use Configuration;
+use DbQuery;
+use Db;
+use Product;
+use Language;
 
 class ExecuteAction extends Command
 {
@@ -43,7 +49,8 @@ class ExecuteAction extends Command
     private $allowedActions = [
         'getrandomcomment',
         'saveblocks',
-        'restoreblocks'
+        'restoreblocks',
+        'removeinlinecsstags'
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -68,6 +75,9 @@ class ExecuteAction extends Command
         $idShop = $input->getArgument('idshop id');
         $context = (new ContextAdapter())->getContext();
         $context->employee = new \Employee(1);
+        $context->currency = new Currency(
+            (int) Configuration::get('PS_CURRENCY_DEFAULT')
+        );
         if ($idShop && $idShop >= 1) {
             $shop = new \Shop(
                 (int) $idShop
@@ -120,10 +130,41 @@ class ExecuteAction extends Command
                 return self::FAILURE;
             }
         }
-        if ($action === 'myCustomCommand') {
-            $output->writeln('<comment>My custom command action !</comment>');
-            return self::ABORTED;
+        if ($action === 'removeinlinecsstags') {
+            $sql = new DbQuery();
+            $sql->select('id_product');
+            $sql->from('product_shop');
+            $sql->where('id_shop = ' . (int) $shop->id);
+            $results = Db::getInstance()->executeS($sql);
+            $pattern = '/style=("|\')(?:\\\\.|[^\\\\])*?\1/i';
+            foreach ($results as $result) {
+                $product = new Product(
+                    (int) $result['id_product']
+                );
+                foreach (Language::getLanguages(false) as $lang) {
+                    $product->description[(int) $lang['id_lang']] = preg_replace(
+                        $pattern,
+                        '',
+                        $product->description[(int) $lang['id_lang']]
+                    );
+                    $product->description_short[(int) $lang['id_lang']] = preg_replace(
+                        $pattern,
+                        '',
+                        $product->description_short[(int) $lang['id_lang']]
+                    );
+                }
+                try {
+                    $product->save();
+                    $output->writeln('<comment>Product ' . $product->id . ' has been saved</comment>');
+                } catch (Exception $e) {
+                    $output->writeln('<warning>' . $e->getMessage() . '</warning>');
+                    continue;
+                }
+            }
+            $output->writeln('<comment>Inline styles have been removed from all products</comment>');
+            return self::SUCCESS;
         }
+        return self::ABORTED;
     }
 
     /**

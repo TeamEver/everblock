@@ -218,7 +218,6 @@ class EverBlockClass extends ObjectModel
             $sql->where('ebl.id_lang = ' . (int) $idLang);
             $sql->where('eb.id_shop = ' . (int) $idShop);
             $sql->orderBy('eb.position ASC');
-
             $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
             Cache::store($cacheId, $allBlocks);
             return $allBlocks;
@@ -234,7 +233,6 @@ class EverBlockClass extends ObjectModel
             $return = [];
             $now = new DateTime();
             $now = $now->format('Y-m-d H:i:s');
-
             $controllerTypes = ['admin', 'moduleadmin'];
             if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
                 $customerGroups = Customer::getGroupsStatic((int) Context::getContext()->customer->id);
@@ -250,10 +248,16 @@ class EverBlockClass extends ObjectModel
             $sql->orderBy('eb.position ASC');
             $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
             foreach ($allBlocks as $block) {
-                if (!empty($block['date_start']) && $block['date_start'] !== '0000-00-00 00:00:00' && $block['date_start'] > $now) {
+                if (!empty($block['date_start'])
+                    && $block['date_start'] !== '0000-00-00 00:00:00'
+                    && $block['date_start'] > $now
+                ) {
                     continue;
                 }
-                if (!empty($block['date_end']) && $block['date_end'] !== '0000-00-00 00:00:00' && $block['date_end'] < $now) {
+                if (!empty($block['date_end'])
+                    && $block['date_end'] !== '0000-00-00 00:00:00'
+                    && $block['date_end'] < $now
+                ) {
                     continue;
                 }
                 $allowedGroups = json_decode($block['groups'], true);

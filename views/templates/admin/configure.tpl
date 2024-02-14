@@ -160,6 +160,11 @@
     <a href="https://www.410-gone.fr/e-commerce/prestashop.html" target="_blank">https://www.410-gone.fr/e-commerce/prestashop.html</a>
     </p>
     <br>
+    <h4>{l s='How to add personalized blocks in the head of your site?' mod='everblock'}</h3>
+    <p>{l s='To do this, create a custom hook named for example displayCustomHeadTag' mod='everblock'}</p>
+    <p>{l s='Add the hook in your theme in the head.tpl file' mod='everblock'}</p>
+    <p>{l s='The module will be able to detect this, you will then be able to add custom code from an HTML block' mod='everblock'}</p>
+    <br>
 </div>
 <div class="alert alert-warning">
     <h4>{l s='Troubleshooting' mod='everblock'}</h3>
