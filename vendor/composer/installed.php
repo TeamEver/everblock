@@ -1,4 +1,4 @@
-<?php return 
+<?php return [
     'root' => [
         'name' => 'team-ever/everblock',
         'pretty_version' => '1.0.0+no-version-set',
@@ -28,5 +28,5 @@
             'aliases' => [],
             'dev_requirement' => false,
         ],
-    ],[
+    ],
 ];
