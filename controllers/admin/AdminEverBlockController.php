@@ -1,4 +1,4 @@
-<?php
+ <?php
 /**
  * 2019-2024 Team Ever
  *
@@ -158,10 +158,6 @@ class AdminEverBlockController extends ModuleAdminController
         $this->toolbar_title = $this->l('HTML blocks Configuration');
         if (Configuration::get('EVERGPT_API_KEY')) {
             $this->bulk_actions = [
-                'delete' => [
-                    'text' => $this->l('Delete selected items'),
-                    'confirm' => $this->l('Delete selected items ?'),
-                ],
                 'duplicateall' => [
                     'text' => $this->l('Duplicate selected items'),
                     'confirm' => $this->l('Duplicate selected items ?'),
@@ -170,16 +166,20 @@ class AdminEverBlockController extends ModuleAdminController
                     'text' => $this->l('Generate content using chatGPT'),
                     'confirm' => $this->l('Generate content using chatGPT ?'),
                 ],
-            ];
-        } else {
-            $this->bulk_actions = [
                 'delete' => [
                     'text' => $this->l('Delete selected items'),
                     'confirm' => $this->l('Delete selected items ?'),
                 ],
+            ];
+        } else {
+            $this->bulk_actions = [
                 'duplicateall' => [
                     'text' => $this->l('Duplicate selected items'),
                     'confirm' => $this->l('Duplicate selected items ?'),
+                ],
+                'delete' => [
+                    'text' => $this->l('Delete selected items'),
+                    'confirm' => $this->l('Delete selected items ?'),
                 ],
             ];
         }
@@ -208,14 +208,14 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::isSubmit('status' . $this->table)) {
             $db = Db::getInstance();
-            if ($id_everblock = (int)Tools::getValue($this->identifier)) {
-                $update = $db->execute(
+            if ($idObj = (int) Tools::getValue($this->identifier)) {
+                $updated = $db->execute(
                     'UPDATE `' . _DB_PREFIX_ . 'everblock`
                     SET `active` = (1 - `active`)
-                    WHERE `id_everblock` = ' . (int) $id_everblock.' LIMIT 1'
+                    WHERE `' . $this->identifier . '` = ' . (int) $idObj .' LIMIT 1'
                 );
             }
-            if (isset($update) && $update) {
+            if (isset($updated) && $updated) {
                 $this->redirect_after = self::$currentIndex . '&token=' . $this->token;
             } else {
                 $this->errors[] = $this->l('An error occurred while updating the status.');
@@ -226,7 +226,7 @@ class AdminEverBlockController extends ModuleAdminController
 
         $moduleInstance = Module::getInstanceByName($this->table);
         $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/header.tpl');
-        if ($moduleInstance->checkLatestEverModuleVersion($this->table, $moduleInstance->version)) {
+        if ($moduleInstance->checkLatestEverModuleVersion()) {
             $this->html .= $this->context->smarty->fetch(
                 _PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/upgrade.tpl');
         }
@@ -250,8 +250,8 @@ class AdminEverBlockController extends ModuleAdminController
         if (count($this->errors)) {
             return false;
         }
-        $obj = new EverBlockClass(
-            (int) Tools::getValue('id_everblock')
+        $obj = new $this->className(
+            (int) Tools::getValue($this->identifier)
         );
         $fields_form = [];
         $hooks_list = $this->getHooks(false, true);
@@ -339,7 +339,7 @@ class AdminEverBlockController extends ModuleAdminController
                 'input' => [
                     [
                         'type' => 'hidden',
-                        'name' => 'id_everblock',
+                        'name' => $this->identifier,
                     ],
                     [
                         'type' => 'select',
@@ -752,7 +752,7 @@ class AdminEverBlockController extends ModuleAdminController
         $moduleInstance = Module::getInstanceByName($this->table);
         $render = '';
         $render .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/header.tpl');
-        if ($moduleInstance->checkLatestEverModuleVersion($this->table, $moduleInstance->version)) {
+        if ($moduleInstance->checkLatestEverModuleVersion()) {
             $this->html .= $this->context->smarty->fetch(
                 _PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/upgrade.tpl');
         }
@@ -780,8 +780,8 @@ class AdminEverBlockController extends ModuleAdminController
                 ];
             }
             $formValues[] = [
-                'id_everblock' => (!empty(Tools::getValue('id_everblock')))
-                ? Tools::getValue('id_everblock')
+                $this->identifier => (!empty(Tools::getValue($this->identifier)))
+                ? Tools::getValue($this->identifier)
                 : $obj->id,
                 'id_hook' => (!empty(Tools::getValue('id_hook')))
                 ? Tools::getValue('id_hook')
@@ -871,8 +871,8 @@ class AdminEverBlockController extends ModuleAdminController
                 ];
             }
             $formValues[] = [
-                'id_everblock' => (!empty(Tools::getValue('id_everblock')))
-                ? Tools::getValue('id_everblock')
+                $this->identifier => (!empty(Tools::getValue($this->identifier)))
+                ? Tools::getValue($this->identifier)
                 : '',
                 'id_hook' => (!empty(Tools::getValue('id_hook')))
                 ? Tools::getValue('id_hook')
@@ -963,16 +963,16 @@ class AdminEverBlockController extends ModuleAdminController
             );
         }
         if (Tools::isSubmit('deleteeverblock')) {
-            $everblock_obj = new EverBlockClass(
-                (int) Tools::getValue('id_everblock')
+            $everblock_obj = new $this->className(
+                (int) Tools::getValue($this->identifier)
             );
             if (!$everblock_obj->delete()) {
                 $this->errors[] = Tools::displayError('An error has occurred: Can\'t delete the current object');
             }
         }
         if (Tools::isSubmit('save') || Tools::isSubmit('stay')) {
-            $everblock_obj = new EverBlockClass(
-                (int) Tools::getValue('id_everblock')
+            $everblock_obj = new $this->className(
+                (int) Tools::getValue($this->identifier)
             );
             if (!Tools::getValue('name')
                 || !Validate::isGenericName(Tools::getValue('name'))
@@ -1065,8 +1065,8 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Device is not valid');
             }
-            $everblock_obj = new EverBlockClass(
-                (int) Tools::getValue('id_everblock')
+            $everblock_obj = new $this->className(
+                (int) Tools::getValue($this->identifier)
             );
             $everblock_obj->name = pSQL(Tools::getValue('name'));
             $everblock_obj->id_shop = (int) $this->context->shop->id;
@@ -1128,17 +1128,13 @@ class AdminEverBlockController extends ModuleAdminController
                     $everblock->registerHook(
                         $hook_name
                     );
-                    if (Module::isInstalled('prettyblocks')) {
-                        $m = Module::getInstanceByName('prettyblocks');
-                        $m->registerHook($hook_name);
-                    }
                     if ((bool) Configuration::get('EVERPSCSS_CACHE') === true) {
                         Tools::clearAllCache();
                     }
-                    if ((bool)Tools::isSubmit('stay') === true) {
+                    if ((bool) Tools::isSubmit('stay') === true) {
                         Tools::redirectAdmin(
                             self::$currentIndex
-                            . '&updateeverblock=&id_everblock='
+                            . '&updateeverblock=&' . $this->identifier . '='
                             . (int) $everblock_obj->id
                             . '&token='
                             . $this->token
@@ -1155,8 +1151,8 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function processBulkDelete()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
-            $everBlock = new EverBlockClass((int) $idEverBlock);
+        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+            $everBlock = new $this->className((int) $idObj);
 
             if (!$everBlock->delete()) {
                 $this->errors[] = $this->l('An error has occurred: Can\'t delete the current object');
@@ -1166,8 +1162,8 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function processBulkDisable()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
-            $everBlock = new EverBlockClass((int) $idEverBlock);
+        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+            $everBlock = new $this->className((int) $idObj);
             if ($everBlock->active) {
                 $everBlock->active = false;
             }
@@ -1180,8 +1176,8 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function processBulkEnable()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
-            $everBlock = new EverBlockClass((int) $idEverBlock);
+        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+            $everBlock = new $this->className((int) $idObj);
             if (!$everBlock->active) {
                 $everBlock->active = true;
             }
@@ -1194,15 +1190,15 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function processBulkDuplicate()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
-            $this->duplicate($idEverBlock);
+        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+            $this->duplicate($idObj);
         }
     }
 
     protected function duplicate($id)
     {
-        $everBlock = new EverBlockClass((int) $id);
-        $newBlock = new EverBlockClass();
+        $everBlock = new $this->className((int) $id);
+        $newBlock = new $this->className();
         $newBlock->name = $everBlock->name;
         $newBlock->content = $everBlock->content;
         $newBlock->only_home = $everBlock->only_home;
@@ -1224,7 +1220,7 @@ class AdminEverBlockController extends ModuleAdminController
     protected function processBulkGptGenerate()
     {
         foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
-                $obj = new EverBlockClass(
+                $obj = new $this->className(
                     (int) $idEverBlock
                 );
                 $chatGPT = new EverblockGpt();

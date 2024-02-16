@@ -45,7 +45,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.5.2';
+        $this->version = '5.5.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -264,7 +264,14 @@ class Everblock extends Module
         $this->registerHook('actionOutputHTMLBefore');
         $this->registerHook('displayHeader');
         $this->registerHook('actionAdminControllerSetMedia');
-        $this->registerHook('actionRegisterBlock');
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            $this->registerHook('actionRegisterBlock');
+        } else {
+            $this->unregisterHook('actionRegisterBlock');
+        }
     }
 
     public function getContent()
@@ -273,59 +280,6 @@ class Everblock extends Module
         $this->secureModuleFolder();
         EverblockTools::checkAndFixDatabase();
         $this->checkHooks();
-        $context = Context::getContext();
-        if (Tools::getValue('evergpt')
-            && Tools::getValue('id_object')
-            && Tools::getValue('object_name')
-        ) {
-            $responseData = [];
-            $objectName = Tools::getValue('object_name');
-            $idObject = Tools::getValue('id_object');
-
-            if (!class_exists($objectName)) {
-                die(json_encode(['error' => $this->l('Not a valid class')]));
-            }
-
-            $object = new $objectName($idObject);
-            if (!Validate::isLoadedObject($object)) {
-                die(json_encode(['error' => $this->l('Object not valid or not loaded')]));
-            }
-
-            $chatGPT = new EverblockGpt();
-            $chatGPT->initialize('text');
-            $results = [];
-            foreach (Language::getLanguages(true) as $language) {
-                $prompt = EverblockGpt::getObjectPrompt(
-                    $object,
-                    (int) $idObject,
-                    (int) $language['id_lang'],
-                    (int) $context->shop->id
-                );
-                if ($prompt) {
-                    $requestResult = $chatGPT->createTextRequest($prompt);
-                    $results[$language['id_lang']] = $requestResult;
-                }
-            }
-            // Fake obj
-            if (Tools::getValue('real_object_name')) {
-                $objectName = Tools::getValue('object_name');
-                $object = new $objectName();
-                $chatGPT->saveObjContent(
-                    $object,
-                    (int) $idObject,
-                    (int) $context->shop->id,
-                    $results
-                );
-            } else {
-                $chatGPT->saveObjContent(
-                    $object,
-                    (int) $idObject,
-                    (int) $context->shop->id,
-                    $results
-                );
-            }
-            die(json_encode(['results' => $results]));
-        }
         $this->html = '';
         if (((bool) Tools::isSubmit('submit' . $this->name . 'Module')) == true) {
             $this->postValidation();
@@ -335,9 +289,6 @@ class Everblock extends Module
         }
         if ((bool) Tools::isSubmit('submitEmptyCache') === true) {
             $this->emptyAllCache();
-        }
-        if ((bool) Tools::isSubmit('submitAddHooksToTheme') === true) {
-            EverblockTools::addHooksToTheme();
         }
         if ((bool) Tools::isSubmit('submitBackupBlocks') === true) {
             $backuped = EverblockTools::exportModuleTablesSQL();
@@ -406,15 +357,15 @@ class Everblock extends Module
         $this->html .= $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'
         );
-        if ($this->checkLatestEverModuleVersion($this->name, $this->version)) {
+        if ($this->checkLatestEverModuleVersion()) {
             $this->html .= $this->context->smarty->fetch(
                 $this->local_path . 'views/templates/admin/upgrade.tpl'
             );
         }
+        $this->html .= $this->renderForm();
         $this->html .= $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/configure.tpl'
         );
-        $this->html .= $this->renderForm();
         $this->html .= $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/footer.tpl'
         );
@@ -505,6 +456,26 @@ class Everblock extends Module
                                 'id' => 'active_off',
                                 'value' => false,
                                 'label' => $this->l('No'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Enable front-office script for obfuscation ?'),
+                        'desc' => $this->l('Will load JS file to manage obfuscated links'),
+                        'hint' => $this->l('Leave it to "No" if you already have a script that manages obfuscated links'),
+                        'name' => 'EVERBLOCK_USE_OBF',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled'),
                             ],
                         ],
                     ],
@@ -610,13 +581,6 @@ class Everblock extends Module
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Empty cache'),
                     ],
-                    'addHooksToTheme' => [
-                        'name' => 'submitAddHooksToTheme',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Add Pretty Block widgets into theme'),
-                    ],
                     'migrateUrls' => [
                         'name' => 'submitMigrateUrls',
                         'type' => 'submit',
@@ -670,6 +634,7 @@ class Everblock extends Module
             'EVERBLOCK_USE_GMAP' => Configuration::get('EVERBLOCK_USE_GMAP'),
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
+            'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
             'EVERPSCSS' => $custom_css,
             'EVERPSSASS' => $custom_sass,
             'EVERPSJS' => $custom_js,
@@ -734,31 +699,41 @@ class Everblock extends Module
         // Compress JS code
         $compressedJsCode = $this->compressJsCode($jsCode);
         // Create CSS file if need
-        $handle_css = fopen(
-            $custom_css,
-            'w+'
-        );
-        fclose($handle_css);
-        $handle_css = fopen(
-            $compressedCss,
-            'w+'
-        );
-        fclose($handle_css);
+        if (!empty($custom_css)) {
+            $handle_css = fopen(
+                $custom_css,
+                'w+'
+            );
+            fclose($handle_css);
+        }
+        if (!empty($compressedCss)) {
+            $handle_css = fopen(
+                $compressedCss,
+                'w+'
+            );
+            fclose($handle_css);
+        }
         // Create JS file if need
-        $handle_js = fopen(
-            $custom_js,
-            'w+'
-        );
-        fclose($handle_js);
-        $handle_js = fopen(
-            $compressedJs,
-            'w+'
-        );
-        fclose($handle_js);
+        if (!empty($custom_js)) {
+            $handle_js = fopen(
+                $custom_js,
+                'w+'
+            );
+            fclose($handle_js);
+            $handle_js = fopen(
+                $compressedJs,
+                'w+'
+            );
+            fclose($handle_js);
+        }
         Configuration::updateValue(
             'EVERPSCSS_CACHE',
             Tools::getValue('EVERPSCSS_CACHE')
         );
+        Configuration::updateValue(
+            'EVERBLOCK_USE_OBF',
+            Tools::getValue('EVERBLOCK_USE_OBF')
+        );        
         file_put_contents(
             $custom_css,
             $cssCode
@@ -884,47 +859,19 @@ class Everblock extends Module
 
     public function hookActionOutputHTMLBefore($params)
     {
-        $context = Context::getContext();
         $txt = $params['html'];
         try {
-            $contactLink = $context->link->getPageLink('contact');
-            if ($context->customer->isLogged()) {
-                $myAccountLink = $context->link->getPageLink('my-account');
-            } else {
-                $myAccountLink = $context->link->getPageLink('authentication');
-            }
-            $cartLink = $context->link->getPageLink('cart', null, null, ['action' => 'show']);
-            if (!defined(_PS_PARENT_THEME_URI_) || empty(_PS_PARENT_THEME_URI_)) {
-                $theme_uri = Tools::getShopDomainSsl(true) . _PS_THEME_URI_;
-            } else {
-                $theme_uri = Tools::getShopDomainSsl(true) . _PS_PARENT_THEME_URI_;
-            }
-            $shopName = Configuration::get('PS_SHOP_NAME');
+            $context = Context::getContext();
             $defaultShortcodes = [
-                '[shop_url]' => Tools::getShopDomainSsl(true) . __PS_BASE_URI__,
-                '[shop_name]'=> $shopName,
-                '[start_cart_link]' => '<a href="'
-                . $cartLink
-                . '" target="_blank" rel="nofollow" title="' . $shopName . '">',
-                '[end_cart_link]' => '</a>',
-                '[start_shop_link]' => '<a href="'
-                . Tools::getShopDomainSsl(true) . __PS_BASE_URI__
-                . '">',
-                '[start_contact_link]' => '<a href="' . $contactLink . '" target="_blank" title="' . $shopName . '">',
-                '[end_shop_link]' => '</a>',
-                '[end_contact_link]' => '</a>',
-                '[contact_link]'=> $contactLink,
-                '[my_account_link]' => $myAccountLink,
-                '[llorem]' => EverblockTools::generateLoremIpsum(),
-                '[theme_uri]' => $theme_uri,
-                '[storelocator]' => EverblockTools::generateGoogleMap(),
+                '[llorem]' => EverblockTools::generateLoremIpsum($context),
+                '[storelocator]' => EverblockTools::generateGoogleMap($context),
             ];
             $shortcodes = array_merge($defaultShortcodes, $this->getEntityShortcodes($context->customer->id));
-            $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt));
-            $shortcodes = array_merge($shortcodes, $this->getCategoryShortcodes($txt));
-            $shortcodes = array_merge($shortcodes, $this->getManufacturerShortcodes($txt));
-            $shortcodes = array_merge($shortcodes, $this->getBrandsShortcode($txt));
-            $shortcodes = array_merge($shortcodes, $this->getEverShortcodes($txt));
+            $shortcodes = array_merge($shortcodes, $this->getProductShortcodes($txt, $context));
+            $shortcodes = array_merge($shortcodes, $this->getCategoryShortcodes($txt, $context));
+            $shortcodes = array_merge($shortcodes, $this->getManufacturerShortcodes($txt, $context));
+            $shortcodes = array_merge($shortcodes, $this->getBrandsShortcode($txt, $context));
+            $shortcodes = array_merge($shortcodes, $this->getEverShortcodes($txt, $context));
             foreach ($shortcodes as $key => $value) {
                 $txt = preg_replace(
                     '/(?<!\w|[&\'"])' . preg_quote($key, '/') . '(?!\w|;)/',
@@ -932,7 +879,7 @@ class Everblock extends Module
                     $txt
                 );
             }
-            $txt = EverblockTools::renderShortcodes($txt);
+            $txt = EverblockTools::renderShortcodes($txt, $context);
             $params['html'] = $txt;
             return $params['html'];
         } catch (Exception $e) {
@@ -950,7 +897,7 @@ class Everblock extends Module
         } else {
             $productId = (int) $params['id_product'];
         }
-        $everpstabs = EverblockTabsClass::getByIdProduct(
+        $everpstabs = EverblockTabsClass::getByIdProductInAdmin(
             (int) $productId,
             (int) $this->context->shop->id
         );
@@ -981,7 +928,7 @@ class Everblock extends Module
             return;
         }
         try {
-            $everpstabs = EverblockTabsClass::getByIdProduct(
+            $everpstabs = EverblockTabsClass::getByIdProductInAdmin(
                 (int) $params['object']->id,
                 (int) $context->shop->id
             );
@@ -1022,11 +969,14 @@ class Everblock extends Module
 
     public function hookActionObjectProductDeleteAfter($params)
     {
+        if (php_sapi_name() == 'cli') {
+            return;
+        }
         $controllerTypes = ['admin', 'moduleadmin'];
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
         }
-        $everpstabs = EverblockTabsClass::getByIdProduct(
+        $everpstabs = EverblockTabsClass::getByIdProductInAdmin(
             (int) Tools::getValue('id_product'),
             (int) $this->context->shop->id
         );
@@ -1046,7 +996,7 @@ class Everblock extends Module
         );
         $everpstabs = EverblockTabsClass::getByIdProduct(
             (int) $product->id,
-            (int) $this->context->shop->id
+            (int) $context->shop->id
         );
         if (!Validate::isLoadedObject($everpstabs)) {
             return;
@@ -1122,7 +1072,7 @@ class Everblock extends Module
         if (Validate::isLoadedObject($order)) {
             $everToken = Tools::encrypt($this->name . '/everlogin');
             $link = new Link();
-            $connect_link = $link->getModuleLink(
+            $connectLink = $link->getModuleLink(
                 $this->name,
                 'everlogin',
                 [
@@ -1135,7 +1085,7 @@ class Everblock extends Module
             $bar = $params['actions_bar_buttons_collection'];
             $bar->add(
                 new \PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButton(
-                    'btn-info', ['href' => $connect_link, 'target' => '_blank'], $this->l('Connect to customer account')
+                    'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
                 )
             );
         }
@@ -1150,17 +1100,12 @@ class Everblock extends Module
 
     public function everHook($method, $args)
     {
-        if (!Hook::isDisplayHookName(lcfirst(str_replace('hook', '', $method)))) {
-            return;
-        }
-        $controllerTypes = [
-            'front',
-            'modulefront',
-        ];
         $context = Context::getContext();
-        if (!in_array($context->controller->controller_type, $controllerTypes)) {
-            return;
-        }
+        // Drop cache if needed
+        EverblockClass::cleanBlocksCacheOnDate(
+            $context->language->id,
+            $context->shop->id
+        );
         $id_hook = (int) Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
         $hookName = lcfirst(str_replace('hook', '', $method));
         $idObj = 0;
@@ -1179,16 +1124,20 @@ class Everblock extends Module
         if (Tools::getValue('id_cms')) {
             $idObj = (int) Tools::getValue('id_cms');
         }
-        $cacheId = $this->getCacheId($this->name . '-id_hook-' . $id_hook . '-controller-' . Tools::getValue('controller') . '-hookName' . $hookName . '-idObj-' . $idObj . '-device-' . $context->getDevice());
-        if (!$this->isCached($this->name . '.tpl', $cacheId)) {
-            if ($context->controller->controller_type === 'front'
-                || $context->controller->controller_type === 'modulefront'
-            ) {
-                if ($context->customer->id) {
-                    $id_entity = (int) $context->customer->id;
-                } else {
-                    $id_entity = false;
-                }
+        $cacheId = $this->name
+        . '-id_hook-'
+        . (int) $id_hook
+        . '-controller-'
+        . trim(Tools::getValue('controller'))
+        . '-hookName-'
+        . trim($hookName)
+        . '-idObj-'
+        . (int) $idObj
+        . '-device-'
+        . (int) $context->getDevice();
+        if (!EverblockTools::isCacheStored(str_replace('|', '-', $cacheId))) {
+            if ($context->customer->id) {
+                $id_entity = (int) $context->customer->id;
             } else {
                 $id_entity = false;
             }
@@ -1251,7 +1200,7 @@ class Everblock extends Module
                     }
                 }
                 // Only manufacturer pages
-                if ((bool)$block['only_manufacturer'] === true
+                if ((bool) $block['only_manufacturer'] === true
                     && Tools::getValue('controller') === 'manufacturer'
                 ) {
                     $manufacturers = json_decode($block['manufacturers']);
@@ -1262,7 +1211,7 @@ class Everblock extends Module
                     }
                 }
                 // Only supplier pages
-                if ((bool)$block['only_supplier'] === true
+                if ((bool) $block['only_supplier'] === true
                     && Tools::getValue('controller') === 'supplier'
                 ) {
                     $suppliers = json_decode($block['suppliers']);
@@ -1273,7 +1222,7 @@ class Everblock extends Module
                     }
                 }
                 // Only CMS category pages
-                if ((bool)$block['only_cms_category'] === true
+                if ((bool) $block['only_cms_category'] === true
                     && Tools::getValue('controller') === 'cms'
                     && Tools::getValue('id_cms_category')
                 ) {
@@ -1287,8 +1236,8 @@ class Everblock extends Module
                 // Only products pages with specific category
                 if (Tools::getValue('id_product')
                     && Tools::getValue('controller') === 'product'
-                    && (bool)$block['only_category'] === true
-                    && (bool)$block['only_category_product'] === true
+                    && (bool) $block['only_category'] === true
+                    && (bool) $block['only_category_product'] === true
                 ) {
                     $product = new Product(
                         (int) Tools::getValue('id_product')
@@ -1304,6 +1253,31 @@ class Everblock extends Module
                     }
                 }
                 if ((bool) $continue === true) {
+                    continue;
+                }
+                // Date start and date end management
+                $now = new DateTime();
+                $now = $now->format('Y-m-d H:i:s');
+                if (!empty($block['date_start'])
+                    && $block['date_start'] !== '0000-00-00 00:00:00'
+                    && $block['date_start'] > $now
+                ) {
+                    continue;
+                }
+                if (!empty($block['date_end'])
+                    && $block['date_end'] !== '0000-00-00 00:00:00'
+                    && $block['date_end'] < $now
+                ) {
+                    continue;
+                }
+                $customerGroups = Customer::getGroupsStatic(
+                    (int) $context->customer->id
+                );
+                $allowedGroups = json_decode($block['groups'], true);
+                if (isset($customerGroups)
+                    && !empty($allowedGroups)
+                    && !array_intersect($allowedGroups, $customerGroups)
+                ) {
                     continue;
                 }
                 if ((bool) $block['obfuscate_link'] === true) {
@@ -1326,14 +1300,28 @@ class Everblock extends Module
                     'args' => $args,
                 ]
             );
-            $this->smarty->assign([
-                'prettyblocks_installed' => (bool) Module::isInstalled('prettyblocks') && (bool) Module::isEnabled('prettyblocks'),
+            if ((bool) Module::isInstalled('prettyblocks') === true
+                && (bool) Module::isEnabled('prettyblocks') === true
+                && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+            ) {
+                $context->smarty->assign([
+                    'prettyblocks_installed' => true,
+                ]);
+            }
+            $context->smarty->assign([
                 'everhook' => trim($method),
                 $this->name => $currentBlock,
                 'args' => $args,
             ]);
+            $tpl = $this->display(__FILE__, $this->name . '.tpl');
+            EverblockTools::cacheStore(
+                str_replace('|', '-', $cacheId),
+                $tpl
+            );
         }
-        return $this->display(__FILE__, $this->name . '.tpl', $cacheId);
+        return EverblockTools::cacheRetrieve(
+            str_replace('|', '-', $cacheId)
+        );
     }
 
     public function hookDisplayHeader()
@@ -1350,6 +1338,13 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/js/' . $this->name . '.js',
             ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
         );
+        if ((bool) EverblockTools::getModuleConfiguration('EVERBLOCK_USE_OBF') === true) {
+            $this->context->controller->registerJavascript(
+                'module-' . $this->name . '-obf-js',
+                'modules/' . $this->name . '/views/js/' . $this->name . '-obfuscation.js',
+                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+            );
+        }
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
         $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
@@ -1366,7 +1361,7 @@ class Everblock extends Module
                 ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
             );
         }
-        $externalJs = Configuration::get('EVERPSJS_LINKS');
+        $externalJs = EverblockTools::getModuleConfiguration('EVERPSJS_LINKS');
         $jsLinksArray = [];
         if ($externalJs) {
             $jsLinksArray = explode("\n", $externalJs);
@@ -1378,7 +1373,7 @@ class Everblock extends Module
                 );
             }
         }
-        $externalCss = Configuration::get('EVERPSCSS_LINKS');
+        $externalCss = EverblockTools::getModuleConfiguration('EVERPSCSS_LINKS');
         $cssLinksArray = [];
         if ($externalCss) {
             $cssLinksArray = explode("\n", $externalCss);
@@ -1422,40 +1417,33 @@ class Everblock extends Module
     {
         $entityShortcodes = [];
         if ($id_entity) {
-            if (Context::getContext()->controller->controller_type == 'front'
-                || Context::getContext()->controller->controller_type == 'modulefront'
-            ) {
-                $entity = new Customer((int) $id_entity);
-                $gender = new Gender((int) $entity->id_gender, (int) $entity->id_lang);
-                $entityShortcodes = [
-                    '[entity_lastname]' => $entity->lastname,
-                    '[entity_firstname]' => $entity->firstname,
-                    '[entity_company]' => $entity->company,
-                    '[entity_siret]' => $entity->siret,
-                    '[entity_ape]' => $entity->ape,
-                    '[entity_birthday]' => $entity->birthday,
-                    '[entity_website]' => $entity->website,
-                    '[entity_gender]' => $gender->name,
-                ];
-            }
+            $entity = new Customer((int) $id_entity);
+            $gender = new Gender((int) $entity->id_gender, (int) $entity->id_lang);
+            $entityShortcodes = [
+                '[entity_lastname]' => $entity->lastname,
+                '[entity_firstname]' => $entity->firstname,
+                '[entity_company]' => $entity->company,
+                '[entity_siret]' => $entity->siret,
+                '[entity_ape]' => $entity->ape,
+                '[entity_birthday]' => $entity->birthday,
+                '[entity_website]' => $entity->website,
+                '[entity_gender]' => $gender->name,
+            ];
         }
 
         return $entityShortcodes;
     }
 
-    protected function getBrandsShortcode($message)
+    protected function getBrandsShortcode($message, $context)
     {
         $brandsShortcodes = [];
         preg_match_all('/\[brands\s+nb="(\d+)"\]/i', $message, $matches, PREG_SET_ORDER);
-
         foreach ($matches as $match) {
             $brandCount = (int) $match[1];
-            
             $brands = $this->getBrandsData($brandCount);
-            
             if (!empty($brands)) {
-                $this->context->smarty->assign('brands', $brands);
-                $brandsShortcodes[$match[0]] = $this->context->smarty->fetch($this->getTemplatePath('ever_brand.tpl'));
+                $context->smarty->assign('brands', $brands);
+                $brandsShortcodes[$match[0]] = $context->smarty->fetch($this->getTemplatePath('ever_brand.tpl'));
             }
         }
         return $brandsShortcodes;
@@ -1463,28 +1451,24 @@ class Everblock extends Module
 
     protected function getBrandsData($limit)
     {
-        $cacheId = $this->name . '::getBrandsData_'
+        $cacheId = $this->name . '_getBrandsData_'
         . (int) $this->context->language->id
         . '_'
         . (int) $limit;
-        if (!Cache::isStored($cacheId)) {
+        if (!EverblockTools::isCacheStored($cacheId)) {
             $brands = Manufacturer::getLiteManufacturersList(
                 (int) $this->context->language->id
             );
-
             $limitedBrands = [];
-
             // Limite du nombre de marques en fonction du paramètre $limit
             if (!empty($brands)) {
                 $brands = array_slice($brands, 0, $limit);
-
                 foreach ($brands as $brand) {
                     $name = $brand['name'];
                     $logo = $this->context->link->getManufacturerImageLink(
                         (int) $brand['id']
                     );
                     $url = $brand['link'];
-
                     $limitedBrands[] = [
                         'id' => $brand['id'],
                         'name' => $name,
@@ -1493,32 +1477,32 @@ class Everblock extends Module
                     ];
                 }
             }
-            Cache::store($cacheId, $limitedBrands);
+            EverblockTools::cacheStore($cacheId, $limitedBrands);
             return $limitedBrands;
         }
 
-        return Cache::retrieve($cacheId);
+        return EverblockTools::cacheRetrieve($cacheId);
     }
 
-    protected function getProductShortcodes($message)
+    protected function getProductShortcodes($message, $context)
     {
         $message = strip_tags($message);
         $productShortcodes = [];
         preg_match_all('/\[product\s+(\d+(?:,\s*\d+)*)\]/i', $message, $matches);
         foreach ($matches[1] as $match) {
             $productIdsArray = array_map('intval', explode(',', $match));
-            $everPresentProducts = $this->everPresentProducts($productIdsArray);
+            $everPresentProducts = $this->everPresentProducts($productIdsArray, $context);
             if (!empty($everPresentProducts)) {
-                $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $context->smarty->assign('everPresentProducts', $everPresentProducts);
                 $shortcode = '[product ' . $match . ']';
-                $productShortcodes[$shortcode] = $this->context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
+                $productShortcodes[$shortcode] = $context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
             }
         }
 
         return $productShortcodes;
     }
 
-    protected function getCategoryShortcodes($message)
+    protected function getCategoryShortcodes($message, $context)
     {
         $categoryShortcodes = [];
         preg_match_all('/\[category\s+id="(\d+)"\s+nb="(\d+)"\]/i', $message, $matches, PREG_SET_ORDER);
@@ -1532,9 +1516,9 @@ class Everblock extends Module
                 foreach ($categoryProducts as $categoryProduct) {
                     $productIds[] = $categoryProduct['id_product'];
                 }
-                $everPresentProducts = $this->everPresentProducts($productIds);
-                $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
-                $categoryShortcodes[$match[0]] = $this->context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
+                $everPresentProducts = $this->everPresentProducts($productIds, $context);
+                $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $categoryShortcodes[$match[0]] = $context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
             }
         }
         return $categoryShortcodes;
@@ -1542,11 +1526,11 @@ class Everblock extends Module
 
     protected function getProductsByCategoryId($categoryId, $limit)
     {
-        $cacheId = $this->name . '::getProductsByCategoryId_'
+        $cacheId = $this->name . '_getProductsByCategoryId_'
         . (int) $categoryId
         . '_'
         . (int) $limit;
-        if (!Cache::isStored($cacheId)) {
+        if (!EverblockTools::isCacheStored($cacheId)) {
             $category = new Category($categoryId);
             $return = [];
             if (Validate::isLoadedObject($category)) {
@@ -1554,14 +1538,14 @@ class Everblock extends Module
                 $return = $products;
             }
 
-            Cache::store($cacheId, $return);
+            EverblockTools::cacheStore($cacheId, $return);
             return $return;
         }
 
-        return Cache::retrieve($cacheId);
+        return EverblockTools::cacheRetrieve($cacheId);
     }
 
-    protected function getManufacturerShortcodes($message)
+    protected function getManufacturerShortcodes($message, $context)
     {
         $manufacturerShortcodes = [];
         preg_match_all('/\[manufacturer\s+id="(\d+)"\s+nb="(\d+)"\]/i', $message, $matches, PREG_SET_ORDER);
@@ -1574,9 +1558,9 @@ class Everblock extends Module
                 foreach ($manufacturerProducts as $manufacturerProduct) {
                     $productIds[] = $manufacturerProduct['id_product'];
                 }
-                $everPresentProducts = $this->everPresentProducts($productIds);
-                $this->context->smarty->assign('everPresentProducts', $everPresentProducts);
-                $manufacturerShortcodes[$match[0]] = $this->context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
+                $everPresentProducts = $this->everPresentProducts($productIds, $context);
+                $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $manufacturerShortcodes[$match[0]] = $context->smarty->fetch($this->getTemplatePath('ever_presented_products.tpl'));
             }
         }
         return $manufacturerShortcodes;
@@ -1584,11 +1568,11 @@ class Everblock extends Module
 
     protected function getProductsByManufacturerId($manufacturerId, $limit)
     {
-        $cacheId = $this->name . '::getProductsByManufacturerId_'
+        $cacheId = $this->name . '_getProductsByManufacturerId_'
         . (int) $manufacturerId
         . '_'
         . (int) $limit;
-        if (!Cache::isStored($cacheId)) {
+        if (!EverblockTools::isCacheStored($cacheId)) {
             $manufacturer = new Manufacturer($manufacturerId);
             $return = [];
             if (Validate::isLoadedObject($manufacturer)) {
@@ -1602,19 +1586,17 @@ class Everblock extends Module
                 );
                 $return = $products;
             }
-
-            Cache::store($cacheId, $return);
+            EverblockTools::cacheStore($cacheId, $return);
             return $return;
         }
-
-        return Cache::retrieve($cacheId);
+        return EverblockTools::cacheRetrieve($cacheId);
     }
 
-    protected function getEverShortcodes($message)
+    protected function getEverShortcodes($message, $context)
     {
         $customShortcodes = EverblockShortcode::getAllShortcodes(
-            Context::getContext()->shop->id,
-            Context::getContext()->language->id
+            $context->shop->id,
+            $context->language->id
         );
         $returnedShortcodes = [];
         foreach ($customShortcodes as $sc) {
@@ -1623,7 +1605,7 @@ class Everblock extends Module
         return $returnedShortcodes;
     }
 
-    protected function everPresentProducts($result)
+    protected function everPresentProducts($resultt, $context)
     {
         $products = [];
         if (!empty($result)) {
@@ -1632,12 +1614,12 @@ class Everblock extends Module
             $presentationSettings = $presenterFactory->getPresentationSettings();
             $presenter = new ProductListingPresenter(
                 new ImageRetriever(
-                    Context::getContext()->link
+                    $context->link
                 ),
-                Context::getContext()->link,
+                $context->link,
                 new PriceFormatter(),
                 new ProductColorsRetriever(),
-                Context::getContext()->getTranslator()
+                $context->getTranslator()
             );
             $presentationSettings->showPrices = true;
             foreach ($result as $productId) {
@@ -1652,15 +1634,15 @@ class Everblock extends Module
                 }
                 $rawProduct = [
                     'id_product' => $productId,
-                    'id_lang' => Context::getContext()->language->id,
-                    'id_shop' => Context::getContext()->shop->id,
+                    'id_lang' => $context->language->id,
+                    'id_shop' => $context->shop->id,
                 ];
                 $pproduct = $assembler->assembleProduct($rawProduct);
                 if (Product::checkAccessStatic((int) $productId, false)) {
                     $products[] = $presenter->present(
                         $presentationSettings,
                         $pproduct,
-                        Context::getContext()->language
+                        $context->language
                     );
                 }
             }
@@ -1670,11 +1652,11 @@ class Everblock extends Module
 
     public function hookActionRegisterBlock($params)
     {
-        $cacheId = $this->name . '::hookActionRegisterBlock_'
+        $cacheId = $this->name . '_hookActionRegisterBlock_'
         . (int) $this->context->language->id
         . '_'
         . (int) $this->context->shop->id;
-        if (!Cache::isStored($cacheId)) {
+        if (!EverblockTools::isCacheStored($cacheId)) {
             $defaultTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_' . $this->name . '.tpl';
             $smartyTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_smarty.tpl';
             $modalTemplate = 'module:' . $this->name . '/views/templates/hook/prettyblocks/prettyblock_modal.tpl';
@@ -2423,16 +2405,16 @@ class Everblock extends Module
                     ],
                 ],
             ];
-            Cache::store($cacheId, $blocks);
+            EverblockTools::cacheStore($cacheId, $blocks);
             return $blocks;
         }
 
-        return Cache::retrieve($cacheId);
+        return EverblockTools::cacheRetrieve($cacheId);
     }
 
-    public function checkLatestEverModuleVersion($module, $version)
+    public function checkLatestEverModuleVersion()
     {
-        $upgrade_link = 'https://upgrade.team-ever.com/upgrade.php?module=' . $module . '&version=' . $version;
+        $upgrade_link = 'https://upgrade.team-ever.com/upgrade.php?module=' . $this->name . '&version=' . $this->version;
         try {
             $handle = curl_init($upgrade_link);
             curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
@@ -2446,7 +2428,7 @@ class Everblock extends Module
             }
             curl_close($handle);
             $module_version = $response;
-            if ($module_version && $module_version > $version) {
+            if ($module_version && $module_version > $this->version) {
                 return true;
             }
             return false;

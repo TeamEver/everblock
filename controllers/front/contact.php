@@ -25,7 +25,6 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
 {
     public function initContent()
     {
-        $this->isSeven = Tools::version_compare(_PS_VERSION_, '1.7', '>=') ? true : false;
         $this->ajax = true;
         return $this->formProcess();
     }

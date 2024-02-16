@@ -145,7 +145,7 @@ class AdminEverBlockHookController extends ModuleAdminController
 
         $moduleInstance = Module::getInstanceByName('everblock');
         $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/header.tpl');
-        if ($moduleInstance->checkLatestEverModuleVersion('everblock', $moduleInstance->version)) {
+        if ($moduleInstance->checkLatestEverModuleVersion()) {
             $this->html .= $this->context->smarty->fetch(
                 _PS_MODULE_DIR_ . '/everblock/views/templates/admin/upgrade.tpl');
         }
@@ -280,7 +280,7 @@ class AdminEverBlockHookController extends ModuleAdminController
         $moduleInstance = Module::getInstanceByName('everblock');
         $render = '';
         $render .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/header.tpl');
-        if ($moduleInstance->checkLatestEverModuleVersion('everblock', $moduleInstance->version)) {
+        if ($moduleInstance->checkLatestEverModuleVersion()) {
             $this->html .= $this->context->smarty->fetch(
                 _PS_MODULE_DIR_ . '/everblock/views/templates/admin/upgrade.tpl');
         }

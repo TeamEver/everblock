@@ -206,37 +206,53 @@ class EverBlockClass extends ObjectModel
 
     public static function getAllBlocks($idLang, $idShop)
     {
-        $cacheId = 'EverBlockClass::getAllBlocks_'
+        $sql = new DbQuery();
+        $sql->select('*');
+        $sql->from('everblock', 'eb');
+        $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
+        $sql->where('ebl.id_lang = ' . (int) $idLang);
+        $sql->where('eb.id_shop = ' . (int) $idShop);
+        $sql->orderBy('eb.position ASC');
+        $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        return $allBlocks;
+    }
+
+    public static function cleanBlocksCacheOnDate($idLang, $idShop)
+    {
+        $cacheId = 'EverBlockClass_getAllBlocks_'
         . (int) $idLang
         . '_'
         . (int) $idShop;
-        if (!Cache::isStored($cacheId)) {
-            $sql = new DbQuery();
-            $sql->select('*');
-            $sql->from('everblock', 'eb');
-            $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
-            $sql->where('ebl.id_lang = ' . (int) $idLang);
-            $sql->where('eb.id_shop = ' . (int) $idShop);
-            $sql->orderBy('eb.position ASC');
-            $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            Cache::store($cacheId, $allBlocks);
-            return $allBlocks;
+        $blocks = static::getAllBlocks($idLang, $idShop);
+        $cacheNeedFlush = false;
+        $cacheIds = [];
+        foreach ($blocks as $block) {
+            $now = new DateTime();
+            $now = $now->format('Y-m-d H:i:s');
+            if (!empty($block['date_start'])
+                && $block['date_start'] !== '0000-00-00 00:00:00'
+                && $block['date_start'] > $now
+            ) {
+                $cacheNeedFlush = true;
+            }
+            if (!empty($block['date_end'])
+                && $block['date_end'] !== '0000-00-00 00:00:00'
+                && $block['date_end'] < $now
+            ) {
+                $cacheNeedFlush = true;
+            }
+            if ((bool) $cacheNeedFlush === true) {
+                $cacheStartId = 'everblock' . '-id_hook-' . (int) $block['id_hook'];
+                EverblockTools::cacheDropByPattern($cacheStartId);
+            }
         }
-
-        return Cache::retrieve($cacheId);
     }
 
     public static function getBlocks(int $idHook, int $idLang, int $idShop): array
     {
-        $cacheId = sprintf('EverBlockClass::getBlocks_%d_%d_%d', $idHook, $idLang, $idShop);
-        if (!Cache::isStored($cacheId)) {
+        $cacheId = sprintf('EverBlockClass_getBlocks_%d_%d_%d', $idHook, $idLang, $idShop);
+        if (!EverblockTools::isCacheStored($cacheId)) {
             $return = [];
-            $now = new DateTime();
-            $now = $now->format('Y-m-d H:i:s');
-            $controllerTypes = ['admin', 'moduleadmin'];
-            if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
-                $customerGroups = Customer::getGroupsStatic((int) Context::getContext()->customer->id);
-            }
             $sql = new DbQuery;
             $sql->select('*');
             $sql->from('everblock', 'eb');
@@ -248,48 +264,22 @@ class EverBlockClass extends ObjectModel
             $sql->orderBy('eb.position ASC');
             $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
             foreach ($allBlocks as $block) {
-                if (!empty($block['date_start'])
-                    && $block['date_start'] !== '0000-00-00 00:00:00'
-                    && $block['date_start'] > $now
-                ) {
-                    continue;
-                }
-                if (!empty($block['date_end'])
-                    && $block['date_end'] !== '0000-00-00 00:00:00'
-                    && $block['date_end'] < $now
-                ) {
-                    continue;
-                }
-                $allowedGroups = json_decode($block['groups'], true);
-                if (isset($customerGroups)
-                    && !empty($allowedGroups)
-                    && !array_intersect($allowedGroups, $customerGroups)
-                ) {
-                    continue;
-                }
                 $block['bootstrap_class'] = self::getBootstrapColClass(
                     $block['bootstrap_class']
                 );
-                Hook::exec('actionGetEverBlockBefore', [
-                    'id_hook' => $idHook,
-                    'id_lang' => $idLang,
-                    'id_shop' => $idShop,
-                    'block' => &$block,
-                ]);
                 $return[] = $block;
             }
-            Cache::store($cacheId, $return);
+            EverblockTools::cacheStore($cacheId, $return);
             return $return;
         }
-        return Cache::retrieve($cacheId);
+        return EverblockTools::cacheRetrieve($cacheId);
     }
 
     public static function getBootstrapColClass($colNumber)
     {
-        $cacheId = 'EverBlockClass::getBootstrapColClass_'
+        $cacheId = 'EverBlockClass_getBootstrapColClass_'
         . (int) $colNumber;
-
-        if (!Cache::isStored($cacheId)) {
+        if (!EverblockTools::isCacheStored($cacheId)) {
             $class = 'col-';
             switch ($colNumber) {
                 case 0:
@@ -336,9 +326,9 @@ class EverBlockClass extends ObjectModel
                     $class .= '12';
                     break;
             }
-            Cache::store($cacheId, $class);
+            EverblockTools::cacheStore($cacheId, $class);
             return $class;
         }
-        return Cache::retrieve($cacheId);
+        return EverblockTools::cacheRetrieve($cacheId);
     }
 }

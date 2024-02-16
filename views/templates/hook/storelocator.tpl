@@ -15,25 +15,15 @@
  *  @copyright 2019-2024 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-{if isset($prettyblocks_installed) && $prettyblocks_installed}
-{widget name="prettyblocks" zone_name="everStoreLocatorBefore"}
-{/if}
 <div id="everblock-storelocator" class="everblock-storelocator visible row">
     map
 </div>
 <div id="store-search-block" class="mt-3">
-    {if isset($prettyblocks_installed) && $prettyblocks_installed}
-    {widget name="prettyblocks" zone_name="everStoreLocatorBeforeSearch"}
-    {/if}
     <div class="input-group">
         <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
     </div>
-    {if isset($prettyblocks_installed) && $prettyblocks_installed}
-    {widget name="prettyblocks" zone_name="everStoreLocatorAfterSearch"}
-    {/if}
 </div>
 <div id="everblock-storelist" class="everblock-storelocator visible row">
-    {widget name="prettyblocks" zone_name="everStoreLocatorBeforeStoreList"}
     {foreach from=$everblock_stores item=item name=store_loop}
         <div class="col-12 col-md-4 mt-3">
             <div class="card card-block store-block store-ever-id-{$item.city|escape:'htmlall':'UTF-8'}">
@@ -41,10 +31,6 @@
                 <p class="store-address">{$item.address1|escape:'htmlall':'UTF-8'}</p>
                 <p class="store-city">{$item.postcode|escape:'htmlall':'UTF-8'} {$item.city|escape:'htmlall':'UTF-8'}</p>
                 <p class="store-phone">{$item.phone|escape:'htmlall':'UTF-8'}</p>
-                <!-- Ajoutez d'autres informations ici selon vos besoins -->
-                {if isset($prettyblocks_installed) && $prettyblocks_installed}
-                {widget name="prettyblocks" zone_name="everStoreLocatorStoreId{$item.id}"}
-                {/if}
                 <img src="{$urls.img_store_url|escape:'htmlall':'UTF-8'}{$item.id|escape:'htmlall':'UTF-8'}.jpg" class="everblock-store-{$item.id|escape:'htmlall':'UTF-8'} img img-fluid w-100 lazyload" loading="lazy">
                 <a href="{url entity='store' id=$item.id}" class="btn btn-primary text-center text-white">
                     {l s='See more' mod='everblock'}
@@ -55,10 +41,4 @@
             <div class="clearfix"></div>
         {/if}
     {/foreach}
-    {if isset($prettyblocks_installed) && $prettyblocks_installed}
-    {widget name="prettyblocks" zone_name="everStoreLocatorAfterStoreList"}
-    {/if}
 </div>
-{if isset($prettyblocks_installed) && $prettyblocks_installed}
-{widget name="prettyblocks" zone_name="everStoreLocatorAfter"}
-{/if}

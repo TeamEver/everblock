@@ -68,9 +68,6 @@
         <li><p>{literal}$customer.id{/literal} => {l s='customer identifier (its database ID)' mod='everblock'}</p></li>
         <li><p>{literal}$customer.id_default_group{/literal} => {l s='identifier of the default customer group of this customer' mod='everblock'}</p></li>
         <li><p>{literal}$customer.is_logged{/literal} => {l s='is the customer logged in?' mod='everblock'}</p></li>
-        <li><p>{literal}$page.meta.title{/literal} => {l s='title tag of your page (65 characters maximum!)' mod='everblock'}</p></li>
-        <li><p>{literal}$page.meta.description{/literal} => {l s='meta description tag of your page (no more than 165 characters, don\'t go below 90!)' mod='everblock'}</p></li>
-        <li><p>{literal}$page.page_name{/literal} => {l s='name of the page you are on (like index, product, category…)' mod='everblock'}</p></li>
         <li><p>{literal}$urls.base_url{/literal} => {l s='this is the URL of the home page of your Prestashop' mod='everblock'}</p></li>
         <li><p>{literal}$urls.current_url{/literal} => {l s='the page you are on!' mod='everblock'}</p></li>
         <li><p>{literal}$urls.shop_domain_url{/literal} => {l s='the domain name of the store' mod='everblock'}</p></li>
@@ -97,16 +94,7 @@
         <li><p>[entity_lastname] {l s='for customer lastname' mod='everblock'}</p></li>
         <li><p>[entity_firstname] {l s='for customer firstname' mod='everblock'}</p></li>
         <li><p>[entity_gender] {l s='for customer gender' mod='everblock'}</p></li>
-        <li><p>[start_cart_link] {l s='for starting link to cart page' mod='everblock'}</p></li>
-        <li><p>[end_cart_link] {l s='for ending link to cart page' mod='everblock'}</p></li>
-        <li><p>[start_shop_link] {l s='for starting link to shop' mod='everblock'}</p></li>
-        <li><p>[end_shop_link] {l s='for ending link to shop' mod='everblock'}</p></li>
-        <li><p>[start_contact_link] {l s='for starting link to native contact page' mod='everblock'}</p></li>
-        <li><p>[end_contact_link] {l s='for ending link to native contact page' mod='everblock'}</p></li>
         <li><p>[llorem] {l s='will generate fake text' mod='everblock'}</p></li>
-        <li><p>[shop_url] {l s='for shop url' mod='everblock'}</p></li>
-        <li><p>[shop_name] {l s='for shop name' mod='everblock'}</p></li>
-        <li><p>[theme_uri] {l s='for current theme url' mod='everblock'}</p></li>
         <li><p>[category id="8" nb="8"] {l s='to show 8 products from category ID 8' mod='everblock'}</p></li>
         <li><p>[manufacturer id="2" nb="8"] {l s='to show 8 products from manufacturer ID 2' mod='everblock'}</p></li>
         <li><p>[brands nb="8"] {l s='to show 8 brands name with their associated logos' mod='everblock'}</p></li>

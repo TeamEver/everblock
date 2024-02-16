@@ -187,7 +187,10 @@ class Number extends Node implements \ArrayAccess
                 return $this->dimension;
 
             case 2:
-                return array('numerator_units' => $this->numeratorUnits, 'denominator_units' => $this->denominatorUnits);
+                return [
+                    'numerator_units' => $this->numeratorUnits,
+                    'denominator_units' => $this->denominatorUnits,
+                ];
         }
     }
 
@@ -643,7 +646,7 @@ class Number extends Node implements \ArrayAccess
      */
     private function multiplyUnits($value, array $numerators1, array $denominators1, array $numerators2, array $denominators2)
     {
-        $newNumerators = array();
+        $newNumerators = [];
 
         foreach ($numerators1 as $numerator) {
             foreach ($denominators2 as $key => $denominator) {

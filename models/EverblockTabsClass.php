@@ -59,6 +59,30 @@ class EverblockTabsClass extends ObjectModel
     ];
 
     /**
+     * get tab object per product & shop, admin only (no cache)
+     * @param int productId
+     * @param int shopId
+     * @return $obj
+    */
+    public static function getByIdProductInAdmin($productId, $shopId)
+    {
+        $sql = new DbQuery();
+        $sql->select('id_everblock_tabs');
+        $sql->from('everblock_tabs');
+        $sql->where('id_product = ' . (int) $productId);
+        $sql->where('id_shop = ' . (int) $shopId);
+        $tabId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+        if ($tabId) {
+            $obj = new self(
+                (int) $tabId
+            );
+        } else {
+            $obj = new self();
+        }
+        return $obj;
+    }
+
+    /**
      * get tab object per product & shop
      * @param int productId
      * @param int shopId
@@ -66,11 +90,11 @@ class EverblockTabsClass extends ObjectModel
     */
     public static function getByIdProduct($productId, $shopId)
     {
-        $cacheId = 'EverblockTabsClass::getByIdProduct_'
+        $cacheId = 'EverblockTabsClass_getByIdProduct_'
         . (int) $productId
         . '_'
         . (int) $shopId;
-        if (!Cache::isStored($cacheId)) {
+        if (!EverblockTools::isCacheStored($cacheId)) {
             $sql = new DbQuery();
             $sql->select('id_everblock_tabs');
             $sql->from('everblock_tabs');
@@ -84,9 +108,9 @@ class EverblockTabsClass extends ObjectModel
             } else {
                 $obj = new self();
             }
-            Cache::store($cacheId, $obj);
+            EverblockTools::cacheStore($cacheId, $obj);
             return $obj;
         }
-        return Cache::retrieve($cacheId);
+        return EverblockTools::cacheRetrieve($cacheId);
     }
 }

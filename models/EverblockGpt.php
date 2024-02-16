@@ -26,8 +26,8 @@ class EverblockGpt extends ObjectModel
     private $textURL = 'https://api.openai.com/v1/completions';
     private $imageURL =  'https://api.openai.com/v1/images/generations';
 
-    public $curl;       // create cURL object
-    public $data = [];  // data request array
+    public $curl;
+    public $data = [];
 
     public function __construct()
     {
@@ -46,10 +46,10 @@ class EverblockGpt extends ObjectModel
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->curl, CURLOPT_POST, true);
 
-        $headers = array(
+        $headers = [
             'Content-Type: application/json',
-            'Authorization: Bearer ' . $this->API_KEY
-        );
+            'Authorization: Bearer ' . $this->API_KEY,
+        ];
 
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, $headers);
     }
