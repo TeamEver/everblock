@@ -61,12 +61,12 @@ class EverblockShortcode extends ObjectModel
         ],
     ];
 
-    public static function getAllShortcodes($id_shop, $id_lang)
+    public static function getAllShortcodes(int $idShop, int $langId): array
     {
         $cache_id = 'EverblockShortcode_getAllShortcodes_'
-        . (int) $id_shop
+        . (int) $idShop
         . '_'
-        . (int) $id_shop;
+        . (int) $langId;
         if (!EverblockTools::isCacheStored($cache_id)) {
             $sql = new DbQuery();
             $sql->select('*');
@@ -76,8 +76,8 @@ class EverblockShortcode extends ObjectModel
             foreach ($shortcodes as $short_array) {
                 $shortcode = new self(
                     (int) $short_array['id_everblock_shortcode'],
-                    (int) $id_lang,
-                    (int) $id_shop
+                    (int) $langId,
+                    (int) $idShop
                 );
                 $return[] = $shortcode;
             }
@@ -87,7 +87,7 @@ class EverblockShortcode extends ObjectModel
         return EverblockTools::cacheRetrieve($cache_id);
     }
 
-    public static function getAllShortcodeIds($idShop)
+    public static function getAllShortcodeIds(int $idShop): array
     {
         $cache_id = 'EverblockShortcode_getAllShortcodeIds_'
         . (int) $idShop;
@@ -103,12 +103,12 @@ class EverblockShortcode extends ObjectModel
         return EverblockTools::cacheRetrieve($cache_id);
     }
 
-    public static function getSeoShortcodeById($idShortcode, $id_shop, $id_lang)
+    public static function getSeoShortcodeById(int $idShortcode, int $shopId, int $langId)
     {
         $cache_id = 'EverblockShortcode_getSeoShortcodeById_'
         . (int) $idShortcode
         . '_'
-        . (int) $id_shop
+        . (int) $shopId
         . '_'
         . (int) $id_lang;
         if (!EverblockTools::isCacheStored($cache_id)) {
@@ -119,15 +119,15 @@ class EverblockShortcode extends ObjectModel
                 'id_everblock_shortcode = ' . (int) $idShortcode
             );
             $sql->where(
-                'id_lang = ' . (int) $id_lang
+                'id_lang = ' . (int) $langId
             );
             $sql->where(
-                'id_shop = ' . (int) $id_shop
+                'id_shop = ' . (int) $shopId
             );
             $return = new self(
                 (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql),
-                (int) $id_lang,
-                (int) $id_shop
+                (int) $langId,
+                (int) $shopId
             );
             EverblockTools::cacheStore($cache_id, $return);
             return $return;
@@ -135,14 +135,14 @@ class EverblockShortcode extends ObjectModel
         return EverblockTools::cacheRetrieve($cache_id);
     }
 
-    public static function getEverShortcode($shortcode, $id_shop, $id_lang)
+    public static function getEverShortcode(string $shortcode, int $shopId, int $langId): string
     {
         $cache_id = 'EverblockShortcode_getEverShortcode_'
         . trim($shortcode)
         . '_'
-        . (int) $id_shop
+        . (int) $shopId
         . '_'
-        . (int) $id_lang;
+        . (int) $langId;
         if (!EverblockTools::isCacheStored($cache_id)) {
             $sql = new DbQuery();
             $sql->select('*');
@@ -151,15 +151,15 @@ class EverblockShortcode extends ObjectModel
                 'shortcode = ' . pSQL($shortcode)
             );
             $sql->where(
-                'id_lang = ' . (int) $id_lang
+                'id_lang = ' . (int) $langId
             );
             $sql->where(
-                'id_shop = ' . (int) $id_shop
+                'id_shop = ' . (int) $shopId
             );
             $shortcode = new self(
                 (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql),
-                (int) $id_lang,
-                (int) $id_shop
+                (int) $langId,
+                (int) $shopId
             );
             $return = $shortcode->content;
             EverblockTools::cacheStore($cache_id, $return);

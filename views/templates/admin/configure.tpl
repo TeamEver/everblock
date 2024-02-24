@@ -44,6 +44,13 @@
     <p>{l s='This module has always been free and will always be.' mod='everblock'}</p>
     <p>{l s='You can support our free modules developpment by making a donation. This will help us make more free modules and help e-merchants. Thanks for your support !' mod='everblock'}</p>
     <br>
+    <h4>{l s='How to create FAQs ?' mod='everblock'}</h3>
+    <p>{l s='The "FAQ" tab of the module allows you to create as many FAQs as desired' mod='everblock'}</p>
+    <p>{l s='Each FAQ is grouped by a "tag". All FAQs will thus be linked by this “tag” invisible to Internet users.' mod='everblock'}</p>
+    <p>{l s='So be sure to enter exactly the same "tag" to properly group your FAQs, tags are unlimited and must be a simple word, without spaces.' mod='everblock'}</p>
+    <p>{l s='To display an FAQ on your store, simply enter this code:' mod='everblock'}[everfaq tag="mytag"]</p>
+    <p>{l s='This will display all the FAQs associated with that tag, ordering them according to the position you assigned them.' mod='everblock'}</p>
+    <br>
     <h4>{l s='Smarty vars list' mod='everblock'}</h3>
     <ul>
         <li><p>{literal}$currency.name{/literal} => {l s='the name of the currency (euro, dollar, pound sterling, etc.)' mod='everblock'}</p></li>

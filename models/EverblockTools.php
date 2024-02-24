@@ -27,23 +27,257 @@ use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 
 class EverblockTools extends ObjectModel
 {
-    public static function renderShortcodes($txt, $context)
+    public static function renderShortcodes(string $txt, Context $context): string
     {
-        $txt = static::replaceHook($txt);
-        $txt = static::getEverBlockShortcode($txt, $context);
-        $txt = static::getSubcategoriesShortcode($txt, $context);
-        $txt = static::getStoreShortcode($txt, $context);
-        $txt = static::getVideoShortcode($txt);
-        $txt = static::getQcdAcfCode($txt);
-        $txt = static::getBestSalesShortcode($txt, $context);
-        $txt = static::getLastProductsShortcode($txt, $context);
-        $txt = static::getCartShortcode($txt, $context);
-        $txt = static::getNativeContactShortcode($txt, $context);
-        $txt = static::getFormShortcode($txt);
+        $txt = static::getCustomerShortcodes($txt, $context);
+        if (strpos($txt, '[everfaq') !== false) {
+            $txt = static::getFaqShortcodes($txt, $context);
+        }
+        if (strpos($txt, '[product') !== false) {
+            $txt = static::getProductShortcodes($txt, $context);
+        }
+        if (strpos($txt, '[category') !== false) {
+            $txt = static::getCategoryShortcodes($txt, $context);
+        }
+        if (strpos($txt, '[manufacturer') !== false) {
+            $txt = static::getManufacturerShortcodes($txt, $context);
+        }
+        if (strpos($txt, '[brands') !== false) {
+            $txt = static::getBrandsShortcode($txt, $context);
+        }
+        if (strpos($txt, '[storelocator]') !== false) {
+            $txt = static::generateGoogleMap($txt, $context);
+        }
+        if (strpos($txt, '{hook h=') !== false) {
+            $txt = static::replaceHook($txt);
+        }
+        if (strpos($txt, '[llorem]') !== false) {
+            $txt = static::generateLoremIpsum($txt, $context);
+        }
+        if (strpos($txt, '[everblock') !== false) {
+            $txt = static::getEverBlockShortcode($txt, $context);
+        }
+        if (strpos($txt, '[subcategories') !== false) {
+            $txt = static::getSubcategoriesShortcode($txt, $context);
+        }
+        if (strpos($txt, '[everstore') !== false) {
+            $txt = static::getStoreShortcode($txt, $context);
+        }
+        if (strpos($txt, '[video') !== false) {
+            $txt = static::getVideoShortcode($txt);
+        }
+        if (strpos($txt, '[qcdacf') !== false) {
+            $txt = static::getQcdAcfCode($txt);
+        }
+        if (strpos($txt, '[best-sales') !== false) {
+            $txt = static::getBestSalesShortcode($txt, $context);
+        }
+        if (strpos($txt, '[last-products') !== false) {
+            $txt = static::getLastProductsShortcode($txt, $context);
+        }
+        if (strpos($txt, '[evercart]') !== false) {
+            $txt = static::getCartShortcode($txt, $context);
+        }
+        if (strpos($txt, '[nativecontact]') !== false) {
+            $txt = static::getNativeContactShortcode($txt, $context);
+        }
+        if (strpos($txt, '[evercontactform_open]') !== false) {
+            $txt = static::getFormShortcode($txt);
+        }
+        if (strpos($txt, '[random_product') !== false) {
+            $txt = static::getRandomProductsShortcode($txt, $context);
+        }
+        if (strpos($txt, '[widget') !== false) {
+            $txt = $txt = static::getWidgetShortcode($txt);
+        }
         $txt = static::renderSmartyVars($txt, $context);
-        $txt = static::getRandomProductsShortcode($txt, $context);
-        $txt = static::getWidgetShortcode($txt);
         return $txt;
+    }
+
+    public static function getFaqShortcodes(string $txt, Context $context): string
+    {
+        $module = Module::getInstanceByName('everblock');
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/faq.tpl';
+
+        $pattern = '/\[everfaq tag="([^"]+)"\]/';
+
+        $txt = preg_replace_callback($pattern, function ($matches) use ($context, $templatePath) {
+            $tagName = $matches[1];
+
+            $faqs = EverblockFaq::getFaqByTagName($context->shop->id, $context->language->id, $tagName);
+
+            $context->smarty->assign('everFaqs', $faqs);
+
+            return $context->smarty->fetch($templatePath);
+
+        }, $txt);
+
+        return $txt;
+    }
+
+    public static function getProductShortcodes(string $txt, Context $context): string
+    {
+        $module = Module::getInstanceByName('everblock');
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+
+        preg_match_all('/\[product\s+(\d+(?:,\s*\d+)*)\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $productIdsArray = array_map('intval', explode(',', $match[1]));
+            $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
+            
+            if (!empty($everPresentProducts)) {
+                $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $renderedContent = $context->smarty->fetch($templatePath);
+                
+                $txt = str_replace($match[0], $renderedContent, $txt);
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getCategoryShortcodes(string $txt, Context $context): string
+    {
+        $module = Module::getInstanceByName('everblock');
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+        preg_match_all('/\[category\s+id="(\d+)"\s+nb="(\d+)"\]/i', $txt, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $categoryId = (int) $match[1];
+            $productCount = (int) $match[2];
+            $categoryProducts = static::getProductsByCategoryId($categoryId, $productCount, $context);
+            if (!empty($categoryProducts)) {
+                $productIds = [];
+                foreach ($categoryProducts as $categoryProduct) {
+                    $productIds[] = (int) $categoryProduct['id_product'];
+                }
+                $everPresentProducts = static::everPresentProducts($productIds, $context);
+                $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $renderedHtml = $context->smarty->fetch($templatePath);
+                // Remplace le shortcode par son rendu HTML dans $txt
+                $txt = str_replace($match[0], $renderedHtml, $txt);
+            }
+        }
+        return $txt;
+    }
+
+    protected static function getProductsByCategoryId(int $categoryId, int $limit): array
+    {
+        $cacheId = 'everblock_getProductsByCategoryId_'
+        . (int) $categoryId
+        . '_'
+        . (int) $limit;
+        if (!static::isCacheStored($cacheId)) {
+            $category = new Category((int) $categoryId);
+            $return = [];
+            if (Validate::isLoadedObject($category)) {
+                $products = $category->getProducts(Context::getContext()->language->id, 1, $limit, 'id_product', 'ASC');
+                $return = $products;
+            }
+            static::cacheStore($cacheId, $return);
+            return $return;
+        }
+        return static::cacheRetrieve($cacheId);
+    }
+
+    public static function getManufacturerShortcodes($message, $context)
+    {
+        $module = Module::getInstanceByName('everblock');
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+        preg_match_all('/\[manufacturer\s+id="(\d+)"\s+nb="(\d+)"\]/i', $message, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $manufacturerId = (int) $match[1];
+            $productCount = (int) $match[2];
+            $manufacturerProducts = static::getProductsByManufacturerId($manufacturerId, $productCount);
+            if (!empty($manufacturerProducts)) {
+                $productIds = [];
+                foreach ($manufacturerProducts as $manufacturerProduct) {
+                    $productIds[] = (int) $manufacturerProduct['id_product'];
+                }
+                $everPresentProducts = static::everPresentProducts($productIds, $context);
+                $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $renderedHtml = $context->smarty->fetch($templatePath);
+                $message = str_replace($match[0], $renderedHtml, $message);
+            }
+        }
+        return $message;
+    }
+
+    protected static function getProductsByManufacturerId(int $manufacturerId, int $limit): array
+    {
+        $cacheId = 'everblock_getProductsByManufacturerId_'
+        . (int) $manufacturerId
+        . '_'
+        . (int) $limit;
+        if (!static::isCacheStored($cacheId)) {
+            $manufacturer = new Manufacturer($manufacturerId);
+            $return = [];
+            if (Validate::isLoadedObject($manufacturer)) {
+                $products = Manufacturer::getProducts(
+                    $manufacturer->id,
+                    Context::getContext()->language->id,
+                    1,
+                    $limit,
+                    'id_product',
+                    'ASC'
+                );
+                $return = $products;
+            }
+            static::cacheStore($cacheId, $return);
+            return $return;
+        }
+        return static::cacheRetrieve($cacheId);
+    }
+
+    public static function getBrandsShortcode(string $txt, Context $context): string
+    {
+        $module = Module::getInstanceByName('everblock');
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_brand.tpl';
+        preg_match_all('/\[brands\s+nb="(\d+)"\]/i', $txt, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $brandCount = (int) $match[1];
+            $brands = static::getBrandsData($brandCount, $context);
+            if (!empty($brands)) {
+                $context->smarty->assign('brands', $brands);
+                $renderedHtml = $context->smarty->fetch($templatePath);
+                $txt = str_replace($match[0], $renderedHtml, $txt);
+            }
+        }
+        return $txt;
+    }
+
+    protected static function getBrandsData($limit, $context)
+    {
+        $cacheId = 'everblock_getBrandsData_'
+        . (int) $context->language->id
+        . '_'
+        . (int) $limit;
+        if (!static::isCacheStored($cacheId)) {
+            $brands = Manufacturer::getLiteManufacturersList(
+                (int) $context->language->id
+            );
+            $limitedBrands = [];
+            // Limite du nombre de marques en fonction du paramètre $limit
+            if (!empty($brands)) {
+                $brands = array_slice($brands, 0, $limit);
+                foreach ($brands as $brand) {
+                    $name = $brand['name'];
+                    $logo = $context->link->getManufacturerImageLink(
+                        (int) $brand['id']
+                    );
+                    $url = $brand['link'];
+                    $limitedBrands[] = [
+                        'id' => $brand['id'],
+                        'name' => $name,
+                        'logo' => $logo,
+                        'url' => $url,
+                    ];
+                }
+            }
+            static::cacheStore($cacheId, $limitedBrands);
+            return $limitedBrands;
+        }
+        return static::cacheRetrieve($cacheId);
     }
 
     public static function getWidgetShortcode($txt)
@@ -66,7 +300,7 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function generateFormFromShortcode($shortcode)
+    public static function generateFormFromShortcode(string $shortcode)
     {
         preg_match_all('/(\w+)\s*=\s*"([^"]+)"|(\w+)\s*=\s*([^"\s,]+)/', $shortcode, $matches, PREG_SET_ORDER);
         $attributes = [];
@@ -164,7 +398,7 @@ class EverblockTools extends ObjectModel
         return $template;
     }
 
-    public static function getFormShortcode($txt)
+    public static function getFormShortcode(string $txt): string
     {
         $txt = str_replace('[evercontactform_open]', '<div class="container"><form method="POST" class="evercontactform" action="#">', $txt);
         $txt = str_replace('[evercontactform_close]', '</form></div>', $txt);
@@ -176,7 +410,7 @@ class EverblockTools extends ObjectModel
         return $result;
     }
 
-    public static function replaceHook($txt)
+    public static function replaceHook(string $txt): string
     {
         preg_match_all('/\{hook h=\'(.*?)\'\}/', $txt, $matches);
         if (!empty($matches[1])) {
@@ -196,7 +430,7 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getNativeContactShortcode($txt, $context)
+    public static function getNativeContactShortcode(string $txt, Context $context): string
     {
         $module = Module::getInstanceByName('everblock');
         $templatePath = $module->getLocalPath() . 'views/templates/hook/contact.tpl';
@@ -205,8 +439,7 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getCartShortcode($txt, $context)
-    {
+    public static function getCartShortcode(string $txt, Context $context): string    {
         $module = Module::getInstanceByName('everblock');
         $templatePath = $module->getLocalPath() . 'views/templates/hook/cart.tpl';
         $replacement = $context->smarty->fetch($templatePath);
@@ -214,7 +447,7 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getEverBlockShortcode($txt, $context)
+    public static function getEverBlockShortcode(string $txt, Context $context): string
     {
         // Recherche des shortcodes [everblock X]
         preg_match_all('/\[everblock\s+(\d+)\]/i', $txt, $matches);
@@ -237,16 +470,16 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getRandomProductsShortcode($txt, $context)
+    public static function getRandomProductsShortcode(string $txt, Context $context): string
     {
         preg_match_all('/\[random_product\s+nb="(\d+)"\]/i', $txt, $matches);
         foreach ($matches[1] as $match) {
             $limit = (int) $match;
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
-                    WHERE p.id_shop = ' . (int)$context->shop->id . '
+                    WHERE p.id_shop = ' . (int) $context->shop->id . '
                     ORDER BY RAND()
-                    LIMIT ' . $limit;
+                    LIMIT ' . (int) $limit;
             $productIds = Db::getInstance()->executeS($sql);
             if (!empty($productIds)) {
                 $productIdsArray = array_map(function($row) {
@@ -258,7 +491,7 @@ class EverblockTools extends ObjectModel
                     $module = Module::getInstanceByName('everblock');
                     $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
                     $replacement = $context->smarty->fetch($templatePath);
-                    $shortcode = '[random_product nb="' . $limit . '"]';
+                    $shortcode = '[random_product nb="' . (int) $limit . '"]';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
@@ -266,16 +499,16 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getLastProductsShortcode($txt, $context)
+    public static function getLastProductsShortcode(string $txt, Context $context): string
     {
         preg_match_all('/\[last-products\s+(\d+)\]/i', $txt, $matches);
         foreach ($matches[1] as $match) {
             $limit = (int) $match;
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
-                    WHERE p.id_shop = ' . (int)$context->shop->id . '
+                    WHERE p.id_shop = ' . (int) $context->shop->id . '
                     ORDER BY p.date_add DESC
-                    LIMIT ' . $limit;
+                    LIMIT ' . (int) $limit;
             $productIds = Db::getInstance()->executeS($sql);
             if (!empty($productIds)) {
                 $productIdsArray = array_map(function($row) {
@@ -287,7 +520,7 @@ class EverblockTools extends ObjectModel
                     $module = Module::getInstanceByName('everblock');
                     $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
                     $replacement = $context->smarty->fetch($templatePath);
-                    $shortcode = '[last-products ' . $limit . ']';
+                    $shortcode = '[last-products ' . (int) $limit . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
@@ -295,7 +528,7 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getBestSalesShortcode($txt, $context)
+    public static function getBestSalesShortcode(string $txt, Context $context): string
     {
         preg_match_all('/\[best-sales\s+(\d+)\]/i', $txt, $matches);
         foreach ($matches[1] as $match) {
@@ -316,7 +549,7 @@ class EverblockTools extends ObjectModel
                     $module = Module::getInstanceByName('everblock');
                     $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
                     $replacement = $context->smarty->fetch($templatePath);
-                    $shortcode = '[best-sales ' . $limit . ']';
+                    $shortcode = '[best-sales ' . (int) $limit . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
@@ -324,7 +557,7 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getSubcategoriesShortcode($txt, $context)
+    public static function getSubcategoriesShortcode(string $txt, Context $context): string
     {
         $categoryShortcodes = [];
         preg_match_all('/\[subcategories\s+id="(\d+)"\s+nb="(\d+)"\]/i', $txt, $matches, PREG_SET_ORDER);
@@ -369,7 +602,7 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getStoreShortcode($txt, $context)
+    public static function getStoreShortcode(string $txt, Context $context): string
     {
         preg_match_all('/\[everstore\s+(\d+)\]/i', $txt, $matches);
         foreach ($matches[1] as $match) {
@@ -424,9 +657,11 @@ class EverblockTools extends ObjectModel
      * @param $txt : full DOM
      * @return $txt : full DOM fixed
     */
-    public static function getQcdAcfCode($txt)
+    public static function getQcdAcfCode(string $txt): string
     {
-        if (!Module::isInstalled('qcdacf')) {
+        if (!Module::isInstalled('qcdacf')
+            || !static::moduleDirectoryExists('qcdacf')
+        ) {
             return $txt;
         }
         Module::getInstanceByName('qcdacf');
@@ -441,11 +676,10 @@ class EverblockTools extends ObjectModel
             }
             return '';
         }, $txt);
-
         return $modifiedTxt;
     }
 
-    public static function renderSmartyVars($txt, $context)
+    public static function renderSmartyVars(string $txt, Context $context): string
     {
         $templateVars = [
             'customer' => $context->controller->getTemplateVarCustomer(),
@@ -463,11 +697,10 @@ class EverblockTools extends ObjectModel
                 $txt = str_replace($search, $value, $txt);
             }
         }
-
         return $txt;
     }
 
-    private static function renderSmartyVarsInArray($txt, $search, $array)
+    private static function renderSmartyVarsInArray(string $txt, string $search, array $array): string
     {
         foreach ($array as $key => $value) {
             $elementSearch = $search . '.' . $key;
@@ -477,7 +710,6 @@ class EverblockTools extends ObjectModel
                 $txt = str_replace($elementSearch, $value, $txt);
             }
         }
-
         return $txt;
     }
 
@@ -488,7 +720,7 @@ class EverblockTools extends ObjectModel
      * @param int $id_shop
      * @return array of success/error messages
     */
-    public static function migrateUrls($oldUrl, $newUrl, $id_shop)
+    public static function migrateUrls(?string $oldUrl, ?string $newUrl, int $id_shop): array
     {
         $postErrors = [];
         $querySuccess = [];
@@ -552,7 +784,6 @@ class EverblockTools extends ObjectModel
                 SELECT id_cms FROM ' . _DB_PREFIX_ . 'cms_shop
                 WHERE id_shop = ' . (int) $id_shop . '
             )';
-
         try {
             Db::getInstance()->execute($sql);
             $querySuccess[] = 'meta_title of CMS rewrited';
@@ -1157,7 +1388,7 @@ class EverblockTools extends ObjectModel
         ];
     }
     
-    public static function getVideoShortcode($txt)
+    public static function getVideoShortcode(string $txt): string
     {
         preg_match_all('/\[video\s+(.*?)\]/i', $txt, $videoMatches);
         foreach ($videoMatches[0] as $shortcode) {
@@ -1167,11 +1398,10 @@ class EverblockTools extends ObjectModel
                 $txt = str_replace($shortcode, $iframe, $txt);
             }
         }
-
         return $txt;
     }
 
-    public static function detectVideoSite($url)
+    public static function detectVideoSite(string $url): string
     {
         $patterns = [
             'youtube' => '/^(?:https?:\/\/)?(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]+)(?:\S+)?$/',
@@ -1181,7 +1411,6 @@ class EverblockTools extends ObjectModel
             'dailymotion' => '/^(?:https?:\/\/)?(?:www\.)?dailymotion\.com\/video\/([a-z0-9]+)$/i',
             'vidyard' => '/^(?:https?:\/\/)?(?:embed\.)?vidyard.com\/(?:watch\/)?([a-zA-Z0-9\-\_]+)$/'
         ];
-
         foreach ($patterns as $key => $pattern) {
             if (preg_match($pattern, $url, $matches)) {
                 switch ($key) {
@@ -1198,7 +1427,7 @@ class EverblockTools extends ObjectModel
                 }
             }
         }
-        return false;
+        return '';
     }
 
     public static function getStoreLocatorData()
@@ -1212,7 +1441,7 @@ class EverblockTools extends ObjectModel
         return static::cacheRetrieve($cacheId);
     }
 
-    public static function getStoreCoordinates($storeId)
+    public static function getStoreCoordinates(int $storeId): array
     {
         $cacheId = 'store_coordinates_' . (int) $storeId;
         if (!static::isCacheStored($cacheId)) {
@@ -1224,13 +1453,13 @@ class EverblockTools extends ObjectModel
                 ];
                 static::cacheStore($cacheId, $coordinates);
             } else {
-                return null;
+                return [];
             }
         }
         return static::cacheRetrieve($cacheId);
     }
 
-    public static function generateGoogleMap($context)
+    public static function generateGoogleMap(string $txt, Context $context): string
     {
         $stores = static::getStoreLocatorData();
         if (!empty($stores)) {
@@ -1241,8 +1470,9 @@ class EverblockTools extends ObjectModel
                 'everblock_stores' => $stores,
             ]);
             $storeLocatorContent = $smarty->fetch($templatePath);
-            return $storeLocatorContent;
+            $txt = str_replace('[storelocator]', $storeLocatorContent, $txt);
         }
+        return $txt;
     }
 
     private static function generateOsmScript($markers)
@@ -1274,7 +1504,6 @@ class EverblockTools extends ObjectModel
             // Ajustez la hauteur du conteneur de la carte ici
             mapContainer.style.height = "500px"; // Par exemple, réglez la hauteur à 500 pixels
         </script>';
-        
         return $mapCode;
     }
 
@@ -1356,75 +1585,10 @@ class EverblockTools extends ObjectModel
                 google.maps.event.addDomListener(window, "load", initMap);
             })();
         ';
-
         return $googleMapCode;
     }
 
-
-    public static function stringExistsInFileContent($needle, $fileContent)
-    {
-        return strpos($fileContent, $needle) !== false;
-    }
-
-    protected static function registerPrettyBlockHook($hookName)
-    {
-        if (Module::isInstalled('prettyblocks')) {
-            $prettyblocks = Module::getInstanceByName('prettyblocks');
-            return $prettyblocks->registerHook($hookName);
-        }
-        return false;
-    }
-
-    /**
-    * Get IP address for current visitor
-    * @return string IP address
-    */
-    public static function getIpAddress()
-    {
-        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        }
-        return $ip;
-    }
-
-    /**
-    * Get all maintenance IP address
-    * @return array of IP
-    */
-    public static function getMaintenanceIpAddress()
-    {
-        if (!Configuration::get('PS_MAINTENANCE_IP')) {
-            return ['::1'];
-        }
-        $maintenance_ip = explode(
-            ',',
-            Configuration::get('PS_MAINTENANCE_IP')
-        );
-        return $maintenance_ip;
-    }
-
-    /**
-    * If IP address is on maintenance
-    * @return bool
-    */
-    public static function isMaintenanceIpAddress()
-    {
-        if (in_array(static::getIpAddress(), static::getMaintenanceIpAddress())) {
-            return true;
-        }
-        return false;
-    }
-
-    public static function isEmployee(): bool
-    {
-        return !empty((new Cookie('psAdmin'))->id_employee);
-    }
-
-    public static function getAllProducts($shopId, $langId, $start = null, $limit = null, $orderBy = null, $orderWay = null)
+    public static function getAllProducts(int $shopId, int $langId, $start = null, $limit = null, $orderBy = null, $orderWay = null): array
     {
         $cacheId = 'EverblockTools::getAllProducts_' . (int) $shopId . '_' . $langId;
         if (!static::isCacheStored($cacheId)) {
@@ -1444,11 +1608,10 @@ class EverblockTools extends ObjectModel
             }
             static::cacheStore($cacheId, $products);
         }
-
         return static::cacheRetrieve($cacheId);
     }
 
-    public static function getAllManufacturers($shopId, $langId)
+    public static function getAllManufacturers(int $shopId, int $langId): array
     {
         $cacheId = 'EverblockTools::getAllManufacturers_' . (int) $shopId . '_' . $langId;
         
@@ -1472,17 +1635,15 @@ class EverblockTools extends ObjectModel
 
             if ($result) {
                 foreach ($result as $row) {
-                    $manufacturers[$row['id_manufacturer']] = (int)$row['id_manufacturer'] . ' - ' . $row['name'];
+                    $manufacturers[$row['id_manufacturer']] = (int) $row['id_manufacturer'] . ' - ' . $row['name'];
                 }
             }
-
             static::cacheStore($cacheId, $manufacturers);
         }
-
         return static::cacheRetrieve($cacheId);
     }
 
-    public static function getAllSuppliers($shopId, $langId)
+    public static function getAllSuppliers(int $shopId, int $langId): array
     {
         $cacheId = 'EverblockTools::getAllSuppliers_' . (int) $shopId . '_' . $langId;
         if (!static::isCacheStored($cacheId)) {
@@ -1505,17 +1666,15 @@ class EverblockTools extends ObjectModel
 
             if ($result) {
                 foreach ($result as $row) {
-                    $suppliers[$row['id_supplier']] = (int)$row['id_supplier'] . ' - ' . $row['name'];
+                    $suppliers[$row['id_supplier']] = (int) $row['id_supplier'] . ' - ' . $row['name'];
                 }
             }
-
             static::cacheStore($cacheId, $suppliers);
         }
-
         return static::cacheRetrieve($cacheId);
     }
 
-    public static function getProductIdsBySupplier($supplierId, $start = null, $limit = null, $orderBy = null, $orderWay = null)
+    public static function getProductIdsBySupplier(int $supplierId, $start = null, $limit = null, $orderBy = null, $orderWay = null): array
     {
         $sql = new DbQuery();
         $sql->select('id_product');
@@ -1524,13 +1683,11 @@ class EverblockTools extends ObjectModel
         if ($limit) {
             $sql->limit($limit);
         }
-
         $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-
         return array_column($productIds, 'id_product');
     }
 
-    public static function getProductIdsByManufacturer($manufacturerId, $start = null, $limit = null, $orderBy = null, $orderWay = null)
+    public static function getProductIdsByManufacturer(int $manufacturerId, $start = null, $limit = null, $orderBy = null, $orderWay = null): array
     {
         $sql = new DbQuery();
         $sql->select('id_product');
@@ -1543,17 +1700,15 @@ class EverblockTools extends ObjectModel
         return array_column($productIds, 'id_product');
     }
 
-    public static function addLazyLoadToImages($text)
+    public static function addLazyLoadToImages(string $text): string
     {
         // Rechercher toutes les balises <img> dans le texte
         $pattern = '/<img\s+(?:[^>]*)src="([^"]*)"([^>]*)>/i';
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
-
         // Parcourir les correspondances et ajouter la classe 'lazyload' et l'attribut 'loading="lazy"'
         foreach ($matches as $match) {
             $imageUrl = $match[1];
             $imageAttributes = $match[2];
-            
             // Vérifier si la balise <img> contient déjà la classe 'lazyload'
             if (stripos($imageAttributes, 'class=') === false || stripos($imageAttributes, 'lazyload') === false) {
                 // Ajouter la classe 'lazyload' aux classes existantes
@@ -1561,7 +1716,6 @@ class EverblockTools extends ObjectModel
             } else {
                 $imageAttributesWithLazyLoad = $imageAttributes;
             }
-
             // Construire la nouvelle balise <img> avec la classe 'lazyload' et l'attribut 'loading="lazy"'
             $newTag = '<img src="' . $imageUrl . '" ' . $imageAttributesWithLazyLoad . ' loading="lazy">';
             $text = str_replace($match[0], $newTag, $text);
@@ -1569,34 +1723,63 @@ class EverblockTools extends ObjectModel
         return $text;
     }
 
-    public static function obfuscateText($text)
+    public static function obfuscateText(string $text): string
     {
         // Rechercher toutes les balises <a href> dans le texte
         $pattern = '/<a\s+(?:[^>]*)href="([^"]*)"([^>]*)>/i';
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
-
         // Parcourir les correspondances et remplacer les balises <a> par des balises <span>
         foreach ($matches as $match) {
             $linkUrl = $match[1];
             $linkAttributes = $match[2];
             $encodedLink = base64_encode($linkUrl);
-            
             // Obtenir les classes existantes de la balise <a>
             preg_match('/class="([^"]*)"/i', $match[0], $classMatches);
             $existingClasses = !empty($classMatches[1]) ? $classMatches[1] : '';
-
             // Ajouter la classe 'obflink' aux classes existantes
             $classesWithObflink = $existingClasses . ' obflink';
-
             // Construire la nouvelle balise <span> avec les classes existantes et les attributs de lien
             $newTag = '<span class="' . $classesWithObflink . '" data-obflink="' . $encodedLink . '"' . $linkAttributes . '>';
             $text = str_replace($match[0], $newTag, $text);
         }
-
         return $text;
     }
 
-    public static function generateLoremIpsum($context)
+    public static function getCustomerShortcodes(string $txt, Context $context): string
+    {
+        $entityShortcodes = [];
+        $customer = new Customer((int) $context->customer->id);
+        $gender = new Gender((int) $customer->id_gender, (int) $context->language->id);
+        $entityShortcodes = [
+            '[entity_lastname]' => $customer->lastname,
+            '[entity_firstname]' => $customer->firstname,
+            '[entity_company]' => $customer->company,
+            '[entity_siret]' => $customer->siret,
+            '[entity_ape]' => $customer->ape,
+            '[entity_birthday]' => $customer->birthday,
+            '[entity_website]' => $customer->website,
+            '[entity_gender]' => $gender->name,
+        ];
+        foreach ($entityShortcodes as $key => $value) {
+            $txt = str_replace($key, $value, $txt);
+        }
+        return $txt;
+    }
+
+    public static function getEverShortcodes(string $txt, Context $context): string
+    {
+        $customShortcodes = EverblockShortcode::getAllShortcodes(
+            $context->shop->id,
+            $context->language->id
+        );
+        $returnedShortcodes = [];
+        foreach ($customShortcodes as $sc) {
+            $txt = str_replace($sc->shortcode, $sc->content, $txt);
+        }
+        return $txt;
+    }
+
+    public static function generateLoremIpsum(string $txt, Context $context): string
     {
         $cacheId = 'generateLoremIpsum_' . (int) $context->shop->id;
         if (!static::isCacheStored($cacheId)) {
@@ -1625,15 +1808,33 @@ class EverblockTools extends ObjectModel
                 $paragraph .= '</p>';
                 $paragraphs[] = $paragraph;
             }
-            $return = implode("\n\n", $paragraphs);
-            static::cacheStore($cacheId, $return);
+            $llorem = implode("\n\n", $paragraphs);
+            static::cacheStore($cacheId, $llorem);
         }
-        return static::cacheRetrieve($cacheId);
+        $llorem = static::cacheRetrieve($cacheId);
+        $txt = str_replace('[llorem]', $llorem, $txt);
+        return $txt;
     }
 
     public static function checkAndFixDatabase()
     {
         $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
+        $tableNames = [
+            _DB_PREFIX_ . 'everblock',
+            _DB_PREFIX_ . 'everblock_lang',
+            _DB_PREFIX_ . 'everblock_shortcode',
+            _DB_PREFIX_ . 'everblock_shortcode_lang',
+            _DB_PREFIX_ . 'everblock_faq',
+            _DB_PREFIX_ . 'everblock_faq_lang',
+            _DB_PREFIX_ . 'everblock_tabs',
+        ];
+        $tableExists = true;
+        foreach ($tableNames as $tableName) {
+            $tableExists = (bool) static::ifTableExists($tableName);
+        }
+        if ((bool) $tableExists === false) {
+            include _PS_MODULE_DIR_ . 'everblock/sql/install.php';
+        }
         // Ajoute les colonnes manquantes à la table ps_everblock
         $columnsToAdd = [
             'only_home' => 'int(10) unsigned DEFAULT NULL',
@@ -1662,7 +1863,6 @@ class EverblockTools extends ObjectModel
             'date_end' => 'DATETIME DEFAULT NULL',
             'active' => 'int(10) unsigned NOT NULL',
         ];
-
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock` `' . pSQL($columnName) . '`');
             if (!$columnExists) {
@@ -1674,14 +1874,12 @@ class EverblockTools extends ObjectModel
                 }
             }
         }
-
         // Ajoute les colonnes manquantes à la table ps_everblock_lang
         $columnsToAdd = [
             'id_lang' => 'int(10) unsigned NOT NULL',
             'content' => 'text DEFAULT NULL',
             'custom_code' => 'text DEFAULT NULL',
         ];
-
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_lang` `' . pSQL($columnName) . '`');
             if (!$columnExists) {
@@ -1693,13 +1891,11 @@ class EverblockTools extends ObjectModel
                 }
             }
         }
-
         // Ajoute les colonnes manquantes à la table everblock_shortcode
         $columnsToAdd = [
             'shortcode' => 'text DEFAULT NULL',
             'id_shop' => 'int(10) unsigned NOT NULL',
         ];
-
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_shortcode` `' . pSQL($columnName) . '`');
             if (!$columnExists) {
@@ -1711,19 +1907,54 @@ class EverblockTools extends ObjectModel
                 }
             }
         }
-
         // Ajoute les colonnes manquantes à la table everblock_shortcode_lang
         $columnsToAdd = [
             'id_lang' => 'int(10) unsigned NOT NULL',
             'title' => 'text DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
-
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_shortcode_lang` `' . pSQL($columnName) . '`');
             if (!$columnExists) {
                 try {
                     $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_shortcode_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block database');
+                }
+            }
+        }
+        // Ajoute les colonnes manquantes à la table everblock_faq
+        $columnsToAdd = [
+            'tag_name' => 'text DEFAULT NULL',
+            'position' => 'int(10) unsigned NOT NULL DEFAULT 0',
+            'active' => 'int(10) unsigned NOT NULL',
+            'id_shop' => 'int(10) unsigned NOT NULL',
+            'date_add' => 'DATETIME DEFAULT NULL',
+            'date_upd' => 'DATETIME DEFAULT NULL',
+        ];
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_faq` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_faq` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block database');
+                }
+            }
+        }
+        // Ajoute les colonnes manquantes à la table everblock_faq_lang
+        $columnsToAdd = [
+            'id_lang' => 'int(10) unsigned NOT NULL',
+            'title' => 'text DEFAULT NULL',
+            'content' => 'text DEFAULT NULL',
+        ];
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_faq_lang` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_faq_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
                     $db->execute($query);
                 } catch (Exception $e) {
                     PrestaShopLogger::addLog('Unable to update Ever Block database');
@@ -1738,7 +1969,6 @@ class EverblockTools extends ObjectModel
              `id_shop` int(10) unsigned DEFAULT 0,
              PRIMARY KEY (`id_everblock_tabs`))
              ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
         // Ajoute le contrôle de la table everblock_tabs_lang
         $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs_lang` (
              `id_everblock_tabs` int(10) unsigned NOT NULL,
@@ -1747,7 +1977,6 @@ class EverblockTools extends ObjectModel
              `content` text DEFAULT NULL,
              PRIMARY KEY (`id_everblock_tabs`, `id_lang`))
              ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
         foreach ($sql as $query) {
             try {
                 $db->execute($query);
@@ -1757,21 +1986,22 @@ class EverblockTools extends ObjectModel
         }
     }
 
-    public static function everPresentProducts($result)
+    public static function everPresentProducts(array $result): array
     {
+        $context = Context::getContext();
         $products = [];
         if (!empty($result)) {
-            $assembler = new ProductAssembler(Context::getContext());
-            $presenterFactory = new ProductPresenterFactory(Context::getContext());
+            $assembler = new ProductAssembler($context);
+            $presenterFactory = new ProductPresenterFactory($context);
             $presentationSettings = $presenterFactory->getPresentationSettings();
             $presenter = new ProductListingPresenter(
                 new ImageRetriever(
-                    Context::getContext()->link
+                    $context->link
                 ),
-                Context::getContext()->link,
+                $context->link,
                 new PriceFormatter(),
                 new ProductColorsRetriever(),
-                Context::getContext()->getTranslator()
+                $context->getTranslator()
             );
             $presentationSettings->showPrices = true;
             foreach ($result as $productId) {
@@ -1786,15 +2016,15 @@ class EverblockTools extends ObjectModel
                 }
                 $rawProduct = [
                     'id_product' => $productId,
-                    'id_lang' => Context::getContext()->language->id,
-                    'id_shop' => Context::getContext()->shop->id,
+                    'id_lang' => $context->language->id,
+                    'id_shop' => $context->shop->id,
                 ];
                 $pproduct = $assembler->assembleProduct($rawProduct);
                 if (Product::checkAccessStatic((int) $productId, false)) {
                     $products[] = $presenter->present(
                         $presentationSettings,
                         $pproduct,
-                        Context::getContext()->language
+                        $context->language
                     );
                 }
             }
@@ -1802,32 +2032,33 @@ class EverblockTools extends ObjectModel
         return $products;
     }
 
-    public static function dropUnusedLangs()
+    public static function dropUnusedLangs():array
     {
         $postErrors = [];
         $querySuccess = [];
         $pstable = [
-            'category_lang',
-            'product_lang',
-            'image_lang',
-            'cms_lang',
-            'meta_lang',
-            'manufacturer_lang',
-            'supplier_lang',
-            'group_lang',
-            'gender_lang',
-            'feature_lang',
-            'feature_value_lang',
-            'customization_field_lang',
-            'country_lang',
-            'cart_rule_lang',
-            'carrier_lang',
-            'attachment_lang',
-            'attribute_lang',
-            'attribute_group_lang',
+            _DB_PREFIX_ . 'category_lang',
+            _DB_PREFIX_ . 'product_lang',
+            _DB_PREFIX_ . 'image_lang',
+            _DB_PREFIX_ . 'cms_lang',
+            _DB_PREFIX_ . 'meta_lang',
+            _DB_PREFIX_ . 'manufacturer_lang',
+            _DB_PREFIX_ . 'supplier_lang',
+            _DB_PREFIX_ . 'group_lang',
+            _DB_PREFIX_ . 'gender_lang',
+            _DB_PREFIX_ . 'feature_lang',
+            _DB_PREFIX_ . 'feature_value_lang',
+            _DB_PREFIX_ . 'customization_field_lang',
+            _DB_PREFIX_ . 'country_lang',
+            _DB_PREFIX_ . 'cart_rule_lang',
+            _DB_PREFIX_ . 'carrier_lang',
+            _DB_PREFIX_ . 'attachment_lang',
+            _DB_PREFIX_ . 'attribute_lang',
+            _DB_PREFIX_ . 'attribute_group_lang',
         ];
         foreach ($pstable as $table) {
-            $sql = 'DELETE FROM ' . _DB_PREFIX_ . pSQL($table) . '
+            $table = bqSQL(trim($tableName));
+            $sql = 'DELETE FROM ' . $table . '
             WHERE id_lang NOT IN
             (SELECT id_lang FROM ' . _DB_PREFIX_ . 'lang)';
             try {
@@ -1848,20 +2079,21 @@ class EverblockTools extends ObjectModel
      * 
      * @return bool True en cas de succès, sinon False.
      */
-    public static function exportModuleTablesSQL()
+    public static function exportModuleTablesSQL(): bool
     {
         // Liste des tables de module sans préfixe
         $tables = [
             _DB_PREFIX_ . 'everblock',
             _DB_PREFIX_ . 'everblock_lang',
             _DB_PREFIX_ . 'everblock_shortcode',
-            _DB_PREFIX_ . 'everblock_shortcode_lang'
+            _DB_PREFIX_ . 'everblock_shortcode_lang',
+            _DB_PREFIX_ . 'everblock_tabs',
+            _DB_PREFIX_ . 'everblock_tabs_lang',
         ];
-
         // Valider et nettoyer les noms de table (vous pouvez ajouter d'autres vérifications ici)
         $validTables = [];
         foreach ($tables as $table) {
-            $table = trim($table);
+            $table = bqSQL(trim($table));
             if (!empty($table)) {
                 if (static::ifTableExists($table)) {
                     $validTables[] = pSQL($table);
@@ -1871,27 +2103,22 @@ class EverblockTools extends ObjectModel
         if (empty($validTables)) {
             return false;
         }
-
         // Générer une requête SQL pour extraire les tables spécifiées
         $tablesString = implode(',', $validTables);
-
         // Exécutez la requête SQL pour récupérer les données de la base de données PrestaShop
         $db = Db::getInstance();
-        $sqlData = "";
+        $sqlData = '';
         foreach ($validTables as $tableName) {
+            $tableName = bqSQL(trim($tableName));
             // Obtenir la structure de la table (inclut les contraintes et les index)
             $createTableSql = static::getTableStructure($tableName);
-
             // Ajoutez DROP TABLE
             $sqlData .= "DROP TABLE IF EXISTS `$tableName`;\n";
-
             // Ajoutez CREATE TABLE avec la structure
             $sqlData .= "$createTableSql;\n";
-
             // Exécutez la requête SQL pour extraire les données de la table
-            $sql = "SELECT * FROM `$tableName`";
+            $sql = 'SELECT * FROM `' . $tableName . '`';
             $result = $db->executeS($sql);
-
             if ($result) {
                 // Ajoutez INSERT INTO
                 foreach ($result as $row) {
@@ -1902,7 +2129,6 @@ class EverblockTools extends ObjectModel
                     }, $escapedKeys); // Ajout des backticks aux noms de colonnes
                     $sqlData .= implode(',', $escapedKeys);
                     $sqlData .= ") VALUES (";
-
                     // Échappez et formatez correctement les valeurs
                     $escapedValues = [];
                     foreach ($row as $value) {
@@ -1914,18 +2140,15 @@ class EverblockTools extends ObjectModel
                             $escapedValues[] = "'" . pSQL($value) . "'";
                         }
                     }
-
                     $sqlData .= implode(',', $escapedValues);
                     $sqlData .= ");\n";
                 }
             }
         }
-        $moduleDir = _PS_MODULE_DIR_ . 'everblock';
-        $filePath = "$moduleDir/dump.sql";
+        $filePath = _PS_MODULE_DIR_ . 'everblock/dump.sql';
         if (file_put_contents($filePath, $sqlData)) {
             return true;
         }
-
         return false;
     }
 
@@ -1934,16 +2157,14 @@ class EverblockTools extends ObjectModel
      * @param string $tableName Nom de la table.
      * @return string|null Structure de la table en SQL, ou null en cas d'erreur.
      */
-    protected static function getTableStructure($tableName)
+    protected static function getTableStructure(string $tableName)
     {
         $db = Db::getInstance();
-        $sql = "SHOW CREATE TABLE $tableName";
+        $sql ='SHOW CREATE TABLE ' . $tableName;
         $result = $db->executeS($sql);
-
         if ($result && isset($result[0]['Create Table'])) {
             return $result[0]['Create Table'];
         }
-
         return null;
     }
 
@@ -1952,25 +2173,21 @@ class EverblockTools extends ObjectModel
      * @param string $tableName Nom de la table à vérifier.
      * @return bool True si la table existe, sinon False.
      */
-    protected static function ifTableExists($tableName)
+    protected static function ifTableExists(string $tableName)
     {
         $db = Db::getInstance();
-
-        $result = $db->executeS("SHOW TABLES LIKE '" . pSQL($tableName) . "'");
-
+        $result = $db->executeS('SHOW TABLES LIKE "' . $tableName . '"');
         return !empty($result);
     }
 
     /**
      * Teste si le fichier SQL de sauvegarde existe et restaure les tables et données si possible.
-     * @return bool True si la restauration réussie, sinon False.
+     * @return bool
      */
-    public static function restoreModuleTablesFromBackup()
+    public static function restoreModuleTablesFromBackup(): bool
     {
         // Chemin du fichier de sauvegarde
-        $moduleDir = _PS_MODULE_DIR_ . 'everblock';
-        $filePath = "$moduleDir/dump.sql";
-
+        $filePath = _PS_MODULE_DIR_ . 'everblock/dump.sql';
         if (file_exists($filePath)) {
             try {
                 // Exécute les requêtes SQL du fichier de sauvegarde
@@ -1982,19 +2199,14 @@ class EverblockTools extends ObjectModel
                         $db->execute($query);
                     }
                 }
-
-                // Log de la réussite de la restauration dans PrestaShop Logger
-                PrestaShopLogger::addLog("Tables and data of Ever Block module have been successfully restored from backup.", 1);
-
-                // Retourne True en cas de succès
+                unlink($filePath);
                 return true;
             } catch (Exception $e) {
                 // En cas d'erreur, log l'erreur dans PrestaShop Logger
-                PrestaShopLogger::addLog("Error during Ever Block module tables restoration: " . $e->getMessage(), 3);
+                PrestaShopLogger::addLog('Error during Ever Block module tables restoration: ' . $e->getMessage(), 3);
                 return false;
             }
         }
-
         return false;
     }
 
@@ -2003,7 +2215,7 @@ class EverblockTools extends ObjectModel
      * @param shop id
      * @return bool
     */
-    public static function generateProducts($idShop): bool
+    public static function generateProducts(int $idShop): bool
     {
         $numProducts = (int) static::getModuleConfiguration('EVERPS_DUMMY_NBR');
         if ($numProducts <= 0) {
@@ -2015,12 +2227,10 @@ class EverblockTools extends ObjectModel
                 $product->id_shop_default = $idShop;
                 $product->price = rand(10, 100);
                 $product->quantity = rand(1, 100);
-
                 // Générez d'autres propriétés de produit fictives selon vos besoins
                 $product->name = 'Product ' . ($i + 1);
                 $product->description = 'Description for Product ' . ($i + 1);
                 $product->reference = 'PRD_DUMMY' . str_pad($i + 1, 4, '0', STR_PAD_LEFT);
-
                 if ($product->add()) {
                     $categories = [2];
                     $product->addToCategories($categories);
@@ -2037,7 +2247,7 @@ class EverblockTools extends ObjectModel
         }
     }
 
-    public static function getPhpLicenceHeader()
+    public static function getPhpLicenceHeader(): string
     {
         return '<?php' . PHP_EOL .
             '/**' . PHP_EOL .
@@ -2074,10 +2284,20 @@ class EverblockTools extends ObjectModel
 
     /**
      * Check if cache exists based on unique key
+     * No cache on admin, no cache if PS cache is disabled
      * @return bool
     */
-    public static function isCacheStored($cacheKey): bool
+    public static function isCacheStored(string $cacheKey): bool
     {
+        $context = Context::getContext();
+        if ($context->controller->controller_type == 'admin'
+            || $context->controller->controller_type == 'moduleadmin'
+        ) {
+            return false;
+        }
+        if (defined('_PS_CACHE_ENABLED_') && _PS_CACHE_ENABLED_) {
+            return false;
+        }
         $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
             return true;
@@ -2091,8 +2311,17 @@ class EverblockTools extends ObjectModel
      * @param cacheKey, must be unique
      * @param value to store
     */
-    public static function cacheStore($cacheKey, $cacheValue)
+    public static function cacheStore(string $cacheKey, $cacheValue)
     {
+        $context = Context::getContext();
+        if ($context->controller->controller_type == 'admin'
+            || $context->controller->controller_type == 'moduleadmin'
+        ) {
+            return;
+        }
+        if (defined('_PS_CACHE_ENABLED_') && _PS_CACHE_ENABLED_) {
+            return;
+        }
         $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
         file_put_contents($cacheFilePath, serialize($cacheValue));
     }
@@ -2102,7 +2331,7 @@ class EverblockTools extends ObjectModel
      * @param cache key
      * @return cache content
     */
-    public static function cacheRetrieve($cacheKey)
+    public static function cacheRetrieve(string $cacheKey)
     {
         $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
@@ -2112,7 +2341,7 @@ class EverblockTools extends ObjectModel
         return '';
     }
 
-    public static function cacheDrop($cacheKey)
+    public static function cacheDrop(string $cacheKey)
     {
         $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
@@ -2120,10 +2349,10 @@ class EverblockTools extends ObjectModel
         }
     }
 
-    public static function cacheDropByPattern($cacheStartId)
+    public static function cacheDropByPattern(string $cacheKeyStart)
     {
         $cacheDir = _PS_CACHE_DIR_;
-        $pattern = $cacheDir . $cacheStartId . '*.cache';
+        $pattern = $cacheDir . $cacheKeyStart . '*.cache';
         $matchingFiles = glob($pattern);
         if (!empty($matchingFiles)) {
             foreach ($matchingFiles as $file) {
@@ -2132,24 +2361,24 @@ class EverblockTools extends ObjectModel
         }
     }
 
-    public static function setLog($logKey, $logValue)
+    public static function setLog(string $logKey, string $logValue)
     {
-        $logFilePath = _PS_ROOT_DIR_ . 'logs/' . $logKey . '.log';
+        $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
         file_put_contents($logFilePath, $logValue);
     }
 
-    public static function getLog($logKey)
+    public static function getLog(string $logKey)
     {
-        $logFilePath = _PS_ROOT_DIR_ . 'logs/' . $logKey . '.log';
+        $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
         if (file_exists($logFilePath)) {
             return Tools::file_get_contents($logFilePath);
         }
         return '';
     }
 
-    public static function dropLog($logKey)
+    public static function dropLog(string $logKey)
     {
-        $logFilePath = _PS_ROOT_DIR_ . 'logs/' . $logKey . '.log';
+        $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
         if (file_exists($logFilePath)) {
             unlink($logFilePath);
         }
@@ -2161,8 +2390,14 @@ class EverblockTools extends ObjectModel
      * @param configuration key
      * @return configuration value
     */
-    public static function getModuleConfiguration($key)
+    public static function getModuleConfiguration(string $key): string
     {
+        $context = Context::getContext();
+        if ($context->controller->controller_type == 'admin'
+            || $context->controller->controller_type == 'moduleadmin'
+        ) {
+            return '';
+        }
         if (!static::isCacheStored($key)) {
             $value = Configuration::get($key);
             static::cacheStore($key, $value);
@@ -2175,10 +2410,9 @@ class EverblockTools extends ObjectModel
      * @param module name
      * @return bool
     */
-    public static function moduleDirectoryExists($moduleName): bool
+    public static function moduleDirectoryExists(string $moduleName): bool
     {
-        $modulesDir = _PS_MODULE_DIR_;
-        $moduleDirPath = $modulesDir . $moduleName;
+        $moduleDirPath = _PS_MODULE_DIR_ . $moduleName;
         return is_dir($moduleDirPath);
     }
 }

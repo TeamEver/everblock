@@ -21,9 +21,9 @@ if (!defined('_PS_VERSION_')) {
 }
 
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 
-class AdminEverBlockShortcodeController extends ModuleAdminController
+class AdminEverBlockFaqController extends ModuleAdminController
 {
     private $html;
 
@@ -31,10 +31,10 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
     {
         $this->bootstrap = true;
         $this->lang = true;
-        $this->table = 'everblock_shortcode';
-        $this->className = 'EverblockShortcode';
+        $this->table = 'everblock_faq';
+        $this->className = 'EverblockFaq';
         $this->context = Context::getContext();
-        $this->identifier = 'id_everblock_shortcode';
+        $this->identifier = 'id_everblock_faq';
         $this->name = 'AdminEverBlockShortcode';
         EverblockTools::checkAndFixDatabase();
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
@@ -52,13 +52,13 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
         ];
 
         $this->fields_list = [
-            'id_everblock_shortcode' => [
+            'id_everblock_faq' => [
                 'title' => $this->l('ID'),
                 'align' => 'left',
                 'width' => 'auto',
             ],
-            'shortcode' => [
-                'title' => $this->l('Shortcode'),
+            'tag_name' => [
+                'title' => $this->l('FAQ tag'),
                 'align' => 'left',
                 'width' => 'auto',
             ],
@@ -69,6 +69,28 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
             ],
             'content' => [
                 'title' => $this->l('Content'),
+                'align' => 'left',
+                'width' => 'auto',
+            ],
+            'position' => [
+                'title' => $this->l('Position'),
+                'align' => 'left',
+                'width' => 'auto',
+            ],
+            'active' => [
+                'title' => $this->l('Status'),
+                'type' => 'bool',
+                'active' => 'status',
+                'orderby' => false,
+                'class' => 'fixed-width-sm',
+            ],
+            'date_add' => [
+                'title' => $this->l('Date add'),
+                'align' => 'left',
+                'width' => 'auto',
+            ],
+            'date_upd' => [
+                'title' => $this->l('Date upd'),
                 'align' => 'left',
                 'width' => 'auto',
             ],
@@ -91,7 +113,7 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
         return Context::getContext()->getTranslator()->trans(
             $string,
             [],
-            'Modules.Everpsseo.Admineverblockshortcodecontroller'
+            'Modules.Everblock.Admineverblockfaqcontroller'
         );
     }
 
@@ -99,7 +121,7 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
     {
         $this->page_header_toolbar_btn['new'] = [
             'href' => self::$currentIndex . '&add' . $this->table . '&token=' . $this->token,
-            'desc' => $this->l('Add new shortcode'),
+            'desc' => $this->l('Add new FAQ'),
             'icon' => 'process-icon-new',
         ];
         $this->page_header_toolbar_btn['clear'] = [
@@ -116,7 +138,8 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
 
         $this->addRowAction('edit');
         $this->addRowAction('delete');
-        $this->toolbar_title = $this->l('Registered shortcodes');
+        $this->addRowAction('duplicate');
+        $this->toolbar_title = $this->l('Registered FAQ');
         if (Tools::getValue('clearcache')) {
             Tools::clearAllCache();
             Tools::redirectAdmin(self::$currentIndex . '&cachecleared=1&token=' . $this->token);
@@ -142,7 +165,7 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
     public function renderForm()
     {
         if (Context::getContext()->shop->getContext() != Shop::CONTEXT_SHOP && Shop::isFeatureActive()) {
-            $this->errors[] = $this->l('You have to select a shop before creating or editing new shortcode.');
+            $this->errors[] = $this->l('You have to select a shop before creating or editing new FAQ.');
         }
 
         if (count($this->errors)) {
@@ -167,30 +190,61 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
             'input' => [
                 [
                     'type' => 'text',
-                    'label' => $this->l('Title'),
-                    'desc' => $this->l('Title is just a reminder, won\'t be shown'),
-                    'hint' => $this->l('Will be only shown on admin list'),
+                    'label' => $this->l('FAQ tag name'),
+                    'desc' => $this->l('All FAQs with the same tag will be grouped together'),
+                    'hint' => $this->l('Enter a simple word, without spaces or special characters'),
+                    'required' => true,
+                    'name' => 'tag_name',
+                    'lang' => false,
+                ],
+                [
+                    'type' => 'text',
+                    'label' => $this->l('FAQ element title'),
+                    'desc' => $this->l('This title will be the title of the FAQ tab'),
+                    'hint' => $this->l('Leaving blank will not display the FAQ'),
                     'required' => true,
                     'name' => 'title',
                     'lang' => true,
                 ],
                 [
-                    'type' => 'text',
-                    'label' => $this->l('Shortcode, no space allowed'),
-                    'desc' => $this->l('Please type shortcode with brackets like [shortcode], no space allowed'),
-                    'hint' => $this->l('Type shortcode like [shortcode], no space allowed'),
+                    'type' => 'textarea',
+                    'label' => $this->l('FAQ element content'),
+                    'desc' => $this->l('This content will be displayed under the FAQ title'),
+                    'hint' => $this->l('Leaving blank will not display the FAQ'),
                     'required' => true,
-                    'name' => 'shortcode',
+                    'name' => 'content',
+                    'autoload_rte' => true,
+                    'lang' => true,
+                ],
+                [
+                    'type' => 'text',
+                    'label' => $this->l('FAQ position'),
+                    'desc' => $this->l('Enter FAQ position number'),
+                    'hint' => $this->l('FAQs will be ordered using this number'),
+                    'required' => true,
+                    'name' => 'position',
                     'lang' => false,
                 ],
                 [
-                    'type' => 'textarea',
-                    'label' => $this->l('Shortcode content'),
-                    'desc' => $this->l('Shortcode will be changed to this value'),
-                    'hint' => $this->l('Module will auto translate shortcode using this value'),
-                    'required' => true,
-                    'name' => 'content',
-                    'lang' => true,
+                    'type' => 'switch',
+                    'label' => $this->l('Active'),
+                    'desc' => $this->l('Enable this FAQ ?'),
+                    'hint' => $this->l('Only active FAQs will be shown'),
+                    'name' => 'active',
+                    'bool' => true,
+                    'lang' => false,
+                    'values' => [
+                        [
+                            'id' => 'active_on',
+                            'value' => 1,
+                            'label' => $this->l('Activate'),
+                        ],
+                        [
+                            'id' => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('Desactivate'),
+                        ],
+                    ],
                 ],
             ],
         ];
@@ -201,26 +255,31 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
     public function postProcess()
     {
         parent::postProcess();
-        if (Tools::isSubmit('save') || Tools::isSubmit('submitAdd' . $this->table . 'AndStay')) {
-            if (!Tools::getValue('title')
-                || !Validate::isGenericName(Tools::getValue('title'))
-            ) {
-                 $this->errors[] = $this->l('Title is not valid or missing');
-            }
-            $everblock_obj = new EverblockShortcode(
-                (int) Tools::getValue('id_seo_shortcode')
+        if (Tools::getIsset('duplicate'.$this->table)) {
+            $this->duplicate(
+                (int)Tools::getValue($this->identifier)
             );
-            $everblock_obj->shortcode = str_replace(' ', '', Tools::getValue('name'));
-            $everblock_obj->id_shop = (int) Context::getContext()->shop->id;
+        }
+        if (Tools::isSubmit('save') || Tools::isSubmit('submitAdd' . $this->table . 'AndStay')) {
+            $everblock_obj = new $this->className(
+                (int) Tools::getValue($this->identifier)
+            );
+            $everblock_obj->tag_name = str_replace(' ', '', Tools::getValue('tag_name'));
+            $everblock_obj->position = (int) Tools::getValue('position');
+            $everblock_obj->position = (int) Tools::getValue('active');
+            $everblock_obj->active = (int) $this->context->shop->id;
             foreach (Language::getLanguages(false) as $language) {
-                if (!Tools::getValue('content_' . $language['id_lang'])
-                ) {
+                if (!Tools::getValue('content_' . $language['id_lang'])) {
                     $this->errors[] = $this->l('Content is missing for lang ') . $language['id_lang'];
                 } else {
                     $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_' . $language['id_lang']);
                 }
+                if (!Tools::getValue('title_' . $language['id_lang'])) {
+                    $this->errors[] = $this->l('Title is missing for lang ') . $language['id_lang'];
+                } else {
+                    $everblock_obj->title[$language['id_lang']] = Tools::getValue('title_' . $language['id_lang']);
+                }
             }
-
             if (!count($this->errors)) {
                 if ($everblock_obj->save()) {
                     if (Tools::isSubmit('save')) {
@@ -231,18 +290,15 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
                 }
             }
         }
-
-        if (Tools::isSubmit('deleteever_shortcodes')) {
-            $shortcode = new EverblockShortcode(
-                (int) Tools::getValue('id_everblock_shortcode')
+        if (Tools::isSubmit('delete' . $this->table)) {
+            $faq = new $this->className(
+                (int) Tools::getValue($this->identifier)
             );
-
-            if (!$shortcode->delete()) {
+            if (!$faq->delete()) {
                 $this->errors[] = $this->l('An error has occurred : Can\'t delete the current object');
             }
         }
-
-        if (Tools::isSubmit('submitBulkdeleteever_shortcodes')) {
+        if (Tools::isSubmit('submitBulkdelete' . $this->table)) {
             $this->processBulkDelete();
         }
     }
@@ -256,15 +312,15 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
                 if (isset($object->noZeroObject)) {
                     $this->errors[] = $this->l('You need at least one object.');
                 } else {
-                    $shortcode = Tools::getValue($this->table . 'Box');
-                    if (is_array($shortcode)) {
-                        foreach ($shortcode as $id_everblock_shortcode) {
-                            $shortcode = new EverblockShortcode(
-                                (int) $id_everblock_shortcode
+                    $faqs = Tools::getValue($this->table . 'Box');
+                    if (is_array($faqs)) {
+                        foreach ($faqs as $faqId) {
+                            $faq = new $this->className(
+                                (int) $faqId
                             );
-                            if (!count($this->errors) && $shortcode->delete()) {
+                            if (!count($this->errors) && $faq->delete()) {
                             } else {
-                                $this->errors[] = $this->l('Errors on deleting object ') . $id_everblock_shortcode;
+                                $this->errors[] = $this->l('Errors on deleting object ') . $faqId;
                             }
                         }
                     }
@@ -285,5 +341,21 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
         array_push($this->errors, $this->module->l($message), $description);
 
         return $this->setTemplate('error.tpl');
+    }
+
+    protected function duplicate($id)
+    {
+        $oldObj = new $this->className((int) $id);
+        $newObj = new $this->className();
+        $newObj->id_shop = $oldObj->id_shop;
+        $newObj->tag_name = $oldObj->tag_name;
+        $newObj->active = $oldObj->active;
+        $newObj->position = $oldObj->position;
+        $newObj->title = $oldObj->title;
+        $newObj->content = $oldObj->content;
+
+        if (!$newObj->save()) {
+            $this->errors[] = $this->l('An error has occurred: Can\'t delete the current object');
+        }
     }
 }

@@ -291,9 +291,13 @@ class ImportFileCommand extends ContainerAwareCommand
 
     protected function logCommand($msg)
     {
-        $log  = 'Msg: ' . $msg . PHP_EOL .
-                date('j.n.Y') . PHP_EOL .
-                '-------------------------' . PHP_EOL;
+        $log  = 'Msg: '
+        . $msg
+        . PHP_EOL
+        . date('j.n.Y')
+        . PHP_EOL
+        . '-------------------------'
+        . PHP_EOL;
 
         //Save string to log, use FILE_APPEND to append.
         file_put_contents(

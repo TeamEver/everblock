@@ -32,8 +32,8 @@ class AdminEverBlockController extends ModuleAdminController
         $this->className = 'EverBlockClass';
         $this->context = Context::getContext();
         $this->identifier = 'id_everblock';
-        $this->isSeven = Tools::version_compare(_PS_VERSION_, '1.7', '>=') ? true : false;
         $this->name = 'AdminEverBlockController';
+        EverblockTools::checkAndFixDatabase();
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
         $this->context->smarty->assign([
@@ -123,16 +123,11 @@ class AdminEverBlockController extends ModuleAdminController
 
     public function l($string, $class = null, $addslashes = false, $htmlentities = true)
     {
-        if ($this->isSeven) {
-            
-            return Context::getContext()->getTranslator()->trans(
-                $string,
-                [],
-                'Modules.Everblock.Admineverblockcontroller'
-            );
-        }
-
-        return parent::l($string, $class, $addslashes, $htmlentities);
+        return Context::getContext()->getTranslator()->trans(
+            $string,
+            [],
+            'Modules.Everblock.Admineverblockcontroller'
+        );
     }
 
     public function initPageHeaderToolbar()
@@ -1151,7 +1146,7 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function processBulkDelete()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+        foreach (Tools::getValue($this->table . 'Box') as $idObj) {
             $everBlock = new $this->className((int) $idObj);
 
             if (!$everBlock->delete()) {
@@ -1162,7 +1157,7 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function processBulkDisable()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+        foreach (Tools::getValue($this->table . 'Box') as $idObj) {
             $everBlock = new $this->className((int) $idObj);
             if ($everBlock->active) {
                 $everBlock->active = false;
@@ -1176,7 +1171,7 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function processBulkEnable()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+        foreach (Tools::getValue($this->table . 'Box') as $idObj) {
             $everBlock = new $this->className((int) $idObj);
             if (!$everBlock->active) {
                 $everBlock->active = true;
@@ -1190,7 +1185,7 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function processBulkDuplicate()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+        foreach (Tools::getValue($this->table . 'Box') as $idObj) {
             $this->duplicate($idObj);
         }
     }
@@ -1219,7 +1214,8 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function processBulkGptGenerate()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idEverBlock) {
+        foreach (Tools::getValue($this->table . 'Box') as $idEverBlock) {
+            try {
                 $obj = new $this->className(
                     (int) $idEverBlock
                 );
@@ -1241,7 +1237,6 @@ class AdminEverBlockController extends ModuleAdminController
                     }
                 }
                 $obj->save();
-            try {
             } catch (Exception $e) {
                 PrestaShopLogger::addLog(
                     'Admin Everblock GPT : ' . $e->getMessage()
@@ -1259,8 +1254,7 @@ class AdminEverBlockController extends ModuleAdminController
     {
         $return = [];
         $hooks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            '
-            SELECT * FROM `' . _DB_PREFIX_ . 'hook` h
+            'SELECT * FROM `' . _DB_PREFIX_ . 'hook` h
             ' . ($position ? 'WHERE h.`position` = 1' : '') . '
             ORDER BY `name`'
         );

@@ -31,14 +31,14 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
 
     protected function formProcess()
     {
-        $validToken = Tools::encrypt($this->module->name.'/token');
+        $validToken = Tools::encrypt($this->module->name . '/token');
         if (!Tools::getValue('token') || Tools::getValue('token') != $validToken) {
             Tools::redirect('index.php');
         }
         $formData = Tools::getAllValues();
         // Use this for recaptcha validation
         Hook::exec(
-            'actionEverblockContactBefore',
+            'hookActionContactFormSubmitBefore',
             [
                 'formData' => &$formData,
             ]
@@ -68,11 +68,12 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
         $messageContent .= $this->module->l('Client platform:') . ' ' . $clientPlatform . "\n";
         $attachments = [];
         foreach ($_FILES as $fileKey => $fileData) {
-            if (!empty($fileData['name']) && is_uploaded_file($fileData['tmp_name'])) {
+            if (!empty($fileData['name'])
+                && is_uploaded_file($fileData['tmp_name'])
+            ) {
                 $finfo = finfo_open(FILEINFO_MIME_TYPE);
                 $mime = finfo_file($finfo, $fileData['tmp_name']);
                 finfo_close($finfo);
-
                 $attachment = [
                     'content' => Tools::file_get_contents($fileData['tmp_name']),
                     'name' => $fileData['name'],
@@ -97,7 +98,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
         ];
         $mailFolder = _PS_MODULE_DIR_ . $this->module->name . '/mails/';
         $sent = Mail::send(
-            $this->context->language->id,
+            (int) $this->context->language->id,
             $mailTemplateName,
             $mailSubject,
             $templateVars,
@@ -108,12 +109,6 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             !empty($attachments) ? $attachments : null,
             null,
             $mailFolder
-        );
-        Hook::exec(
-            'actionEverblockContactAfter',
-            [
-                'formData' => $formData,
-            ]
         );
         if ($sent) {
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/success.tpl');

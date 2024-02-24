@@ -16,23 +16,24 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($storeInfos) && $storeInfos}
-<section class="featured-store clearfix mt-3">
+  <section class="featured-store clearfix mt-3">
     {foreach $storeInfos item=store}
-        <div class="col-12 col-md-4 store-{$store.id_store}">
-            <div class="card">
-                <img src="{$store.image_link}" alt="{$store.name}" class="card-img-top lazyload" loading="lazy">
-                <div class="card-body text-center">
-                    <span class="h5" class="card-title text-center">{$store.name}</span>
-                    {if $store.address1 || $store.address2}
-                    <address class="card-text">
-                        {if $store.address1}{$store.address1}<br>{/if}
-                        {if $store.address2}{$store.address2}<br>{/if}
-                        {$store.postcode} {$store.city}
-                    </address>
-                    {/if}
-                </div>
-            </div>
+      <div class="col-12 col-md-4 store-{$store.id_store}">
+        <div class="card">
+          <img src="{$store.image_link}" alt="{$store.name}" class="card-img-top lazyload" loading="lazy">
+          <div class="card-body text-center">
+            <span class="h5" class="card-title text-center">{$store.name}</span>
+            {if $store.address1 || $store.address2}
+            <address class="card-text">
+              {if $store.address1}{$store.address1}<br>{/if}
+              {if $store.address2}{$store.address2}<br>{/if}
+              {$store.postcode} {$store.city}
+            </address>
+            {/if}
+          </div>
         </div>
+      </div>
     {/foreach}
-</section>
+  </section>
 {/if}
+

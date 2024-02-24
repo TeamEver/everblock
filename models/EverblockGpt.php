@@ -38,19 +38,18 @@ class EverblockGpt extends ObjectModel
     {
         $this->curl = curl_init();
         $this->API_KEY = Configuration::get('EVERGPT_API_KEY');
-        if ($requestType === 'image')
+        if ($requestType === 'image') {
             curl_setopt($this->curl, CURLOPT_URL, $this->imageURL);
-        if ($requestType === 'text')
+        }
+        if ($requestType === 'text') {
             curl_setopt($this->curl, CURLOPT_URL, $this->textURL);
-
+        }
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->curl, CURLOPT_POST, true);
-
         $headers = [
             'Content-Type: application/json',
             'Authorization: Bearer ' . $this->API_KEY,
         ];
-
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, $headers);
     }
 
@@ -59,31 +58,23 @@ class EverblockGpt extends ObjectModel
     {
         curl_reset($this->curl);
         $this->initialize('text');
-
         $this->data['model'] = $model;
         $this->data['prompt'] = $prompt;
         $this->data['temperature'] = $temperature;
         $this->data['max_tokens'] = $maxTokens;
-
-        curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, false); // Désactive la vérification du certificat SSL
-
+        curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($this->curl, CURLOPT_POSTFIELDS, json_encode($this->data));
-
         $response = curl_exec($this->curl);
-
         if ($response === false) {
             $error_message = curl_error($this->curl);
             curl_close($this->curl);
             throw new Exception('cURL Error: $error_message');
         }
-
         $response_data = json_decode($response, true);
-
         if (isset($response_data['error'])) {
             // You exceeded your current quota, please check your plan and billing details.
             throw new Exception('API Error: ' . $response_data['error']['message']);
         }
-
         return $response_data['choices'][0]['text'] ?? null; // return text or -1 if error
     }
 
@@ -92,13 +83,10 @@ class EverblockGpt extends ObjectModel
     {
         curl_reset($this->curl);
         $this->initialize('image');
-
         $this->data['prompt'] = $prompt;
         $this->data['n'] = $numberOfImages;
         $this->data['size'] = $imageSize;
-
         curl_setopt($this->curl, CURLOPT_POSTFIELDS, json_encode($this->data));
-
         $response = curl_exec($this->curl);
         $response = json_decode($response, true);
         return $response['data'][0]['url'] ?? -1; //return the first url or -1 if error
@@ -110,7 +98,6 @@ class EverblockGpt extends ObjectModel
             return;
         }
         $className = get_class($object);
-
         switch ($className) {
             case 'Product':
                 $prompt = static::getProductPrompt(
@@ -178,7 +165,6 @@ class EverblockGpt extends ObjectModel
             (int) $langId,
             (int) $shopId
         );
-        
         if (Validate::isLoadedObject($product)) {
             // Récupérer les données du produit
             $link = new Link();
@@ -196,7 +182,6 @@ class EverblockGpt extends ObjectModel
             $product_manufacturer = new Manufacturer($product->id_manufacturer);
             $product_sku = $product->reference;
             $product_url = $link->getProductLink($product);
-            
             // Construire une requête pour ChatGPT
             $prompt = 'Génère un contenu HTML orienté SEO pour le produit ' . $product_name . ' pour la boutique ' . Configuration::get('PS_SHOP_NAME. ');
             if (!empty($product_manufacturer->name)) {
@@ -230,14 +215,11 @@ class EverblockGpt extends ObjectModel
             (int) $langId,
             (int) $shopId
         );
-
         if (!Validate::isLoadedObject($category)) {
             return;
         }
-
         $categoryName = $category->name;
         $categoryDescription = strip_tags($category->description);
-        
         // Construire la directive pour ChatGPT
         $prompt = 'ChatGPT, rédige une description attrayante et SEO-friendly pour la catégorie ' . $categoryName . ' de notre boutique en ligne. ';
         $prompt .= 'Inclus les éléments suivants dans la description: ';
@@ -251,7 +233,6 @@ class EverblockGpt extends ObjectModel
         $prompt .= 'Le but est de maximiser l’intérêt et l’engagement des visiteurs de notre boutique en ligne. ';
         $prompt .= self::getPromptRecommendations();
         $prompt .= 'La langue de rédaction est le ' . (new Language((int) $langId))->name . '. ';
-
         return $prompt;
     }
 
@@ -262,14 +243,11 @@ class EverblockGpt extends ObjectModel
             (int) $langId,
             (int) $shopId
         );
-
         if (!Validate::isLoadedObject($manufacturer)) {
             return;
         }
-
         $manufacturerName = $manufacturer->name;
         $manufacturerDescription = strip_tags($manufacturer->description);
-
         $prompt = 'ChatGPT, je souhaite que tu rédiges une description captivante et optimisée pour le SEO pour le fabricant ' . $manufacturerName . '. ';
         $prompt .= 'La description devrait inclure: ';
         if (!empty($manufacturerDescription)) {
@@ -293,14 +271,11 @@ class EverblockGpt extends ObjectModel
             (int) $langId,
             (int) $shopId
         );
-
         if (!Validate::isLoadedObject($supplier)) {
             return;
         }
-
         $supplierName = $supplier->name;
         $supplierDescription = strip_tags($supplier->description);
-
         // Construire la directive pour ChatGPT
         $prompt = 'ChatGPT, rédige une description attrayante et SEO-friendly pour le fournisseur ' . $supplierName . ' pour notre boutique en ligne. ';
         $prompt .= 'La description devrait inclure: ';
@@ -314,7 +289,6 @@ class EverblockGpt extends ObjectModel
         $prompt .= 'Il est important que la description soit unique et valorise le fournisseur de manière positive. ';
         $prompt .= self::getPromptRecommendations();
         $prompt .= 'La rédaction doit se faire en ' . (new Language((int) $langId))->name . '. ';
-
         return $prompt;
     }
 
@@ -325,7 +299,6 @@ class EverblockGpt extends ObjectModel
             (int) $langId,
             (int) $shopId
         );
-
         if (!Validate::isLoadedObject($everblock)) {
             return;
         }
@@ -350,7 +323,6 @@ class EverblockGpt extends ObjectModel
             'suppliers' => self::loadDetails(json_decode($everblock->suppliers), 'Supplier', $langId, $shopId),
             'cms_categories' => self::loadDetails(json_decode($everblock->cms_categories), 'CmsCategory', $langId, $shopId),
         ];
-
         // Construire la directive pour ChatGPT
         $prompt = 'Crée un contenu HTML pour mon bloc HTML sur Prestashop ' . $infos['name'] . '. ';
         if ($infos['hook']) {
@@ -370,7 +342,6 @@ class EverblockGpt extends ObjectModel
         }
         $prompt .= self::getPromptRecommendations();
         $prompt .= 'La langue de rédaction est le ' . (new Language((int) $langId))->name . '. ';
-
         return $prompt;
     }
 
@@ -416,7 +387,6 @@ class EverblockGpt extends ObjectModel
             ];
         }
         $className = get_class($object);
-
         switch ($className) {
             case 'Product':
             case 'Category':

@@ -50,7 +50,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
         `date_start` DATETIME DEFAULT NULL,
         `date_end` DATETIME DEFAULT NULL,
         `active` int(10) unsigned NOT NULL,
-        PRIMARY KEY (`id_everblock`)
+        PRIMARY KEY (`id_everblock`, `id_shop`)
     ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';
 
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_lang` (
@@ -66,7 +66,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_shortcode` (
         `id_everblock_shortcode` int(10) unsigned NOT NULL auto_increment,
         `shortcode` text DEFAULT NULL,
         `id_shop` int(10) unsigned NOT NULL,
-        PRIMARY KEY (`id_everblock_shortcode`)
+        PRIMARY KEY (`id_everblock_shortcode`, `id_shop`)
     ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
 
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_shortcode_lang` (
@@ -77,12 +77,33 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_shortcode_lan
         PRIMARY KEY (`id_everblock_shortcode`, `id_lang`)
     ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
 
-/* Create Tables in Database */
+// FAQ
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_faq` (
+        `id_everblock_faq` int(10) unsigned NOT NULL auto_increment,
+        `tag_name` text DEFAULT NULL,
+        `id_shop` int(10) unsigned NOT NULL,
+        `position` int(10) unsigned NOT NULL DEFAULT 0,
+        `date_add` DATETIME DEFAULT NULL,
+        `date_upd` DATETIME DEFAULT NULL DEFAULT 0,
+        `active` int(10) unsigned NOT NULL,
+        PRIMARY KEY (`id_everblock_faq`, `id_shop`)
+    ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
+
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_faq_lang` (
+        `id_everblock_faq` int(10) unsigned NOT NULL,
+        `id_lang` int(10) unsigned NOT NULL,
+        `title` text DEFAULT NULL,
+        `content` text DEFAULT NULL,
+        PRIMARY KEY (`id_everblock_faq`, `id_lang`)
+    ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
+
+/* Tabs */
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs` (
          `id_everblock_tabs` int(10) unsigned NOT NULL auto_increment,
          `id_product` int(10) unsigned NOT NULL,
+         `id_tab` int(10) unsigned DEFAULT 0,
          `id_shop` int(10) unsigned DEFAULT 0,
-         PRIMARY KEY (`id_everblock_tabs`))
+         PRIMARY KEY (`id_everblock_tabs`, `id_tab`))
          ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs_lang` (

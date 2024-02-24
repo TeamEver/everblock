@@ -16,15 +16,15 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($everblock) && $everblock}
-    {foreach from=$everblock item=item}
-        {if isset($item.block.add_container) && $item.block.add_container == 1}
-        <div class="container">
-        {/if}
-        <div class="everblock everblock-{$item.block.id_everblock|escape:'htmlall':'UTF-8'} {$item.block.css_class|escape:'htmlall':'UTF-8'} {$item.block.bootstrap_class|escape:'htmlall':'UTF-8'} everhook-{$everhook|escape:'htmlall':'UTF-8'}" id="everblock-{$item.block.id_everblock|escape:'htmlall':'UTF-8'}" data-everposition="{$item.block.position|escape:'htmlall':'UTF-8'}" data-everhook="{$everhook|escape:'htmlall':'UTF-8'}"{if isset($item.block.background) && $item.block.background} style="background-color:{$item.block.background|escape:'htmlall':'UTF-8'};"{/if}>
-            {$item.block.content nofilter}
-        </div>
-        {if isset($item.block.add_container) && $item.block.add_container == 1}
-        </div>
-        {/if}
-    {/foreach}
+  {foreach from=$everblock item=item}
+    {if isset($item.block.add_container) && $item.block.add_container == 1}
+      <div class="container">
+    {/if}
+      <div class="everblock everblock-{$item.block.id_everblock|escape:'htmlall':'UTF-8'} {$item.block.css_class|escape:'htmlall':'UTF-8'} {$item.block.bootstrap_class|escape:'htmlall':'UTF-8'} everhook-{$everhook|escape:'htmlall':'UTF-8'}" id="everblock-{$item.block.id_everblock|escape:'htmlall':'UTF-8'}" data-everposition="{$item.block.position|escape:'htmlall':'UTF-8'}" data-everhook="{$everhook|escape:'htmlall':'UTF-8'}"{if isset($item.block.background) && $item.block.background} style="background-color:{$item.block.background|escape:'htmlall':'UTF-8'};"{/if}>
+        {$item.block.content nofilter}
+      </div>
+    {if isset($item.block.add_container) && $item.block.add_container == 1}
+      </div>
+    {/if}
+  {/foreach}
 {/if}

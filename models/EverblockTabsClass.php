@@ -24,6 +24,7 @@ class EverblockTabsClass extends ObjectModel
     public $id_everblock_tabs;
     public $id_product;
     public $id_shop;
+    public $id_tab;
     public $title;
     public $content;
 
@@ -41,6 +42,11 @@ class EverblockTabsClass extends ObjectModel
                 'required' => true,
             ],
             'id_shop' => [
+                'type' => self::TYPE_INT,
+                'validate' => 'isUnsignedId',
+                'required' => false,
+            ],
+            'id_tab' => [
                 'type' => self::TYPE_INT,
                 'validate' => 'isUnsignedId',
                 'required' => false,
@@ -64,53 +70,63 @@ class EverblockTabsClass extends ObjectModel
      * @param int shopId
      * @return $obj
     */
-    public static function getByIdProductInAdmin($productId, $shopId)
+    public static function getByIdProductInAdmin(int $productId, int $shopId): array
     {
         $sql = new DbQuery();
-        $sql->select('id_everblock_tabs');
-        $sql->from('everblock_tabs');
+        $sql->select(self::$definition['primary']);
+        $sql->from(self::$definition['table']);
         $sql->where('id_product = ' . (int) $productId);
         $sql->where('id_shop = ' . (int) $shopId);
+        $tabIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        $return = [];
+        foreach ($tabIds as $tab) {
+            $return[] = new self(
+                (int) $tab[self::$definition['primary']]
+            );
+        }
+        return $return;
+    }
+
+    public static function getByIdProductIdTab(int $productId, int $shopId, int $tabId): array
+    {
+        $sql = new DbQuery();
+        $sql->select(self::$definition['primary']);
+        $sql->from(self::$definition['table']);
+        $sql->where('id_product = ' . (int) $productId);
+        $sql->where('id_shop = ' . (int) $shopId);
+        $sql->where('id_tab = ' . (int) $tabId);
         $tabId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
         if ($tabId) {
-            $obj = new self(
+            return new self(
                 (int) $tabId
             );
-        } else {
-            $obj = new self();
         }
-        return $obj;
+        return new self();
     }
 
     /**
      * get tab object per product & shop
      * @param int productId
      * @param int shopId
-     * @return $obj
+     * @return array
     */
-    public static function getByIdProduct($productId, $shopId)
+    public static function getByIdProduct(int $productId, int $shopId, int $langId):array
     {
-        $cacheId = 'EverblockTabsClass_getByIdProduct_'
-        . (int) $productId
-        . '_'
-        . (int) $shopId;
-        if (!EverblockTools::isCacheStored($cacheId)) {
-            $sql = new DbQuery();
-            $sql->select('id_everblock_tabs');
-            $sql->from('everblock_tabs');
-            $sql->where('id_product = ' . (int) $productId);
-            $sql->where('id_shop = ' . (int) $shopId);
-            $tabId = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
-            if ($tabId) {
-                $obj = new self(
-                    (int) $tabId
-                );
-            } else {
-                $obj = new self();
-            }
-            EverblockTools::cacheStore($cacheId, $obj);
-            return $obj;
+        $sql = new DbQuery();
+        $sql->select(self::$definition['primary']);
+        $sql->from(self::$definition['table']);
+        $sql->where('id_product = ' . (int) $productId);
+        $sql->where('id_shop = ' . (int) $shopId);
+        $sql->orderBy('id_tab');
+        $tabIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        $return = [];
+        foreach ($tabIds as $tab) {
+            $return[] = new self(
+                (int) $tab[self::$definition['primary']],
+                (int) $langId,
+                (int) $shopId
+            );
         }
-        return EverblockTools::cacheRetrieve($cacheId);
+        return $return;
     }
 }

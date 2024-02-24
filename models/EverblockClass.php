@@ -40,6 +40,7 @@ class EverBlockClass extends ObjectModel
     public $background;
     public $css_class;
     public $bootstrap_class;
+    public $position;
     public $id_shop;
     public $categories;
     public $manufacturers;
@@ -204,7 +205,7 @@ class EverBlockClass extends ObjectModel
         ],
     ];
 
-    public static function getAllBlocks($idLang, $idShop)
+    public static function getAllBlocks(int $idLang, int $idShop): array
     {
         $sql = new DbQuery();
         $sql->select('*');
@@ -217,7 +218,7 @@ class EverBlockClass extends ObjectModel
         return $allBlocks;
     }
 
-    public static function cleanBlocksCacheOnDate($idLang, $idShop)
+    public static function cleanBlocksCacheOnDate(int $idLang, int $idShop)
     {
         $cacheId = 'EverBlockClass_getAllBlocks_'
         . (int) $idLang
@@ -242,7 +243,7 @@ class EverBlockClass extends ObjectModel
                 $cacheNeedFlush = true;
             }
             if ((bool) $cacheNeedFlush === true) {
-                $cacheStartId = 'everblock' . '-id_hook-' . (int) $block['id_hook'];
+                $cacheStartId = 'everblock-id_hook-' . (int) $block['id_hook'];
                 EverblockTools::cacheDropByPattern($cacheStartId);
             }
         }
@@ -253,7 +254,7 @@ class EverBlockClass extends ObjectModel
         $cacheId = sprintf('EverBlockClass_getBlocks_%d_%d_%d', $idHook, $idLang, $idShop);
         if (!EverblockTools::isCacheStored($cacheId)) {
             $return = [];
-            $sql = new DbQuery;
+            $sql = new DbQuery();
             $sql->select('*');
             $sql->from('everblock', 'eb');
             $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
@@ -275,7 +276,7 @@ class EverBlockClass extends ObjectModel
         return EverblockTools::cacheRetrieve($cacheId);
     }
 
-    public static function getBootstrapColClass($colNumber)
+    public static function getBootstrapColClass(int $colNumber)
     {
         $cacheId = 'EverBlockClass_getBootstrapColClass_'
         . (int) $colNumber;

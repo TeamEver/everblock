@@ -34,6 +34,7 @@ class AdminEverBlockHookController extends ModuleAdminController
         $this->context = Context::getContext();
         $this->identifier = 'id_hook';
         $this->name = 'AdminEverBlockHook';
+        EverblockTools::checkAndFixDatabase();
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
         $this->context->smarty->assign([
@@ -401,7 +402,7 @@ class AdminEverBlockHookController extends ModuleAdminController
 
     protected function processBulkDelete()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+        foreach (Tools::getValue($this->table . 'Box') as $idObj) {
             $everBlock = new Hook((int) $idObj);
 
             if (!$everBlock->delete()) {
@@ -412,7 +413,7 @@ class AdminEverBlockHookController extends ModuleAdminController
 
     protected function processBulkDisable()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+        foreach (Tools::getValue($this->table . 'Box') as $idObj) {
             $everBlock = new Hook((int) $idObj);
             if ($everBlock->active) {
                 $everBlock->active = false;
@@ -426,7 +427,7 @@ class AdminEverBlockHookController extends ModuleAdminController
 
     protected function processBulkEnable()
     {
-        foreach (Tools::getValue($this->table.'Box') as $idObj) {
+        foreach (Tools::getValue($this->table . 'Box') as $idObj) {
             $everBlock = new Hook((int) $idObj);
             if (!$everBlock->active) {
                 $everBlock->active = true;

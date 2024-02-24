@@ -50,9 +50,6 @@ Available at https://www.team-ever.com/prestashop-utilisation-du-module-ever-blo
 - `$customer.id`: Customer identifier (database ID).
 - `$customer.id_default_group`: Identifier of the default customer group of this customer.
 - `$customer.is_logged`: Is the customer logged in?
-- `$page.meta.title`: Title tag of your page (maximum 65 characters).
-- `$page.meta.description`: Meta description tag of your page (between 90 and 165 characters).
-- `$page.page_name`: Name of the page you are on (e.g., index, product, category, etc.).
 - `$urls.base_url`: URL of the home page of your PrestaShop.
 - `$urls.current_url`: The current page's URL.
 - `$urls.shop_domain_url`: The domain name of the store.

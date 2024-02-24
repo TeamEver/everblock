@@ -16,11 +16,12 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($everPresentProducts) && $everPresentProducts}
-<section class="featured-products clearfix mt-3">
+  <section class="featured-products clearfix mt-3">
     <div class="products row">
-    {foreach $everPresentProducts item=product}
+      {foreach $everPresentProducts item=product}
         {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
-    {/foreach}
+      {/foreach}
     </div>
-</section>
+  </section>
 {/if}
+
