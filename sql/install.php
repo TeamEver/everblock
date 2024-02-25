@@ -37,7 +37,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
         `add_container` int(10) unsigned DEFAULT NULL,
         `lazyload` int(10) unsigned DEFAULT NULL,
         `device` int(10) unsigned NOT NULL DEFAULT 0,
-        `id_shop` int(10) unsigned NOT NULL,
+        `id_shop` int(10) unsigned NOT NULL DEFAULT 1,
         `position` int(10) unsigned DEFAULT 0,
         `categories` text DEFAULT NULL,
         `manufacturers` text DEFAULT NULL,
@@ -47,9 +47,11 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
         `background` varchar(255) DEFAULT NULL,
         `css_class` varchar(255) DEFAULT NULL,
         `bootstrap_class` varchar(255) DEFAULT NULL,
+        `modal` int(10) unsigned NOT NULL DEFAULT 0,
+        `delay` int(10) unsigned NOT NULL DEFAULT 0,
         `date_start` DATETIME DEFAULT NULL,
         `date_end` DATETIME DEFAULT NULL,
-        `active` int(10) unsigned NOT NULL,
+        `active` int(10) unsigned NOT NULL DEFAULT 0,
         PRIMARY KEY (`id_everblock`, `id_shop`)
     ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';
 

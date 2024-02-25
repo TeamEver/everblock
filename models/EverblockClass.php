@@ -46,6 +46,8 @@ class EverBlockClass extends ObjectModel
     public $manufacturers;
     public $suppliers;
     public $cms_categories;
+    public $modal;
+    public $delay;
     public $date_start;
     public $date_end;
     public $active;
@@ -177,6 +179,17 @@ class EverBlockClass extends ObjectModel
                 'lang' => false,
                 'validate' => 'isUnsignedInt',
                 'required' => true,
+            ],
+            'delay' => [
+                'type' => self::TYPE_INT,
+                'lang' => false,
+                'validate' => 'isUnsignedInt',
+                'required' => false,
+            ],
+            'modal' => [
+                'type' => self::TYPE_BOOL,
+                'lang' => false,
+                'validate' => 'isBool',
             ],
             'date_start' => [
                 'type' => self::TYPE_DATE,

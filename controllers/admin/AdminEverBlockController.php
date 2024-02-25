@@ -107,6 +107,12 @@ class AdminEverBlockController extends ModuleAdminController
                 'align' => 'left',
                 'width' => 'auto',
             ],
+            'modal' => [
+                'title' => $this->l('Is modal'),
+                'align' => 'left',
+                'width' => 'auto',
+                'type' => 'bool',
+            ],
             'active' => [
                 'title' => $this->l('Status'),
                 'type' => 'bool',
@@ -682,6 +688,36 @@ class AdminEverBlockController extends ModuleAdminController
                         'lang' => false,
                     ],
                     [
+                        'type' => 'switch',
+                        'label' => $this->l('Show as modal ?'),
+                        'desc' => $this->l('Will be shown as modal. Hooks won\'t be rendered, neither store locator'),
+                        'hint' => $this->l('Else will be shown as block'),
+                        'name' => 'modal',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Lifetime of the cookie (in days). Modal only'),
+                        'desc' => $this->l('If disabled, the modal will show systematically'),
+                        'hint' => $this->l('Set 0 for debug or disable. Please set a number.'),
+                        'name' => 'delay',
+                        'required' => false,
+                        'lang' => false,
+                    ],
+                    [
                         'type' => 'datetime',
                         'label' => $this->l('Date start'),
                         'desc' => $this->l('Date block will start to appear'),
@@ -841,6 +877,12 @@ class AdminEverBlockController extends ModuleAdminController
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
                 : $obj->device,
+                'delay' => (!empty(Tools::getValue('delay')))
+                ? Tools::getValue('delay')
+                : $obj->delay,
+                'modal' => (!empty(Tools::getValue('modal')))
+                ? Tools::getValue('modal')
+                : $obj->modal,
                 'date_start' => (!empty(Tools::getValue('date_start')))
                 ? Tools::getValue('date_start')
                 : $obj->date_start,
@@ -932,6 +974,12 @@ class AdminEverBlockController extends ModuleAdminController
                 'device' => (!empty(Tools::getValue('device')))
                 ? Tools::getValue('device')
                 : '',
+                'delay' => (!empty(Tools::getValue('delay')))
+                ? Tools::getValue('delay')
+                : '',
+                'modal' => (!empty(Tools::getValue('modal')))
+                ? Tools::getValue('modal')
+                : '',
                 'date_start' => (!empty(Tools::getValue('date_start')))
                 ? Tools::getValue('date_start')
                 : '',
@@ -952,7 +1000,7 @@ class AdminEverBlockController extends ModuleAdminController
 
     public function postProcess()
     {
-        if (Tools::getIsset('duplicate'.$this->table)) {
+        if (Tools::getIsset('duplicate' . $this->table)) {
             $this->duplicate(
                 (int)Tools::getValue($this->identifier)
             );
@@ -1050,6 +1098,16 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Size name is not valid');
             }
+            if (Tools::getValue('delay')
+                && !Validate::isBool(Tools::getValue('delay'))
+            ) {
+                $this->errors[] = $this->l('Modal delay is not valid');
+            }
+            if (Tools::getValue('modal')
+                && !Validate::isBool(Tools::getValue('modal'))
+            ) {
+                $this->errors[] = $this->l('Modal is not valid');
+            }
             if (Tools::getValue('active')
                 && !Validate::isBool(Tools::getValue('active'))
             ) {
@@ -1110,6 +1168,8 @@ class AdminEverBlockController extends ModuleAdminController
                 $everblock_obj->groups = json_encode(Tools::getValue('groupBox'));
             }
             $hook_name = Hook::getNameById((int) Tools::getValue('id_hook'));
+            $everblock_obj->delay = (int) Tools::getValue('delay');
+            $everblock_obj->modal = (int) Tools::getValue('modal');
             $everblock_obj->date_start = pSQL(Tools::getValue('date_start'));
             $everblock_obj->date_end = pSQL(Tools::getValue('date_end'));
             $everblock_obj->active = Tools::getValue('active');

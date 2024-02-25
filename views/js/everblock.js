@@ -16,27 +16,60 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 $(document).ready(function(){
-    var $forms = $('.evercontactform');
-    $forms.each(function() {
+    $(document).on('submit', '.evercontactform', function(e) {
+        e.preventDefault();
         var $form = $(this);
-        $form.on('submit', function(e) {
-            e.preventDefault();
-            $.ajax({
-                url: evercontact_link,
-                type: 'POST',
-                data: $form.serialize(),
-                success: function(modal) {
-                    $(modal).insertAfter($form);
-                    $('#evercontactModal').modal('show');
-                    $('#evercontactModal').on('hidden.bs.modal', function () {
-                        $(this).remove();
+        $.ajax({
+            url: evercontact_link,
+            type: 'POST',
+            data: $form.serialize(),
+            success: function(modal) {
+                $('#everblockModal').remove();
+                $('body').append(modal);
+                $('#evercontactModal').modal('show');
+                $('#evercontactModal').on('hidden.bs.modal', function () {
+                    $(this).remove();
+                    $('.modal-backdrop').remove();
+                });
+            },
+            error: function(xhr, status, error) {
+                console.log(xhr.responseText);
+            }
+        });
+    });
+    $('div[data-evermodal]').each(function() {
+        var blockId = $(this).attr('id').replace('everblock-', '');
+        $.ajax({
+            url: evermodal_link,
+            type: 'POST',
+            data: { id_everblock: blockId },
+            success: function(modal) {
+                $(modal).insertAfter($('body'));
+                var $modal = $('#everblockModal');
+                $modal.modal('show');
+                
+                $modal.on('shown.bs.modal', function () {
+                    var windowHeight = $(window).height();
+                    var modalHeaderHeight = $(this).find('.modal-header').outerHeight() || 0; // S'il y a un en-tête
+                    var modalFooterHeight = $(this).find('.modal-footer').outerHeight() || 0; // S'il y a un pied de page
+                    var modalBodyPadding = parseInt($(this).find('.modal-body').css('padding-top')) + parseInt($(this).find('.modal-body').css('padding-bottom'));
+                    
+                    var maxModalBodyHeight = windowHeight - modalHeaderHeight - modalFooterHeight - modalBodyPadding - 20; // 20px pour un peu d'espace
+                    
+                    $(this).find('.modal-body').css({
+                        'max-height': maxModalBodyHeight + 'px',
+                        'overflow-x': 'hidden',
+                        'overflow-y': 'auto'
                     });
-                    // $(this).slideUp();
-                },
-                error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
-                }
-            });
+                });
+
+                $modal.on('hidden.bs.modal', function () {
+                    $(this).remove();
+                });
+            },
+            error: function(xhr, status, error) {
+                console.log(xhr.responseText);
+            }
         });
     });
     $('.everModalAutoTrigger').modal('show');
@@ -65,20 +98,5 @@ $(document).ready(function(){
     $('.everblock-gallery .modal').modal({
         backdrop: true,
         show: false
-    });
-    // Parallax
-    $('.everblock-parallax .parallax-container').each(function() {
-        var $container = $(this);
-        var $bg = $container.find('.parallax-bg');
-        var containerTop = $container.offset().top;
-        var windowHeight = $(window).height();
-        $(window).on('scroll', function() {
-            var scrollPosition = $(this).scrollTop();
-            var parallaxOffset = (scrollPosition - containerTop) * 0.2;
-            $bg.css({
-                'transform': 'translateY(' + parallaxOffset + 'px)',
-                'height': windowHeight + parallaxOffset + 'px'
-            });
-        });
     });
 });

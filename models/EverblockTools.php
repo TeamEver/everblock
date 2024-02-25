@@ -1827,6 +1827,8 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_faq',
             _DB_PREFIX_ . 'everblock_faq_lang',
             _DB_PREFIX_ . 'everblock_tabs',
+            _DB_PREFIX_ . 'everblock_modal',
+            _DB_PREFIX_ . 'everblock_modal_lang',
         ];
         $tableExists = true;
         foreach ($tableNames as $tableName) {
@@ -1859,9 +1861,11 @@ class EverblockTools extends ObjectModel
             'background' => 'varchar(255) DEFAULT NULL',
             'css_class' => 'varchar(255) DEFAULT NULL',
             'bootstrap_class' => 'varchar(255) DEFAULT NULL',
+            'delay' => 'int(10) unsigned NOT NULL DEFAULT 0',
+            'modal' => 'int(10) unsigned NOT NULL DEFAULT 0',
             'date_start' => 'DATETIME DEFAULT NULL',
             'date_end' => 'DATETIME DEFAULT NULL',
-            'active' => 'int(10) unsigned NOT NULL',
+            'active' => 'int(10) unsigned NOT NULL DEFAULT 1',
         ];
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock` `' . pSQL($columnName) . '`');

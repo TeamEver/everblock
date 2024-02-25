@@ -46,7 +46,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.5.5';
+        $this->version = '5.5.6';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -1536,6 +1536,13 @@ class Everblock extends Module
             'evercontact_link' => $this->context->link->getModuleLink(
                 $this->name,
                 'contact',
+                [
+                    'token' => Tools::encrypt($this->name . '/token'),
+                ]
+            ),
+            'evermodal_link' => $this->context->link->getModuleLink(
+                $this->name,
+                'modal',
                 [
                     'token' => Tools::encrypt($this->name . '/token'),
                 ]

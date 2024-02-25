@@ -252,6 +252,12 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_93e32cd7f3ae7da22645c4
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_517ebf75f85434d669c39d8af75631b0'] = 'Position du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_fd704ea41268a7b760b8a234a6273c44'] = 'Saisissez un numéro de position du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c3bed604ee8b68cf22f2c70a12e44bf1'] = 'Les blocs seront ordonnés par position';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_76b11a9a6f4dbbf2f6c9f57b8c6ed649'] = 'Afficher en tant que modal ?';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_34a45a073b79fae0771556f250d8afd8'] = 'Le block sera affiché dans une modal. Les shortcodes de hooks ainsi que le store locator ne seront pas affichés. ';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_3ad63bcfa9d92897d9e0d9201800a73d'] = 'Sinon le bloc sera affiché en tant que bloc HTML';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_532146048e4fac6dcbe57d8791b4f24a'] = 'Durée de vie du cookie (en nombre de jours). Uniquement pour la modal';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_c6df078406bd86aa1f9379fd96fbbed7'] = 'Si désactivé ou zéro, la modal sera affichée systématiquement';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_fa9799449dee6f0f84302876c7fd0783'] = 'Mettez à zéro pour le débogage ou afficher systématiquement la modal. Merci de renseigner un nombre de jours.';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_4f102aa0276bbd9b1c2bf0257f371d08'] = 'Date de début d\'affichage du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_d00ece8783a5f89ac941a4cda807c4f7'] = 'Date de fin d\'affichage du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_4d3d769b812b6faa6b76e1a8abaece2d'] = 'Actif';
@@ -273,6 +279,8 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_c32d9968f3071dc2f7f55c
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_2dfae56804a20b70fbf2bac261ae7ec0'] = 'La couleur de fond n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_1aac650841668d548bb9c02f02f4abca'] = 'Les class HTML personnalisées ne sont pas valides';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_70b847a2e057a1620f0b7b8a6a2f9407'] = 'La taille n\'est pas valide';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_2746494f1aa8c2cfb4d1c0faf9c7f190'] = 'Le délai de réaffichage de la modal n\'est pas valide';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_a1c3ce45c9ca668dcc2092bf0fc79703'] = 'Mettre en modal n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_5999ebfb5e6d9ab139865a400fc3324e'] = 'Activer n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_b207bf1f0294d535c352bfbcd82a4baa'] = 'Le type d\'appareil n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_5056d83dfa11a4fcf25b0eec55bf4817'] = 'Une erreur est survenue. Impossible de supprimer l\'objet';
