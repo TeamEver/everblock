@@ -16,10 +16,6 @@ Dev documentation show every native Prestashop hook :
 [Prestashop 1.7 hook list](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
 Please check ps_hook table on your database to see every available hook on your shop. Only display hooks are used with this module
 
-## Prestashop 1.6 
-The module having greatly evolved, it is no longer compatible with Prestashop 1.6 in favor of Prestashop 8
-Please update your store to benefit from the new features and advantages of the latest version of the EverBlock HTML block module.
-
 ## Pretty Blocks compatibility
 This module is now compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
 
