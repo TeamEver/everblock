@@ -26,10 +26,10 @@ $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock`;';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_lang`;';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_shortcode`;';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_shortcode_lang`;';
-$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_tabs`;';
-$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_tabs_lang`;';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_faq`;';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_faq_lang`;';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_tabs`;';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_tabs_lang`;';
 
 foreach ($sql as $s) {
     if (!Db::getInstance()->execute($s)) {

@@ -31,5 +31,6 @@
         {if isset($module_link) && $module_link}
         <a href="{$module_link|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-success">{l s='Module configuration' mod='everblock'}</a>
         {/if}
+        <a href="{$everblock_dir|escape:'htmlall':'UTF-8'}input/sample/tabs.xlsx" class="btn btn-lg btn-success">{l s='Download Excel tabs sample file' mod='everblock'}</a>
     </div>
 </div>

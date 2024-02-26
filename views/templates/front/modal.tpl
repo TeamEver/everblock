@@ -17,9 +17,16 @@
 *}
 
 {if isset($everblock_modal) && $everblock_modal}
-<div class="modal fade everblockModal" id="everblockModal" tabindex="-1" role="dialog" aria-labelledby="everblockModal" aria-hidden="true">
+<div class="modal fade everblockModal" id="everblockModal" tabindex="-1" role="dialog" aria-labelledby="everblockModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content text-center"{if isset($everblock_modal->background) && $everblock_modal->background} style="background-color:{$everblock_modal->background|escape:'htmlall':'UTF-8'};"{/if}>
+        <div class="modal-content text-center"{if isset($everblock_modal->background) && $everblock_modal->background} style="background-color:{$everblock_modal->background|escape:'htmlall':'UTF-8'};"{/if}>  
+            <!-- Bouton de fermeture -->
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="{l s='Close' mod='everblock'}">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <!-- Contenu de la modal -->
             <div class="modal-body text-center">
                 {$everblock_modal->content nofilter}
             </div>
@@ -27,3 +34,4 @@
     </div>
 </div>
 {/if}
+

@@ -1,6 +1,6 @@
 # Apache 2.2
 <IfModule !mod_authz_core.c>
-    <FilesMatch "(\.php|\.log|\.sql|\.xlsx)$">
+    <FilesMatch "(\.php|\.log|\.sql)$">
         Order allow,deny
         Deny from all
     </FilesMatch>
@@ -8,7 +8,7 @@
 
 # Apache 2.4
 <IfModule mod_authz_core.c>
-    <FilesMatch "(\.php|\.sql|\.xlsx)$">
+    <FilesMatch "(\.php|\.sql)$">
         Require all denied
     </FilesMatch>
 </IfModule>

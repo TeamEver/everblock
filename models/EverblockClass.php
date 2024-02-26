@@ -233,10 +233,6 @@ class EverBlockClass extends ObjectModel
 
     public static function cleanBlocksCacheOnDate(int $idLang, int $idShop)
     {
-        $cacheId = 'EverBlockClass_getAllBlocks_'
-        . (int) $idLang
-        . '_'
-        . (int) $idShop;
         $blocks = static::getAllBlocks($idLang, $idShop);
         $cacheNeedFlush = false;
         $cacheIds = [];
@@ -264,7 +260,12 @@ class EverBlockClass extends ObjectModel
 
     public static function getBlocks(int $idHook, int $idLang, int $idShop): array
     {
-        $cacheId = sprintf('EverBlockClass_getBlocks_%d_%d_%d', $idHook, $idLang, $idShop);
+        $cacheId = 'EverBlockClass_getBlocks_'
+        . (int) $idHook
+        . '_'
+        . (int) $idLang
+        . '_'
+        . (int) $idShop;
         if (!EverblockTools::isCacheStored($cacheId)) {
             $return = [];
             $sql = new DbQuery();

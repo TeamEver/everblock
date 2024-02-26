@@ -91,7 +91,7 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
         return Context::getContext()->getTranslator()->trans(
             $string,
             [],
-            'Modules.Everpsseo.Admineverblockshortcodecontroller'
+            'Modules.Everblock.Admineverblockshortcodecontroller'
         );
     }
 

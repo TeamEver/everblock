@@ -35,6 +35,7 @@ use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContent;
 use ScssPhp\ScssPhp\Compiler;
+use Everblock\Tools\Service\ImportFile;
 
 class Everblock extends Module
 {
@@ -46,7 +47,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.5.6';
+        $this->version = '5.5.7';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -262,7 +263,6 @@ class Everblock extends Module
         $this->registerHook('actionObjectProductUpdateAfter');
         $this->registerHook('actionObjectProductDeleteAfter');
         $this->registerHook('displayProductExtraContent');
-        $this->registerHook('displayAdminProductsExtra');
         $this->registerHook('actionOutputHTMLBefore');
         $this->registerHook('displayHeader');
         $this->registerHook('actionAdminControllerSetMedia');
@@ -293,8 +293,20 @@ class Everblock extends Module
                 $this->postProcess();
             }
         }
+
+        if ((bool) Tools::isSubmit('submitUploadTabsFile') === true) {
+            $this->uploadTabsFile();
+        }
         if ((bool) Tools::isSubmit('submitEmptyCache') === true) {
             $this->emptyAllCache();
+        }
+        if ((bool) Tools::isSubmit('submitEmptyLogs') === true) {
+            $purged = EverblockTools::purgeNativePrestashopLogsTable();
+            if ((bool) $purged === true) {
+                $this->postSuccess[] = $this->l('Log tables emptied');
+            } else {
+                $this->postErrors[] = $this->l('Log tables NOT emptied');
+            }
         }
         if ((bool) Tools::isSubmit('submitBackupBlocks') === true) {
             $backuped = EverblockTools::exportModuleTablesSQL();
@@ -402,12 +414,13 @@ class Everblock extends Module
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         ];
-        return $helper->generateForm([$this->getConfigForm()]);
+        return $helper->generateForm($this->getConfigForm());
     }
 
     protected function getConfigForm()
     {
-        return [
+        $formFields = [];
+        $formFields[] = [
             'form' => [
                 'legend' => [
                     'title' => $this->l('Settings'),
@@ -616,26 +629,19 @@ class Everblock extends Module
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Empty cache'),
                     ],
+                    'emptyLogs' => [
+                        'name' => 'submitEmptyLogs',
+                        'type' => 'submit',
+                        'class' => 'btn btn-light',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Empty logs'),
+                    ],
                     'migrateUrls' => [
                         'name' => 'submitMigrateUrls',
                         'type' => 'submit',
                         'class' => 'btn btn-light',
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Migrate URLS'),
-                    ],
-                    'backupBlocks' => [
-                        'name' => 'submitBackupBlocks',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Backup all blocks'),
-                    ],
-                    'restoreBackup' => [
-                        'name' => 'submitRestoreBackup',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Restore backup'),
                     ],
                     'createProducts' => [
                         'name' => 'submitCreateProduct',
@@ -650,6 +656,49 @@ class Everblock extends Module
                 ],
             ],
         ];
+        $formFields[] = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('File management'),
+                    'icon' => 'icon-smile',
+                ],
+                'input' => [
+                    [
+                        'type' => 'file',
+                        'label' => $this->l('Upload Excel tabs file'),
+                        'desc' => $this->l('Will upload Excel tabs file and import datas into this module'),
+                        'hint' => $this->l('You can then import this file in order to set up your tabs in bulk on the product sheets'),
+                        'name' => 'TABS_FILE',
+                        'display_image' => false,
+                        'required' => false,
+                    ],
+                ],
+                'buttons' => [
+                    'backupBlocks' => [
+                        'name' => 'submitBackupBlocks',
+                        'type' => 'submit',
+                        'class' => 'btn btn-light',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Backup all blocks'),
+                    ],
+                    'restoreBackup' => [
+                        'name' => 'submitRestoreBackup',
+                        'type' => 'submit',
+                        'class' => 'btn btn-light',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Restore backup'),
+                    ],
+                    'import' => [
+                        'name' => 'submitUploadTabsFile',
+                        'type' => 'submit',
+                        'class' => 'btn btn-default pull-right',
+                        'icon' => 'process-icon-download',
+                        'title' => $this->l('Upload file'),
+                    ],
+                ],
+            ],
+        ];
+        return $formFields;
     }
 
     protected function getConfigFormValues()
@@ -684,6 +733,7 @@ class Everblock extends Module
             'EVER_TAB_CONTENT' => $this->getConfigInMultipleLangs('EVER_TAB_CONTENT'),
             'EVER_TAB_TITLE' => $this->getConfigInMultipleLangs('EVER_TAB_TITLE'),
             'EVERPS_TAB_NB' => Configuration::get('EVERPS_TAB_NB'),
+            'TABS_FILE' => '',
         ];
     }
 
@@ -911,6 +961,8 @@ class Everblock extends Module
         if (Tools::getValue('id_' . $this->name)
             || Tools::getIsset('add' . $this->name)
             || Tools::getValue('configure') == $this->name
+            || Tools::getValue('id_' . $this->name . '_faq')
+            || Tools::getIsset('add' . $this->name . '_faq')
         ) {
             $this->context->controller->addCSS(
                 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/codemirror.min.css',
@@ -962,33 +1014,38 @@ class Everblock extends Module
     {
         if (!$params['id_product']) {
             return;
-        } else {
-            $productId = (int) $params['id_product'];
         }
-        $tabsNumber = (int) Configuration::get('EVERPS_TAB_NB');
-        if ($tabsNumber < 1) {
-            $tabsNumber = 1;
-            Configuration::updateValue('EVERPS_TAB_NB', 1);
+
+        $productId = (int) $params['id_product'];
+        $tabsNumber = max((int) Configuration::get('EVERPS_TAB_NB'), 1);
+        
+        $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
+
+        $tabsData = [];
+        for ($i = 1; $i <= $tabsNumber; $i++) {
+            foreach ($everpstabs as $everpstab) {
+                if ($everpstab->id_tab == $i) {
+                    $tabsData[$i] = $everpstab;
+                    break;
+                }
+            }
+
+            if (!array_key_exists($i, $tabsData)) {
+                $tabsData[$i] = null;
+            }
         }
-        $everpstabs = EverblockTabsClass::getByIdProductInAdmin(
-            (int) $productId,
-            (int) $this->context->shop->id
-        );
-        $everAjaxUrl =  Context::getContext()->link->getAdminLink(
-            'AdminModules',
-            true,
-            [],
-            ['configure' => $this->name, 'token' => Tools::getAdminTokenLite('AdminModules')]
-        );
-        $tabsRange = range(1, $tabsNumber);
+
+        $everAjaxUrl = Context::getContext()->link->getAdminLink('AdminModules', true, [], ['configure' => $this->name, 'token' => Tools::getAdminTokenLite('AdminModules')]);
+
         $this->smarty->assign([
-            'everpstabs' => $everpstabs,
+            'tabsData' => $tabsData,
             'default_language' => $this->context->employee->id_lang,
             'ever_languages' => Language::getLanguages(false),
             'ever_ajax_url' => $everAjaxUrl,
             'ever_product_id' => $productId,
-            'tabsRange' => $tabsRange,
+            'tabsRange' => range(1, $tabsNumber),
         ]);
+
         return $this->display(__FILE__, 'views/templates/admin/productTab.tpl');
     }
 
@@ -2459,6 +2516,106 @@ class Everblock extends Module
                     $indexContent
                 );
             }
+        }
+    }
+
+    protected function uploadTabsFile()
+    {
+        /* upload the file */
+        if (isset($_FILES['TABS_FILE'])
+            && isset($_FILES['TABS_FILE']['tmp_name'])
+            && !empty($_FILES['TABS_FILE']['tmp_name'])
+        ) {
+            $filename = $_FILES['TABS_FILE']['name'];
+            $exploded_filename = explode('.', $filename);
+            $ext = end($exploded_filename);
+            if (Tools::strtolower($ext) != 'xlsx') {
+                $this->postErrors[] = $this->l('Error : File is not valid.');
+                return false;
+            }
+            if (!($tmp_name = tempnam(_PS_TMP_IMG_DIR_, 'PS'))
+                || !move_uploaded_file($_FILES['TABS_FILE']['tmp_name'], $tmp_name)
+            ) {
+                return false;
+            }
+
+            copy($tmp_name, _PS_MODULE_DIR_ . $this->name . '/input/tabs.xlsx');
+            $this->processTabsFile();
+            $this->html .= $this->displayConfirmation($this->l('File has been imported'));
+        }
+    }
+
+    protected function processTabsFile()
+    {
+        $tabsFile = _PS_MODULE_DIR_ . $this->name . '/input/tabs.xlsx';
+        $file = new ImportFile($tabsFile);
+        $lines = $file->getLines();
+        $headers = $file->getHeaders();
+        foreach ($lines as $line) {
+            $this->updateProductTabs($line);
+        }
+        unlink($tabsFile);
+    }
+
+    protected function updateProductTabs($line)
+    {
+        if (!isset($line['id_product'])
+            || empty($line['id_product'])
+        ) {
+            $this->postErrors[] = $this->l('Missing id_product column');
+            return;
+        }
+        $product = new Product(
+            (int) $line['id_product']
+        );
+        if (!Validate::isLoadedObject($product)) {
+            $this->postErrors[] = $this->l('Product not valid');
+            return;
+        }
+        if (isset($line['id_shop'])
+            && !empty($line['id_shop'])
+        ) {
+            $id_shop = $line['id_shop'];
+        } else {
+            $id_shop = (int) $this->context->shop->id;
+        }
+        if (!isset($line['id_tab'])
+            || empty($line['id_tab'])
+        ) {
+            $this->postErrors[] = $this->l('Missing id_tab column');
+            return;
+        }
+        try {
+            $tab = EverblockTabsClass::getByIdProductIdTab(
+                (int) $line['id_product'],
+                (int) $id_shop,
+                (int) $line['id_tab']
+            );
+            $tab->id_tab = (int) $line['id_tab'];
+            $tab->id_product = (int) $line['id_product'];
+            $tab->id_shop = (int) $id_shop;
+            foreach (Language::getLanguages(false, $id_shop) as $lang) {
+                $titleKey = 'title_' . $lang['iso_code'];
+                $contentKey = 'content_' . $lang['iso_code'];
+
+                // Vérifier et assigner le titre s'il existe et n'est pas vide
+                if (isset($line[$titleKey]) && !empty($line[$titleKey])) {
+                    $tab->title[(int) $lang['id_lang']] = $line[$titleKey];
+                }
+
+                // Vérifier et assigner le contenu s'il existe et n'est pas vide
+                if (isset($line[$contentKey]) && !empty($line[$contentKey])) {
+                    $tab->content[(int) $lang['id_lang']] = $line[$contentKey];
+                }
+            }
+            $tab->save();
+            Tools::clearAllCache();
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
+            EverblockTools::setLog(
+                $this->name . date('y-m-d'),
+                $e->getMessage()
+            );
         }
     }
 }

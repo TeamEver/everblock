@@ -379,7 +379,7 @@ class AdminEverBlockHookController extends ModuleAdminController
             if (!count($this->errors)) {
                 try {
                     $hook->save();
-                    if ((bool)Tools::isSubmit('stay') === true) {
+                    if ((bool) Tools::isSubmit('stay') === true) {
                         Tools::redirectAdmin(
                             self::$currentIndex
                             . '&updatehook=&id_hook='

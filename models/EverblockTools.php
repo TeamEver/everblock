@@ -1898,7 +1898,7 @@ class EverblockTools extends ObjectModel
         // Ajoute les colonnes manquantes à la table everblock_shortcode
         $columnsToAdd = [
             'shortcode' => 'text DEFAULT NULL',
-            'id_shop' => 'int(10) unsigned NOT NULL',
+            'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
         ];
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_shortcode` `' . pSQL($columnName) . '`');
@@ -1933,7 +1933,7 @@ class EverblockTools extends ObjectModel
             'tag_name' => 'text DEFAULT NULL',
             'position' => 'int(10) unsigned NOT NULL DEFAULT 0',
             'active' => 'int(10) unsigned NOT NULL',
-            'id_shop' => 'int(10) unsigned NOT NULL',
+            'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
             'date_add' => 'DATETIME DEFAULT NULL',
             'date_upd' => 'DATETIME DEFAULT NULL',
         ];
@@ -1965,27 +1965,39 @@ class EverblockTools extends ObjectModel
                 }
             }
         }
-        // Ajoute le contrôle de la table everblock_tabs
-        $sql = [];
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs` (
-             `id_everblock_tabs` int(10) unsigned NOT NULL auto_increment,
-             `id_product` int(10) unsigned NOT NULL,
-             `id_shop` int(10) unsigned DEFAULT 0,
-             PRIMARY KEY (`id_everblock_tabs`))
-             ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-        // Ajoute le contrôle de la table everblock_tabs_lang
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs_lang` (
-             `id_everblock_tabs` int(10) unsigned NOT NULL,
-             `id_lang` int(10) unsigned NOT NULL,
-             `title` varchar(255) DEFAULT NULL,
-             `content` text DEFAULT NULL,
-             PRIMARY KEY (`id_everblock_tabs`, `id_lang`))
-             ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-        foreach ($sql as $query) {
-            try {
-                $db->execute($query);
-            } catch (Exception $e) {
-                PrestaShopLogger::addLog('Unable to create or update Ever Block database tables');
+        // Ajoute les colonnes manquantes à la table everblock_tabs
+        $columnsToAdd = [
+            'id_product' => 'int(10) unsigned NOT NULL',
+            'id_tab' => 'int(10) unsigned DEFAULT 0',
+            'id_shop' => 'int(10) unsigned DEFAULT 1',
+        ];
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_tabs` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_tabs` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block tabs database');
+                }
+            }
+        }
+        // Ajoute les colonnes manquantes à la table everblock_tabs_lang
+        $columnsToAdd = [
+            'id_everblock_tabs' => 'int(10) unsigned NOT NULL',
+            'id_lang' => 'int(10) unsigned NOT NULL',
+            'title' => 'varchar(255) DEFAULT NULL',
+            'content' => 'text DEFAULT NULL',
+        ];
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_tabs_lang` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_tabs_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block tabs lang database');
+                }
             }
         }
     }
@@ -2091,6 +2103,8 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_lang',
             _DB_PREFIX_ . 'everblock_shortcode',
             _DB_PREFIX_ . 'everblock_shortcode_lang',
+            _DB_PREFIX_ . 'everblock_faq',
+            _DB_PREFIX_ . 'everblock_faq_lang',
             _DB_PREFIX_ . 'everblock_tabs',
             _DB_PREFIX_ . 'everblock_tabs_lang',
         ];
@@ -2386,6 +2400,11 @@ class EverblockTools extends ObjectModel
         if (file_exists($logFilePath)) {
             unlink($logFilePath);
         }
+    }
+
+    public static function purgeNativePrestashopLogsTable()
+    {
+        return Db::getInstance()->execute('TRUNCATE TABLE ' . _DB_PREFIX_ . 'log');;
     }
 
     /**
