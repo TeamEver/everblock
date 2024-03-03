@@ -108,6 +108,7 @@ class AdminEverBlockHookController extends ModuleAdminController
         $this->toolbar_title = $this->l('Hooks management');
         if (Tools::getValue('clearcache')) {
             Tools::clearAllCache();
+            EverblockCache::cleanThemeCache();
             Tools::redirectAdmin(self::$currentIndex . '&cachecleared=1&token=' . $this->token);
         }
         if (Tools::getValue('cachecleared')) {

@@ -179,15 +179,6 @@ class ImportFileCommand extends ContainerAwareCommand
                 $block->custom_code = $line['custom_code'];
             }
         }
-        if (isset($line['only_home'])) {
-            if (!Validate::isBool($line['only_home'])) {
-                $output->writeln(
-                   '<error>only_home column is not valid : ' . $line['only_home'] . '</error>'
-                );
-            } else {
-                $block->only_home = $line['only_home'];
-            }
-        }
         if (isset($line['only_category'])) {
             if (!Validate::isBool($line['only_category'])) {
                 $output->writeln(

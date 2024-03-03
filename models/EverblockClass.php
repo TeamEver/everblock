@@ -220,15 +220,23 @@ class EverBlockClass extends ObjectModel
 
     public static function getAllBlocks(int $idLang, int $idShop): array
     {
-        $sql = new DbQuery();
-        $sql->select('*');
-        $sql->from('everblock', 'eb');
-        $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
-        $sql->where('ebl.id_lang = ' . (int) $idLang);
-        $sql->where('eb.id_shop = ' . (int) $idShop);
-        $sql->orderBy('eb.position ASC');
-        $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-        return $allBlocks;
+        $cacheId = 'EverBlockClass_getBootstrapColClass_'
+        . (int) $idLang
+        . '_'
+        . (int) $idShop;
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $sql = new DbQuery();
+            $sql->select('*');
+            $sql->from('everblock', 'eb');
+            $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
+            $sql->where('ebl.id_lang = ' . (int) $idLang);
+            $sql->where('eb.id_shop = ' . (int) $idShop);
+            $sql->orderBy('eb.position ASC');
+            $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            EverblockCache::cacheStore($cacheId, $allBlocks);
+            return $allBlocks;
+        }
+        return EverblockCache::cacheRetrieve($cacheId);
     }
 
     public static function cleanBlocksCacheOnDate(int $idLang, int $idShop)
@@ -253,7 +261,7 @@ class EverBlockClass extends ObjectModel
             }
             if ((bool) $cacheNeedFlush === true) {
                 $cacheStartId = 'everblock-id_hook-' . (int) $block['id_hook'];
-                EverblockTools::cacheDropByPattern($cacheStartId);
+                EverblockCache::cacheDropByPattern($cacheStartId);
             }
         }
     }
@@ -266,7 +274,7 @@ class EverBlockClass extends ObjectModel
         . (int) $idLang
         . '_'
         . (int) $idShop;
-        if (!EverblockTools::isCacheStored($cacheId)) {
+        if (!EverblockCache::isCacheStored($cacheId)) {
             $return = [];
             $sql = new DbQuery();
             $sql->select('*');
@@ -284,17 +292,17 @@ class EverBlockClass extends ObjectModel
                 );
                 $return[] = $block;
             }
-            EverblockTools::cacheStore($cacheId, $return);
+            EverblockCache::cacheStore($cacheId, $return);
             return $return;
         }
-        return EverblockTools::cacheRetrieve($cacheId);
+        return EverblockCache::cacheRetrieve($cacheId);
     }
 
     public static function getBootstrapColClass(int $colNumber)
     {
         $cacheId = 'EverBlockClass_getBootstrapColClass_'
         . (int) $colNumber;
-        if (!EverblockTools::isCacheStored($cacheId)) {
+        if (!EverblockCache::isCacheStored($cacheId)) {
             $class = 'col-';
             switch ($colNumber) {
                 case 0:
@@ -341,9 +349,9 @@ class EverBlockClass extends ObjectModel
                     $class .= '12';
                     break;
             }
-            EverblockTools::cacheStore($cacheId, $class);
+            EverblockCache::cacheStore($cacheId, $class);
             return $class;
         }
-        return EverblockTools::cacheRetrieve($cacheId);
+        return EverblockCache::cacheRetrieve($cacheId);
     }
 }

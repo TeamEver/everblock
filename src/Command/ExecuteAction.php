@@ -38,6 +38,7 @@ use DbQuery;
 use Db;
 use Product;
 use Language;
+use Module;
 
 class ExecuteAction extends Command
 {
@@ -50,7 +51,8 @@ class ExecuteAction extends Command
         'getrandomcomment',
         'saveblocks',
         'restoreblocks',
-        'removeinlinecsstags'
+        'removeinlinecsstags',
+        'droplogs'
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -66,7 +68,7 @@ class ExecuteAction extends Command
         $this->addArgument('idshop id', InputArgument::OPTIONAL, 'Shop ID');
         $help = sprintf("Allowed actions: %s\n", implode(' / ', $this->allowedActions));
         $this->setHelp($help);
-        $this->module = \Module::getInstanceByName('everblock');;
+        $this->module = Module::getInstanceByName('everblock');;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -112,6 +114,20 @@ class ExecuteAction extends Command
             } else {
                 $output->writeln(
                     '<error>Backup failed</error>'
+                );
+                return self::FAILURE;
+            }
+        }
+        if ($action === 'droplogs') {
+            $purged = EverblockTools::purgeNativePrestashopLogsTable();
+            if ((bool) $purged === true) {
+                $output->writeln(
+                    '<success>Logs table purged</success>'
+                );
+                return self::SUCCESS;
+            } else {
+                $output->writeln(
+                    '<error>Logs table NOT purged</error>'
                 );
                 return self::FAILURE;
             }

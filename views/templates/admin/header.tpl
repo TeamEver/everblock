@@ -28,6 +28,12 @@
         {if isset($faq_admin_link) && $faq_admin_link}
         <a href="{$faq_admin_link|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-success">{l s='Manage FAQ' mod='everblock'}</a>
         {/if}
+        {if isset($hook_admin_link) && $hook_admin_link}
+        <a href="{$hook_admin_link|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-success">{l s='Manage all hooks' mod='everblock'}</a>
+        {/if}
+        {if isset($shortcode_admin_link) && $shortcode_admin_link}
+        <a href="{$shortcode_admin_link|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-success">{l s='Manage shortcodes' mod='everblock'}</a>
+        {/if}
         {if isset($module_link) && $module_link}
         <a href="{$module_link|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-success">{l s='Module configuration' mod='everblock'}</a>
         {/if}

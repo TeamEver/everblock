@@ -16,6 +16,13 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
+<div class="alert alert-warning">
+    <h4>{l s='Troubleshooting' mod='everblock'}</h3>
+    <p>{l s='If an HTML block is not displayed, first check that the hook is present in your theme files.' mod='everblock'}</p>
+    <p>{l s='If a shortcode is not displayed correctly, check the logs in your store\'s advanced settings.' mod='everblock'}</p>
+    <p>{l s='If you don\'t see your content or your content hasn\'t changed, make sure to clear your store\'s cache.' mod='everblock'}</p>
+    <br>
+</div>
 <div class="alert alert-info">
     <h4>{l s='What is a hook ?' mod='everblock'}</h4>
     <p>{l s='A hook is a location where you can "plug" a module. Very numerous on Prestashop, they are saved in your database, and displayed by your theme and your modules.' mod='everblock'}</p>
@@ -159,12 +166,5 @@
     <p>{l s='To do this, create a custom hook named for example displayCustomHeadTag' mod='everblock'}</p>
     <p>{l s='Add the hook in your theme in the head.tpl file' mod='everblock'}</p>
     <p>{l s='The module will be able to detect this, you will then be able to add custom code from an HTML block' mod='everblock'}</p>
-    <br>
-</div>
-<div class="alert alert-warning">
-    <h4>{l s='Troubleshooting' mod='everblock'}</h3>
-    <p>{l s='If an HTML block is not displayed, first check that the hook is present in your theme files.' mod='everblock'}</p>
-    <p>{l s='If a shortcode is not displayed correctly, check the logs in your store\'s advanced settings.' mod='everblock'}</p>
-    <p>{l s='If you don\'t see your content or your content hasn\'t changed, make sure to clear your store\'s cache.' mod='everblock'}</p>
     <br>
 </div>

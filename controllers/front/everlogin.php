@@ -23,16 +23,8 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockEverloginModuleFrontController extends ModuleFrontController
 {
-    public $ssl = true;
-
-    public function init()
-    {
-        parent::init();
-    }
-
     public function initContent()
     {
-        parent::initContent();
         if (!Tools::getIsset('evertoken')
             || Tools::encrypt($this->module->name . '/everlogin') != Tools::getValue('evertoken')
             || !Module::isInstalled($this->module->name)
@@ -81,5 +73,6 @@ class EverblockEverloginModuleFrontController extends ModuleFrontController
             }
             Tools::redirect('index.php?controller=my-account');
         }
+        parent::initContent();
     }
 }

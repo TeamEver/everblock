@@ -48,6 +48,9 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $this->context->shop->id
 
         );
+        if (!Validate::isLoadedObject($block)) {
+            die();
+        }
         $modalDelay = (int) $block->delay;
         $showModal = false;
         $cookieName = Tools::encrypt(
@@ -64,7 +67,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
         } else {
             $showModal = true;
         }
-        if ($showModal && Validate::isLoadedObject($block)) {
+        if ($showModal) {
             // Hooks not allowed here
             if (strpos($block->content, '{hook h=') !== false) {
                 $pattern = '/\{hook h=[^}]*\}/';
@@ -76,7 +79,8 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             }
             $block->content = EverBlockTools::renderShortcodes(
                 $block->content,
-                $this->context
+                $this->context,
+                $this->module
             );
             $this->context->smarty->assign([
                 'everblock_modal' => $block,

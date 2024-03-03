@@ -8,7 +8,7 @@
 
 # Apache 2.4
 <IfModule mod_authz_core.c>
-    <FilesMatch "(\.php|\.sql)$">
+    <FilesMatch "(\.php|\.log|\.sql)$">
         Require all denied
     </FilesMatch>
 </IfModule>
