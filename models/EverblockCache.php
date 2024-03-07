@@ -45,6 +45,8 @@ class EverblockCache extends ObjectModel
 
     public static function cleanThemeCache(): bool
     {
+        // Issue #17
+        return true;
         if (!defined(_PS_PARENT_THEME_DIR_) || empty(_PS_PARENT_THEME_DIR_)) {
             $themeDir = _PS_THEME_DIR_;
         } else {
