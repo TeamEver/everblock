@@ -310,6 +310,41 @@ class EverblockTools extends ObjectModel
         $template = '';
         $isRequired = isset($attributes['required']) && strtolower($attributes['required']) === 'true';
         switch ($field_type) {
+            case 'password':
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="password" class="form-control" name="' . $label . '" id="' . $label . '"';
+                if ($isRequired) {
+                    $template .= ' required';
+                }
+                $template .= '></div>';
+                break;
+            case 'tel':
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="tel" class="form-control" name="' . $label . '" id="' . $label . '"';
+                if ($isRequired) {
+                    $template .= ' required';
+                }
+                $template .= '></div>';
+                break;
+            case 'email':
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="email" class="form-control" name="' . $label . '" id="' . $label . '"';
+                if ($isRequired) {
+                    $template .= ' required';
+                }
+                $template .= '></div>';
+                break;
+            case 'datetime-local':
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="datetime-local" class="form-control" name="' . $label . '" id="' . $label . '"';
+                if ($isRequired) {
+                    $template .= ' required';
+                }
+                $template .= '></div>';
+                break;
+            case 'date':
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="date" class="form-control" name="' . $label . '" id="' . $label . '"';
+                if ($isRequired) {
+                    $template .= ' required';
+                }
+                $template .= '></div>';
+                break;
             case 'text':
                 $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="text" class="form-control" name="' . $label . '" id="' . $label . '"';
                 if ($isRequired) {
@@ -2341,5 +2376,43 @@ class EverblockTools extends ObjectModel
     {
         $moduleDirPath = _PS_MODULE_DIR_ . $moduleName;
         return is_dir($moduleDirPath);
+    }
+
+    public static function secureModuleFoldersWithApache(): array
+    {
+        $postErrors = [];
+        $querySuccess = [];
+        try {
+            $modulesDir = _PS_MODULE_DIR_;
+            $sourceHtaccessFile = $modulesDir . 'everblock/.htaccess';
+            if (!file_exists($sourceHtaccessFile)) {
+                $postErrors[] = 'The .htaccess file is not present in the Everblock module.';
+                return ['postErrors' => $postErrors, 'querySuccess' => $querySuccess];
+            }
+            $directories = new DirectoryIterator($modulesDir);
+            foreach ($directories as $directory) {
+                if ($directory->isDot() || !$directory->isDir()) {
+                    continue;
+                }
+                $moduleDirPath = $directory->getPathname();
+                $htaccessFilePath = $moduleDirPath . '/.htaccess';
+                if (!file_exists($htaccessFilePath)) {
+                    if (!copy($sourceHtaccessFile, $htaccessFilePath)) {
+                        $postErrors[] = 'Failed to copy .htaccess file to ' . $directory->getFilename();
+                    } else {
+                        $querySuccess[] = 'The .htaccess file has been successfully copied to ' . $directory->getFilename();
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            // En cas d'exception, ajouter le message d'erreur à postErrors
+            $postErrors[] = 'An error occurred: ' . $e->getMessage();
+            // Log de l'erreur
+            PrestaShopLogger::addLog($e->getMessage());
+        }
+        return [
+            'postErrors' => $postErrors,
+            'querySuccess' => $querySuccess,
+        ];
     }
 }

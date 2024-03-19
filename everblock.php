@@ -49,7 +49,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.5.9';
+        $this->version = '5.6.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -329,6 +329,26 @@ class Everblock extends Module
                 }
             }
         }
+        if ((bool) Tools::isSubmit('submitSecureModuleFoldersWithApache') === true) {
+            $secured = EverblockTools::secureModuleFoldersWithApache();
+            if (is_array($secured)
+                && isset($secured['postErrors'])
+                && count($secured['postErrors']) > 0
+            ) {
+                foreach ($secured['postErrors'] as $postErrors) {
+                    $this->postErrors[] = $postErrors;
+                }
+            }
+            if (is_array($secured)
+                && isset($secured['querySuccess'])
+                && count($secured['querySuccess']) > 0
+            ) {
+                foreach ($secured['querySuccess'] as $querySuccess) {
+                    $this->postSuccess[] = $querySuccess;
+                }
+            }
+        }
+
         if ((bool) Tools::isSubmit('submitBackupBlocks') === true) {
             $backuped = EverblockTools::exportModuleTablesSQL();
             if ((bool) $backuped === true) {
@@ -474,6 +494,13 @@ class Everblock extends Module
                         'class' => 'btn btn-light',
                         'icon' => 'process-icon-refresh',
                         'title' => $this->l('Drop unused langs'),
+                    ],
+                    'secureModuleFoldersWithApache' => [
+                        'name' => 'submitSecureModuleFoldersWithApache',
+                        'type' => 'submit',
+                        'class' => 'btn btn-light',
+                        'icon' => 'process-icon-refresh',
+                        'title' => $this->l('Secure all modules folders using Apache'),
                     ],
                     'backupBlocks' => [
                         'name' => 'submitBackupBlocks',
