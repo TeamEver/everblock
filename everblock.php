@@ -29,6 +29,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPrettyBlocks.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCache.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockGpt.php';
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverCheckoutStep.php';
 
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
@@ -44,12 +45,20 @@ class Everblock extends Module
     private $html;
     private $postErrors = [];
     private $postSuccess = [];
+    private $allowedActions = [
+        'saveblocks',
+        'restoreblocks',
+        'removeinlinecsstags',
+        'droplogs',
+        'refreshtokens',
+        'securewithapache',
+    ];
 
     public function __construct()
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.6.0';
+        $this->version = '5.7.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -168,6 +177,14 @@ class Everblock extends Module
 
     public function checkHooks()
     {
+        // Hook displayEverblockExtraOrderStep
+        if (!Hook::getIdByName('displayEverblockExtraOrderStep')) {
+            $hook = new Hook();
+            $hook->name = 'displayEverblockExtraOrderStep';
+            $hook->title = 'Extra order step';
+            $hook->description = 'This hook is triggered on extra order step';
+            $hook->save();
+        }
         // Hook actionGetEverBlockBefore
         if (!Hook::getIdByName('actionGetEverBlockBefore')) {
             $hook = new Hook();
@@ -257,6 +274,11 @@ class Everblock extends Module
             }
             $tab->add();
         }
+        $this->registerHook('displayPDFInvoice');
+        $this->registerHook('displayPDFDeliverySlip');        
+        $this->registerHook('displayAdminOrder');
+        $this->registerHook('actionCheckoutRender');
+        $this->registerHook('displayOrderConfirmation');
         $this->unregisterHook('actionDispatcherBefore');
         $this->registerHook('actionGetAdminOrderButtons');
         $this->registerHook('displayAdminCustomers');
@@ -419,12 +441,26 @@ class Everblock extends Module
         $hookAdminLink .= Tools::getAdminTokenLite('AdminEverBlockHook');
         $shortcodeAdminLink = 'index.php?controller=AdminEverBlockShortcode&token=';
         $shortcodeAdminLink .= Tools::getAdminTokenLite('AdminEverBlockShortcode');
+        $cronLinks = [];
+        $cronToken = Tools::encrypt($this->name . '/evercron');
+        foreach ($this->allowedActions as $action) {
+            $cronLinks[$action] = $this->context->link->getModuleLink(
+                $this->name,
+                'cron',
+                [
+                    'action' => $action,
+                    'evertoken' => $cronToken,
+                ]
+            );
+        }
         $this->context->smarty->assign([
+            $this->name . '_version' => $this->version,
             $this->name . '_dir' => $this->_path,
             'block_admin_link' => $blockAdminLink,
             'faq_admin_link' => $faqAdminLink,
             'hook_admin_link' => $hookAdminLink,
             'shortcode_admin_link' => $shortcodeAdminLink,
+            'cron_links' => $cronLinks,
         ]);
         $this->html .= $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'
@@ -466,6 +502,20 @@ class Everblock extends Module
 
     protected function getConfigForm()
     {
+        $step_position = [
+            [
+                'id_position' => 1,
+                'name' => $this->l('After login'),
+            ],
+            [
+                'id_position' => 2,
+                'name' => $this->l('After address form'),
+            ],
+            [
+                'id_position' => 3,
+                'name' => $this->l('After shipping form'),
+            ],
+        ];
         $formFields = [];
         $formFields[] = [
             'form' => [
@@ -528,10 +578,45 @@ class Everblock extends Module
                 'input' => [
                     [
                         'type' => 'text',
+                        'lang' => true,
+                        'label' => $this->l('New order step title'),
+                        'desc' => $this->l('Please specify new order step title'),
+                        'hint' => $this->l('If not set, new order step won\'t be shown'),
+                        'name' => 'EVEROPTIONS_TITLE',
+                        'required' => true,
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => $this->l('New order step position'),
+                        'desc' => $this->l('Please select new order step position'),
+                        'hint' => $this->l('Will impact position of the new order step'),
+                        'name' => 'EVEROPTIONS_POSITION',
+                        'options' => [
+                            'query' => $step_position,
+                            'id' => 'id_position',
+                            'name' => 'name',
+                        ],
+                    ],
+                    [
+                        'type' => 'text',
                         'label' => $this->l('Chat GPT API key'),
                         'desc' => $this->l('Add here your Chat GPT API key, it will be used for blocks generator'),
                         'hint' => $this->l('Without API key, blocks generator won\'t work'),
                         'name' => 'EVERGPT_API_KEY',
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Instagram access token'),
+                        'desc' => $this->l('Add here your Instagram access token'),
+                        'hint' => $this->l('Without access token, you wont be able to show Instagram slider'),
+                        'name' => 'EVERINSTA_ACCESS_TOKEN',
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Instagram profile link'),
+                        'desc' => $this->l('Add here your Instagram profile URL'),
+                        'hint' => $this->l('This will set a custom link to your Instagram profile'),
+                        'name' => 'EVERINSTA_LINK',
                     ],
                     [
                         'type' => 'switch',
@@ -785,7 +870,11 @@ class Everblock extends Module
             _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js'
         );
         return [
+            'EVEROPTIONS_POSITION' => Configuration::get('EVEROPTIONS_POSITION'),
+            'EVEROPTIONS_TITLE' => $this->getConfigInMultipleLangs('EVEROPTIONS_TITLE'),
             'EVERGPT_API_KEY' => Configuration::get('EVERGPT_API_KEY'),
+            'EVERINSTA_ACCESS_TOKEN' => Configuration::get('EVERINSTA_ACCESS_TOKEN'),
+            'EVERINSTA_LINK' => Configuration::get('EVERINSTA_LINK'),
             'EVERBLOCK_USE_GMAP' => Configuration::get('EVERBLOCK_USE_GMAP'),
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
@@ -949,8 +1038,39 @@ class Everblock extends Module
             $compressedJsCode
         );
         Configuration::updateValue(
+            'EVEROPTIONS_POSITION',
+            Tools::getValue('EVEROPTIONS_POSITION')
+        );
+        $formTitle = [];
+        foreach (Language::getLanguages(false) as $lang) {
+            $formTitle[$lang['id_lang']] = (
+                Tools::getValue('EVEROPTIONS_TITLE_' . $lang['id_lang'])
+            ) ? Tools::getValue(
+                'EVEROPTIONS_TITLE_' . $lang['id_lang']
+            ) : '';
+        }
+        Configuration::updateValue(
+            'EVEROPTIONS_TITLE',
+            $formTitle,
+            true
+        );
+        Configuration::updateValue(
             'EVERGPT_API_KEY',
             Tools::getValue('EVERGPT_API_KEY')
+        );
+        Configuration::updateValue(
+            'EVERINSTA_ACCESS_TOKEN',
+            Tools::getValue('EVERINSTA_ACCESS_TOKEN')
+        );
+        // Auto refresh Instagram token
+        if (Tools::getValue('EVERINSTA_ACCESS_TOKEN')
+            && !empty(Tools::getValue('EVERINSTA_ACCESS_TOKEN'))
+        ) {
+            EverblockTools::refreshInstagramToken();
+        }
+        Configuration::updateValue(
+            'EVERINSTA_LINK',
+            Tools::getValue('EVERINSTA_LINK')
         );
         Configuration::updateValue(
             'EVERBLOCK_USE_GMAP',
@@ -991,9 +1111,9 @@ class Everblock extends Module
         if ((bool) Tools::getValue('EVERPSCSS_CACHE') === true) {
             $this->emptyAllCache();
         }
-        if (Tools::getValue('EVERBLOCK_GMAP_KEY')) {
-            $stores = Store::getStores((int) Context::getContext()->language->id);
-            if (!empty($stores)) {
+        $stores = Store::getStores((int) Context::getContext()->language->id);
+        if (!empty($stores)) {
+            if (Tools::getValue('EVERBLOCK_GMAP_KEY')) {
                 $markers = [];
                 foreach ($stores as $store) {
                     $marker = [
@@ -1009,12 +1129,22 @@ class Everblock extends Module
                     $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
                     file_put_contents($filePath, $gmapScript);
                 }
-            }
-        } else {
-            $filename = 'store-locator-' . $idShop . '.js';
-            $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
-            if (file_exists($filePath)) {
-                unlink($filePath);
+            } else {
+                $markers = [];
+                foreach ($stores as $store) {
+                    $marker = [
+                        'lat' => $store['latitude'],
+                        'lng' => $store['longitude'],
+                        'title' => $store['name'],
+                    ];
+                    $markers[] = $marker;
+                }
+                $osmScript = EverblockTools::generateOsmScript($markers);
+                if ($osmScript) {
+                    $filename = 'store-locator-' . $idShop . '.js';
+                    $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
+                    file_put_contents($filePath, $osmScript);
+                }
             }
         }
         $this->postSuccess[] = $this->l('All settings have been saved');
@@ -1055,7 +1185,9 @@ class Everblock extends Module
             if (Tools::getValue('configure') == $this->name) {
                 $this->context->controller->addJs($this->_path . 'views/js/admin.js');
             }
-            if ((bool) Configuration::get('EVERBLOCK_TINYMCE') === true) {
+            if ((bool) Configuration::get('EVERBLOCK_TINYMCE') === true
+                && Tools::getValue('configure') != $this->name
+            ) {
                 $this->context->controller->addJs($this->_path . 'views/js/adminTinyMce.js');
             }
         }
@@ -1080,6 +1212,247 @@ class Everblock extends Module
             );
             return $params['html'];
         }
+    }
+
+    public function hookActionCheckoutRender($params)
+    {
+        $stepTitle = $this->getConfigInMultipleLangs('EVEROPTIONS_TITLE');
+        if (!$stepTitle[$this->context->language->id]
+            || empty($stepTitle[$this->context->language->id])
+        ) {
+            return;
+        }
+        $this->translator = Context::getContext()->getTranslator();
+
+        /** @var CheckoutProcess $process */
+        $process = $params['checkoutProcess'];
+        $steps = $process->getSteps();
+
+        $everStep = new EverCheckoutStep(
+            $this->context,
+            $this->translator,
+            Module::getInstanceByName($this->name)
+        );
+        $everStep->setCheckoutProcess($process);
+        switch ((int) Configuration::get('EVEROPTIONS_POSITION')) {
+            case 1:
+                $newSteps = [
+                    $steps[0],
+                    $everStep,
+                    $steps[1],
+                    $steps[2],
+                    $steps[3]
+                ];
+                break;
+            
+            case 2:
+                $newSteps = [
+                    $steps[0],
+                    $steps[1],
+                    $everStep,
+                    $steps[2],
+                    $steps[3]
+                ];
+                break;
+            
+            case 3:
+                $newSteps = [
+                    $steps[0],
+                    $steps[1],
+                    $steps[2],
+                    $everStep,
+                    $steps[3]
+                ];
+                break;
+
+            default:
+                $newSteps = [
+                    $steps[0],
+                    $everStep,
+                    $steps[1],
+                    $steps[2],
+                    $steps[3]
+                ];
+                break;
+        }
+        $process->setSteps($newSteps);
+    }
+
+    public function hookDisplayOrderDetail($params)
+    {
+        return $this->hookDisplayOrderConfirmation($params);
+    }
+
+    public function hookDisplayOrderConfirmation($params)
+    {
+        try {
+            $order = $params['order'];
+            $checkoutSessionData = $this->getCartSessionDatas(
+                $order->id_cart
+            );
+            if (isset($checkoutSessionData)) {
+                $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
+                if (!$checkoutSessionData || empty($checkoutSessionData)) {
+                    return;
+                }
+                $hiddenKeys = [
+                    'hidden',
+                    'everHide',
+                    'submitCustomStep',
+                    'controller',
+                ];
+                foreach ($checkoutSessionData as $key => $value) {
+                    if (in_array($key, $hiddenKeys)) {
+                        unset($checkoutSessionData[$key]);
+                    }
+                    if (empty($value)) {
+                        unset($checkoutSessionData[$key]);
+                    }
+                }
+                $this->context->smarty->assign(array(
+                    'checkoutSessionData' => $checkoutSessionData,
+                ));
+                return $this->display(__FILE__, 'views/templates/hook/orderconfirmation.tpl');
+            }
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
+            EverblockTools::setLog(
+                $this->name . date('y-m-d'),
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function hookDisplayAdminOrder($params)
+    {
+        try {
+            $order = new Order((int) $params['id_order']);
+            $checkoutSessionData = $this->getCartSessionDatas(
+                $order->id_cart
+            );
+            if (isset($checkoutSessionData)) {
+                $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
+                $this->context->smarty->assign(array(
+                    'checkoutSessionData' => $checkoutSessionData,
+                ));
+                return $this->display(__FILE__, 'views/templates/hook/orderconfirmation.tpl');
+            }
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
+            EverblockTools::setLog(
+                $this->name . date('y-m-d'),
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function hookDisplayPDFDeliverySlip($params)
+    {
+        return $this->hookDisplayPDFInvoice($params);
+    }
+
+    public function hookDisplayPDFInvoice($params)
+    {
+        try {
+            $order = new Order((int) $params['object']->id_order);
+            $checkoutSessionData = $this->getCartSessionDatas(
+                $order->id_cart
+            );
+            if (isset($checkoutSessionData)) {
+                $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
+                $hiddenKeys = [
+                    'hidden',
+                    'everHide',
+                    'submitCustomStep',
+                    'controller',
+                ];
+                foreach ($checkoutSessionData as $key => $value) {
+                    if (in_array($key, $hiddenKeys)) {
+                        unset($checkoutSessionData[$key]);
+                    }
+                    if (empty($value)) {
+                        unset($checkoutSessionData[$key]);
+                    }
+                }
+                $this->context->smarty->assign(array(
+                    'checkoutSessionData' => $checkoutSessionData,
+                ));
+                return $this->display(__FILE__, 'views/templates/hook/pdf.tpl');
+            }
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
+            EverblockTools::setLog(
+                $this->name . date('y-m-d'),
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function hookActionEmailSendBefore($params)
+    {
+        if (isset($params['templateVars']['{id_order}'])) {
+            try {
+                $id_order = (int) $params['templateVars'] ["{id_order}"];
+                $order = new Order(
+                    (int) $id_order
+                );
+                $checkoutSessionData = $this->getCartSessionDatas(
+                    $order->id_cart
+                );
+                if (isset($checkoutSessionData)) {
+                    $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
+                    $hiddenKeys = [
+                        'hidden',
+                        'everHide',
+                        'submitCustomStep',
+                        'controller',
+                    ];
+                    foreach ($checkoutSessionData as $key => $value) {
+                        if (in_array($key, $hiddenKeys)) {
+                            unset($checkoutSessionData[$key]);
+                        }
+                        if (empty($value)) {
+                            unset($checkoutSessionData[$key]);
+                        }
+                    }
+                    $this->context->smarty->assign(array(
+                        'checkoutSessionData' => $checkoutSessionData,
+                    ));
+                    $optionsHtml = $this->context->smarty->fetch(
+                        $this->local_path . 'views/templates/admin/pdf.tpl'
+                    );
+                    $params['templateVars']['{order_options}'] = $optionsHtml;
+                }
+            } catch (Exception $e) {
+                PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
+                EverblockTools::setLog(
+                    $this->name . date('y-m-d'),
+                    $e->getMessage()
+                );
+            }
+        }
+        return $params;
+    }
+
+    public static function getCartSessionDatas($idCart)
+    {
+        $sql = new DbQuery;
+        $sql->select('checkout_session_data');
+        $sql->from(
+            'cart'
+        );
+        $sql->where(
+            'id_cart = ' . (int) $idCart
+        );
+        $checkout_session_data = json_decode(
+            Db::getInstance()->getValue($sql)
+        );
+        foreach ($checkout_session_data as $key => $value) {
+            if ($key == 'ever-checkout-step') {
+                return $value->everdata;
+            }
+        }
+        return false;
     }
 
     public function hookDisplayAdminProductsExtra($params)
@@ -1127,6 +1500,8 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'EverBlockClass_getBlocks_';
         EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'fetchInstagramImages';
+        EverblockCache::cacheDropByPattern($cachePattern);
     }
 
     public function hookActionObjectEverBlockClassUpdateAfter($params)
@@ -1135,6 +1510,8 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'EverBlockClass_getBlocks_';
         EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'fetchInstagramImages';
+        EverblockCache::cacheDropByPattern($cachePattern);
     }
 
     public function hookActionObjectEverblockFaqDeleteAfter($params)
@@ -1142,6 +1519,8 @@ class Everblock extends Module
         $cachePattern = $this->name . '-id_hook-';
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'EverblockShortcode_getFaqByTagName_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'fetchInstagramImages';
         EverblockCache::cacheDropByPattern($cachePattern);
     }
 
@@ -1645,17 +2024,19 @@ class Everblock extends Module
         }
         // Do not show GMAP api KEY on Everblock cache
         $apiKey = Configuration::get('EVERBLOCK_GMAP_KEY');
-        if ($apiKey && Tools::getValue('controller') == 'cms') {
+        if (Tools::getValue('controller') == 'cms') {
             $filename = 'store-locator-' . $idShop . '.js';
             $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
             if (file_exists($filePath) && filesize($filePath) > 0) {
+                if ($apiKey) {
+                    $this->context->controller->registerJavascript(
+                        'module-' . $this->name . '-custom-gmap-js',
+                        'https://maps.googleapis.com/maps/api/js?key=' . $apiKey . '&libraries=places,geometry',
+                        ['server' => 'remote', 'position' => 'bottom', 'priority' => 300, 'version' => $this->version, 'attributes' => 'defer']
+                    );
+                }
                 $this->context->controller->registerJavascript(
-                    'module-' . $this->name . '-custom-gmap-js',
-                    'https://maps.googleapis.com/maps/api/js?key=' . $apiKey . '&libraries=places,geometry',
-                    ['server' => 'remote', 'position' => 'bottom', 'priority' => 300, 'version' => $this->version, 'attributes' => 'defer']
-                );
-                $this->context->controller->registerJavascript(
-                    'module-' . $this->name . '-shop-gmap-js',
+                    'module-' . $this->name . '-shop-map-js',
                     'modules/' . $this->name . '/views/js/' . $filename,
                     ['server' => 'local', 'position' => 'bottom', 'priority' => 400, 'version' => $this->version, 'attributes' => 'defer']
                 );

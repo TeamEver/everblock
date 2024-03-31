@@ -39,6 +39,8 @@ use Db;
 use Product;
 use Language;
 use Module;
+use EverblockTools;
+use EverblockCache;
 
 class ExecuteAction extends Command
 {
@@ -52,7 +54,9 @@ class ExecuteAction extends Command
         'saveblocks',
         'restoreblocks',
         'removeinlinecsstags',
-        'droplogs'
+        'droplogs',
+        'refreshtokens',
+        'securewithapache',
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -68,7 +72,7 @@ class ExecuteAction extends Command
         $this->addArgument('idshop id', InputArgument::OPTIONAL, 'Shop ID');
         $help = sprintf("Allowed actions: %s\n", implode(' / ', $this->allowedActions));
         $this->setHelp($help);
-        $this->module = Module::getInstanceByName('everblock');;
+        $this->module = Module::getInstanceByName('everblock');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -85,7 +89,7 @@ class ExecuteAction extends Command
                 (int) $idShop
             );
             if (!\Validate::isLoadedObject($shop)) {
-                $output->writeln('<error>Shop not found</error>');
+                $output->writeln('<warning>Shop not found</warning>');
                 return self::ABORTED;
             }
         } else {
@@ -95,7 +99,7 @@ class ExecuteAction extends Command
             }
         }
         if (!in_array($action, $this->allowedActions)) {
-            $output->writeln('<error>Unkown action</error>');
+            $output->writeln('<warning>Unkown action</warning>');
             return self::ABORTED;
         }
         if ($action === 'getrandomcomment') {
@@ -104,6 +108,42 @@ class ExecuteAction extends Command
             );
             return self::SUCCESS;
         }
+        if ($action === 'refreshtokens') {
+            // Instagram
+            $newToken = EverblockTools::refreshInstagramToken();
+            if ($newToken) {
+                EverblockCache::cacheDropByPattern('fetchInstagramImages');
+                $output->writeln(
+                    '<success>' . $newToken . '</success>'
+                );
+            } else {
+                $output->writeln('<warning>Instagram token reset failed</warning>');
+            }
+            return self::SUCCESS;
+        }
+        if ($action === 'securewithapache') {
+            // Instagram
+            $secured = EverblockTools::secureModuleFoldersWithApache();
+            if (is_array($secured)
+                && isset($secured['postErrors'])
+                && count($secured['postErrors']) > 0
+            ) {
+                foreach ($secured['postErrors'] as $postErrors) {
+                    $output->writeln('<warning>' . $postErrors . '</warning>');
+                }
+            }
+            if (is_array($secured)
+                && isset($secured['querySuccess'])
+                && count($secured['querySuccess']) > 0
+            ) {
+                foreach ($secured['querySuccess'] as $querySuccess) {
+                    $output->writeln(
+                        '<success>' . $querySuccess . '</success>'
+                    );
+                }
+            }
+            return self::SUCCESS;
+        }        
         if ($action === 'saveblocks') {
             $backuped = EverblockTools::exportModuleTablesSQL();
             if ((bool) $backuped === true) {
@@ -113,21 +153,7 @@ class ExecuteAction extends Command
                 return self::SUCCESS;
             } else {
                 $output->writeln(
-                    '<error>Backup failed</error>'
-                );
-                return self::FAILURE;
-            }
-        }
-        if ($action === 'droplogs') {
-            $purged = EverblockTools::purgeNativePrestashopLogsTable();
-            if ((bool) $purged === true) {
-                $output->writeln(
-                    '<success>Logs table purged</success>'
-                );
-                return self::SUCCESS;
-            } else {
-                $output->writeln(
-                    '<error>Logs table NOT purged</error>'
+                    '<warning>Backup failed</warning>'
                 );
                 return self::FAILURE;
             }
@@ -141,12 +167,27 @@ class ExecuteAction extends Command
                 return self::SUCCESS;
             } else {
                 $output->writeln(
-                    '<error>Blocks restoration done</error>'
+                    '<warning>Blocks restoration failed</warning>'
+                );
+                return self::FAILURE;
+            }
+        }
+        if ($action === 'droplogs') {
+            $purged = EverblockTools::purgeNativePrestashopLogsTable();
+            if ((bool) $purged === true) {
+                $output->writeln(
+                    '<success>Logs table purged</success>'
+                );
+                return self::SUCCESS;
+            } else {
+                $output->writeln(
+                    '<warning>Logs table NOT purged</warning>'
                 );
                 return self::FAILURE;
             }
         }
         if ($action === 'removeinlinecsstags') {
+            $output->writeln('<comment>Start removing inline CSS tags</comment>');
             $sql = new DbQuery();
             $sql->select('id_product');
             $sql->from('product_shop');

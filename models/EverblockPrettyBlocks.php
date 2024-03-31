@@ -22,6 +22,11 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockPrettyBlocks extends ObjectModel
 {
+    public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
+    {
+        return PrettyBlocksModel::registerBlockToZone($zone_name, $code, $id_lang, $id_shop);
+    }
+
     public static function getEverPrettyBlocks($context)
     {
         $cacheId = 'EverblockPrettyBlocks_getEverPrettyBlocks_'

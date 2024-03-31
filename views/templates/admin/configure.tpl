@@ -134,7 +134,23 @@
         <li><p>[evercontact type="checkbox" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using checkbox buttons instead of select' mod='everblock'}</p></li>
         <li><p>[evercontact type="file" label="Pièce jointe"] {l s='to display a file upload field' mod='everblock'}</p></li>
         <li><p>[evercontact type="hidden" label="Champ caché"] {l s='to display a hidden field with value & label "Champ caché"' mod='everblock'}</p></li>
+        <li><p>[evercontact type="sento" label="me@email.fr"] {l s='to display the recipient\'s email in an encoded manner. The recipient\'s email will not be clearly displayed on the pages. Not using this means sending the email to the email address set in your default store.' mod='everblock'}</p></li>
         <li><p>[evercontact type="submit" label="Submit"] {l s='to show a submit button for your custom contact form' mod='everblock'}</p></li>
+    </ul>
+    <br>
+    <h4>{l s='Create a custom order form using shortcodes' mod='everblock'}</h3>
+    <p>{l s='An order form must be set on hook displayEverblockExtraOrderStep. Therefore you can create a new block,set it on displayEverblockExtraOrderStep hook, and add these shortcodes below.' mod='everblock'}</p>
+    <p>{l s='Please make sure new order step title is set on module configuration.' mod='everblock'}</p>
+    <p>{l s='A order form must start with the shortcode [everorderform_open] and end with the shortcode [everorderform_close]' mod='everblock'}</p>
+    <p>{l s='You can add the following fields between these two shortcodes:' mod='everblock'}</p>
+    <ul>
+        <li><p>[everorderform type="text" label="Your name"] {l s='to display a text input field with the label "Your name"' mod='everblock'}</p></li>
+        <li><p>[everorderform type="number" label="Your age"] {l s='to display a number input field with the label "Your age"' mod='everblock'}</p></li>
+        <li><p>[everorderform type="textarea" label="Message"] {l s='to display a textarea input field with the label "Message"' mod='everblock'}</p></li>
+        <li><p>[everorderform type="select" label="You are" values="Man,Woman,Other"] {l s='to display a select field with the label "Your are" and options "Man,Woman,Other"' mod='everblock'}</p></li>
+        <li><p>[everorderform type="radio" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using radio buttons instead of select' mod='everblock'}</p></li>
+        <li><p>[everorderform type="checkbox" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using checkbox buttons instead of select' mod='everblock'}</p></li>
+        <li><p>[everorderform type="hidden" label="Champ caché"] {l s='to display a hidden field with value & label "Champ caché"' mod='everblock'}</p></li>
     </ul>
     <br>
     <h4>{l s='Management of product tabs' mod='everblock'}</h3>

@@ -30,8 +30,12 @@ class EverblockTools extends ObjectModel
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $txt = static::getCustomerShortcodes($txt, $context);
+        $txt = static::obfuscateTextByClass($txt);
         if (strpos($txt, '[everfaq') !== false) {
             $txt = static::getFaqShortcodes($txt, $context, $module);
+        }
+        if (strpos($txt, '[everinstagram]') !== false) {
+            $txt = static::getInstagramShortcodes($txt, $context, $module);
         }
         if (strpos($txt, '[product') !== false) {
             $txt = static::getProductShortcodes($txt, $context, $module);
@@ -84,6 +88,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[evercontactform_open]') !== false) {
             $txt = static::getFormShortcode($txt);
         }
+        if (strpos($txt, '[everorderform_open]') !== false) {
+            $txt = static::getOrderFormShortcode($txt);
+        }
         if (strpos($txt, '[random_product') !== false) {
             $txt = static::getRandomProductsShortcode($txt, $context, $module);
         }
@@ -110,6 +117,36 @@ class EverblockTools extends ObjectModel
             return $context->smarty->fetch($templatePath);
 
         }, $txt);
+
+        return $txt;
+    }
+
+    public static function getInstagramShortcodes(string $txt, Context $context, Everblock $module): string
+    {
+        $imgs = static::fetchInstagramImages();
+        if (!$imgs || count($imgs) <= 0) {
+            $txt = str_replace('[everinstagram]', '', $txt);
+            return $txt;
+        }
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/instagram.tpl';
+        $context->smarty->assign([
+            'everinsta_shopid' => $context->shop->id,
+            'EVERINSTA_ACCESS_TOKEN' => Configuration::get('EVERINSTA_ACCESS_TOKEN'),
+            'everinsta_nbr' => 12,
+            'everinsta_link' => Configuration::get('EVERINSTA_LINK'),
+            'insta_imgs' => $imgs,
+        ]);
+
+        // Chercher toutes les occurrences du shortcode [everinstagram]
+        preg_match_all('/\[everinstagram\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            // Charger et rendre le contenu du template
+            $renderedContent = $context->smarty->fetch($templatePath);
+            
+            // Remplacer chaque occurrence du shortcode par le contenu rendu du template
+            $txt = str_replace($match[0], $renderedContent, $txt);
+        }
 
         return $txt;
     }
@@ -305,55 +342,59 @@ class EverblockTools extends ObjectModel
             $attribute_value = trim($attribute_value, "\"");
             $attributes[$attribute_name] = $attribute_value;
         }
-        $field_type = $attributes['type'];
-        $label = $attributes['label'];
+        $field_type = htmlspecialchars($attributes['type'], ENT_QUOTES);
+        $label = htmlspecialchars($attributes['label'], ENT_QUOTES);
+        $valueAttribute = isset($attributes['value']) ? ' value="' . htmlspecialchars($attributes['value'], ENT_QUOTES) . '"' : '';
         $template = '';
         $isRequired = isset($attributes['required']) && strtolower($attributes['required']) === 'true';
         switch ($field_type) {
+            case 'sento':
+                $template = '<input type="hidden" name="everHide" value="' . base64_encode($label) . '">';
+                break;
             case 'password':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="password" class="form-control" name="' . $label . '" id="' . $label . '"';
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="password" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '></div>';
                 break;
             case 'tel':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="tel" class="form-control" name="' . $label . '" id="' . $label . '"';
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="tel" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '></div>';
                 break;
             case 'email':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="email" class="form-control" name="' . $label . '" id="' . $label . '"';
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="email" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '></div>';
                 break;
             case 'datetime-local':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="datetime-local" class="form-control" name="' . $label . '" id="' . $label . '"';
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="datetime-local" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '></div>';
                 break;
             case 'date':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="date" class="form-control" name="' . $label . '" id="' . $label . '"';
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="date" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '></div>';
                 break;
             case 'text':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="text" class="form-control" name="' . $label . '" id="' . $label . '"';
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="text" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '></div>';
                 break;
             case 'number':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="number" class="form-control" name="' . $label . '" id="' . $label . '"';
+                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="number" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
                 if ($isRequired) {
                     $template .= ' required';
                 }
@@ -364,27 +405,32 @@ class EverblockTools extends ObjectModel
                 if ($isRequired) {
                     $template .= ' required';
                 }
-                $template .= '></textarea></div>';
+                $textareaValue = htmlspecialchars($attributes['value'] ?? '', ENT_QUOTES);
+                $template .= '>' . $textareaValue . '</textarea></div>';
                 break;
             case 'select':
                 $values = explode(",", $attributes['values']);
+                $selectedValue = isset($attributes['value']) ? $attributes['value'] : null;
                 $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><select class="form-control" name="' . $label . '" id="' . $label . '"';
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '>';
                 foreach ($values as $value) {
-                    $template .= '<option value="' . trim($value) . '">' . trim($value) . '</option>';
+                    $selected = ($value === $selectedValue) ? ' selected' : '';
+                    $template .= '<option value="' . trim($value) . '"' . $selected . '>' . trim($value) . '</option>';
                 }
                 $template .= '</select></div>';
                 break;
             case 'radio':
                 $values = explode(",", $attributes['values']);
+                $selectedValue = isset($attributes['value']) ? $attributes['value'] : null;
                 $template = '<div class="form-group"><label>' . $label . '</label><div class="form-check">';
                 foreach ($values as $value) {
                     $uniqueIdentifier++; // Incrémentation du compteur
                     $radioId = 'radio_' . $uniqueIdentifier; // Identifiant unique
-                    $template .= '<div class="form-check-inline"><input type="radio" class="form-check-input" name="' . $label . '" value="' . trim($value) . '" id="' . $radioId . '"';
+                    $checked = ($value === $selectedValue) ? ' checked' : '';
+                    $template .= '<div class="form-check-inline"><input type="radio" class="form-check-input" name="' . $label . '" value="' . trim($value) . '" id="' . $radioId . '"' . $checked;
                     if ($isRequired) {
                         $template .= ' required';
                     }
@@ -394,11 +440,13 @@ class EverblockTools extends ObjectModel
                 break;
             case 'checkbox':
                 $values = explode(",", $attributes['values']);
+                $checkedValues = isset($attributes['value']) ? explode(",", $attributes['value']) : [];
                 $template = '<div class="form-group"><label>' . $label . '</label><div class="form-check">';
                 foreach ($values as $value) {
                     $uniqueIdentifier++;
                     $checkboxId = 'checkbox_' . $uniqueIdentifier;
-                    $template .= '<div class="form-check-inline"><input type="checkbox" class="form-check-input" name="' . $label . '[]" value="' . trim($value) . '" id="' . $checkboxId . '"';
+                    $checked = in_array($value, $checkedValues) ? ' checked' : '';
+                    $template .= '<div class="form-check-inline"><input type="checkbox" class="form-check-input" name="' . $label . '[]" value="' . trim($value) . '" id="' . $checkboxId . '"' . $checked;
                     if ($isRequired) {
                         $template .= ' required';
                     }
@@ -417,7 +465,7 @@ class EverblockTools extends ObjectModel
                 $template = '<button type="submit" class="btn btn-success evercontactsubmit">' . $label . '</button>';
                 break;
             case 'hidden':
-                $template = '<input type="hidden" name="' . $label . '" value="' . $label . '">';
+                $template = '<input type="hidden" name="hidden" value="' . $label . '">';
                 break;
             default:
                 // Type de champ inconnu
@@ -432,6 +480,18 @@ class EverblockTools extends ObjectModel
         $txt = str_replace('[evercontactform_open]', '<div class="container"><form method="POST" class="evercontactform" action="#">', $txt);
         $txt = str_replace('[evercontactform_close]', '</form></div>', $txt);
         $pattern = '/\[evercontact\s[^\]]+\]/';
+        $result = preg_replace_callback($pattern, function ($matches) {
+            // $matches[0] contient le shortcode trouvé
+            return static::generateFormFromShortcode($matches[0]);
+        }, $txt);
+        return $result;
+    }
+
+    public static function getOrderFormShortcode(string $txt): string
+    {
+        $txt = str_replace('[everorderform_open]', '<div class="container">', $txt);
+        $txt = str_replace('[everorderform_close]', '</div>', $txt);
+        $pattern = '/\[everorderform\s[^\]]+\]/';
         $result = preg_replace_callback($pattern, function ($matches) {
             // $matches[0] contient le shortcode trouvé
             return static::generateFormFromShortcode($matches[0]);
@@ -1503,7 +1563,7 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    private static function generateOsmScript($markers)
+    public static function generateOsmScript($markers)
     {
         if (!$markers || !is_array($markers)) {
             return;
@@ -1751,6 +1811,35 @@ class EverblockTools extends ObjectModel
         return $text;
     }
 
+    public static function obfuscateTextByClass(string $text): string
+    {
+        $pattern = '/<a\s+(.*?)>/i';
+        preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $wholeTag = $match[0];
+            $attributesPart = $match[1];
+            // Vérifie si la classe 'obfme' est présente
+            if (preg_match('/\bclass="[^"]*\bobfme\b[^"]*"/', $wholeTag) || preg_match("/\bclass='[^']*\\bobfme\\b[^']*'/", $wholeTag)) {
+                // Extraire l'URL
+                preg_match('/href="([^"]*)"/i', $wholeTag, $urlMatch);
+                $linkUrl = $urlMatch[1];
+                $encodedLink = base64_encode($linkUrl);
+
+                $newClassAttribute = preg_replace_callback(
+                    '/\bclass=("|\')([^"\']*)("|\')/i',
+                    function ($classMatch) {
+                        return 'class=' . $classMatch[1] . $classMatch[2] . ' obflink' . $classMatch[3];
+                    },
+                    $attributesPart
+                );
+                $newAttributesPart = preg_replace('/href="([^"]*)"/i', 'data-obflink="' . $encodedLink . '"', $newClassAttribute);
+                $newTag = '<span ' . $newAttributesPart . '>';
+                $text = str_replace($wholeTag, $newTag, $text);
+            }
+        }
+        return $text;
+    }
+
     public static function obfuscateText(string $text): string
     {
         // Rechercher toutes les balises <a href> dans le texte
@@ -1858,11 +1947,15 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_modal',
             _DB_PREFIX_ . 'everblock_modal_lang',
         ];
-        $tableExists = true;
+        $tableExists = false;
         foreach ($tableNames as $tableName) {
-            $tableExists = (bool) static::ifTableExists($tableName);
+            if (!static::ifTableExists($tableName)) {
+                $tableExists = true;
+                break; // Pas besoin de vérifier les autres tables
+            }
         }
-        if ((bool) $tableExists === false) {
+
+        if ($tableExists) {
             include _PS_MODULE_DIR_ . 'everblock/sql/install.php';
         }
         // Ajoute les colonnes manquantes à la table ps_everblock
@@ -2414,5 +2507,70 @@ class EverblockTools extends ObjectModel
             'postErrors' => $postErrors,
             'querySuccess' => $querySuccess,
         ];
+    }
+
+    public static function fetchInstagramImages()
+    {
+        $cacheId = 'fetchInstagramImages';
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $request = static::getInstagramRequest();
+            $result = json_decode($request, true);
+            $imgs = [];
+            if ($result && isset($result['data']) && $result['data']) {
+                foreach ($result['data'] as $post) {
+                    $imgs[] = [
+                        'id' => isset($post['id']) ? $post['id'] : $post['id'],
+                        'permalink' => isset($post['permalink']) ? $post['permalink'] : $post['permalink'],
+                        'low_resolution' => isset($post['thumbnail_url']) ? $post['thumbnail_url'] : $post['media_url'],
+                        'thumbnail' => isset($post['thumbnail_url']) ? $post['thumbnail_url'] : $post['media_url'],
+                        'standard_resolution' => isset($post['media_url']) ? $post['media_url'] : '',
+                        'caption' => isset($post['caption']) ? $post['caption'] : '',
+                        'is_video' => strpos($post['media_url'], '.mp4?') !== false ? true : false,
+                    ];
+                }
+            }
+            EverblockCache::cacheStore($cacheId, $imgs);
+            return $imgs;
+        }
+        return EverblockCache::cacheRetrieve($cacheId);
+    }
+
+    public static function getInstagramRequest()
+    {
+        $instaToken = Configuration::get('EVERINSTA_ACCESS_TOKEN');
+        $fields = '&fields=id,caption,media_type,media_url,permalink,thumbnail_url,username,timestamp';
+        $url = "https://graph.instagram.com/me/media?access_token=" . $instaToken . $fields;
+        return static::requestCurl($url);
+    }
+
+    public static function refreshInstagramToken()
+    {
+        $instaToken = Configuration::get('EVERINSTA_ACCESS_TOKEN');
+        $url = 'https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=' . $instaToken;
+        $result = static::requestCurl($url);
+        $json = json_decode($result, true);
+        if (isset($json['access_token'])) {
+            Configuration::updateValue('EVERINSTA_ACCESS_TOKEN', $json['access_token']);
+            return $json['access_token'];
+        }
+        return null;
+    }
+
+    protected static function requestCurl($url, $timeout = 20)
+    {
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            $result = curl_exec($ch);
+            curl_close($ch);
+            return $result;
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog(
+                $e->getMessage()
+            );
+            return json_encode([]);
+        }
     }
 }

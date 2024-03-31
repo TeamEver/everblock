@@ -39,7 +39,9 @@ class AdminEverBlockFaqController extends ModuleAdminController
         EverblockTools::checkAndFixDatabase();
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
+        $m = Module::getInstanceByName('everblock');
         $this->context->smarty->assign([
+            $m->name . '_version' => $m->version,
             'module_link' => $module_link,
             'everblock_dir' => _MODULE_DIR_ . '/everblock/',
         ]);

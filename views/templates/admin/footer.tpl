@@ -25,4 +25,15 @@
         <strong>{l s='Thank you for your confidence :-)' mod='everblock'}</strong><br />
         {l s='Feel free to contact us for more support or help' mod='everblock'}
     </p>
+    {if isset($cron_links) && $cron_links}
+    <div class="panel">
+        <div class="row">
+            <div class="col-md-12 mt-3">            
+                {foreach from=$cron_links key=action item=cron}
+                <a href="{$cron|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-info" target="_blank">{l s='Cron for' mod='everblock'} {$action}</a>
+                {/foreach}
+            </div>
+        </div>
+    </div>
+    {/if}
 </div>

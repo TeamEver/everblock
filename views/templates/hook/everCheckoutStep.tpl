@@ -15,14 +15,21 @@
  *  @copyright 2019-2024 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<!-- Module Ever Block -->
-<div class="{if $block.settings.default.container}container{/if}">
-    {if $block.settings.default.container}
-        <div class="row">
-    {/if}
-    <img src="{$urls.base_url}modules/everblock/views/img/tartiflette.jpg" class="lazyload img img-fluid" alt="{l s='In tartiflette we trust' mod='everblock'}" title="{l s='In tartiflette we trust' mod='everblock'}" loading="lazy">
-    {if $block.settings.default.container}
+
+{extends file='checkout/_partials/steps/checkout-step.tpl'}
+
+{block name='step_content'}
+        <div class="custom-checkout-step">
+            <form
+                    method="POST"
+                    action="{$urls.pages.order}"
+                    data-refresh-url="{url entity='order' params=['ajax' => 1, 'action' => 'customStep']}"
+            >
+                {$fields nofilter}
+                <footer class="clearfix">
+                    <input type="submit" name="submitCustomStep" value="{l s='Submit' mod='everblock'}"
+                           class="btn btn-primary continue float-xs-right"/>
+                </footer>
+            </form>
         </div>
-    {/if}
-</div>
-<!-- /Module Ever Block -->
+{/block}

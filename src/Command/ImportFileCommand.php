@@ -81,9 +81,6 @@ class ImportFileCommand extends ContainerAwareCommand
             $output->writeln(sprintf(
                 '<comment>Cache cleared</comment>'
             ));
-            $output->writeln(
-                $this->getRandomFunnyComment($output)
-            );
             return self::SUCCESS;
         } else {
             $output->writeln(sprintf(
@@ -296,111 +293,5 @@ class ImportFileCommand extends ContainerAwareCommand
             $log,
             FILE_APPEND
         );
-    }
-
-    /**
-     * Get funny random comment
-     * Can be useful for setting comment style example
-     * @see https://symfony.com/doc/current/console/coloring.html
-    */
-    protected function getRandomFunnyComment($output)
-    {
-        $outputStyle = new OutputFormatterStyle('green', 'white', ['bold', 'blink']);
-        $output->getFormatter()->setStyle('styled', $outputStyle);
-        $funnyComments = [];
-        $funnyComments[] = "<styled>
-            IMPORT ENDED, HAVE A BEER
-                         .sssssssss.
-                   .sssssssssssssssssss
-                 sssssssssssssssssssssssss
-                ssssssssssssssssssssssssssss
-                 @@sssssssssssssssssssssss@ss
-                 |s@@@@sssssssssssssss@@@@s|s
-          _______|sssss@@@@@sssss@@@@@sssss|s
-        /         sssssssss@sssss@sssssssss|s
-       /  .------+.ssssssss@sssss@ssssssss.|
-      /  /       |...sssssss@sss@sssssss...|
-     |  |        |.......sss@sss@ssss......|
-     |  |        |..........s@ss@sss.......|
-     |  |        |...........@ss@..........|
-      \  \       |............ss@..........|
-       \  '------+...........ss@...........|
-        \________ .........................|
-                 |.........................|
-                /...........................\
-               |.............................|
-                  |.......................|
-                      |...............|
-                </styled>";
-        $funnyComments[] = "<styled>
-            IMPORT ENDED, MEOW
-              ^~^  ,
-             ('Y') )
-             /   \/
-            (\|||/)
-            </styled>";
-        $funnyComments[] = "<styled>
-            IMPORT ENDED, D'OH
-            ...___.._____
-            ....‘/,-Y”.............“~-.
-            ..l.Y.......................^.
-            ./\............................_\_
-            i.................... ___/“....“\
-            |.................../“....“\ .....o !
-            l..................].......o !__../
-            .\..._..._.........\..___./...... “~\
-            ..X...\/...\.....................___./
-            .(. \.___......_.....--~~“.......~`-.
-            ....`.Z,--........./.................\
-            .......\__....(......../..........______)
-            ...........\.........l......../-----~~”/
-            ............Y.......\................/
-            ............|........“x______.^
-            ............|.............\
-            ............j...............Y
-            </styled>";
-        $funnyComments[] = '<styled>
-            |￣￣￣￣￣￣￣￣￣ |
-            |      IMPORT      |
-            |      ENDED!      |
-            |__________________|
-            (\__/) ||
-            (•ㅅ•) ||
-            / 　 づ"
-            </styled>';
-        $funnyComments[] = "<styled>
-            Import (•_•)
-            has been ( •_•)>⌐■-■
-            ended (⌐■_■)
-            </styled>";
-        $funnyComments[] = "<styled>
-            ......_________________________
-            ....../ `---___________--------    | ============= IMPORT-ENDED-BULLET !
-            ...../_==o;;;;;;;;______________|
-            .....), ---.(_(__) /
-            .......// (..) ), /--
-            ... //___//---
-            .. //___//
-            .//___//
-            //___//
-            </styled>";
-        $funnyComments[] = "<styled>
-               IMPORT ENDED
-           ._________________.
-           |.---------------.|
-           ||               ||
-           ||   -._ .-.     ||
-           ||   -._| | |    ||
-           ||   -._|'|'|    ||
-           ||   -._|.-.|    ||
-           ||_______________||
-           /.-.-.-.-.-.-.-.-.\
-          /.-.-.-.-.-.-.-.-.-.\
-         /.-.-.-.-.-.-.-.-.-.-.\
-        /______/__________\___o_\ 
-        \_______________________/
-         </styled>";
-        $k = array_rand($funnyComments);
-        return $funnyComments[$k];
     }
 }

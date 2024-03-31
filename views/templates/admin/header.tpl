@@ -16,7 +16,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 <div class="panel row">
-    <h3><i class="icon icon-smile"></i> {l s='Ever Block' mod='everblock'}</h3>
+    <h3><i class="icon icon-smile"></i> {l s='Ever Block' mod='everblock'} {$everblock_version|escape:'htmlall':'UTF-8'}</h3>
     <div class="col-md-12">
         <a href="#everlogobottom">
           <img id="everlogotop" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" style="max-width: 120px;">
@@ -37,6 +37,7 @@
         {if isset($module_link) && $module_link}
         <a href="{$module_link|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-success">{l s='Module configuration' mod='everblock'}</a>
         {/if}
+
         <a href="{$everblock_dir|escape:'htmlall':'UTF-8'}input/sample/tabs.xlsx" class="btn btn-lg btn-success">{l s='Download Excel tabs sample file' mod='everblock'}</a>
     </div>
 </div>

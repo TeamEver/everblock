@@ -83,8 +83,18 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             }
         }
         $mailSubject = $this->module->l('New form submitted');
-        $mailRecipient = Configuration::get('PS_SHOP_EMAIL');
-        $mailSender = Configuration::get('PS_SHOP_EMAIL');
+        if (Tools::getValue('everHide')
+            && !empty(Tools::getValue('everHide'))
+        ) {
+            $mailRecipient = base64_decode(Tools::getValue('everHide'));
+            if (Validate::isEmail($mailRecipient)) {
+                $mailRecipient = base64_decode(Tools::getValue('everHide'));
+            } else {
+                $mailRecipient = Configuration::get('PS_SHOP_EMAIL');
+            }
+        } else {
+            $mailRecipient = Configuration::get('PS_SHOP_EMAIL');
+        }
         $mailTemplateName = 'evercontact';
         $templateVars = [
             '{shop_name}' => Configuration::get('PS_SHOP_NAME'),
