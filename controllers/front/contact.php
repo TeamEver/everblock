@@ -86,9 +86,9 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
         if (Tools::getValue('everHide')
             && !empty(Tools::getValue('everHide'))
         ) {
-            $mailRecipient = base64_decode(Tools::getValue('everHide'));
-            if (Validate::isEmail($mailRecipient)) {
-                $mailRecipient = base64_decode(Tools::getValue('everHide'));
+            $formMail = base64_decode(Tools::getValue('everHide'));
+            if (Validate::isEmail($formMail)) {
+                $mailRecipient = $formMail;
             } else {
                 $mailRecipient = Configuration::get('PS_SHOP_EMAIL');
             }
@@ -107,22 +107,29 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             '{message}' => $messageContent,
         ];
         $mailFolder = _PS_MODULE_DIR_ . $this->module->name . '/mails/';
-        $sent = Mail::send(
-            (int) $this->context->language->id,
-            $mailTemplateName,
-            $mailSubject,
-            $templateVars,
-            $mailRecipient,
-            null,
-            $mailSender,
-            null,
-            !empty($attachments) ? $attachments : null,
-            null,
-            $mailFolder
-        );
-        if ($sent) {
-            $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/success.tpl');
-        } else {
+        try {
+            $sent = Mail::send(
+                (int) $this->context->language->id,
+                $mailTemplateName,
+                $mailSubject,
+                $templateVars,
+                $mailRecipient,
+                null,
+                $mailSender,
+                null,
+                !empty($attachments) ? $attachments : null,
+                null,
+                $mailFolder
+            );
+            if ($sent) {
+                $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/success.tpl');
+            } else {
+                $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
+            }
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog(
+                $e->getMessage()
+            );
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
         }
         die($response);

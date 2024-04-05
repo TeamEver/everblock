@@ -54,7 +54,7 @@ function clickAndMousedownActions(selector) {
           event.preventDefault(); // Empêche le comportement par défaut du lien
 
           // Initialisez la valeur du lien encodé
-          var encodedLink;
+          let encodedLink;
 
           // Vérifiez si 'data-obflink' ou 'data-ob' ou 'data-href' sont définis
           if (typeof $(this).attr('data-obflink') !== 'undefined') {
@@ -67,15 +67,15 @@ function clickAndMousedownActions(selector) {
 
           if (typeof encodedLink !== 'undefined') {
             // Décodez l'URL à partir de base64
-            var decodedLink = atob(encodedLink);
+            let decodedLink = atob(encodedLink);
 
             // Vérifiez si l'élément a un attribut data-target="_blank"
-            var targetAttribute = $(this).attr('data-target');
+            let targetAttribute = $(this).attr('data-target');
             if (typeof encodedLink !== 'undefined') {
-                var targetAttribute = $(this).attr('target');
+                let targetAttribute = $(this).attr('target');
             }
             if (typeof encodedLink !== 'undefined') {
-                var targetAttribute = $(this).hasClass('blank') ? '_blank' : undefined;
+                let targetAttribute = $(this).hasClass('blank') ? '_blank' : undefined;
             }
 
             // Vérifiez si la touche CTRL est enfoncée avec un clique gauche
@@ -99,7 +99,7 @@ function clickAndMousedownActions(selector) {
           event.preventDefault(); // Empêche le comportement par défaut du lien
 
           // Initialisez la valeur du lien encodé
-          var encodedLink;
+          let encodedLink;
 
           // Vérifiez si 'data-obflink' ou 'data-ob' ou 'data-href' sont définis
           if (typeof $(this).attr('data-obflink') !== 'undefined') {
@@ -112,13 +112,13 @@ function clickAndMousedownActions(selector) {
 
           if (typeof encodedLink !== 'undefined') {
             // Décodez l'URL à partir de base64
-            var decodedLink = atob(encodedLink);
+            let decodedLink = atob(encodedLink);
 
             // Vérifiez si l'élément a un attribut data-target="_blank"
-            var targetAttribute = $(this).attr('data-target');
+            let targetAttribute = $(this).attr('data-target');
 
-            // Vérifiez si la touche CTRL est enfoncée avec un clique gauche
-            // OU si le clique est effectué avec le bouton centrale de la souris
+            // Vérifiez si la touche CTRL est enfoncée avec un clic gauche
+            // OU si le clic est effectué avec le bouton centrale de la souris
             // OU si target _blank
             if (( (event.ctrlKey || event.metaKey ) && event.button === 0 ) || event.button === 1 || targetAttribute === '_blank') {
               // Ouvrez l'URL décodée dans un nouvel onglet

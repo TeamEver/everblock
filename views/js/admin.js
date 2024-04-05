@@ -17,20 +17,20 @@
  */
 
 $(document).ready(function() {
-  var scssTextarea = document.getElementById("EVERPSSASS");
-  var scssEditor = CodeMirror.fromTextArea(scssTextarea, {
+  let scssTextarea = document.getElementById("EVERPSSASS");
+  let scssEditor = CodeMirror.fromTextArea(scssTextarea, {
     mode: "text/css",
     theme: "dracula",
     lineNumbers: true
   });
-  var cssTextarea = document.getElementById("EVERPSCSS");
-  var cssEditor = CodeMirror.fromTextArea(cssTextarea, {
+  let cssTextarea = document.getElementById("EVERPSCSS");
+  let cssEditor = CodeMirror.fromTextArea(cssTextarea, {
     mode: "text/css",
     theme: "dracula",
     lineNumbers: true
   });
-  var jsTextarea = document.getElementById("EVERPSJS");
-  var jsEditor = CodeMirror.fromTextArea(jsTextarea, {
+  let jsTextarea = document.getElementById("EVERPSJS");
+  let jsEditor = CodeMirror.fromTextArea(jsTextarea, {
     mode: "text/javascript",
     theme: "dracula",
     lineNumbers: true

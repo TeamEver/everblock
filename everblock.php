@@ -29,7 +29,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPrettyBlocks.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCache.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockGpt.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverCheckoutStep.php';
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCheckoutStep.php';
 
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
@@ -1228,7 +1228,7 @@ class Everblock extends Module
         $process = $params['checkoutProcess'];
         $steps = $process->getSteps();
 
-        $everStep = new EverCheckoutStep(
+        $everStep = new EverblockCheckoutStep(
             $this->context,
             $this->translator,
             Module::getInstanceByName($this->name)
@@ -1290,7 +1290,7 @@ class Everblock extends Module
             $checkoutSessionData = $this->getCartSessionDatas(
                 $order->id_cart
             );
-            if (isset($checkoutSessionData)) {
+            if (isset($checkoutSessionData) && $checkoutSessionData) {
                 $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
                 if (!$checkoutSessionData || empty($checkoutSessionData)) {
                     return;
@@ -1330,7 +1330,7 @@ class Everblock extends Module
             $checkoutSessionData = $this->getCartSessionDatas(
                 $order->id_cart
             );
-            if (isset($checkoutSessionData)) {
+            if (isset($checkoutSessionData) && $checkoutSessionData) {
                 $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
                 $this->context->smarty->assign(array(
                     'checkoutSessionData' => $checkoutSessionData,
@@ -1358,7 +1358,7 @@ class Everblock extends Module
             $checkoutSessionData = $this->getCartSessionDatas(
                 $order->id_cart
             );
-            if (isset($checkoutSessionData)) {
+            if (isset($checkoutSessionData) && $checkoutSessionData) {
                 $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
                 $hiddenKeys = [
                     'hidden',
@@ -1399,7 +1399,7 @@ class Everblock extends Module
                 $checkoutSessionData = $this->getCartSessionDatas(
                     $order->id_cart
                 );
-                if (isset($checkoutSessionData)) {
+                if (isset($checkoutSessionData) && $checkoutSessionData) {
                     $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
                     $hiddenKeys = [
                         'hidden',

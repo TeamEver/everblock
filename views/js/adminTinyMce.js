@@ -27,7 +27,7 @@ function initCustomTinyMCE() {
         title: 'Obfusquer le lien',
         icon: 'info',
         onclick: function() {
-          var selectedNode = editor.selection.getNode();
+          let selectedNode = editor.selection.getNode();
           if (selectedNode.nodeName === 'A') {
             editor.dom.addClass(selectedNode, 'obfme');
           } else {
