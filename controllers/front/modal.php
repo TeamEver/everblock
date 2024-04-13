@@ -87,6 +87,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             ]);
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
             die($response);
-        }   
+        }
+        die();
     }
 }
