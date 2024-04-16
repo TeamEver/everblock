@@ -102,6 +102,7 @@
     <br>
     <h4>{l s='Shortcodes list' mod='everblock'}</h3>
     <ul>
+        <li><p>[everblock 1] {l s='to show block ID 1' mod='everblock'}</p></li>
         <li><p>[product 1] {l s='to show product ID 1' mod='everblock'}</p></li>
         <li><p>[product 1,2,3] {l s='to show products ID 1, 2 and 3' mod='everblock'}</p></li>
         <li><p>[random_product nb="4"] {l s='to show 4 random products' mod='everblock'}</p></li>        
