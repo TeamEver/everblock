@@ -274,6 +274,8 @@ class Everblock extends Module
             }
             $tab->add();
         }
+
+        $this->registerHook('displayMaintenance');
         $this->registerHook('displayPDFInvoice');
         $this->registerHook('displayPDFDeliverySlip');        
         $this->registerHook('displayAdminOrder');
@@ -599,6 +601,13 @@ class Everblock extends Module
                     ],
                     [
                         'type' => 'text',
+                        'label' => $this->l('Maintenance password'),
+                        'desc' => $this->l('If entered, you will have a password entry form on the maintenance page'),
+                        'hint' => $this->l('People with the password will be able to access the store in maintenance mode'),
+                        'name' => 'EVERBLOCK_MAINTENANCE_PSSWD',
+                    ],
+                    [
+                        'type' => 'text',
                         'label' => $this->l('Chat GPT API key'),
                         'desc' => $this->l('Add here your Chat GPT API key, it will be used for blocks generator'),
                         'hint' => $this->l('Without API key, blocks generator won\'t work'),
@@ -872,6 +881,7 @@ class Everblock extends Module
         return [
             'EVEROPTIONS_POSITION' => Configuration::get('EVEROPTIONS_POSITION'),
             'EVEROPTIONS_TITLE' => $this->getConfigInMultipleLangs('EVEROPTIONS_TITLE'),
+            'EVERBLOCK_MAINTENANCE_PSSWD' => Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD'),
             'EVERGPT_API_KEY' => Configuration::get('EVERGPT_API_KEY'),
             'EVERINSTA_ACCESS_TOKEN' => Configuration::get('EVERINSTA_ACCESS_TOKEN'),
             'EVERINSTA_LINK' => Configuration::get('EVERINSTA_LINK'),
@@ -1059,6 +1069,10 @@ class Everblock extends Module
             Tools::getValue('EVERGPT_API_KEY')
         );
         Configuration::updateValue(
+            'EVERBLOCK_MAINTENANCE_PSSWD',
+            Tools::getValue('EVERBLOCK_MAINTENANCE_PSSWD')
+        );        
+        Configuration::updateValue(
             'EVERINSTA_ACCESS_TOKEN',
             Tools::getValue('EVERINSTA_ACCESS_TOKEN')
         );
@@ -1195,6 +1209,30 @@ class Everblock extends Module
 
     public function hookActionOutputHTMLBefore($params)
     {
+        if (Tools::getValue('evermaintenancepassword')
+            && Tools::getValue('evermaintenancepassword') == Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD')
+        ) {
+            $userIp = Tools::getRemoteAddr();  // Obtenir l'IP de l'utilisateur
+
+            // Récupérer la liste actuelle des IPs autorisées depuis la configuration
+            $ips = Configuration::get('PS_MAINTENANCE_IP');
+
+            if ($ips) {
+                $ipsArray = explode(',', $ips);  // Transformer la chaîne en tableau
+            } else {
+                $ipsArray = [];
+            }
+
+            // Vérifier si l'IP de l'utilisateur n'est pas déjà dans la liste
+            if (!in_array($userIp, $ipsArray)) {
+                $ipsArray[] = $userIp;  // Ajouter l'IP de l'utilisateur au tableau
+                $newIps = implode(',', $ipsArray);  // Transformer le tableau en chaîne
+                Configuration::updateValue('PS_MAINTENANCE_IP', $newIps);  // Mettre à jour la configuration avec la nouvelle liste d'IPs
+            }
+            Tools::redirect(
+                Tools::getHttpHost(true) . __PS_BASE_URI__
+            );
+        }
         $txt = $params['html'];
         try {
             $context = Context::getContext();
@@ -1211,6 +1249,13 @@ class Everblock extends Module
                 $e->getMessage()
             );
             return $params['html'];
+        }
+    }
+
+    public function hookDisplayMaintenance($params)
+    {
+        if (Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD')) {
+            return $this->display(__FILE__, 'views/templates/hook/maintenance.tpl');
         }
     }
 
