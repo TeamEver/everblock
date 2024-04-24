@@ -1102,7 +1102,7 @@ class AdminEverBlockController extends ModuleAdminController
                 $this->errors[] = $this->l('Size name is not valid');
             }
             if (Tools::getValue('delay')
-                && !Validate::isBool(Tools::getValue('delay'))
+                && !Validate::isUnsignedInt(Tools::getValue('delay'))
             ) {
                 $this->errors[] = $this->l('Modal delay is not valid');
             }

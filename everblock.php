@@ -92,6 +92,7 @@ class Everblock extends Module
 
     public function install()
     {
+        Configuration::updateValue('EVERBLOCK_TINYMCE', 1);
         Configuration::updateValue('EVERPSCSS_P_LLOREM_NUMBER', 5);
         Configuration::updateValue('EVERPSCSS_S_LLOREM_NUMBER', 5);
         Configuration::updateValue('EVERPS_TAB_NB', 5);
@@ -1652,7 +1653,7 @@ class Everblock extends Module
             return;
         }
         $everpstabs = EverblockTabsClass::getByIdProductInAdmin(
-            (int) Tools::getValue('id_product'),
+            (int) $params['object']->id,
             (int) $this->context->shop->id
         );
         foreach ($everpstabs as $everpstab) {
@@ -1783,6 +1784,7 @@ class Everblock extends Module
 
     public function everHook($method, $args)
     {
+        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : 0;
         $context = Context::getContext();
         // Drop cache if needed
         EverblockClass::cleanBlocksCacheOnDate(
@@ -1837,6 +1839,9 @@ class Everblock extends Module
             );
             $currentBlock = [];
             foreach ($everblock as $block) {
+                if ((int) $block['position'] != (int) $position) {
+                    continue;
+                }
                 // Check device
                 if ((int) $block['device'] > 0
                     && (int) $context->getDevice() != (int) $block['device']
@@ -2000,6 +2005,7 @@ class Everblock extends Module
                 str_replace('|', '-', $cacheId),
                 $tpl
             );
+            return $tpl;
         }
         return EverblockCache::cacheRetrieve(
             str_replace('|', '-', $cacheId)

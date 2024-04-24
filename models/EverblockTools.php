@@ -1944,8 +1944,6 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_faq',
             _DB_PREFIX_ . 'everblock_faq_lang',
             _DB_PREFIX_ . 'everblock_tabs',
-            _DB_PREFIX_ . 'everblock_modal',
-            _DB_PREFIX_ . 'everblock_modal_lang',
         ];
         $tableExists = false;
         foreach ($tableNames as $tableName) {
@@ -1962,7 +1960,6 @@ class EverblockTools extends ObjectModel
         $columnsToAdd = [
             'only_home' => 'int(10) unsigned DEFAULT NULL',
             'id_hook' => 'int(10) unsigned NOT NULL',
-            'only_home' => 'int(10) unsigned DEFAULT NULL',
             'only_category' => 'int(10) unsigned DEFAULT NULL',
             'only_category_product' => 'int(10) unsigned DEFAULT NULL',
             'only_manufacturer' => 'int(10) unsigned DEFAULT NULL',

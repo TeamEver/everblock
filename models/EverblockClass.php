@@ -220,7 +220,7 @@ class EverBlockClass extends ObjectModel
 
     public static function getAllBlocks(int $idLang, int $idShop): array
     {
-        $cacheId = 'EverBlockClass_getBootstrapColClass_'
+        $cacheId = 'EverBlockClass_getAllBlocks_'
         . (int) $idLang
         . '_'
         . (int) $idShop;
@@ -306,6 +306,7 @@ class EverBlockClass extends ObjectModel
             $class = 'col-';
             switch ($colNumber) {
                 case 0:
+                    $class = '';
                     break;
                 case 1:
                     $class .= '12';
@@ -329,6 +330,7 @@ class EverBlockClass extends ObjectModel
             $class .= ' col-md-';
             switch ($colNumber) {
                 case 0:
+                    $class = '';
                     break;
                 case 1:
                     $class .= '12';
