@@ -31,8 +31,8 @@ class EverblockCache extends ObjectModel
     public static function getModuleConfiguration(string $key): string
     {
         $context = Context::getContext();
-        if ($context->controller->controller_type != 'admin'
-            || $context->controller->controller_type != 'moduleadmin'
+        if ($context->controller->controller_type == 'admin'
+            || $context->controller->controller_type == 'moduleadmin'
         ) {
             return '';
         }
@@ -87,8 +87,8 @@ class EverblockCache extends ObjectModel
     public static function isCacheStored(string $cacheKey): bool
     {
         $context = Context::getContext();
-        if ($context->controller->controller_type != 'admin'
-            || $context->controller->controller_type != 'moduleadmin'
+        if ($context->controller->controller_type == 'admin'
+            || $context->controller->controller_type == 'moduleadmin'
         ) {
             return false;
         }
@@ -111,8 +111,8 @@ class EverblockCache extends ObjectModel
     public static function cacheStore(string $cacheKey, $cacheValue)
     {
         $context = Context::getContext();
-        if ($context->controller->controller_type != 'admin'
-            || $context->controller->controller_type != 'moduleadmin'
+        if ($context->controller->controller_type == 'admin'
+            || $context->controller->controller_type == 'moduleadmin'
         ) {
             return;
         }
@@ -120,7 +120,7 @@ class EverblockCache extends ObjectModel
             return;
         }
         $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
-        file_put_contents($cacheFilePath, serialize($cacheValue));
+        return file_put_contents($cacheFilePath, serialize($cacheValue));
     }
 
     /**
