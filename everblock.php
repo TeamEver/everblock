@@ -2021,20 +2021,16 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/css/' . $this->name . '.css',
             ['media' => 'all', 'priority' => 200, 'version' => $this->version]
         );
-        $this->context->controller->registerJavascript(
-            'module-' . $this->name . '-js',
-            'modules/' . $this->name . '/views/js/' . $this->name . '.js',
-            ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+        $this->context->controller->addJs(
+            $this->_path . 'views/js/' . $this->name . '.js'
         );
         if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_OBF') === true) {
-            $this->context->controller->registerJavascript(
-                'module-' . $this->name . '-obf-js',
-                'modules/' . $this->name . '/views/js/' . $this->name . '-obfuscation.js',
-                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+            $this->context->controller->addJs(
+                $this->_path . 'views/js/' . $this->name . '-obf-js'
             );
         }
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
+        $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
         if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
             $this->context->controller->registerStylesheet(
                 'module-' . $this->name . '-custom-compressed-css',
@@ -2043,10 +2039,8 @@ class Everblock extends Module
             );
         }
         if (file_exists($compressedJs) && filesize($compressedJs) > 0) {
-            $this->context->controller->registerJavascript(
-                'module-' . $this->name . '-compressed-js',
-                'modules/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js',
-                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+            $this->context->controller->addJs(
+                $this->_path . 'views/js/custom' . $idShop . '.js'
             );
         }
         $externalJs = EverblockCache::getModuleConfiguration('EVERPSJS_LINKS');
