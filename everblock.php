@@ -1784,7 +1784,7 @@ class Everblock extends Module
 
     public function everHook($method, $args)
     {
-        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : 0;
+        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : false;
         $context = Context::getContext();
         // Drop cache if needed
         EverblockClass::cleanBlocksCacheOnDate(
@@ -1839,7 +1839,7 @@ class Everblock extends Module
             );
             $currentBlock = [];
             foreach ($everblock as $block) {
-                if ((int) $block['position'] != (int) $position) {
+                if ($position && (int) $block['position'] != (int) $position) {
                     continue;
                 }
                 // Check device
