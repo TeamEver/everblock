@@ -58,7 +58,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.7.1';
+        $this->version = '5.7.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -1515,7 +1515,9 @@ class Everblock extends Module
         $tabsData = [];
         for ($i = 1; $i <= $tabsNumber; $i++) {
             foreach ($everpstabs as $everpstab) {
-                if ($everpstab->id_tab == $i) {
+                if (Validate::isLoadedObject($everpstab)
+                    && $everpstab->id_tab == $i
+                ) {
                     $tabsData[$i] = $everpstab;
                     break;
                 }
@@ -1784,7 +1786,7 @@ class Everblock extends Module
 
     public function everHook($method, $args)
     {
-        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : false;
+        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : 0;
         $context = Context::getContext();
         // Drop cache if needed
         EverblockClass::cleanBlocksCacheOnDate(
@@ -1839,7 +1841,7 @@ class Everblock extends Module
             );
             $currentBlock = [];
             foreach ($everblock as $block) {
-                if ($position && (int) $block['position'] != (int) $position) {
+                if ((int) $block['position'] != (int) $position) {
                     continue;
                 }
                 // Check device
@@ -2001,7 +2003,7 @@ class Everblock extends Module
                 'args' => $args,
             ]);
             $tpl = $this->display(__FILE__, $this->name . '.tpl');
-            EverblockCache::cacheStore(
+            $cached = EverblockCache::cacheStore(
                 str_replace('|', '-', $cacheId),
                 $tpl
             );
@@ -2021,16 +2023,20 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/css/' . $this->name . '.css',
             ['media' => 'all', 'priority' => 200, 'version' => $this->version]
         );
-        $this->context->controller->addJs(
-            $this->_path . 'views/js/' . $this->name . '.js'
+        $this->context->controller->registerJavascript(
+            'module-' . $this->name . '-js',
+            'modules/' . $this->name . '/views/js/' . $this->name . '.js',
+            ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
         );
         if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_OBF') === true) {
-            $this->context->controller->addJs(
-                $this->_path . 'views/js/' . $this->name . '-obf-js'
+            $this->context->controller->registerJavascript(
+                'module-' . $this->name . '-obf-js',
+                'modules/' . $this->name . '/views/js/' . $this->name . '-obfuscation.js',
+                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
             );
         }
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
+        $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
             $this->context->controller->registerStylesheet(
                 'module-' . $this->name . '-custom-compressed-css',
@@ -2039,8 +2045,10 @@ class Everblock extends Module
             );
         }
         if (file_exists($compressedJs) && filesize($compressedJs) > 0) {
-            $this->context->controller->addJs(
-                $this->_path . 'views/js/custom' . $idShop . '.js'
+            $this->context->controller->registerJavascript(
+                'module-' . $this->name . '-compressed-js',
+                'modules/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js',
+                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
             );
         }
         $externalJs = EverblockCache::getModuleConfiguration('EVERPSJS_LINKS');
@@ -2208,29 +2216,11 @@ class Everblock extends Module
     {
         $moduleName = $this->name;
         $moduleAuthor = $this->author;
-        $indexContent = <<<PHP
-    <?php
-    /**
-     * Project : {$moduleName}
-     * @author {$moduleAuthor}
-     * @copyright {$moduleAuthor}
-     * @license   Tous droits réservés / Le droit d'auteur s'applique (All rights reserved / French copyright law applies)
-     * @link https://team-ever.com
-     */
-    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-
-    header('Cache-Control: no-store, no-cache, must-revalidate');
-    header('Cache-Control: post-check=0, pre-check=0', false);
-    header('Pragma: no-cache');
-
-    header('Location: ../');
-    exit;
-    PHP;
+        $indexContent = Tools::getDefaultIndexContent();
         // Utiliser le chemin du module actuel comme point de départ
         $moduleDir = $this->getLocalPath();
         // Fonction récursive pour ajouter le fichier index.php
-        $this->addIndexFileRecursively($moduleDir, $indexContent);
+        static::addIndexFileRecursively($moduleDir, $indexContent);
     }
 
     /**

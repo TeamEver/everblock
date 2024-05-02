@@ -31,6 +31,7 @@ class EverblockTools extends ObjectModel
     {
         $txt = static::getCustomerShortcodes($txt, $context);
         $txt = static::obfuscateTextByClass($txt);
+        $txt = static::getEverShortcodes($txt, $context);
         if (strpos($txt, '[everfaq') !== false) {
             $txt = static::getFaqShortcodes($txt, $context, $module);
         }
@@ -593,6 +594,7 @@ class EverblockTools extends ObjectModel
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
+                    AND p.active = 1
                     ORDER BY p.date_add DESC
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -620,13 +622,14 @@ class EverblockTools extends ObjectModel
             $limit = (int) $match;
             $cacheId = 'getBestSalesShortcode_' . (int) $context->shop->id;
             if (!EverblockCache::isCacheStored($cacheId)) {
-                $sql = 'SELECT product_id, SUM(product_quantity) AS total_quantity
-                        FROM ' . _DB_PREFIX_ . 'order_detail
-                        GROUP BY product_id
+                $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity
+                        FROM ' . _DB_PREFIX_ . 'order_detail od
+                        JOIN ' . _DB_PREFIX_ . 'product_shop ps ON od.product_id = ps.id_product
+                        WHERE ps.active = 1
+                        GROUP BY od.product_id
                         ORDER BY total_quantity DESC
                         LIMIT ' . (int) $limit;
                 $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-                EverblockCache::cacheStore($cacheId, $productIds);
             } else {
                 $productIds = EverblockCache::cacheRetrieve($cacheId);
             }
