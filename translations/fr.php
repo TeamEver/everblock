@@ -233,6 +233,9 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_3ad63bcfa9d92897d9e0d9
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_532146048e4fac6dcbe57d8791b4f24a'] = 'Durée de vie du cookie (en nombre de jours). Uniquement pour la modal';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_c6df078406bd86aa1f9379fd96fbbed7'] = 'Si désactivé ou zéro, la modal sera affichée systématiquement';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_fa9799449dee6f0f84302876c7fd0783'] = 'Mettez à zéro pour le débogage ou afficher systématiquement la modal. Merci de renseigner un nombre de jours.';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_8f497c1a3d15af9e0c215019f26b887d'] = 'Délai d\'affichage';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_f8366bc04234f1d2babd4af91f738a3d'] = 'Délai avant que la popup n\'apparaisse';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_08b7621a5bf113e1cef4c9119605d808'] = 'La valeur est exprimée en millisecondes';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_4f102aa0276bbd9b1c2bf0257f371d08'] = 'Date de début d\'affichage du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_d00ece8783a5f89ac941a4cda807c4f7'] = 'Date de fin d\'affichage du bloc';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_4d3d769b812b6faa6b76e1a8abaece2d'] = 'Actif';
@@ -255,6 +258,7 @@ $_MODULE['<{everblock}prestashop>admineverblockcontroller_2dfae56804a20b70fbf2ba
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_1aac650841668d548bb9c02f02f4abca'] = 'Les class HTML personnalisées ne sont pas valides';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_70b847a2e057a1620f0b7b8a6a2f9407'] = 'La taille n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_2746494f1aa8c2cfb4d1c0faf9c7f190'] = 'Le délai de réaffichage de la modal n\'est pas valide';
+$_MODULE['<{everblock}prestashop>admineverblockcontroller_2714b7d3dfae16f5c9b2d387dd8b9296'] = 'Le délai de la modal n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_a1c3ce45c9ca668dcc2092bf0fc79703'] = 'Mettre en modal n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_5999ebfb5e6d9ab139865a400fc3324e'] = 'Activer n\'est pas valide';
 $_MODULE['<{everblock}prestashop>admineverblockcontroller_b207bf1f0294d535c352bfbcd82a4baa'] = 'Le type d\'appareil n\'est pas valide';
@@ -514,6 +518,8 @@ $_MODULE['<{everblock}prestashop>cart_59fc69e031ecb0f82efe467fd6692383'] = 'Voir
 $_MODULE['<{everblock}prestashop>cart_6ff063fbc860a79759a7369ac32cee22'] = 'Commander';
 $_MODULE['<{everblock}prestashop>cart_483ed1f1a40e289aaa359e48427d3ef6'] = 'Votre panier est vide';
 $_MODULE['<{everblock}prestashop>evercheckoutstep_a4d3b161ce1309df1c4e25df28694b7b'] = 'Valider';
+$_MODULE['<{everblock}prestashop>instagram_35f085d0dd1a5ba93925541567d18c99'] = 'Cliquez pour voir la vidéo complète';
+$_MODULE['<{everblock}prestashop>instagram_e2a156abdee6d3f236399edb4279f522'] = 'Cliquez pour voir l\'image complète';
 $_MODULE['<{everblock}prestashop>maintenance_e8d28194f9b3498d21fbda21321d0226'] = 'Saisissez votre mot de passe';
 $_MODULE['<{everblock}prestashop>maintenance_dc647eb65e6711e155375218212b3964'] = 'Mot de passe';
 $_MODULE['<{everblock}prestashop>maintenance_94966d90747b97d1f0f206c98a8b1ac3'] = 'Envoyer';

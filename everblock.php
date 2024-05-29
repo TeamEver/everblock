@@ -58,7 +58,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.7.2';
+        $this->version = '5.7.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -1706,7 +1706,10 @@ class Everblock extends Module
                 ->setTitle($title)
                 ->setContent($content);
         }
-        return $tab;
+        if (count($tab) > 0) {
+            return $tab;
+        }
+        return false;
     }
 
     public function hookDisplayAdminCustomers($params)
@@ -1786,7 +1789,7 @@ class Everblock extends Module
 
     public function everHook($method, $args)
     {
-        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : 0;
+        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : false;
         $context = Context::getContext();
         // Drop cache if needed
         EverblockClass::cleanBlocksCacheOnDate(
@@ -1841,7 +1844,12 @@ class Everblock extends Module
             );
             $currentBlock = [];
             foreach ($everblock as $block) {
-                if ((int) $block['position'] != (int) $position) {
+                if ((bool) $block['modal'] === true
+                    && (bool) EverblockTools::isBot() === true
+                ) {
+                    continue;
+                }
+                if ($position && (int) $block['position'] != (int) $position) {
                     continue;
                 }
                 // Check device

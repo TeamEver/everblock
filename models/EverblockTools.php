@@ -72,7 +72,7 @@ class EverblockTools extends ObjectModel
             $txt = static::getVideoShortcode($txt);
         }
         if (strpos($txt, '[qcdacf') !== false) {
-            $txt = static::getQcdAcfCode($txt);
+            $txt = static::getQcdAcfCode($txt, $context);
         }
         if (strpos($txt, '[best-sales') !== false) {
             $txt = static::getBestSalesShortcode($txt, $context, $module);
@@ -748,20 +748,39 @@ class EverblockTools extends ObjectModel
      * @param $txt : full DOM
      * @return $txt : full DOM fixed
     */
-    public static function getQcdAcfCode(string $txt): string
+    public static function getQcdAcfCode(string $txt, Context $context): string
     {
         if (!Module::isInstalled('qcdacf')
             || !static::moduleDirectoryExists('qcdacf')
         ) {
             return $txt;
         }
+        $objectId = 0;
+        if (Tools::getValue('id_product')) {
+            $objectId = (int) Tools::getValue('id_product');
+            $objectType = 'product';
+        }
+        if (Tools::getValue('id_category')) {
+            $objectId = (int) Tools::getValue('id_category');
+            $objectType = 'category';
+        }
+        if (Tools::getValue('id_manufacturer')) {
+            $objectId = (int) Tools::getValue('id_manufacturer');
+            $objectType = 'manufacturer';
+        }
+        if (Tools::getValue('id_supplier')) {
+            $objectId = (int) Tools::getValue('id_supplier');
+            $objectType = 'supplier';
+        }
+        if (Tools::getValue('id_cms')) {
+            $objectId = (int) Tools::getValue('id_cms');
+            $objectType = 'cms';
+        }
         Module::getInstanceByName('qcdacf');
         $pattern = '/\[qcdacf\s+(\w+)\s+(\w+)\s+(\w+)\]/i';
         $modifiedTxt = preg_replace_callback($pattern, function ($matches) {
             $name = $matches[1];
-            $object_type = $matches[2];
-            $objectId = $matches[3];
-            $value = qcdacf::getVar($name, $object_type, $objectId);
+            $value = qcdacf::getVar($name, $objectType, $objectId, $context->language->id);
             if ($value) {
                 return $value;
             }
@@ -1983,6 +2002,7 @@ class EverblockTools extends ObjectModel
             'css_class' => 'varchar(255) DEFAULT NULL',
             'bootstrap_class' => 'varchar(255) DEFAULT NULL',
             'delay' => 'int(10) unsigned NOT NULL DEFAULT 0',
+            'timeout' => 'int(10) unsigned NOT NULL DEFAULT 0',
             'modal' => 'int(10) unsigned NOT NULL DEFAULT 0',
             'date_start' => 'DATETIME DEFAULT NULL',
             'date_end' => 'DATETIME DEFAULT NULL',
@@ -2514,6 +2534,7 @@ class EverblockTools extends ObjectModel
         $cacheId = 'fetchInstagramImages';
         if (!EverblockCache::isCacheStored($cacheId)) {
             $request = static::getInstagramRequest();
+            // $request = Tools::file_get_contents('https://graph.instagram.com/me/media?access_token=IGQWRNTDdaUnFyaFNway14eTJ0NFpiSDlSZAlNNemV0U3hwNmlma3laMC01WUVxdVlucnJOM2JReF9Oblg2SmdHRlVwLXdPWXRPNVNLb1RZASjMtN0JHMW4zemNnYzZA6MVpYSGEwcHEtOG5MQQZDZD&fields=id,caption,media_type,media_url,permalink,thumbnail_url,username,timestamp');
             $result = json_decode($request, true);
             $imgs = [];
             if ($result && isset($result['data']) && $result['data']) {
@@ -2529,6 +2550,7 @@ class EverblockTools extends ObjectModel
                     ];
                 }
             }
+            static::refreshInstagramToken();
             EverblockCache::cacheStore($cacheId, $imgs);
             return $imgs;
         }
@@ -2540,14 +2562,14 @@ class EverblockTools extends ObjectModel
         $instaToken = Configuration::get('EVERINSTA_ACCESS_TOKEN');
         $fields = '&fields=id,caption,media_type,media_url,permalink,thumbnail_url,username,timestamp';
         $url = "https://graph.instagram.com/me/media?access_token=" . $instaToken . $fields;
-        return static::requestCurl($url);
+        return Tools::file_get_contents($url);
     }
 
     public static function refreshInstagramToken()
     {
         $instaToken = Configuration::get('EVERINSTA_ACCESS_TOKEN');
         $url = 'https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=' . $instaToken;
-        $result = static::requestCurl($url);
+        $result = Tools::file_get_contents($url);
         $json = json_decode($result, true);
         if (isset($json['access_token'])) {
             Configuration::updateValue('EVERINSTA_ACCESS_TOKEN', $json['access_token']);
@@ -2556,21 +2578,62 @@ class EverblockTools extends ObjectModel
         return null;
     }
 
-    protected static function requestCurl($url, $timeout = 20)
+    public static function isBot()
     {
-        try {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-            $result = curl_exec($ch);
-            curl_close($ch);
-            return $result;
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog(
-                $e->getMessage()
-            );
-            return json_encode([]);
+        $userAgent = $_SERVER['HTTP_USER_AGENT'];
+        $botUserAgents = array(
+            'Googlebot',
+            'Bingbot',
+            'Slackbot',
+            'Twitterbot',
+            'Facebookbot',
+            'Pinterestbot',
+            'LinkedInBot',
+            'WhatsApp',
+            'SkypeUriPreview',
+            'TelegramBot',
+            'Discordbot',
+            'Slurp',
+            'DuckDuckGo',
+            'YandexBot',
+            'Baiduspider',
+            'Sogou',
+            'Exabot',
+            'AhrefsBot',
+            'SemrushBot',
+            'MJ12bot',
+            'DotBot',
+            'BLEXBot',
+            'Rambler',
+            'ia_archiver',
+            'archive.org_bot',
+            'BazQuxBot',
+            'UptimeRobot',
+            'Pingdom',
+            'TurnitinBot',
+            'Screaming Frog SEO Spider',
+            'Mediapartners-Google',
+            'AdsBot-Google',
+            'MJ12bot',
+            'rogerbot',
+            'Ezooms',
+            'ICC-Crawler',
+            'Y!J-BRW',
+            'UnwindFetchor',
+            'blekkobot',
+            'ia_archiver',
+            'semanticbot',
+            'PaperLiBot',
+            'GTmetrix',
+            // Ajoutez d'autres bots si nécessaire
+        );
+
+        foreach ($botUserAgents as $botAgent) {
+            if (stripos($userAgent, $botAgent) !== false) {
+                return true;
+            }
         }
+
+        return false;
     }
 }

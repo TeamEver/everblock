@@ -16,6 +16,14 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 $(document).ready(function(){
+    $('.ever_instagram img').on('click', function() {
+        // Mettre à jour le src de l'image dans la modal
+        var imageSrc = $(this).attr('src');
+        $('#everModalImage').attr('src', imageSrc);
+
+        // Ouvrir la modal
+        $('#everImageModal').modal('show');
+    });
     $(document).on('submit', '.evercontactform', function(e) {
         e.preventDefault();
         let $form = $(this);
@@ -39,6 +47,7 @@ $(document).ready(function(){
     });
     $('div[data-evermodal]').each(function() {
         let blockId = $(this).attr('id').replace('everblock-', '');
+        let timeout = $(this).data('evertimeout');
         $.ajax({
             url: evermodal_link,
             type: 'POST',
@@ -46,8 +55,9 @@ $(document).ready(function(){
             success: function(modal) {
                 $(modal).insertAfter($('body'));
                 let $modal = $('#everblockModal');
-                $modal.modal('show');
-                
+                setTimeout(function() {
+                    $modal.modal('show');
+                }, timeout);
                 $modal.on('shown.bs.modal', function () {
                     let windowHeight = $(window).height();
                     let modalHeaderHeight = $(this).find('.modal-header').outerHeight() || 0; // S'il y a un en-tête

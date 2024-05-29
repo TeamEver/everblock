@@ -49,6 +49,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
         `bootstrap_class` varchar(255) DEFAULT NULL,
         `modal` int(10) unsigned NOT NULL DEFAULT 0,
         `delay` int(10) unsigned NOT NULL DEFAULT 0,
+        `timeout` int(10) unsigned NOT NULL DEFAULT 0,
         `date_start` DATETIME DEFAULT NULL,
         `date_end` DATETIME DEFAULT NULL,
         `active` int(10) unsigned NOT NULL DEFAULT 0,

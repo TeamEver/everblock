@@ -48,6 +48,7 @@ class EverBlockClass extends ObjectModel
     public $cms_categories;
     public $modal;
     public $delay;
+    public $timeout;
     public $date_start;
     public $date_end;
     public $active;
@@ -181,6 +182,12 @@ class EverBlockClass extends ObjectModel
                 'required' => true,
             ],
             'delay' => [
+                'type' => self::TYPE_INT,
+                'lang' => false,
+                'validate' => 'isUnsignedInt',
+                'required' => false,
+            ],
+            'timeout' => [
                 'type' => self::TYPE_INT,
                 'lang' => false,
                 'validate' => 'isUnsignedInt',

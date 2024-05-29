@@ -721,6 +721,15 @@ class AdminEverBlockController extends ModuleAdminController
                         'lang' => false,
                     ],
                     [
+                        'type' => 'text',
+                        'label' => $this->l('Delay'),
+                        'desc' => $this->l('Delay before popup appears'),
+                        'hint' => $this->l('Value must be in milliseconds'),
+                        'name' => 'timeout',
+                        'required' => false,
+                        'lang' => false,
+                    ],
+                    [
                         'type' => 'datetime',
                         'label' => $this->l('Date start'),
                         'desc' => $this->l('Date block will start to appear'),
@@ -883,6 +892,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'delay' => (!empty(Tools::getValue('delay')))
                 ? Tools::getValue('delay')
                 : $obj->delay,
+                'timeout' => (!empty(Tools::getValue('timeout')))
+                ? Tools::getValue('timeout')
+                : $obj->timeout,
                 'modal' => (!empty(Tools::getValue('modal')))
                 ? Tools::getValue('modal')
                 : $obj->modal,
@@ -979,6 +991,9 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'delay' => (!empty(Tools::getValue('delay')))
                 ? Tools::getValue('delay')
+                : '',
+                'timeout' => (!empty(Tools::getValue('timeout')))
+                ? Tools::getValue('timeout')
                 : '',
                 'modal' => (!empty(Tools::getValue('modal')))
                 ? Tools::getValue('modal')
@@ -1106,6 +1121,11 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Modal delay is not valid');
             }
+            if (Tools::getValue('timeout')
+                && !Validate::isUnsignedInt(Tools::getValue('timeout'))
+            ) {
+                $this->errors[] = $this->l('Modal timeout is not valid');
+            }
             if (Tools::getValue('modal')
                 && !Validate::isBool(Tools::getValue('modal'))
             ) {
@@ -1172,6 +1192,7 @@ class AdminEverBlockController extends ModuleAdminController
             }
             $hook_name = Hook::getNameById((int) Tools::getValue('id_hook'));
             $everblock_obj->delay = (int) Tools::getValue('delay');
+            $everblock_obj->timeout = (int) Tools::getValue('timeout');
             $everblock_obj->modal = (int) Tools::getValue('modal');
             $everblock_obj->date_start = pSQL(Tools::getValue('date_start'));
             $everblock_obj->date_end = pSQL(Tools::getValue('date_end'));

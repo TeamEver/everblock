@@ -16,24 +16,24 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if $insta_imgs}
-<div class="qcd_instagram block_instagram insta-idshop-{$everinsta_shopid} d-none d-md-block">
-    <div class="qcdinstagram-slider-container">
+<div class="ever_instagram block_instagram insta-idshop-{$everinsta_shopid} d-none d-md-block">
+    <div class="everblock-slider-container">
         <ul class="instagram_list_img home-insta-idshop-{$everinsta_shopid}">
             {assign var='ik' value=0}
             {foreach $insta_imgs as $key => $img}
                 {assign var='ik' value=$ik+1}
                 {if $ik <= $everinsta_nbr}
                     <li class="instagram_item_img col-xs-4 col-sm-4 col-md-3 col-lg-2 col-insta-{$img.id} li-insta-idshop-{$everinsta_shopid}">
-                        <span class="ever_instagram obf"
+                        <span class="ever_instagram obfme"
                            data-obf="{$img.permalink}"
-                           target="_blank" 
+                           data-target="_blank" 
                            data-media-type="{if $img.is_video}video{else}image{/if}"
-                           title="{if $img.is_video}{l s='Click to view full video' mod='qcdinstagram'}{else}{l s='Click to view full image' mod='qcdinstagram'}{/if}"
+                           title="{if $img.is_video}{l s='Click to view full video' mod='everblock'}{else}{l s='Click to view full image' mod='everblock'}{/if}"
                         >
-                            <img {if $img.caption}alt="{$img.caption|escape:'html':'UTF-8'}"{/if} src="{$img.thumbnail|escape:'quotes':'UTF-8'}" alt=""/>
+                            <img {if $img.caption}alt="{$img.caption|escape:'html':'UTF-8'}"{/if} src="{$img.thumbnail|escape:'quotes':'UTF-8'}" loading="lazy" />
                         </span>
                         {if $img.is_video}
-                            <video controls style="display: none; padding: 0; width: auto;" id="qcd_insta_video_{$key+1|escape:'quotes':'UTF-8'}">
+                            <video controls style="display: none; padding: 0; width: auto;" id="ever_insta_video_{$key+1|escape:'quotes':'UTF-8'}">
                                 <source src="{$img.standard_resolution|escape:'quotes':'UTF-8'}" type="video/mp4">
                                 Your browser doesn't support HTML5 video tag.
                             </video>
@@ -42,6 +42,20 @@
                 {/if}
             {/foreach}
         </ul>
+    </div>
+</div>
+<div class="modal fade" id="everImageModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img src="" id="everModalImage" class="img-fluid" alt="Responsive image">
+            </div>
+        </div>
     </div>
 </div>
 {/if}

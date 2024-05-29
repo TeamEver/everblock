@@ -1,4 +1,7 @@
 /* Obfuscation */
+.obfme, .obfme img{
+    cursor: pointer;
+}
 [data-obflink] {
   cursor: pointer;
 }
