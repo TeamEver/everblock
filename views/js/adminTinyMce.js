@@ -39,7 +39,7 @@ function initCustomTinyMCE() {
 
     // Initialisation de TinyMCE avec la configuration personnalisée
     window.defaultTinyMceConfig = {
-      selector: 'textarea',
+      selector: '.evertranslatable',
       menubar: true,
       statusbar: true,
       plugins: "addClassToLink, visualblocks, preview searchreplace print insertdatetime, hr charmap colorpicker anchor code link image paste pagebreak table contextmenu filemanager table code media autoresize textcolor emoticons",

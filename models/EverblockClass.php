@@ -25,6 +25,7 @@ class EverBlockClass extends ObjectModel
     public $id_everblock;
     public $name;
     public $content;
+    public $custom_code;    
     public $only_home;
     public $only_category;
     public $only_category_product;
@@ -218,6 +219,12 @@ class EverBlockClass extends ObjectModel
             // lang fields
             'content' => [
                 'type' => self::TYPE_HTML,
+                'lang' => true,
+                'validate' => 'isAnything',
+                'required' => false,
+            ],
+            'custom_code' => [
+                'type' => self::TYPE_NOTHING,
                 'lang' => true,
                 'validate' => 'isAnything',
                 'required' => false,

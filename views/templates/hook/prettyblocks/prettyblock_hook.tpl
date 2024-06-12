@@ -21,9 +21,6 @@
     {/if}
     {foreach from=$block.states item=state key=key}
         <div id="block-{$block.id_prettyblocks}-{$key}" class="everblock{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}"{/if}>
-{$state|var_dump}
-
-        	{* {hook h=$state.hook_name} *}
         </div>
     {/foreach}
     {if $block.settings.default.container}

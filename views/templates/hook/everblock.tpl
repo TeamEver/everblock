@@ -17,6 +17,7 @@
 *}
 {if isset($everblock) && $everblock}
   {foreach from=$everblock item=item}
+    {$item.block.custom_code nofilter}
     {if isset($item.block.add_container) && $item.block.add_container == 1}
       <div class="container">
     {/if}

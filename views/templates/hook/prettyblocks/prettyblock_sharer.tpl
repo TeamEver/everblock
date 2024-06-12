@@ -20,7 +20,7 @@
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-      <div class="everblock-sharer {$block.settings.css_class|escape:'htmlall':'UTF-8'} {$block.settings.bootstrap_class|escape:'htmlall':'UTF-8'}">
+      <div class="everblock-sharer {$block.settings.css_class|escape:'htmlall':'UTF-8'}">
         <!-- Bouton de partage Facebook -->
         <div class="social-share-button">
           <a href="https://www.facebook.com/sharer/sharer.php?u={$urls.current_url nofilter}" target="_blank">
