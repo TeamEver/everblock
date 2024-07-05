@@ -133,3 +133,6 @@
         padding: 10px;
     }
 }
+.nav-tabs .nav-item{
+    list-style-type: none;
+}

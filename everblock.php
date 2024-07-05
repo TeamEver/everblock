@@ -58,7 +58,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.7.5';
+        $this->version = '5.8.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -297,6 +297,8 @@ class Everblock extends Module
         $this->registerHook('actionObjectEverBlockClassDeleteAfter');
         $this->registerHook('actionObjectEverblockFaqUpdateAfter');
         $this->registerHook('actionObjectEverblockFaqDeleteAfter');
+        $this->registerHook('displayWrapperBottom');
+        $this->registerHook('displayWrapperTop');
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
             && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
@@ -1257,6 +1259,80 @@ class Everblock extends Module
     {
         if (Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD')) {
             return $this->display(__FILE__, 'views/templates/hook/maintenance.tpl');
+        }
+    }
+
+    public function hookDisplayWrapperTop()
+    {
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            if (Tools::getValue('id_product')) {
+                $idObj = (int) Tools::getValue('id_product');
+                $objectName = 'Product';
+            }
+            if (Tools::getValue('id_category')) {
+                $idObj = (int) Tools::getValue('id_category');
+                $objectName = 'Category';
+            }
+            if (Tools::getValue('id_manufacturer')) {
+                $idObj = (int) Tools::getValue('id_manufacturer');
+                $objectName = 'Manufacturer';
+            }
+            if (Tools::getValue('id_supplier')) {
+                $idObj = (int) Tools::getValue('id_supplier');
+                $objectName = 'Supplier';
+            }
+            if (Tools::getValue('id_cms')) {
+                $idObj = (int) Tools::getValue('id_cms');
+                $objectName = 'Cms';
+            }
+            if (isset($idObj) && isset($objectName)) {
+                $this->context->smarty->assign(array(
+                    'idObj' => $idObj,
+                    'objectName' => $objectName,
+                    'zone' => 'displayWrapperTop',
+                ));
+                return $this->display(__FILE__, 'views/templates/hook/prettyblocks.tpl');
+            }
+        }
+    }
+
+    public function hookDisplayWrapperBottom()
+    {
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            if (Tools::getValue('id_product')) {
+                $idObj = (int) Tools::getValue('id_product');
+                $objectName = 'Product';
+            }
+            if (Tools::getValue('id_category')) {
+                $idObj = (int) Tools::getValue('id_category');
+                $objectName = 'Category';
+            }
+            if (Tools::getValue('id_manufacturer')) {
+                $idObj = (int) Tools::getValue('id_manufacturer');
+                $objectName = 'Manufacturer';
+            }
+            if (Tools::getValue('id_supplier')) {
+                $idObj = (int) Tools::getValue('id_supplier');
+                $objectName = 'Supplier';
+            }
+            if (Tools::getValue('id_cms')) {
+                $idObj = (int) Tools::getValue('id_cms');
+                $objectName = 'Cms';
+            }
+            if (isset($idObj) && isset($objectName)) {
+                $this->context->smarty->assign(array(
+                    'idObj' => $idObj,
+                    'objectName' => $objectName,
+                    'zone' => 'displayWrapperBottom',
+                ));
+                return $this->display(__FILE__, 'views/templates/hook/prettyblocks.tpl');
+            }
         }
     }
 

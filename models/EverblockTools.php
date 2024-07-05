@@ -98,6 +98,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[widget') !== false) {
             $txt = $txt = static::getWidgetShortcode($txt);
         }
+        if (strpos($txt, '[prettyblocks') !== false) {
+            $txt = static::getPrettyblocksShortcodes($txt, $context, $module);
+        }
         $txt = static::renderSmartyVars($txt, $context);
         return $txt;
     }
@@ -329,6 +332,36 @@ class EverblockTools extends ObjectModel
                 return '';
             }
         }, $txt);
+        return $txt;
+    }
+
+    public static function getPrettyblocksShortcodes(string $txt, Context $context, Everblock $module): string
+    {
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            // Définir le chemin vers le template
+            $templatePath = $module->getLocalPath() . 'views/templates/hook/prettyblocks.tpl';
+            
+            // Regex pour trouver les shortcodes de type [prettyblocks name="mon_nom"]
+            $pattern = '/\[prettyblocks name="([^"]+)"\]/';
+            
+            // Fonction de remplacement pour traiter chaque shortcode trouvé
+            $replacementFunction = function($matches) use ($context, $templatePath) {
+                // Extraire le nom de la zone depuis le shortcode
+                $zoneName = $matches[1];
+                // Assigner le nom de la zone à Smarty
+                $context->smarty->assign('zone_name', $zoneName);
+                
+                // Récupérer le rendu du template avec Smarty
+                return $context->smarty->fetch($templatePath);
+            };
+            
+            // Remplacer tous les shortcodes trouvés par le rendu Smarty correspondant
+            $txt = preg_replace_callback($pattern, $replacementFunction, $txt);
+        }
+        
         return $txt;
     }
 
