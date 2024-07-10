@@ -101,13 +101,25 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
     {
         $this->page_header_toolbar_btn['new'] = [
             'href' => self::$currentIndex . '&add' . $this->table . '&token=' . $this->token,
-            'desc' => $this->l('Add new shortcode'),
+            'desc' => $this->l('Add new element'),
             'icon' => 'process-icon-new',
         ];
         $this->page_header_toolbar_btn['clear'] = [
             'href' => self::$currentIndex . '&clearcache=1&token=' . $this->token,
             'desc' => $this->l('Clear cache'),
             'icon' => 'process-icon-refresh',
+        ];
+        $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
+        $module_link .= Tools::getAdminTokenLite('AdminModules');
+        $this->page_header_toolbar_btn['configuration'] = [
+            'href' => $module_link,
+            'desc' => $this->l('Configuration'),
+            'icon' => 'process-icon-save',
+        ];
+        $this->page_header_toolbar_btn['tabs'] = [
+            'href' => Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->module->name . '/input/sample/tabs.xlsx',
+            'desc' => $this->l('Download Excel tabs sample file'),
+            'icon' => 'process-icon-download',
         ];
         parent::initPageHeaderToolbar();
     }
@@ -129,7 +141,6 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
         }
         $lists = parent::renderList();
 
-        $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/header.tpl');
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
                 $this->html .= Tools::displayError($error);

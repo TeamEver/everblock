@@ -1,4 +1,4 @@
- <?php
+<?php
 /**
  * 2019-2024 Team Ever
  *
@@ -150,6 +150,18 @@ class AdminEverBlockController extends ModuleAdminController
             'desc' => $this->l('Clear cache'),
             'icon' => 'process-icon-refresh',
         ];
+        $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
+        $module_link .= Tools::getAdminTokenLite('AdminModules');
+        $this->page_header_toolbar_btn['configuration'] = [
+            'href' => $module_link,
+            'desc' => $this->l('Configuration'),
+            'icon' => 'process-icon-save',
+        ];
+        $this->page_header_toolbar_btn['tabs'] = [
+            'href' => Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->module->name . '/input/sample/tabs.xlsx',
+            'desc' => $this->l('Download Excel tabs sample file'),
+            'icon' => 'process-icon-download',
+        ];
         parent::initPageHeaderToolbar();
     }
 
@@ -229,7 +241,6 @@ class AdminEverBlockController extends ModuleAdminController
         $lists = parent::renderList();
 
         $moduleInstance = Module::getInstanceByName($this->table);
-        $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/header.tpl');
         if ($moduleInstance->checkLatestEverModuleVersion()) {
             $this->html .= $this->context->smarty->fetch(
                 _PS_MODULE_DIR_ . '/' . $this->table . '/views/templates/admin/upgrade.tpl');
