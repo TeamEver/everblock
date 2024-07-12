@@ -64,6 +64,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $overlayTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_overlay.tpl';
             $tartifletteTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_tartiflette.tpl';
             $imgTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img.tpl';
+            $rowTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/row.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -982,6 +983,73 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => [
                                 'url' => '',
                             ],
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (%)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (%)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (%)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (%)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (%)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (%)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (%)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (%)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Row'),
+                'description' => $module->l('Add row'),
+                'code' => 'everblock_row',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $rowTemplate
+                ],
+                'repeater' => [
+                    'name' => 'Menu',
+                    'nameFrom' => 'name',
+                    'groups' => [
+                        'name' => [
+                            'type' => 'text',
+                            'label' => 'Row title',
+                            'default' => '',
                         ],
                         'css_class' => [
                             'type' => 'text',
