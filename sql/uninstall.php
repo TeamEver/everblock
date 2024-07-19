@@ -30,6 +30,8 @@ $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_faq`;';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_faq_lang`;';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_tabs`;';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_tabs_lang`;';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_flags`;';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'everblock_flags_lang`;';
 
 foreach ($sql as $s) {
     if (!Db::getInstance()->execute($s)) {

@@ -25,6 +25,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTabsClass.php';
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPrettyBlocks.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCache.php';
@@ -58,7 +59,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.8.3';
+        $this->version = '5.9.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -96,6 +97,7 @@ class Everblock extends Module
         Configuration::updateValue('EVERPSCSS_P_LLOREM_NUMBER', 5);
         Configuration::updateValue('EVERPSCSS_S_LLOREM_NUMBER', 5);
         Configuration::updateValue('EVERPS_TAB_NB', 5);
+        Configuration::updateValue('EVERPS_FLAG_NB', 5);        
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -299,6 +301,7 @@ class Everblock extends Module
         $this->registerHook('actionObjectEverblockFaqDeleteAfter');
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
+        $this->registerHook('actionProductFlagsModifier');        
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
             && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
@@ -792,6 +795,13 @@ class Everblock extends Module
                     ],
                     [
                         'type' => 'text',
+                        'label' => $this->l('Number of flags for products'),
+                        'desc' => $this->l('Specify here the number of flags you want to have on products'),
+                        'hint' => $this->l('The default value is 1 and cannot be less than 1'),
+                        'name' => 'EVERPS_FLAG_NB',
+                    ],
+                    [
+                        'type' => 'text',
                         'label' => $this->l('Number of tabs for the product page'),
                         'desc' => $this->l('Specify here the number of tabs you want to have on the product page'),
                         'hint' => $this->l('The default value is 1 and cannot be less than 1'),
@@ -906,6 +916,7 @@ class Everblock extends Module
             'EVER_TAB_CONTENT' => $this->getConfigInMultipleLangs('EVER_TAB_CONTENT'),
             'EVER_TAB_TITLE' => $this->getConfigInMultipleLangs('EVER_TAB_TITLE'),
             'EVERPS_TAB_NB' => Configuration::get('EVERPS_TAB_NB'),
+            'EVERPS_FLAG_NB' => Configuration::get('EVERPS_FLAG_NB'),
             'TABS_FILE' => '',
         ];
     }
@@ -1125,6 +1136,10 @@ class Everblock extends Module
             'EVERPS_TAB_NB',
             Tools::getValue('EVERPS_TAB_NB')
         );
+        Configuration::updateValue(
+            'EVERPS_FLAG_NB',
+            Tools::getValue('EVERPS_FLAG_NB')
+        );        
         if ((bool) Tools::getValue('EVERPSCSS_CACHE') === true) {
             $this->emptyAllCache();
         }
@@ -1199,6 +1214,7 @@ class Everblock extends Module
                 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/mode/javascript/javascript.min.js',
                 'all'
             );
+            $this->context->controller->addJs($this->_path . 'views/js/controller.js');
             if (Tools::getValue('configure') == $this->name) {
                 $this->context->controller->addJs($this->_path . 'views/js/admin.js');
             }
@@ -1585,10 +1601,13 @@ class Everblock extends Module
 
         $productId = (int) $params['id_product'];
         $tabsNumber = max((int) Configuration::get('EVERPS_TAB_NB'), 1);
+        $flagsNumber = max((int) Configuration::get('EVERPS_FLAG_NB'), 1);
         
         $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
+        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
 
         $tabsData = [];
+        $flagsData = [];
         for ($i = 1; $i <= $tabsNumber; $i++) {
             foreach ($everpstabs as $everpstab) {
                 if (Validate::isLoadedObject($everpstab)
@@ -1604,15 +1623,32 @@ class Everblock extends Module
             }
         }
 
+        for ($i = 1; $i <= $flagsNumber; $i++) {
+            foreach ($everpsflags as $everpsflag) {
+                if (Validate::isLoadedObject($everpsflag)
+                    && $everpsflag->id_flag == $i
+                ) {
+                    $flagsData[$i] = $everpsflag;
+                    break;
+                }
+            }
+
+            if (!array_key_exists($i, $flagsData)) {
+                $flagsData[$i] = null;
+            }
+        }
+
         $everAjaxUrl = Context::getContext()->link->getAdminLink('AdminModules', true, [], ['configure' => $this->name, 'token' => Tools::getAdminTokenLite('AdminModules')]);
 
         $this->smarty->assign([
             'tabsData' => $tabsData,
+            'flagsData' => $flagsData,
             'default_language' => $this->context->employee->id_lang,
             'ever_languages' => Language::getLanguages(false),
             'ever_ajax_url' => $everAjaxUrl,
             'ever_product_id' => $productId,
             'tabsRange' => range(1, $tabsNumber),
+            'flagsRange' => range(1, $flagsNumber),
         ]);
 
         return $this->display(__FILE__, 'views/templates/admin/productTab.tpl');
@@ -1667,6 +1703,7 @@ class Everblock extends Module
             return;
         }
         try {
+            // Traitement des tabs
             $tabsNumber = (int) Configuration::get('EVERPS_TAB_NB');
             if ($tabsNumber < 1) {
                 $tabsNumber = 1;
@@ -1680,9 +1717,8 @@ class Everblock extends Module
                     (int) $tab
                 );
                 foreach (Language::getLanguages(true) as $language) {
-                    if (Tools::getValue((int) $tab . '_everblock_title_' . $language['id_lang'])
-                        && !Validate::isCleanHtml(Tools::getValue((int) $tab . '_everblock_title_' . $language['id_lang']))
-                    ) {
+                    $tabTitle = Tools::getValue((int) $tab . '_everblock_title_' . $language['id_lang']);
+                    if ($tabTitle && !Validate::isCleanHtml($tabTitle)) {
                         die(json_encode(
                             [
                                 'return' => false,
@@ -1690,11 +1726,11 @@ class Everblock extends Module
                             ]
                         ));
                     } else {
-                        $everpstabs->title[$language['id_lang']] = Tools::getValue((int) $tab . '_everblock_title_' . $language['id_lang']);
+                        $everpstabs->title[$language['id_lang']] = $tabTitle;
                     }
-                    if (Tools::getValue((int) $tab . '_everblock_content_' . $language['id_lang'])
-                        && !Validate::isCleanHtml(Tools::getValue((int) $tab . '_everblock_content_' . $language['id_lang']))
-                    ) {
+                    
+                    $tabContent = Tools::getValue((int) $tab . '_everblock_content_' . $language['id_lang']);
+                    if ($tabContent && !Validate::isCleanHtml($tabContent)) {
                         die(json_encode(
                             [
                                 'return' => false,
@@ -1702,15 +1738,57 @@ class Everblock extends Module
                             ]
                         ));
                     } else {
-                        $everpstabs->content[$language['id_lang']] = Tools::getValue(
-                            (int) $tab . '_everblock_content_' . $language['id_lang']
-                        );
+                        $everpstabs->content[$language['id_lang']] = $tabContent;
                     }
                 }
                 $everpstabs->id_tab = (int) $tab;
                 $everpstabs->id_product = (int) $params['object']->id;
                 $everpstabs->id_shop = (int) $context->shop->id;
                 $everpstabs->save();
+            }
+
+            // Traitement des flags
+            $flagsNumber = (int) Configuration::get('EVERPS_FLAG_NB');
+            if ($flagsNumber < 1) {
+                $flagsNumber = 1;
+                Configuration::updateValue('EVERPS_FLAG_NB', 1);
+            }
+            $flagsRange = range(1, $flagsNumber);
+            foreach ($flagsRange as $flag) {
+                $everpsflags = EverblockFlagsClass::getByIdProductIdFlag(
+                    (int) $params['object']->id,
+                    (int) $context->shop->id,
+                    (int) $flag
+                );
+                foreach (Language::getLanguages(true) as $language) {
+                    $flagTitle = Tools::getValue((int) $flag . '_everflag_title_' . $language['id_lang']);
+                    if ($flagTitle && !Validate::isCleanHtml($flagTitle)) {
+                        die(json_encode(
+                            [
+                                'return' => false,
+                                'error' => $this->l('Title is not valid'),
+                            ]
+                        ));
+                    } else {
+                        $everpsflags->title[$language['id_lang']] = $flagTitle;
+                    }
+                    
+                    $flagContent = Tools::getValue((int) $flag . '_everflag_content_' . $language['id_lang']);
+                    if ($flagContent && !Validate::isCleanHtml($flagContent)) {
+                        die(json_encode(
+                            [
+                                'return' => false,
+                                'error' => $this->l('Content is not valid'),
+                            ]
+                        ));
+                    } else {
+                        $everpsflags->content[$language['id_lang']] = $flagContent;
+                    }
+                }
+                $everpsflags->id_flag = (int) $flag;
+                $everpsflags->id_product = (int) $params['object']->id;
+                $everpsflags->id_shop = (int) $context->shop->id;
+                $everpsflags->save();
             }
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
@@ -1739,6 +1817,35 @@ class Everblock extends Module
                 $everpstab->delete();
             }
         }
+        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin(
+            (int) $params['object']->id,
+            (int) $this->context->shop->id
+        );
+        foreach ($everpsflags as $everpsflag) {
+            if (Validate::isLoadedObject($everpsflag)) {
+                $everpsflag->delete();
+            }
+        }
+    }
+
+    public function hookActionProductFlagsModifier($params)
+    {
+        $productId = (int) $params['product']['id_product'];
+        $shopId = (int) Context::getContext()->shop->id;
+        $languageId = (int) Context::getContext()->language->id;
+
+        // Récupération des flags pour le produit actuel
+        $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
+        foreach ($everpsflags as $everpsflag) {
+            if (Validate::isLoadedObject($everpsflag)) {
+                $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
+                    'type' => 'custom-flag ' . $everpsflag->title,
+                    'label' => strip_tags($everpsflag->content),
+                ];
+            }
+        }
+
+        return $params;
     }
 
     public function hookDisplayProductExtraContent($params)
@@ -1865,7 +1972,7 @@ class Everblock extends Module
 
     public function everHook($method, $args)
     {
-        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : false;
+        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : null;
         $context = Context::getContext();
         // Drop cache if needed
         EverblockClass::cleanBlocksCacheOnDate(
@@ -1925,7 +2032,7 @@ class Everblock extends Module
                 ) {
                     continue;
                 }
-                if ($position && (int) $block['position'] != (int) $position) {
+                if (Validate::isInt($position) && (int) $block['position'] != (int) $position) {
                     continue;
                 }
                 // Check device

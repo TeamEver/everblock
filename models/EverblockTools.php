@@ -80,6 +80,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[last-products') !== false) {
             $txt = static::getLastProductsShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[promo-products') !== false) {
+            $txt = static::getPromoProductsShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[evercart]') !== false) {
             $txt = static::getCartShortcode($txt, $context, $module);
         }
@@ -641,6 +644,36 @@ class EverblockTools extends ObjectModel
                     $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
                     $replacement = $context->smarty->fetch($templatePath);
                     $shortcode = '[last-products ' . (int) $limit . ']';
+                    $txt = str_replace($shortcode, $replacement, $txt);
+                }
+            }
+        }
+        return $txt;
+    }
+
+    public static function getPromoProductsShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        preg_match_all('/\[promo-products\s+(\d+)\]/i', $txt, $matches);
+        foreach ($matches[1] as $match) {
+            $limit = (int) $match;
+            $sql = 'SELECT p.id_product
+                    FROM ' . _DB_PREFIX_ . 'product_shop p
+                    WHERE p.id_shop = ' . (int) $context->shop->id . '
+                    AND p.active = 1
+                    AND p.on_sale = 1
+                    ORDER BY p.date_add DESC
+                    LIMIT ' . (int) $limit;
+            $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            if (!empty($productIds)) {
+                $productIdsArray = array_map(function($row) {
+                    return (int) $row['id_product'];
+                }, $productIds);
+                $everPresentProducts = static::everPresentProducts($productIdsArray);
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                    $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+                    $replacement = $context->smarty->fetch($templatePath);
+                    $shortcode = '[promo-products ' . (int) $limit . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
@@ -1999,6 +2032,7 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_faq',
             _DB_PREFIX_ . 'everblock_faq_lang',
             _DB_PREFIX_ . 'everblock_tabs',
+            _DB_PREFIX_ . 'everblock_flags',
         ];
         $tableExists = false;
         foreach ($tableNames as $tableName) {

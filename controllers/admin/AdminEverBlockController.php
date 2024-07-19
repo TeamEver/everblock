@@ -336,7 +336,6 @@ class AdminEverBlockController extends ModuleAdminController
         $fields_form[] = [
             'form' => [
                 'tinymce' => true,
-                'description' => $this->l('Manage HTML block.'),
                 'submit' => [
                     'name' => 'save',
                     'title' => $this->l('Save'),
