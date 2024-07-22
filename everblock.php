@@ -59,7 +59,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.9.0';
+        $this->version = '5.9.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -1836,12 +1836,14 @@ class Everblock extends Module
 
         // Récupération des flags pour le produit actuel
         $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
-        foreach ($everpsflags as $everpsflag) {
-            if (Validate::isLoadedObject($everpsflag)) {
-                $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
-                    'type' => 'custom-flag ' . $everpsflag->title,
-                    'label' => strip_tags($everpsflag->content),
-                ];
+        if ($everpsflags || !empty($everpsflags)) {
+            foreach ($everpsflags as $everpsflag) {
+                if (Validate::isLoadedObject($everpsflag)) {
+                    $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
+                        'type' => 'custom-flag ' . $everpsflag->title,
+                        'label' => strip_tags($everpsflag->content),
+                    ];
+                }
             }
         }
 
