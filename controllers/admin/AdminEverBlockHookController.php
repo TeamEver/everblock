@@ -25,6 +25,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
 class AdminEverBlockHookController extends ModuleAdminController
 {
     private $html;
+
     public function __construct()
     {
         $this->bootstrap = true;
@@ -72,11 +73,11 @@ class AdminEverBlockHookController extends ModuleAdminController
                 'class' => 'fixed-width-sm',
             ],
         ];
+        parent::__construct();
         // Do not load action hooks
         $this->_where = 'AND INSTR(name, "action") = 0 AND INSTR(name, "filter") = 0';
         $this->colorOnBackground = true;
         EverblockTools::checkAndFixDatabase();
-        parent::__construct();
     }
 
     public function l($string, $class = null, $addslashes = false, $htmlentities = true)
@@ -156,7 +157,7 @@ class AdminEverBlockHookController extends ModuleAdminController
                 $this->errors[] = $this->l('An error occurred while updating the status.');
             }
         }
-
+        
         $lists = parent::renderList();
 
         $moduleInstance = Module::getInstanceByName('everblock');

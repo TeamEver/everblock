@@ -143,32 +143,40 @@ class ExecuteAction extends Command
                 }
             }
             return self::SUCCESS;
-        }        
+        }
         if ($action === 'saveblocks') {
             $backuped = EverblockTools::exportModuleTablesSQL();
             if ((bool) $backuped === true) {
-                $output->writeln(
-                    '<success>Backup done</success>'
-                );
+                try {
+                    $modulePath = _PS_MODULE_DIR_ . 'everblock/';
+                    $this->copyDirectory($modulePath . 'views/css', $modulePath . 'views/backup/css');
+                    $this->copyDirectory($modulePath . 'views/js', $modulePath . 'views/backup/js');
+                    $output->writeln('<success>Backup done</success>');
+                } catch (\Exception $e) {
+                    $output->writeln('<warning>Backup failed: ' . $e->getMessage() . '</warning>');
+                    return self::FAILURE;
+                }
                 return self::SUCCESS;
             } else {
-                $output->writeln(
-                    '<warning>Backup failed</warning>'
-                );
+                $output->writeln('<warning>Backup failed</warning>');
                 return self::FAILURE;
             }
         }
         if ($action === 'restoreblocks') {
             $restored = EverblockTools::restoreModuleTablesFromBackup();
             if ((bool) $restored === true) {
-                $output->writeln(
-                    '<success>Blocks restoration done</success>'
-                );
+                try {
+                    $modulePath = _PS_MODULE_DIR_ . 'everblock/';
+                    $this->restoreDirectory($modulePath . 'views/backup/css', $modulePath . 'views/css');
+                    $this->restoreDirectory($modulePath . 'views/backup/js', $modulePath . 'views/js');
+                    $output->writeln('<success>Blocks restoration done</success>');
+                } catch (\Exception $e) {
+                    $output->writeln('<warning>Blocks restoration failed: ' . $e->getMessage() . '</warning>');
+                    return self::FAILURE;
+                }
                 return self::SUCCESS;
             } else {
-                $output->writeln(
-                    '<warning>Blocks restoration failed</warning>'
-                );
+                $output->writeln('<warning>Blocks restoration failed</warning>');
                 return self::FAILURE;
             }
         }
@@ -222,6 +230,56 @@ class ExecuteAction extends Command
             return self::SUCCESS;
         }
         return self::ABORTED;
+    }
+
+    /**
+     * Copy a directory and its contents recursively
+     *
+     * @param string $src Source directory
+     * @param string $dst Destination directory
+     * @return void
+     */
+    protected function copyDirectory($src, $dst)
+    {
+        $dir = opendir($src);
+        if (!is_dir($dst)) {
+            mkdir($dst, 0755, true);
+        }
+        while (false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..')) {
+                if (is_dir($src . '/' . $file)) {
+                    $this->copyDirectory($src . '/' . $file, $dst . '/' . $file);
+                } else {
+                    copy($src . '/' . $file, $dst . '/' . $file);
+                }
+            }
+        }
+        closedir($dir);
+    }
+
+    /**
+     * Restore a directory and its contents recursively
+     *
+     * @param string $src Source directory (backup)
+     * @param string $dst Destination directory (original)
+     * @return void
+     */
+    protected function restoreDirectory($src, $dst)
+    {
+        $dir = opendir($src);
+        if (!is_dir($dst)) {
+            mkdir($dst, 0755, true);
+        }
+        while (false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..')) {
+                if (is_dir($src . '/' . $file)) {
+                    $this->restoreDirectory($src . '/' . $file, $dst . '/' . $file);
+                } else {
+                    copy($src . '/' . $file, $dst . '/' . $file);
+                }
+            }
+        }
+        closedir($dir);
     }
 
     /**

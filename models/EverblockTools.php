@@ -29,8 +29,14 @@ class EverblockTools extends ObjectModel
 {
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
-        $txt = static::getCustomerShortcodes($txt, $context);
-        $txt = static::obfuscateTextByClass($txt);
+        $controllerTypes = [
+            'front',
+            'modulefront',
+        ];
+        if (in_array($context->controller->controller_type, $controllerTypes)) {
+            $txt = static::getCustomerShortcodes($txt, $context);
+            $txt = static::obfuscateTextByClass($txt);
+        }
         $txt = static::getEverShortcodes($txt, $context);
         if (strpos($txt, '[everfaq') !== false) {
             $txt = static::getFaqShortcodes($txt, $context, $module);
@@ -300,9 +306,8 @@ class EverblockTools extends ObjectModel
                 $brands = array_slice($brands, 0, $limit);
                 foreach ($brands as $brand) {
                     $name = $brand['name'];
-                    $logo = $context->link->getManufacturerImageLink(
-                        (int) $brand['id']
-                    );
+                    $logo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/m/' . (int) $brand['id'] . '.jpg';
+                    $logo = EverblockTools::convertToWebP($logo);
                     $url = $brand['link'];
                     $limitedBrands[] = [
                         'id' => $brand['id'],
@@ -857,6 +862,13 @@ class EverblockTools extends ObjectModel
 
     public static function renderSmartyVars(string $txt, Context $context): string
     {
+        $controllerTypes = [
+            'front',
+            'modulefront',
+        ];
+        if (!in_array($context->controller->controller_type, $controllerTypes)) {
+            return $txt;
+        }
         $templateVars = [
             'customer' => $context->controller->getTemplateVarCustomer(),
             'currency' => $context->controller->getTemplateVarCurrency(),
@@ -2015,8 +2027,9 @@ class EverblockTools extends ObjectModel
             }
             $llorem = implode("\n\n", $paragraphs);
             EverblockCache::cacheStore($cacheId, $llorem);
+        } else{
+            $llorem = EverblockCache::cacheRetrieve($cacheId);
         }
-        $llorem = EverblockCache::cacheRetrieve($cacheId);
         $txt = str_replace('[llorem]', $llorem, $txt);
         return $txt;
     }
@@ -2702,5 +2715,84 @@ class EverblockTools extends ObjectModel
         }
 
         return false;
+    }
+
+    public static function convertImagesToWebP($htmlContent)
+    {
+        // Regular expression to find img tags and their src attributes
+        $pattern = '/<img\s+[^>]*src="([^"]+)"[^>]*>/i';
+        $htmlContent = preg_replace_callback($pattern, function($matches) {
+            $src = $matches[1];
+            $webpSrc = self::convertToWebP($src);
+            if ($webpSrc) {
+                return str_replace($src, $webpSrc, $matches[0]);
+            }
+            return $matches[0]; // Return the original tag if conversion fails
+        }, $htmlContent);
+
+        return $htmlContent;
+    }
+
+    public static function convertToWebP($imagePath)
+    {
+        // Check if the path is a URL
+        if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
+            $imagePath = self::urlToFilePath($imagePath);
+        } else {
+            $imagePath = self::relativeToAbsolutePath($imagePath);
+        }
+
+        $pathInfo = pathinfo($imagePath);
+        $webpPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.webp';
+        if (file_exists($webpPath)) {
+            return self::filePathToUrl($webpPath);
+        }
+
+        switch (strtolower($pathInfo['extension'])) {
+            case 'jpeg':
+            case 'jpg':
+                $image = imagecreatefromjpeg($imagePath);
+                break;
+            case 'png':
+                $image = imagecreatefrompng($imagePath);
+                break;
+            case 'gif':
+                $image = imagecreatefromgif($imagePath);
+                break;
+            default:
+                return false;
+        }
+
+        if ($image === false) {
+            return false;
+        }
+
+        imagepalettetotruecolor($image);
+        if (imagewebp($image, $webpPath, 80)) {
+            imagedestroy($image);
+            return self::filePathToUrl($webpPath);
+        }
+
+        imagedestroy($image);
+        return false;
+    }
+
+    private static function urlToFilePath($url)
+    {
+        // Convert URL to a relative path
+        $parsedUrl = parse_url($url);
+        $relativePath = $parsedUrl['path'];
+        return _PS_ROOT_DIR_ . $relativePath;
+    }
+
+    private static function filePathToUrl($filePath)
+    {
+        $relativePath = str_replace(_PS_ROOT_DIR_, '', $filePath);
+        return _PS_BASE_URL_ . __PS_BASE_URI__ . ltrim($relativePath, '/');
+    }
+
+    private static function relativeToAbsolutePath($relativePath)
+    {
+        return _PS_ROOT_DIR_ . '/' . ltrim($relativePath, '/');
     }
 }

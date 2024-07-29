@@ -112,21 +112,31 @@ class EverblockFlagsClass extends ObjectModel
     */
     public static function getByIdProduct(int $productId, int $shopId, int $langId): array
     {
-        $sql = new DbQuery();
-        $sql->select(self::$definition['primary']);
-        $sql->from(self::$definition['table']);
-        $sql->where('id_product = ' . (int) $productId);
-        $sql->where('id_shop = ' . (int) $shopId);
-        $sql->orderBy('id_flag');
-        $flagIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-        $return = [];
-        foreach ($flagIds as $flag) {
-            $return[] = new self(
-                (int) $flag[self::$definition['primary']],
-                (int) $langId,
-                (int) $shopId
-            );
+        $cache_id = 'EverblockFlagsClass_getByIdProduct_'
+        . (int) $productId
+        . '_'
+        . (int) $shopId
+        . '_'
+        . (int) $langId;
+        if (!EverblockCache::isCacheStored($cache_id)) {
+            $sql = new DbQuery();
+            $sql->select(self::$definition['primary']);
+            $sql->from(self::$definition['table']);
+            $sql->where('id_product = ' . (int) $productId);
+            $sql->where('id_shop = ' . (int) $shopId);
+            $sql->orderBy('id_flag');
+            $flagIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            $return = [];
+            foreach ($flagIds as $flag) {
+                $return[] = new self(
+                    (int) $flag[self::$definition['primary']],
+                    (int) $langId,
+                    (int) $shopId
+                );
+            }
+            EverblockCache::cacheStore($cache_id, $return);
+            return $return;
         }
-        return $return;
+        return EverblockCache::cacheRetrieve($cache_id);
     }
 }

@@ -87,14 +87,6 @@ class EverblockCache extends ObjectModel
     public static function isCacheStored(string $cacheKey): bool
     {
         $context = Context::getContext();
-        if ($context->controller->controller_type == 'admin'
-            || $context->controller->controller_type == 'moduleadmin'
-        ) {
-            return false;
-        }
-        if (!defined('_PS_CACHE_ENABLED_') || !_PS_CACHE_ENABLED_) {
-            return false;
-        }
         $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
             return true;

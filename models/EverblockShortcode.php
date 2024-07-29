@@ -40,9 +40,9 @@ class EverblockShortcode extends ObjectModel
                 'validate' => 'isUnsignedInt',
             ],
             'shortcode' => [
-                'type' => self::TYPE_STRING,
+                'type' => self::TYPE_HTML,
                 'lang' => false,
-                'validate' => 'isString',
+                'validate' => 'isCleanHtml',
                 'required' => true,
             ],
             // lang fields

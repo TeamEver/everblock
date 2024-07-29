@@ -1228,8 +1228,10 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->active = Tools::getValue('active');
             $everblock = Module::getInstanceByName('everblock');
             foreach (Language::getLanguages(false) as $language) {
-                $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_' . $language['id_lang']);
-                $everblock_obj->custom_code[$language['id_lang']] = Tools::getValue('custom_code_' . $language['id_lang']);
+                $contentKey = 'content_' . $language['id_lang'];
+                $originalContent = Tools::getValue($contentKey);
+                $convertedContent = EverblockTools::convertImagesToWebP($originalContent);
+                $everblock_obj->content[$language['id_lang']] = $convertedContent;
             }
             if (!count($this->errors)) {
                 try {

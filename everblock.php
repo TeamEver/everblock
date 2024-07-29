@@ -54,12 +54,15 @@ class Everblock extends Module
         'refreshtokens',
         'securewithapache',
     ];
+    private $bypassedControllers = [
+        'hookDisplayInvoiceLegalFreeText',
+    ];
 
     public function __construct()
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '5.9.1';
+        $this->version = '6.1.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -83,7 +86,7 @@ class Everblock extends Module
             'modulefront',
         ];
         $context = Context::getContext();
-        if (!in_array($context->controller->controller_type, $controllerTypes)) {
+        if (!in_array($context->controller->controller_type, $controllerTypes) && !in_array($method, $this->bypassedControllers)) {
             return;
         }
         if (Hook::isDisplayHookName(lcfirst(str_replace('hook', '', $method)))) {
@@ -301,7 +304,8 @@ class Everblock extends Module
         $this->registerHook('actionObjectEverblockFaqDeleteAfter');
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
-        $this->registerHook('actionProductFlagsModifier');        
+        $this->registerHook('actionProductFlagsModifier');
+        $this->registerHook('actionEmailAddAfterContent');
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
             && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
@@ -1526,6 +1530,27 @@ class Everblock extends Module
         }
     }
 
+    public function hookActionEmailAddAfterContent($params)
+    {
+        try {
+            $context = Context::getContext();
+            $languageId = $params['id_lang'];
+            $lang = new Language(
+                (int) $languageId
+            );
+            $context->language = $lang;
+            $params['template_txt'] = EverblockTools::renderShortcodes($params['template_txt'], $context, $this);
+            $params['template_html'] = EverblockTools::renderShortcodes($params['template_html'], $context, $this);
+            return $params;
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
+            EverblockTools::setLog(
+                $this->name . date('y-m-d'),
+                $e->getMessage()
+            );
+        }
+    }
+
     public function hookActionEmailSendBefore($params)
     {
         if (isset($params['templateVars']['{id_order}'])) {
@@ -1830,24 +1855,31 @@ class Everblock extends Module
 
     public function hookActionProductFlagsModifier($params)
     {
-        $productId = (int) $params['product']['id_product'];
-        $shopId = (int) Context::getContext()->shop->id;
-        $languageId = (int) Context::getContext()->language->id;
+        try {
+            $productId = (int) $params['product']['id_product'];
+            $shopId = (int) Context::getContext()->shop->id;
+            $languageId = (int) Context::getContext()->language->id;
 
-        // Récupération des flags pour le produit actuel
-        $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
-        if ($everpsflags || !empty($everpsflags)) {
-            foreach ($everpsflags as $everpsflag) {
-                if (Validate::isLoadedObject($everpsflag)) {
-                    $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
-                        'type' => 'custom-flag ' . $everpsflag->title,
-                        'label' => strip_tags($everpsflag->content),
-                    ];
+            // Récupération des flags pour le produit actuel
+            $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
+            if ($everpsflags && !empty($everpsflags)) {
+                foreach ($everpsflags as $everpsflag) {
+                    if (Validate::isLoadedObject($everpsflag)) {
+                        $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
+                            'type' => 'custom-flag ' . $everpsflag->title,
+                            'label' => strip_tags($everpsflag->content),
+                        ];
+                    }
                 }
             }
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('Error on hookActionProductFlagsModifier : ' . $e->getMessage());
+            EverblockTools::setLog(
+                $this->name . date('y-m-d'),
+                $e->getMessage()
+            );
+            return false;
         }
-
-        return $params;
     }
 
     public function hookDisplayProductExtraContent($params)
@@ -2017,7 +2049,7 @@ class Everblock extends Module
         . '-device-'
         . (int) $context->getDevice();
         if (!EverblockCache::isCacheStored(str_replace('|', '-', $cacheId))) {
-            if ($context->customer->id) {
+            if (isset($context->customer->id) && $context->customer->id) {
                 $id_entity = (int) $context->customer->id;
             } else {
                 $id_entity = false;
@@ -2153,7 +2185,7 @@ class Everblock extends Module
                     continue;
                 }
                 $customerGroups = Customer::getGroupsStatic(
-                    (int) $context->customer->id
+                    (int) $id_entity
                 );
                 $allowedGroups = json_decode($block['groups'], true);
                 if (isset($customerGroups)
@@ -2172,6 +2204,12 @@ class Everblock extends Module
                         $block['content']
                     );
                 }
+                if (in_array($method, $this->bypassedControllers)) {
+                    $block['content'] = strip_tags($block['content']);
+                    $context->smarty->assign([
+                        'is_bypassed' => true,
+                    ]);
+                }
                 $currentBlock[] = ['block' => $block];
             }
             Hook::exec(
@@ -2189,7 +2227,7 @@ class Everblock extends Module
                 $context->smarty->assign([
                     'prettyblocks_installed' => true,
                 ]);
-            }
+            }   
             $context->smarty->assign([
                 'everhook' => trim($method),
                 $this->name => $currentBlock,
@@ -2326,8 +2364,7 @@ class Everblock extends Module
                 return false;
             }
             curl_close($handle);
-            $module_version = $response;
-            if ($module_version && $module_version > $this->version) {
+            if ($response && Tools::version_compare($response, $this->version, '>')) {
                 return true;
             }
             return false;
