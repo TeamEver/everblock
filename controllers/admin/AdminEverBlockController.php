@@ -216,7 +216,6 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::getValue('clearcache')) {
             Tools::clearAllCache();
-            EverblockCache::cleanThemeCache();
             Tools::redirectAdmin(self::$currentIndex . '&cachecleared=1&token=' . $this->token);
         }
         if (Tools::getValue('cachecleared')) {
@@ -1241,7 +1240,6 @@ class AdminEverBlockController extends ModuleAdminController
                     );
                     if ((bool) Configuration::get('EVERPSCSS_CACHE') === true) {
                         Tools::clearAllCache();
-                        EverblockCache::cleanThemeCache();
                     }
                     if ((bool) Tools::isSubmit('stay') === true) {
                         Tools::redirectAdmin(

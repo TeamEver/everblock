@@ -1569,7 +1569,6 @@ class EverblockTools extends ObjectModel
         }
         if ((bool) EverblockCache::getModuleConfiguration('EVERPSCSS_CACHE') === true) {
             Tools::clearAllCache();
-            EverblockCache::cleanThemeCache();
         }
         return [
             'postErrors' => $postErrors,

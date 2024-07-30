@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.1.3';
+        $this->version = '6.1.4';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -1190,7 +1190,6 @@ class Everblock extends Module
 
     protected function emptyAllCache()
     {
-        EverblockCache::cleanThemeCache();
         Tools::clearAllCache();
         $this->postSuccess[] = $this->l('Cache has been cleared');
     }
@@ -2598,7 +2597,6 @@ class Everblock extends Module
             }
             $tab->save();
             Tools::clearAllCache();
-            EverblockCache::cleanThemeCache();
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
             EverblockTools::setLog(
