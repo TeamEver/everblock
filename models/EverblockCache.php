@@ -30,6 +30,7 @@ class EverblockCache extends ObjectModel
     */
     public static function getModuleConfiguration(string $key): string
     {
+        static::createCacheDir();
         $context = Context::getContext();
         if ($context->controller->controller_type == 'admin'
             || $context->controller->controller_type == 'moduleadmin'
@@ -43,42 +44,6 @@ class EverblockCache extends ObjectModel
         return static::cacheRetrieve($key);
     }
 
-    public static function cleanThemeCache(): bool
-    {
-        // Issue #17
-        return true;
-        if (!defined(_PS_PARENT_THEME_DIR_) || empty(_PS_PARENT_THEME_DIR_)) {
-            $themeDir = _PS_THEME_DIR_;
-        } else {
-            $themeDir = _PS_PARENT_THEME_DIR_ . 'assets/cache';
-        }
-        $cacheDir = $themeDir;
-        try {
-            if (file_exists($cacheDir) && is_dir($cacheDir)) {
-                $files = new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator($cacheDir, RecursiveDirectoryIterator::SKIP_DOTS),
-                    RecursiveIteratorIterator::CHILD_FIRST
-                );
-
-                foreach ($files as $fileinfo) {
-                    $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
-                    // Ne supprime pas le fichier index.php
-                    if ($fileinfo->getFilename() !== 'index.php') {
-                        $todo($fileinfo->getRealPath());
-                    }
-                }
-
-                return true;
-            }
-
-            return false;
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog('cleanThemeCache : ' . $e->getMessage());
-        }
-
-        return false;
-    }
-
     /**
      * Check if cache exists based on unique key
      * No cache on admin, no cache if PS cache is disabled
@@ -86,8 +51,9 @@ class EverblockCache extends ObjectModel
     */
     public static function isCacheStored(string $cacheKey): bool
     {
+        static::createCacheDir();
         $context = Context::getContext();
-        $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
+        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
             return true;
         }
@@ -102,16 +68,14 @@ class EverblockCache extends ObjectModel
     */
     public static function cacheStore(string $cacheKey, $cacheValue)
     {
+        static::createCacheDir();
         $context = Context::getContext();
         if ($context->controller->controller_type == 'admin'
             || $context->controller->controller_type == 'moduleadmin'
         ) {
             return;
         }
-        if (!defined('_PS_CACHE_ENABLED_') && !_PS_CACHE_ENABLED_) {
-            return;
-        }
-        $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
+        $cacheFilePath = _PS_CACHE_DIR_ .'everblock/' . $cacheKey . '.cache';
         return file_put_contents($cacheFilePath, serialize($cacheValue));
     }
 
@@ -122,7 +86,8 @@ class EverblockCache extends ObjectModel
     */
     public static function cacheRetrieve(string $cacheKey)
     {
-        $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
+        static::createCacheDir();
+        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
             $cachedData = Tools::file_get_contents($cacheFilePath);
             return unserialize($cachedData);
@@ -132,7 +97,8 @@ class EverblockCache extends ObjectModel
 
     public static function cacheDrop(string $cacheKey)
     {
-        $cacheFilePath = _PS_CACHE_DIR_ . $cacheKey . '.cache';
+        static::createCacheDir();
+        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
             unlink($cacheFilePath);
         }
@@ -140,13 +106,26 @@ class EverblockCache extends ObjectModel
 
     public static function cacheDropByPattern(string $cacheKeyStart)
     {
-        $cacheDir = _PS_CACHE_DIR_;
+        static::createCacheDir();
+        $cacheDir = _PS_CACHE_DIR_ . 'everblock/';
         $pattern = $cacheDir . $cacheKeyStart . '*.cache';
         $matchingFiles = glob($pattern);
         if (!empty($matchingFiles)) {
             foreach ($matchingFiles as $file) {
                 unlink($file);
             }
+        }
+    }
+
+    protected static function createCacheDir()
+    {
+        try {
+            $cacheDir = _PS_CACHE_DIR_ . 'everblock';
+            if (!is_dir($cacheDir)) {
+                mkdir($cacheDir, 0755, true);
+            }
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog('Unable to create Everblock cache dir');
         }
     }
 }

@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.1.2';
+        $this->version = '6.1.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -302,6 +302,8 @@ class Everblock extends Module
         $this->registerHook('actionObjectEverBlockClassDeleteAfter');
         $this->registerHook('actionObjectEverblockFaqUpdateAfter');
         $this->registerHook('actionObjectEverblockFaqDeleteAfter');
+        $this->registerHook('actionObjectEverBlockFlagsUpdateAfter');
+        $this->registerHook('actionObjectEverBlockFlagsDeleteAfter');
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
         $this->registerHook('actionProductFlagsModifier');
@@ -1443,18 +1445,20 @@ class Everblock extends Module
                     'submitCustomStep',
                     'controller',
                 ];
-                foreach ($checkoutSessionData as $key => $value) {
-                    if (in_array($key, $hiddenKeys)) {
-                        unset($checkoutSessionData[$key]);
+                if (is_array($checkoutSessionData) && !empty($checkoutSessionData)) {
+                    foreach ($checkoutSessionData as $key => $value) {
+                        if (in_array($key, $hiddenKeys)) {
+                            unset($checkoutSessionData[$key]);
+                        }
+                        if (empty($value)) {
+                            unset($checkoutSessionData[$key]);
+                        }
                     }
-                    if (empty($value)) {
-                        unset($checkoutSessionData[$key]);
-                    }
+                    $this->context->smarty->assign(array(
+                        'checkoutSessionData' => $checkoutSessionData,
+                    ));
+                    return $this->display(__FILE__, 'views/templates/hook/orderconfirmation.tpl');
                 }
-                $this->context->smarty->assign(array(
-                    'checkoutSessionData' => $checkoutSessionData,
-                ));
-                return $this->display(__FILE__, 'views/templates/hook/orderconfirmation.tpl');
             }
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
@@ -1474,10 +1478,12 @@ class Everblock extends Module
             );
             if (isset($checkoutSessionData) && $checkoutSessionData) {
                 $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
-                $this->context->smarty->assign(array(
-                    'checkoutSessionData' => $checkoutSessionData,
-                ));
-                return $this->display(__FILE__, 'views/templates/hook/orderconfirmation.tpl');
+                if (is_array($checkoutSessionData) && !empty($checkoutSessionData)) {
+                    $this->context->smarty->assign(array(
+                        'checkoutSessionData' => $checkoutSessionData,
+                    ));
+                    return $this->display(__FILE__, 'views/templates/hook/orderconfirmation.tpl');
+                }
             }
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
@@ -1508,18 +1514,20 @@ class Everblock extends Module
                     'submitCustomStep',
                     'controller',
                 ];
-                foreach ($checkoutSessionData as $key => $value) {
-                    if (in_array($key, $hiddenKeys)) {
-                        unset($checkoutSessionData[$key]);
+                if (is_array($checkoutSessionData) && !empty($checkoutSessionData)) {
+                    foreach ($checkoutSessionData as $key => $value) {
+                        if (in_array($key, $hiddenKeys)) {
+                            unset($checkoutSessionData[$key]);
+                        }
+                        if (empty($value)) {
+                            unset($checkoutSessionData[$key]);
+                        }
                     }
-                    if (empty($value)) {
-                        unset($checkoutSessionData[$key]);
-                    }
+                    $this->context->smarty->assign(array(
+                        'checkoutSessionData' => $checkoutSessionData,
+                    ));
+                    return $this->display(__FILE__, 'views/templates/hook/pdf.tpl');
                 }
-                $this->context->smarty->assign(array(
-                    'checkoutSessionData' => $checkoutSessionData,
-                ));
-                return $this->display(__FILE__, 'views/templates/hook/pdf.tpl');
             }
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
@@ -1570,21 +1578,23 @@ class Everblock extends Module
                         'submitCustomStep',
                         'controller',
                     ];
-                    foreach ($checkoutSessionData as $key => $value) {
-                        if (in_array($key, $hiddenKeys)) {
-                            unset($checkoutSessionData[$key]);
+                    if (is_array($checkoutSessionData) && !empty($checkoutSessionData)) {
+                        foreach ($checkoutSessionData as $key => $value) {
+                            if (in_array($key, $hiddenKeys)) {
+                                unset($checkoutSessionData[$key]);
+                            }
+                            if (empty($value)) {
+                                unset($checkoutSessionData[$key]);
+                            }
                         }
-                        if (empty($value)) {
-                            unset($checkoutSessionData[$key]);
-                        }
+                        $this->context->smarty->assign(array(
+                            'checkoutSessionData' => $checkoutSessionData,
+                        ));
+                        $optionsHtml = $this->context->smarty->fetch(
+                            $this->local_path . 'views/templates/admin/pdf.tpl'
+                        );
+                        $params['templateVars']['{order_options}'] = $optionsHtml;
                     }
-                    $this->context->smarty->assign(array(
-                        'checkoutSessionData' => $checkoutSessionData,
-                    ));
-                    $optionsHtml = $this->context->smarty->fetch(
-                        $this->local_path . 'views/templates/admin/pdf.tpl'
-                    );
-                    $params['templateVars']['{order_options}'] = $optionsHtml;
                 }
             } catch (Exception $e) {
                 PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
@@ -1696,6 +1706,19 @@ class Everblock extends Module
         $cachePattern = 'EverBlockClass_getBlocks_';
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'fetchInstagramImages';
+        EverblockCache::cacheDropByPattern($cachePattern);
+    }
+
+    public function hookActionObjectEverBlockFlagsDeleteAfter($params)
+    {
+        $cachePattern = $this->name . 'EverblockFlagsClass_getByIdProduct_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'EverBlockFlags_getBlocks_';
+    }
+
+    public function hookActionObjectEverBlockFlagsUpdateAfter($params)
+    {
+        $cachePattern = $this->name . 'EverblockFlagsClass_getByIdProduct_';
         EverblockCache::cacheDropByPattern($cachePattern);
     }
 
