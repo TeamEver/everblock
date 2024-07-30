@@ -1616,8 +1616,12 @@ class Everblock extends Module
         $sql->where(
             'id_cart = ' . (int) $idCart
         );
+        $res =  Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+        if (!$res) {
+            return;
+        }
         $checkout_session_data = json_decode(
-            Db::getInstance()->getValue($sql)
+           $res
         );
         foreach ($checkout_session_data as $key => $value) {
             if ($key == 'ever-checkout-step') {
