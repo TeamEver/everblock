@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.1.5';
+        $this->version = '6.2.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -100,7 +100,12 @@ class Everblock extends Module
         Configuration::updateValue('EVERPSCSS_P_LLOREM_NUMBER', 5);
         Configuration::updateValue('EVERPSCSS_S_LLOREM_NUMBER', 5);
         Configuration::updateValue('EVERPS_TAB_NB', 5);
-        Configuration::updateValue('EVERPS_FLAG_NB', 5);        
+        Configuration::updateValue('EVERPS_FLAG_NB', 5);
+        Configuration::updateValue(
+            'EVERPS_FEATURES_AS_FLAGS',
+            json_encode([1]),
+            true
+        );
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -530,6 +535,9 @@ class Everblock extends Module
                 'name' => $this->l('After shipping form'),
             ],
         ];
+        $features = Feature::getFeatures(
+            (int) $this->context->language->id
+        );
         $formFields = [];
         $formFields[] = [
             'form' => [
@@ -762,6 +770,21 @@ class Everblock extends Module
                         'name' => 'EVERPSJS_LINKS',
                     ],
                     [
+                        'type' => 'select',
+                        'class' => 'chosen',
+                        'multiple' => true,
+                        'label' => $this->l('Features as flags'),
+                        'desc' => $this->l('Please select features used for flags'),
+                        'hint' => $this->l('The selected features will be converted into product flags'),
+                        'name' => 'EVERPS_FEATURES_AS_FLAGS[]',
+                        'required' => false,
+                        'options' => [
+                            'query' => $features,
+                            'id' => 'id_feature',
+                            'name' => 'name',
+                        ],
+                    ],
+                    [
                         'type' => 'text',
                         'label' => $this->l('Number of fictitious products to create during product generation'),
                         'desc' => $this->l('Will generate this number of dummy products when generating'),
@@ -913,6 +936,7 @@ class Everblock extends Module
             'EVERPSJS' => $custom_js,
             'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
             'EVERPSJS_LINKS' => Configuration::get('EVERPSJS_LINKS'),
+            'EVERPS_FEATURES_AS_FLAGS[]' => json_decode(Configuration::get('EVERPS_FEATURES_AS_FLAGS')),
             'EVERPS_DUMMY_NBR' => Configuration::get('EVERPS_DUMMY_NBR'),
             'EVERPSCSS_P_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_P_LLOREM_NUMBER'),
             'EVERPSCSS_S_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_S_LLOREM_NUMBER'),
@@ -958,6 +982,11 @@ class Everblock extends Module
                 $this->postErrors[] = $this->l(
                     'Error : The field "Extends TinyMCE" is not valid'
                 );
+            }
+            if (!Tools::getValue('EVERPS_FEATURES_AS_FLAGS')
+                || !Validate::isArrayWithIds(Tools::getValue('EVERPS_FEATURES_AS_FLAGS'))
+            ) {
+                $this->postErrors[] = $this->l('Error: selected features are not valid');
             }
         }
     }
@@ -1079,6 +1108,11 @@ class Everblock extends Module
                 'EVEROPTIONS_TITLE_' . $lang['id_lang']
             ) : '';
         }
+        Configuration::updateValue(
+            'EVERPS_FEATURES_AS_FLAGS',
+            json_encode(Tools::getValue('EVERPS_FEATURES_AS_FLAGS')),
+            true
+        );
         Configuration::updateValue(
             'EVEROPTIONS_TITLE',
             $formTitle,
@@ -1885,8 +1919,7 @@ class Everblock extends Module
             $productId = (int) $params['product']['id_product'];
             $shopId = (int) Context::getContext()->shop->id;
             $languageId = (int) Context::getContext()->language->id;
-
-            // Récupération des flags pour le produit actuel
+            // Current product flags
             $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
             if ($everpsflags && !empty($everpsflags)) {
                 foreach ($everpsflags as $everpsflag) {
@@ -1898,6 +1931,19 @@ class Everblock extends Module
                     }
                 }
             }
+            // Product features as flags
+            $bannedFeatures = $this->getFeaturesAsFlags();
+            $features = $this->getFeatures($productId);
+            if (!empty($features)) {
+                foreach ($features as $feature) {
+                    if (in_array($feature['id_feature'], $bannedFeatures)) {
+                        $params['flags'][] = array(
+                            'type' => 'feature_flag_' . $feature['id_feature'],
+                            'label' => $feature['value']
+                        );
+                    }
+                }
+            }
         } catch (Exception $e) {
             PrestaShopLogger::addLog('Error on hookActionProductFlagsModifier : ' . $e->getMessage());
             EverblockTools::setLog(
@@ -1906,6 +1952,38 @@ class Everblock extends Module
             );
             return false;
         }
+    }
+
+    protected function getFeatures($productId)
+    {
+        $cacheId = $this->name . '::getFeatures_' . (int) $productId;
+        if (!Cache::isStored($cacheId)) {
+            $sql = 'SELECT fp.id_feature, fv.value
+                    FROM ' . _DB_PREFIX_ . 'feature_product fp
+                    JOIN ' . _DB_PREFIX_ . 'feature_value_lang fv ON fp.id_feature_value = fv.id_feature_value
+                    WHERE fp.id_product = ' . (int)$productId . '
+                    AND fv.id_lang = ' . (int)$this->context->language->id;
+            $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            Cache::store($cacheId, $result);
+            return $result;
+        }
+        return Cache::retrieve($cacheId);
+    }
+
+    protected function getFeaturesAsFlags()
+    {
+        $cacheId = $this->name . '::getFeaturesAsFlags_' . (int) $this->context->shop->id;
+        if (!Cache::isStored($cacheId)) {
+            $bannedFeatures = Configuration::get('EVERPS_FEATURES_AS_FLAGS');
+            if (!$bannedFeatures) {
+                $bannedFeatures = [];
+            } else {
+                $bannedFeatures = json_decode($bannedFeatures);
+            }
+            Cache::store($cacheId, $bannedFeatures);
+            return $bannedFeatures;
+        }
+        return Cache::retrieve($cacheId);
     }
 
     public function hookDisplayProductExtraContent($params)
