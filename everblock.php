@@ -983,11 +983,6 @@ class Everblock extends Module
                     'Error : The field "Extends TinyMCE" is not valid'
                 );
             }
-            if (!Tools::getValue('EVERPS_FEATURES_AS_FLAGS')
-                || !Validate::isArrayWithIds(Tools::getValue('EVERPS_FEATURES_AS_FLAGS'))
-            ) {
-                $this->postErrors[] = $this->l('Error: selected features are not valid');
-            }
         }
     }
 
