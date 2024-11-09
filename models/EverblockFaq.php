@@ -91,7 +91,7 @@ class EverblockFaq extends ObjectModel
 
     public static function getAllFaq(int $shopId, int $langId): array
     {
-        $cache_id = 'EverblockShortcode_getAllFaq_'
+        $cache_id = 'EverblockFaq_getAllFaq_'
         . (int) $shopId
         . '_'
         . (int) $langId;
@@ -119,7 +119,7 @@ class EverblockFaq extends ObjectModel
 
     public static function getFaqByTagName(int $shopId, int $langId, string $tagName): array
     {
-        $cache_id = 'EverblockShortcode_getFaqByTagName_'
+        $cache_id = 'EverblockFaq_getFaqByTagName_'
         . (int) $shopId
         . '_'
         . (int) $langId

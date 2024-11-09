@@ -33,10 +33,6 @@ class EverblockTools extends ObjectModel
             'front',
             'modulefront',
         ];
-        if (in_array($context->controller->controller_type, $controllerTypes)) {
-            $txt = static::getCustomerShortcodes($txt, $context);
-            $txt = static::obfuscateTextByClass($txt);
-        }
         $txt = static::getEverShortcodes($txt, $context);
         if (strpos($txt, '[everfaq') !== false) {
             $txt = static::getFaqShortcodes($txt, $context, $module);
@@ -46,6 +42,12 @@ class EverblockTools extends ObjectModel
         }
         if (strpos($txt, '[product') !== false) {
             $txt = static::getProductShortcodes($txt, $context, $module);
+        }
+        if (strpos($txt, '[productfeature') !== false) {
+            $txt = static::getFeatureProductShortcodes($txt, $context, $module);
+        }
+        if (strpos($txt, '[productfeaturevalue') !== false) {
+            $txt = static::getFeatureValueProductShortcodes($txt, $context, $module);
         }
         if (strpos($txt, '[category') !== false) {
             $txt = static::getCategoryShortcodes($txt, $context, $module);
@@ -110,7 +112,113 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[prettyblocks') !== false) {
             $txt = static::getPrettyblocksShortcodes($txt, $context, $module);
         }
+        if (strpos($txt, '[everaddtocart') !== false) {
+            $txt = static::getAddToCartShortcode($txt, $context, $module);
+        }
+        if (in_array($context->controller->controller_type, $controllerTypes)) {
+            $txt = static::getCustomerShortcodes($txt, $context);
+            $txt = static::obfuscateTextByClass($txt);
+        }
         $txt = static::renderSmartyVars($txt, $context);
+        return $txt;
+    }
+
+    public static function addToCartByUrl(Context $context, int $productId, int $productAttributeId = 0, int $quantity = 1)
+    {
+        try {
+            if (!isset($context->cart) || !$context->cart->id) {
+                // Création d'un nouveau panier
+                $cart = new Cart();
+                $cart->id_lang = (int) $context->language->id;
+                $cart->id_currency = (int) $context->currency->id;
+                $cart->id_shop_group = (int) $context->shop->id_shop_group;
+                $cart->id_shop = (int) $context->shop->id;
+                $cart->id_customer = (int) $context->customer->id;
+
+                if ($context->customer->id) {
+                    $cart->id_address_delivery = (int) Address::getFirstCustomerAddressId($cart->id_customer);
+                    $cart->id_address_invoice = (int) $cart->id_address_delivery;
+                } else {
+                    $cart->id_address_delivery = 0;
+                    $cart->id_address_invoice = 0;
+                }
+
+                if ($cart->add()) {
+                    // Panier créé avec succès, associez-le au contexte
+                    $context->cart = $cart;
+
+                    // Sauvegarde du panier dans la session
+                    $context->cookie->id_cart = (int) $cart->id;
+                    $context->cookie->write(); // Assurez-vous que le cookie est mis à jour
+
+                    // Application des règles de panier si nécessaire
+                    CartRule::autoRemoveFromCart($context);
+                    CartRule::autoAddToCart($context);
+                }
+            }
+            $updated = $context->cart->updateQty($quantity, $productId, $productAttributeId);
+            if ($updated) {
+                $module = Module::getInstanceByName('everblock');
+                $context->controller->success[] = $module->l('Product added to cart successfully');
+                $context->controller->redirectWithNotifications(
+                    $context->link->getPageLink('cart', true, null, ['action' => 'show'])
+                );
+            }
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog($e->getMessage());
+        }
+    }
+
+    public static function getAddToCartShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        // Expression régulière pour capturer le shortcode avec les paramètres 'ref' et optionnellement 'text'
+        $pattern = '/\[everaddtocart\s+ref="([^"]+)"(?:\s+text="([^"]+)")?\]/';
+
+        // Remplacement de chaque occurrence du shortcode par le lien add-to-cart
+        $txt = preg_replace_callback($pattern, function ($matches) use ($context, $module) {
+            $productReference = $matches[1];
+            $customText = isset($matches[2]) ? $matches[2] : $module->l('Add to cart'); // Texte par défaut
+            $idProduct = 0;
+            $idProductAttribute = 0;
+
+            // Rechercher la référence dans le produit principal
+            $idProduct = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
+                SELECT `id_product`
+                FROM `' . _DB_PREFIX_ . 'product`
+                WHERE `reference` = "' . pSQL($productReference) . '"
+            ');
+
+            // Si aucun produit trouvé, vérifier dans les déclinaisons (product_attribute)
+            if (!$idProduct) {
+                $result = Db::getInstance()->getRow('
+                    SELECT pa.`id_product`, pa.`id_product_attribute`
+                    FROM `' . _DB_PREFIX_ . 'product_attribute` pa
+                    WHERE pa.`reference` = "' . pSQL($productReference) . '"
+                ');
+
+                // Si une déclinaison est trouvée, récupérer son id_product et id_product_attribute
+                if ($result) {
+                    $idProduct = (int) $result['id_product'];
+                    $idProductAttribute = (int) $result['id_product_attribute'];
+                }
+            }
+            // Si aucun produit ni déclinaison n'est trouvé, on retourne une chaîne vide
+            if (!$idProduct) {
+                return ''; // Si aucun produit ou déclinaison n'est trouvé, ne rien afficher
+            }
+
+            // Construction de l'URL pour ajouter au panier
+            $link = $context->link->getPageLink('index', true, null, [
+                'eac' => $idProduct,
+                'id_product' => $idProduct,
+                'id_product_attribute' => $idProductAttribute, // 0 si pas de déclinaison
+                'qty' => 1 // Quantité par défaut
+            ]);
+
+            // Générer le lien HTML avec le texte personnalisé ou par défaut
+            return '<a href="' . $link . '" class="btn btn-primary ">' . htmlspecialchars($customText) . '</a>';
+        }, $txt);
+
         return $txt;
     }
 
@@ -168,14 +276,20 @@ class EverblockTools extends ObjectModel
     {
         $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
 
-        preg_match_all('/\[product\s+(\d+(?:,\s*\d+)*)\]/i', $txt, $matches, PREG_SET_ORDER);
+        // Update regex to capture optional carousel parameter
+        preg_match_all('/\[product\s+(\d+(?:,\s*\d+)*)(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
             $productIdsArray = array_map('intval', explode(',', $match[1]));
+            $carousel = isset($match[2]) && $match[2] === 'true';
             $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
             
             if (!empty($everPresentProducts)) {
-                $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                // Assign products and carousel flag to the template
+                $context->smarty->assign([
+                    'everPresentProducts' => $everPresentProducts,
+                    'carousel' => $carousel
+                ]);
                 $renderedContent = $context->smarty->fetch($templatePath);
                 
                 $txt = str_replace($match[0], $renderedContent, $txt);
@@ -183,6 +297,124 @@ class EverblockTools extends ObjectModel
         }
 
         return $txt;
+    }
+
+    public static function getFeatureProductShortcodes(string $txt, Context $context, Everblock $module): string
+    {
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+
+        // Mise à jour de la regex pour capturer les paramètres id, nb et carousel
+        preg_match_all('/\[productfeature\s+id=(\d+)\s+nb=(\d+)\s+carousel=(true|false)\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $featureId = intval($match[1]);
+            $productLimit = intval($match[2]);
+            $carousel = $match[3] === 'true';
+
+            // Rechercher les produits par caractéristique
+            $featureProducts = static::getProductsByFeature($featureId, $productLimit, $context);
+            $productIds = array_column($featureProducts, 'id_product');
+            $everPresentProducts = static::everPresentProducts($productIds, $context);
+            if (!empty($featureProducts)) {
+                // Assigner les produits et le flag carousel au template
+                $context->smarty->assign([
+                    'everPresentProducts' => $everPresentProducts,
+                    'carousel' => $carousel
+                ]);
+                $renderedContent = $context->smarty->fetch($templatePath);
+
+                $txt = str_replace($match[0], $renderedContent, $txt);
+            }
+        }
+
+        return $txt;
+    }
+
+    /**
+     * Méthode pour obtenir les produits en fonction de l'ID de la caractéristique et de la limite de produits.
+     */
+    protected static function getProductsByFeature(int $featureId, int $limit, Context $context)
+    {
+        $cacheId = 'everblock_getProductsByFeature_'
+        . (int) $featureId
+        . '_'
+        . (int) $limit
+        . '_'
+        . (int) $context->language->id;
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $sql = new DbQuery();
+            $sql->select('p.id_product');
+            $sql->from('product', 'p');
+            $sql->innerJoin('feature_product', 'fp', 'p.id_product = fp.id_product');
+            $sql->where('fp.id_feature = ' . (int) $featureId);
+            $sql->where('p.active = 1');
+            $sql->orderBy('p.date_add DESC');
+            $sql->limit($limit);
+
+            $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            EverblockCache::cacheStore($cacheId, $productIds);
+            return $productIds;
+        }
+        return EverblockCache::cacheRetrieve($cacheId);
+    }
+
+    public static function getFeatureValueProductShortcodes(string $txt, Context $context, Everblock $module): string
+    {
+        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+
+        // Mise à jour de la regex pour capturer les paramètres id, nb et carousel
+        preg_match_all('/\[productfeaturevalue\s+id=(\d+)\s+nb=(\d+)\s+carousel=(true|false)\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $featureId = intval($match[1]);
+            $productLimit = intval($match[2]);
+            $carousel = $match[3] === 'true';
+
+            // Rechercher les produits par caractéristique
+            $featureProducts = static::getProductsByFeatureValue($featureId, $productLimit, $context);
+            $productIds = array_column($featureProducts, 'id_product');
+            $everPresentProducts = static::everPresentProducts($productIds, $context);
+            if (!empty($featureProducts)) {
+                // Assigner les produits et le flag carousel au template
+                $context->smarty->assign([
+                    'everPresentProducts' => $everPresentProducts,
+                    'carousel' => $carousel
+                ]);
+                $renderedContent = $context->smarty->fetch($templatePath);
+
+                $txt = str_replace($match[0], $renderedContent, $txt);
+            }
+        }
+
+        return $txt;
+    }
+
+    /**
+     * Méthode pour obtenir les produits en fonction de l'ID de la caractéristique et de la limite de produits.
+     */
+    protected static function getProductsByFeatureValue(int $featureValueId, int $limit, Context $context)
+    {
+        $cacheId = 'everblock_getProductsByFeatureValue_'
+        . (int) $featureValueId
+        . '_'
+        . (int) $limit
+        . '_'
+        . (int) $context->language->id;
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $sql = new DbQuery();
+            $sql->select('p.id_product');
+            $sql->from('product', 'p');
+            $sql->innerJoin('feature_product', 'fp', 'p.id_product = fp.id_product');
+            $sql->where('fp.id_feature_value = ' . (int) $featureValueId);
+            $sql->where('p.active = 1');
+            $sql->orderBy('p.date_add DESC');
+            $sql->limit($limit);
+
+            $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            EverblockCache::cacheStore($cacheId, $productIds);
+            return $productIds;
+        }
+        return EverblockCache::cacheRetrieve($cacheId);
     }
 
     public static function getCategoryShortcodes(string $txt, Context $context, Everblock $module): string
@@ -229,10 +461,15 @@ class EverblockTools extends ObjectModel
     public static function getManufacturerShortcodes($message, $context, Everblock $module)
     {
         $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
-        preg_match_all('/\[manufacturer\s+id="(\d+)"\s+nb="(\d+)"\]/i', $message, $matches, PREG_SET_ORDER);
+
+        // Update regex to capture optional carousel parameter
+        preg_match_all('/\[manufacturer\s+id="(\d+)"\s+nb="(\d+)"(?:\s+carousel=(true|false))?\]/i', $message, $matches, PREG_SET_ORDER);
+
         foreach ($matches as $match) {
             $manufacturerId = (int) $match[1];
             $productCount = (int) $match[2];
+            $carousel = isset($match[3]) && $match[3] === 'true';
+
             $manufacturerProducts = static::getProductsByManufacturerId($manufacturerId, $productCount);
             if (!empty($manufacturerProducts)) {
                 $productIds = [];
@@ -240,11 +477,17 @@ class EverblockTools extends ObjectModel
                     $productIds[] = (int) $manufacturerProduct['id_product'];
                 }
                 $everPresentProducts = static::everPresentProducts($productIds, $context);
-                $context->smarty->assign('everPresentProducts', $everPresentProducts);
+
+                // Assign products and carousel flag to the template
+                $context->smarty->assign([
+                    'everPresentProducts' => $everPresentProducts,
+                    'carousel' => $carousel
+                ]);
                 $renderedHtml = $context->smarty->fetch($templatePath);
                 $message = str_replace($match[0], $renderedHtml, $message);
             }
         }
+
         return $message;
     }
 
@@ -601,37 +844,55 @@ class EverblockTools extends ObjectModel
 
     public static function getRandomProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
-        preg_match_all('/\[random_product\s+nb="(\d+)"\]/i', $txt, $matches);
-        foreach ($matches[1] as $match) {
-            $limit = (int) $match;
+        // Update regex to capture optional carousel parameter
+        preg_match_all('/\[random_product\s+nb="(\d+)"(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+        
+        foreach ($matches as $match) {
+            $limit = (int) $match[1];
+            $carousel = isset($match[2]) && $match[2] === 'true';
+
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
                     ORDER BY RAND()
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+
             if (!empty($productIds)) {
                 $productIdsArray = array_map(function($row) {
                     return (int) $row['id_product'];
                 }, $productIds);
-                $everPresentProducts = static::everPresentProducts($productIdsArray);
+
+                $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
+
                 if (!empty($everPresentProducts)) {
-                    $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                    // Assign products and carousel flag to the template
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel' => $carousel
+                    ]);
+
                     $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
                     $replacement = $context->smarty->fetch($templatePath);
-                    $shortcode = '[random_product nb="' . (int) $limit . '"]';
+
+                    $shortcode = '[random_product nb="' . (int) $limit . '"' . ($carousel ? ' carousel=true' : '') . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
         }
+
         return $txt;
     }
 
     public static function getLastProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
-        preg_match_all('/\[last-products\s+(\d+)\]/i', $txt, $matches);
-        foreach ($matches[1] as $match) {
-            $limit = (int) $match;
+        // Update regex to capture optional carousel parameter
+        preg_match_all('/\[last-products\s+(\d+)(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $limit = (int) $match[1];
+            $carousel = isset($match[2]) && $match[2] === 'true';
+
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
@@ -639,28 +900,42 @@ class EverblockTools extends ObjectModel
                     ORDER BY p.date_add DESC
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+
             if (!empty($productIds)) {
                 $productIdsArray = array_map(function($row) {
                     return (int) $row['id_product'];
                 }, $productIds);
-                $everPresentProducts = static::everPresentProducts($productIdsArray);
+
+                $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
+
                 if (!empty($everPresentProducts)) {
-                    $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                    // Assign products and carousel flag to the template
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel' => $carousel
+                    ]);
+
                     $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
                     $replacement = $context->smarty->fetch($templatePath);
-                    $shortcode = '[last-products ' . (int) $limit . ']';
+
+                    $shortcode = '[last-products ' . (int) $limit . ($carousel ? ' carousel=true' : '') . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
         }
+
         return $txt;
     }
 
     public static function getPromoProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
-        preg_match_all('/\[promo-products\s+(\d+)\]/i', $txt, $matches);
-        foreach ($matches[1] as $match) {
-            $limit = (int) $match;
+        // Update regex to capture optional carousel parameter
+        preg_match_all('/\[promo-products\s+(\d+)(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $limit = (int) $match[1];
+            $carousel = isset($match[2]) && $match[2] === 'true';
+
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
@@ -669,28 +944,42 @@ class EverblockTools extends ObjectModel
                     ORDER BY p.date_add DESC
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+
             if (!empty($productIds)) {
                 $productIdsArray = array_map(function($row) {
                     return (int) $row['id_product'];
                 }, $productIds);
-                $everPresentProducts = static::everPresentProducts($productIdsArray);
+
+                $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
+
                 if (!empty($everPresentProducts)) {
-                    $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                    // Assign products and carousel flag to the template
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel' => $carousel
+                    ]);
+
                     $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
                     $replacement = $context->smarty->fetch($templatePath);
-                    $shortcode = '[promo-products ' . (int) $limit . ']';
+
+                    $shortcode = '[promo-products ' . (int) $limit . ($carousel ? ' carousel=true' : '') . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
         }
+
         return $txt;
     }
 
     public static function getBestSalesShortcode(string $txt, Context $context, Everblock $module): string
     {
-        preg_match_all('/\[best-sales\s+(\d+)\]/i', $txt, $matches);
-        foreach ($matches[1] as $match) {
-            $limit = (int) $match;
+        // Update regex to capture optional carousel parameter
+        preg_match_all('/\[best-sales\s+(\d+)(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $limit = (int) $match[1];
+            $carousel = isset($match[2]) && $match[2] === 'true';
+
             $cacheId = 'getBestSalesShortcode_' . (int) $context->shop->id;
             if (!EverblockCache::isCacheStored($cacheId)) {
                 $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity
@@ -701,23 +990,34 @@ class EverblockTools extends ObjectModel
                         ORDER BY total_quantity DESC
                         LIMIT ' . (int) $limit;
                 $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+                EverblockCache::cacheStore($cacheId, $productIds);
             } else {
                 $productIds = EverblockCache::cacheRetrieve($cacheId);
             }
+
             if (!empty($productIds)) {
                 $productIdsArray = array_map(function($row) {
                     return (int) $row['product_id'];
                 }, $productIds);
-                $everPresentProducts = static::everPresentProducts($productIdsArray);
+
+                $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
+
                 if (!empty($everPresentProducts)) {
-                    $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                    // Assign products and carousel flag to the template
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel' => $carousel
+                    ]);
+
                     $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
                     $replacement = $context->smarty->fetch($templatePath);
-                    $shortcode = '[best-sales ' . (int) $limit . ']';
+
+                    $shortcode = '[best-sales ' . (int) $limit . ($carousel ? ' carousel=true' : '') . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
         }
+
         return $txt;
     }
 
@@ -1530,6 +1830,7 @@ class EverblockTools extends ObjectModel
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
         }
+        // LG Canonical URL
         $sql =
             'UPDATE ' . _DB_PREFIX_ . 'lgcanonicalurls_lang
             SET canonical_url =
@@ -1569,6 +1870,25 @@ class EverblockTools extends ObjectModel
         }
         if ((bool) EverblockCache::getModuleConfiguration('EVERPSCSS_CACHE') === true) {
             Tools::clearAllCache();
+        }
+        // GDPR
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'psgdpr_consent_lang
+            SET message =
+            REPLACE(
+                message,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                message,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'GDPR URL table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
         }
         return [
             'postErrors' => $postErrors,
@@ -1892,21 +2212,32 @@ class EverblockTools extends ObjectModel
         // Rechercher toutes les balises <img> dans le texte
         $pattern = '/<img\s+(?:[^>]*)src="([^"]*)"([^>]*)>/i';
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
+        
         // Parcourir les correspondances et ajouter la classe 'lazyload' et l'attribut 'loading="lazy"'
         foreach ($matches as $match) {
             $imageUrl = $match[1];
             $imageAttributes = $match[2];
-            // Vérifier si la balise <img> contient déjà la classe 'lazyload'
-            if (stripos($imageAttributes, 'class=') === false || stripos($imageAttributes, 'lazyload') === false) {
-                // Ajouter la classe 'lazyload' aux classes existantes
-                $imageAttributesWithLazyLoad = 'class="lazyload ' . $imageAttributes . '"';
+            
+            // Rechercher l'attribut class
+            if (preg_match('/class\s*=\s*"(.*?)"/i', $imageAttributes, $classMatch)) {
+                // Si l'attribut class existe, ajouter 'lazyload'
+                $newClassAttribute = 'class="' . trim($classMatch[1] . ' lazyload') . '"';
+                $imageAttributesWithLazyLoad = str_replace($classMatch[0], $newClassAttribute, $imageAttributes);
             } else {
-                $imageAttributesWithLazyLoad = $imageAttributes;
+                // Si l'attribut class n'existe pas, l'ajouter
+                $imageAttributesWithLazyLoad = 'class="lazyload" ' . trim($imageAttributes);
             }
+            
+            // Ajouter l'attribut loading="lazy"
+            if (stripos($imageAttributesWithLazyLoad, 'loading=') === false) {
+                $imageAttributesWithLazyLoad .= ' loading="lazy"';
+            }
+            
             // Construire la nouvelle balise <img> avec la classe 'lazyload' et l'attribut 'loading="lazy"'
-            $newTag = '<img src="' . $imageUrl . '" ' . $imageAttributesWithLazyLoad . ' loading="lazy">';
+            $newTag = '<img src="' . $imageUrl . '" ' . $imageAttributesWithLazyLoad . '>';
             $text = str_replace($match[0], $newTag, $text);
         }
+        
         return $text;
     }
 
@@ -2222,9 +2553,8 @@ class EverblockTools extends ObjectModel
         }
     }
 
-    public static function everPresentProducts(array $result): array
+    public static function everPresentProducts(array $result, Context $context): array
     {
-        $context = Context::getContext();
         $resultHash = md5(json_encode($result));
         $cacheId = 'everblock_everPresentProducts_'
         . (int) $context->shop->id
@@ -2719,14 +3049,37 @@ class EverblockTools extends ObjectModel
     public static function convertImagesToWebP($htmlContent)
     {
         // Regular expression to find img tags and their src attributes
-        $pattern = '/<img\s+[^>]*src="([^"]+)"[^>]*>/i';
+        $pattern = '/<img\s+([^>]*src="([^"]+)"[^>]*)>/i';
         $htmlContent = preg_replace_callback($pattern, function($matches) {
-            $src = $matches[1];
+            $imgTag = $matches[0];
+            $imgAttributes = $matches[1];
+            $src = $matches[2];
+
+            // Convert the image to WebP
             $webpSrc = self::convertToWebP($src);
+            
             if ($webpSrc) {
-                return str_replace($src, $webpSrc, $matches[0]);
+                // Replace the src with the new WebP src
+                $imgTag = str_replace($src, $webpSrc, $imgTag);
+
+                // Get the image dimensions, only if the image exists
+                $imagePath = self::urlToFilePath($webpSrc);
+                if (file_exists($imagePath)) {
+                    list($width, $height) = getimagesize($imagePath);
+
+                    // Add width and height attributes if they don't already exist
+                    if (strpos($imgAttributes, 'width=') === false && strpos($imgAttributes, 'height=') === false) {
+                        // Ensure the attributes are added properly
+                        $imgTag = str_replace('<img ', '<img width="' . $width . '" height="' . $height . '" ', $imgTag);
+                    } else {
+                        // Replace existing width and height attributes
+                        $imgTag = preg_replace('/width="\d*"/i', 'width="' . $width . '"', $imgTag);
+                        $imgTag = preg_replace('/height="\d*"/i', 'height="' . $height . '"', $imgTag);
+                    }
+                }
             }
-            return $matches[0]; // Return the original tag if conversion fails
+
+            return $imgTag;
         }, $htmlContent);
 
         return $htmlContent;
@@ -2740,13 +3093,13 @@ class EverblockTools extends ObjectModel
         } else {
             $imagePath = self::relativeToAbsolutePath($imagePath);
         }
+        $imagePath = str_replace(Tools::getHttpHost(true) . __PS_BASE_URI__, '', $imagePath);
 
         $pathInfo = pathinfo($imagePath);
         $webpPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.webp';
         if (file_exists($webpPath)) {
             return self::filePathToUrl($webpPath);
         }
-
         switch (strtolower($pathInfo['extension'])) {
             case 'jpeg':
             case 'jpg':
@@ -2778,16 +3131,67 @@ class EverblockTools extends ObjectModel
 
     private static function urlToFilePath($url)
     {
-        // Convert URL to a relative path
+        // Parse the current domain and the image URL
         $parsedUrl = parse_url($url);
-        $relativePath = $parsedUrl['path'];
-        return _PS_ROOT_DIR_ . $relativePath;
+        $currentDomain = Tools::getHttpHost(true) . __PS_BASE_URI__;
+
+        // Check if the image is hosted on a different domain
+        if (isset($parsedUrl['host']) && $parsedUrl['host'] !== $currentDomain) {
+            // Download the image and return the local file path
+            return self::downloadImage($url);
+        } else {
+            // Convert the URL path to a relative file path
+            $relativePath = urldecode($parsedUrl['path']);
+            return _PS_ROOT_DIR_ . $relativePath;
+        }
+    }
+
+    private static function downloadImage($url)
+    {
+        // Parse the URL to get the filename
+        $parsedUrl = parse_url($url);
+        $fileName = basename($parsedUrl['path']);
+
+        // Define the local path where the image will be saved
+        $localPath = _PS_ROOT_DIR_ . '/img/cms/' . $fileName;
+
+        // Download the image
+        $imageContents = file_get_contents($url);
+        if ($imageContents === false) {
+            return false; // Return false if the download failed
+        }
+
+        // Save the image to the local path
+        file_put_contents($localPath, $imageContents);
+
+        // Return the local path
+        return $localPath;
+    }
+
+    private static function encodeUrl($url)
+    {
+        $parsedUrl = parse_url($url);
+        if (!$parsedUrl) {
+            return $url;
+        }
+
+        // Encode the path to handle special characters
+        $encodedPath = implode('/', array_map('rawurlencode', explode('/', $parsedUrl['path'])));
+
+        // Rebuild the URL with the encoded path
+        $encodedUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $encodedPath;
+
+        if (isset($parsedUrl['query'])) {
+            $encodedUrl .= '?' . $parsedUrl['query'];
+        }
+
+        return $encodedUrl;
     }
 
     private static function filePathToUrl($filePath)
     {
         $relativePath = str_replace(_PS_ROOT_DIR_, '', $filePath);
-        return _PS_BASE_URL_ . __PS_BASE_URI__ . ltrim($relativePath, '/');
+        return Tools::getHttpHost(true) . __PS_BASE_URI__ . ltrim($relativePath, '/');
     }
 
     private static function relativeToAbsolutePath($relativePath)

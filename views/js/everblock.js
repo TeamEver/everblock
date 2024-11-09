@@ -16,6 +16,39 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 $(document).ready(function(){
+    $('.ever-slick-carousel:not(.slick-initialised)').slick({
+        infinite: false,
+        arrows: true,
+        dots: false,
+        slidesToShow: 4,
+        slidesToScroll: 1,
+        responsive: [{
+            breakpoint: 1024,
+            settings: {
+                slidesToShow: 3,
+                slidesToScroll: 1,
+                infinite: true,
+                dots: true
+            }
+        }, {
+            breakpoint: 600,
+            settings: {
+                slidesToShow: 2,
+                slidesToScroll: 1,
+                dots: true
+            }
+        }, {
+            breakpoint: 300,
+            settings: {
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                dots: true
+            }
+        }]
+    });
+    $('.ever-slick-carousel').on('setPosition', function(event, slick) {
+        $(slick.$slider).find('.slick-track').addClass('row');
+    });
     $('.ever_instagram img').on('click', function() {
         // Mettre à jour le src de l'image dans la modal
         var imageSrc = $(this).attr('src');

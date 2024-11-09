@@ -87,7 +87,7 @@ class EverblockTabsClass extends ObjectModel
         return $return;
     }
 
-    public static function getByIdProductIdTab(int $productId, int $shopId, int $tabId): object
+    public static function getByIdProductIdTab(int $productId, int $shopId, int $tabId)
     {
         $sql = new DbQuery();
         $sql->select(self::$definition['primary']);

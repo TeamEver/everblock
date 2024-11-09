@@ -54,7 +54,7 @@ class EverblockGpt extends ObjectModel
     }
 
     // returns text
-    public function createTextRequest($prompt, $model = 'gpt-3.5-turbo-instruct', $temperature = 0.5, $maxTokens = 1000)
+    public function createTextRequest($prompt, $model = 'gpt-4', $temperature = 0.5, $maxTokens = 1000)
     {
         curl_reset($this->curl);
         $this->initialize('text');

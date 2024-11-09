@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.2.1';
+        $this->version = '6.3.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -285,7 +285,8 @@ class Everblock extends Module
             }
             $tab->add();
         }
-
+        $this->registerHook('actionCmsPageFormBuilderModifier');
+        $this->registerHook('actionObjectCmsUpdateAfter');
         $this->registerHook('displayMaintenance');
         $this->registerHook('displayPDFInvoice');
         $this->registerHook('displayPDFDeliverySlip');        
@@ -416,6 +417,20 @@ class Everblock extends Module
                 $this->postErrors[] = $this->l('Products creation failed');
             }
         }
+        if ((bool) Tools::isSubmit('submitConvertCmsToPrettyBlocks') === true) {
+            $cmsPages = Db::getInstance()->executeS('
+                SELECT c.id_cms
+                FROM ' . _DB_PREFIX_ . 'cms c
+                INNER JOIN ' . _DB_PREFIX_ . 'cms_shop cs ON c.id_cms = cs.id_cms
+                WHERE cs.id_shop = ' . (int)$this->context->shop->id
+            );
+            foreach ($cmsPages as $cms) {
+                EverblockPrettyBlocks::convertSingleCmsToPrettyBlock(
+                    $this->context->shop->id,
+                    $cms['id_cms']
+                );
+            }
+        }
         if ((bool) Tools::isSubmit('submitMigrateUrls') === true
             && Tools::getValue('EVERPS_OLD_URL')
             && Tools::getValue('EVERPS_NEW_URL')
@@ -473,6 +488,7 @@ class Everblock extends Module
             );
         }
         $this->context->smarty->assign([
+            'module_name' => $this->displayName,
             $this->name . '_version' => $this->version,
             $this->name . '_dir' => $this->_path,
             'block_admin_link' => $blockAdminLink,
@@ -716,6 +732,26 @@ class Everblock extends Module
                     ],
                     [
                         'type' => 'switch',
+                        'label' => $this->l('Enable slick slider scripts ?'),
+                        'desc' => $this->l('Set yes to enable slick scripts for carousels'),
+                        'hint' => $this->l('Else carousels wont work'),
+                        'name' => 'EVERBLOCK_USE_SLICK',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => true,
+                                'label' => $this->l('Yes'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => false,
+                                'label' => $this->l('No'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
                         'label' => $this->l('Extends TinyMCE on blocks management ?'),
                         'desc' => $this->l('Set yes to extends TinyMCE on blocs management'),
                         'hint' => $this->l('Else TinyMCE will be default'),
@@ -905,6 +941,28 @@ class Everblock extends Module
                 ],
             ],
         ];
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            $formFields[] = [
+                'form' => [
+                    'legend' => [
+                        'title' => $this->l('Convert CMS to Pretty Blocks'),
+                        'icon' => 'icon-smile',
+                    ],
+                    'buttons' => [
+                        'convertCmsToPrettyBlocks' => [
+                            'name' => 'submitConvertCmsToPrettyBlocks',
+                            'type' => 'submit',
+                            'class' => 'btn btn-default pull-right',
+                            'icon' => 'process-icon-download',
+                            'title' => $this->l('Convert CMS to Prettyblocks'),
+                        ],
+                    ],
+                ],
+            ];
+        }
         return $formFields;
     }
 
@@ -931,6 +989,7 @@ class Everblock extends Module
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
+            'EVERBLOCK_USE_SLICK' => Configuration::get('EVERBLOCK_USE_SLICK'),
             'EVERPSCSS' => $custom_css,
             'EVERPSSASS' => $custom_sass,
             'EVERPSJS' => $custom_js,
@@ -982,6 +1041,11 @@ class Everblock extends Module
                 $this->postErrors[] = $this->l(
                     'Error : The field "Extends TinyMCE" is not valid'
                 );
+            }
+            if (Tools::getValue('EVERPS_FEATURES_AS_FLAGS')
+                && !Validate::isArrayWithIds(Tools::getValue('EVERPS_FEATURES_AS_FLAGS'))
+            ) {
+                $this->postErrors[] = $this->l('Error: selected features are not valid');
             }
         }
     }
@@ -1074,6 +1138,10 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_USE_OBF',
             Tools::getValue('EVERBLOCK_USE_OBF')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_USE_SLICK',
+            Tools::getValue('EVERBLOCK_USE_SLICK')
         );
         file_put_contents(
             $custom_css,
@@ -1256,6 +1324,52 @@ class Everblock extends Module
                 && Tools::getValue('configure') != $this->name
             ) {
                 $this->context->controller->addJs($this->_path . 'views/js/adminTinyMce.js');
+            }
+        }
+    }
+
+    public function hookActionCmsPageFormBuilderModifier($params)
+    {
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            $this->registerHook('actionRegisterBlock');
+            /** @var FormBuilderInterface $formBuilder */
+            $formBuilder = $params['form_builder'];
+
+            $id_object = $params['id']; // Récupérer l'ID de la page CMS en cours
+
+            // Ajout d'un switch On/Off pour la conversion en PrettyBlocks
+            $formBuilder->add('convert_to_prettyblock', \Symfony\Component\Form\Extension\Core\Type\CheckboxType::class, [
+                'label' => $this->l('Convert to PrettyBlocks'),
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-switch', // Classe CSS pour styliser le switch
+                ],
+            ]);
+        }
+    }
+
+    public function hookActionObjectCmsUpdateAfter($params)
+    {
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            $this->registerHook('actionRegisterBlock');
+            /** @var CMS $cms */
+            $cms = $params['object'];
+            $cmsPage = Tools::getValue('cms_page');
+            // Récupérer la valeur du switch depuis le formulaire
+            $convertToPrettyBlock = (bool) $cmsPage['convert_to_prettyblock'];
+            // Si l'option est activée, déclencher la méthode de conversion
+            if ($convertToPrettyBlock === true) {
+                // Récupérer l'ID du shop en cours
+                $id_shop = $this->context->shop->id;
+
+                // Appeler la méthode pour convertir la page CMS en PrettyBlock
+                EverblockPrettyBlocks::convertSingleCmsToPrettyBlock($id_shop, (int)$cms->id);
             }
         }
     }
@@ -1918,7 +2032,7 @@ class Everblock extends Module
             $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
             if ($everpsflags && !empty($everpsflags)) {
                 foreach ($everpsflags as $everpsflag) {
-                    if (Validate::isLoadedObject($everpsflag)) {
+                    if (Validate::isLoadedObject($everpsflag) && $everpsflag->title && $everpsflag->content) {
                         $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
                             'type' => 'custom-flag ' . $everpsflag->title,
                             'label' => strip_tags($everpsflag->content),
@@ -1929,7 +2043,7 @@ class Everblock extends Module
             // Product features as flags
             $bannedFeatures = $this->getFeaturesAsFlags();
             $features = $this->getFeatures($productId);
-            if (!empty($features)) {
+            if (!empty($features) && !empty($bannedFeatures)) {
                 foreach ($features as $feature) {
                     if (in_array($feature['id_feature'], $bannedFeatures)) {
                         $params['flags'][] = array(
@@ -1951,34 +2065,34 @@ class Everblock extends Module
 
     protected function getFeatures($productId)
     {
-        $cacheId = $this->name . '::getFeatures_' . (int) $productId;
-        if (!Cache::isStored($cacheId)) {
+        $cacheId = $this->name . '_getFeatures_' . (int) $productId;
+        if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = 'SELECT fp.id_feature, fv.value
                     FROM ' . _DB_PREFIX_ . 'feature_product fp
                     JOIN ' . _DB_PREFIX_ . 'feature_value_lang fv ON fp.id_feature_value = fv.id_feature_value
-                    WHERE fp.id_product = ' . (int)$productId . '
-                    AND fv.id_lang = ' . (int)$this->context->language->id;
+                    WHERE fp.id_product = ' . (int) $productId . '
+                    AND fv.id_lang = ' . (int) $this->context->language->id;
             $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            Cache::store($cacheId, $result);
+            EverblockCache::cacheStore($cacheId, $result);
             return $result;
         }
-        return Cache::retrieve($cacheId);
+        return EverblockCache::cacheRetrieve($cacheId);
     }
 
     protected function getFeaturesAsFlags()
     {
-        $cacheId = $this->name . '::getFeaturesAsFlags_' . (int) $this->context->shop->id;
-        if (!Cache::isStored($cacheId)) {
+        $cacheId = $this->name . '_getFeaturesAsFlags_' . (int) $this->context->shop->id;
+        if (!EverblockCache::isCacheStored($cacheId)) {
             $bannedFeatures = Configuration::get('EVERPS_FEATURES_AS_FLAGS');
             if (!$bannedFeatures) {
                 $bannedFeatures = [];
             } else {
                 $bannedFeatures = json_decode($bannedFeatures);
             }
-            Cache::store($cacheId, $bannedFeatures);
+            EverblockCache::cacheStore($cacheId, $bannedFeatures);
             return $bannedFeatures;
         }
-        return Cache::retrieve($cacheId);
+        return EverblockCache::cacheRetrieve($cacheId);
     }
 
     public function hookDisplayProductExtraContent($params)
@@ -2346,6 +2460,16 @@ class Everblock extends Module
 
     public function hookDisplayHeader()
     {
+        if (Tools::getValue('eac')
+            && Validate::isInt(Tools::getValue('eac'))
+        ) {
+            EverblockTools::addToCartByUrl(
+                $this->context,
+                (int) Tools::getValue('id_product'),
+                (int) Tools::getValue('id_product_attribute'),
+                (int) Tools::getValue('qty')
+            );
+        }
         $idShop = (int) $this->context->shop->id;
         // Register your CSS file
         $this->context->controller->registerStylesheet(
@@ -2353,6 +2477,26 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/css/' . $this->name . '.css',
             ['media' => 'all', 'priority' => 200, 'version' => $this->version]
         );
+        if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_SLICK') === true) {
+            $this->context->controller->registerStylesheet(
+                'module-slick-min-css',
+                'modules/' . $this->name . '/views/css/slick-min.css',
+                ['media' => 'all', 'priority' => 200, 'version' => $this->version]
+            );
+            // $this->context->controller->registerStylesheet(
+            //     'module-slick-theme-min-css',
+            //     'modules/' . $this->name . '/views/css/slick-theme-min.css',
+            //     ['media' => 'all', 'priority' => 200, 'version' => $this->version]
+            // );
+            $this->context->controller->registerJavascript(
+                'module-slick-min-js',
+                'modules/' . $this->name . '/views/js/slick-min.js',
+                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+            );
+            Media::addJsDef([
+                'everblock_slick' => true,
+            ]);
+        }
         $this->context->controller->registerJavascript(
             'module-' . $this->name . '-js',
             'modules/' . $this->name . '/views/js/' . $this->name . '.js',

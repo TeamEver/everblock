@@ -35,7 +35,7 @@ class AdminEverBlockFaqController extends ModuleAdminController
         $this->className = 'EverblockFaq';
         $this->context = Context::getContext();
         $this->identifier = 'id_everblock_faq';
-        $this->name = 'AdminEverBlockShortcode';
+        $this->name = 'AdminEverFaq';
         EverblockTools::checkAndFixDatabase();
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
@@ -284,7 +284,9 @@ class AdminEverBlockFaqController extends ModuleAdminController
                 if (!Tools::getValue('content_' . $language['id_lang'])) {
                     $this->errors[] = $this->l('Content is missing for lang ') . $language['id_lang'];
                 } else {
-                    $everblock_obj->content[$language['id_lang']] = Tools::getValue('content_' . $language['id_lang']);
+                    $originalContent = Tools::getValue($contentKey);
+                    $convertedContent = EverblockTools::convertImagesToWebP($originalContent);
+                    $everblock_obj->content[$language['id_lang']] = $convertedContent;
                 }
                 if (!Tools::getValue('title_' . $language['id_lang'])) {
                     $this->errors[] = $this->l('Title is missing for lang ') . $language['id_lang'];
@@ -367,7 +369,7 @@ class AdminEverBlockFaqController extends ModuleAdminController
         $newObj->content = $oldObj->content;
 
         if (!$newObj->save()) {
-            $this->errors[] = $this->l('An error has occurred: Can\'t delete the current object');
+            $this->errors[] = $this->l('An error has occurred: Can\'t duplicate the current object');
         }
     }
 }

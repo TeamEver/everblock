@@ -87,7 +87,7 @@ class EverblockFlagsClass extends ObjectModel
         return $return;
     }
 
-    public static function getByIdProductIdFlag(int $productId, int $shopId, int $flagId): object
+    public static function getByIdProductIdFlag(int $productId, int $shopId, int $flagId)
     {
         $sql = new DbQuery();
         $sql->select(self::$definition['primary']);

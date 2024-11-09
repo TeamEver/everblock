@@ -136,3 +136,11 @@
 .nav-tabs .nav-item{
     list-style-type: none;
 }
+#everblockModal button.close{
+    float: right;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    -webkit-appearance: none;
+}

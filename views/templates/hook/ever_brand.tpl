@@ -17,7 +17,7 @@
 *}
 {if isset($brands) && $brands}
   <section class="featured-brands clearfix mt-3">
-    <div class="brands row owl-carousel">
+    <div class="brands row ever-slick-carousel">
       {foreach from=$brands item=brand}
         <div class="col-md-3 mb-3">
           <a href="{$brand.url|escape:'htmlall':'UTF-8'}" title="{$brand.name|escape:'htmlall':'UTF-8'}" class="brand-link">

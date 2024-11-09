@@ -1231,6 +1231,7 @@ class AdminEverBlockController extends ModuleAdminController
                 $originalContent = Tools::getValue($contentKey);
                 $convertedContent = EverblockTools::convertImagesToWebP($originalContent);
                 $everblock_obj->content[$language['id_lang']] = $convertedContent;
+                $everblock_obj->custom_code[$language['id_lang']] = Tools::getValue('custom_code_' . $language['id_lang']);
             }
             if (!count($this->errors)) {
                 try {
@@ -1323,7 +1324,7 @@ class AdminEverBlockController extends ModuleAdminController
         $newBlock->position = $everBlock->position;
 
         if (!$newBlock->save()) {
-            $this->errors[] = $this->l('An error has occurred: Can\'t delete the current object');
+            $this->errors[] = $this->l('An error has occurred: Can\'t duplicate the current object');
         }
     }
 
