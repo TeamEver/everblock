@@ -16,12 +16,12 @@ Dev documentation show every native Prestashop hook :
 [Prestashop 1.7 hook list](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
 Please check ps_hook table on your database to see every available hook on your shop. Only display hooks are used with this module
 
-## Prestashop 1.6 
-The module having greatly evolved, it is no longer compatible with Prestashop 1.6 in favor of Prestashop 8
-Please update your store to benefit from the new features and advantages of the latest version of the EverBlock HTML block module.
-
 ## Pretty Blocks compatibility
-This module is now compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
+This module is compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
+
+
+## QCD ACF compatibility
+This module is compatible with the QCD ACF module developed by the 410 Gone agency. The QCD ACF module allows you to add custom fields to products, categories, brands, suppliers, characteristics, etc. [You can contact the 410 Gone agency from their website to obtain the QCD ACF module.](https://www.410-gone.fr/e-commerce/prestashop.html)
 
 ## Smarty Variables
 
@@ -64,7 +64,11 @@ This module is now compatible with the Pretty Blocks page builder. [Find this fr
 - `$urls.pic_url`: URL of the /upload directory.
 
 ## Shortcodes
+The module allows you to use many shortcodes anywhere in your store. However, restrictions may be in place, such as not allowing a hook shortcode or store locator to be used in a modal.
 
+You can create your own shortcodes from the "Shortcodes" tab accessible in the "Ever block" submenu.
+
+### Basic shortcodes
 - `[product 1]`: Display product with ID 1.
 - `[product 1,2,3]`: Display products with IDs 1, 2, and 3.
 - `[entity_lastname]`: Display customer's last name.
@@ -95,3 +99,67 @@ This module is now compatible with the Pretty Blocks page builder. [Find this fr
 - `[everfaq tag="faq1"]`: Shows FAQs related to the faq tag
 - `[productfeature id="2" nb="12" carousel="true"]`: Displays 12 products with the ID 2 feature, in the form of a carousel (the carousel is optional, you must have slick slider by activating it in the module configuration)
 - `[productfeaturevalue id="2" nb="12" carousel="true"]`: Same as before, but this time concerns products that have the characteristic value id 2
+- `[promo-products 10 carousel=true]`: Displays ten products on sale in a carousel format (slick slider must be present in your theme or enabled in the module configuration)
+- `[best-sales 10 carousel=true]`: Displays the top ten best-selling products in a carousel format (slick slider must be present in your theme or enabled in the module configuration)
+- `[random_product nb="10" carousel=true]`: Displays the ten random products in a carousel format (slick slider must be present in your theme or enabled in the module configuration)
+- `{hook h='displayHome'}`: Displays the displayHome hook (hooks are not allowed on modals)
+
+### Contact form shortcodes
+A contact form must start with the shortcode `[evercontactform_open]` and end with the shortcode `[evercontactform_close]`
+
+- `[evercontact type="text" label="Your name"]` to display a text input field with the label "Your name"
+- `[evercontact type="number" label="Your age"]` to display a numeric input field with the label "Your age"
+- `[evercontact type="textarea" label="Message"]` to display a textarea input field with the label "Message"
+- `[evercontact type="select" label="You are" values="Man,Woman,Other"]` to display a select field with the label "You are" and the options "Man, Woman, Other"
+- `[evercontact type="radio" label="You are" values="Man,Woman,Other"]` is the same as select, but using radio buttons instead of select
+- `[evercontact type="checkbox" label="You are" values="Man,Woman,Other"]` is the same as select, but using checkboxes instead of select
+- `[evercontact type="file" label="Attachment"]` to display a file upload field
+- `[evercontact type="hidden" label="Hidden field"]` to display a hidden field that will have the label and value "Hidden field"
+- `[evercontact type="sento" label="me@email.fr"]` to display the recipient's email in a coded way. The recipient's email will not be clearly displayed on the pages. Not using this means sending the email to the email address defined in your store by default. You can specify multiple emails by separating them with commas. Be sure to use the EI Captcha module to secure email sending.
+- `[evercontact type="submit" label="Submit"]` to display a submit button for your custom contact form
+
+No emails are saved on your store.
+A contact form can be added in a block used as a modal.
+
+### Order funnel form shortcodes
+To use the form in the order tunnel, you must first create the new step in the module configuration.
+
+A form for the new order funnel step must be put on the `displayEverblockExtraOrderStep` hook. Therefore, you can create a new block, set it on the `displayEverblockExtraOrderStep` hook and add these shortcodes below.
+
+Please make sure that the title of the new order step is set in the module configuration.
+
+A form for the new order funnel step must start with the shortcode `[everorderform_open]` and end with the shortcode `[everorderform_close]`
+
+You can add the following fields between these two shortcodes:
+`[everorderform type="text" label="Your name"]` to display a text input field with the label "Your name"
+`[everorderform type="number" label="Your age"]` to display a numeric input field with the label "Your age"
+`[everorderform type="textarea" label="Message"]` to display a textarea input field with the label "Message"
+`[everorderform type="select" label="You are" values="Man,Woman,Other"]` to display a select field with the label "You are" and the options "Man, Woman, Other"
+`[everorderform type="radio" label="You are" values="Man,Woman,Other"]` is the same as select, but using radio buttons instead of select
+`[everorderform type="checkbox" label="You are" values="Man,Woman,Other"]` is the same as select, but using checkboxes instead of select
+`[everorderform type="hidden" label="Hidden field"]` to display a hidden field which will have the label and value "Hidden field"
+
+The choices made in the form of the additional step of the order tunnel will be displayed in invoices, delivery notes, in the order confirmation page and in the order administration page.
+
+## FAQ Management
+FAQs are grouped using tags. All FAQs with exactly the same tags will be grouped together when you enter the shortcode.
+
+For example, the shortcode `[everfaq tag="faq1"]` will display all FAQs with the tag "faq1".
+
+You can determine the order of FAQs within a tag by specifying a position for them.
+
+## Blocks Management
+An HTML block is grafted onto a hook. You can determine the customer group(s) concerned by the block, as well as the type of device (smartphone, tablet, computer).
+
+Settings allow you to add conditions on the display of these blocks, such as:
+- display the block only on the home page
+- display the block only on category pages, with a selection of the categories concerned
+- display the block only on product sheets, with a selection of product categories concerned
+- display the block only on brand pages, with a selection of the brands concerned
+- display the block only on supplier pages, with a selection of the suppliers concerned
+
+Obfuscation settings will help you improve your SEO, the obfuscation script can be disabled in the module configuration.
+
+Make sure that the hook used in the block matches the criteria of the settings of this block, so as to guarantee its display.
+
+Each block can be converted to a modal and can have shortcodes in its content (except hook and store locator shortcodes). You can therefore create contact forms in a modal.
