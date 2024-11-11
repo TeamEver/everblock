@@ -23,9 +23,6 @@ Please update your store to benefit from the new features and advantages of the 
 ## Pretty Blocks compatibility
 This module is now compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
 
-## Documentation (French only)
-Available at https://www.team-ever.com/prestashop-utilisation-du-module-ever-block-html/
-
 ## Smarty Variables
 
 - `$currency.name`: The name of the currency (euro, dollar, pound sterling, etc.).
@@ -94,4 +91,7 @@ Available at https://www.team-ever.com/prestashop-utilisation-du-module-ever-blo
 - `[evercontact]`: Display PrestaShop native contact form.
 - `[everstore 4]`: Display store information id 1.
 - `[video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj]`: Display a YouTube iframe of the video whose sharing URL is in the parameter (may also works with Vimeo, Dailymotion, and Vidyard).
-
+- `[everaddtocart ref="1234" text="Add me to cart"]`: Creates an add to cart button for product reference 1234 with the text "Add me to cart". By clicking on the link, the product will be automatically added to the cart and the user will be redirected directly to the cart page. Also works in emails.
+- `[everfaq tag="faq1"]`: Shows FAQs related to the faq tag
+- `[productfeature id="2" nb="12" carousel="true"]`: Displays 12 products with the ID 2 feature, in the form of a carousel (the carousel is optional, you must have slick slider by activating it in the module configuration)
+- `[productfeaturevalue id="2" nb="12" carousel="true"]`: Same as before, but this time concerns products that have the characteristic value id 2
