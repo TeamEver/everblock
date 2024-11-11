@@ -163,3 +163,13 @@ Obfuscation settings will help you improve your SEO, the obfuscation script can 
 Make sure that the hook used in the block matches the criteria of the settings of this block, so as to guarantee its display.
 
 Each block can be converted to a modal and can have shortcodes in its content (except hook and store locator shortcodes). You can therefore create contact forms in a modal.
+
+## Cache & logs
+
+The module uses its own cache system in addition to the Prestashop one.
+
+The cache directory is located in /var/cache/dev?prod/everblock/
+
+The logs directory is located in /var/logs/
+
+Clearing the native Prestashop cache will also clear the module cache, but the module will clear its own cache on a block expiry automatically.
