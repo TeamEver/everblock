@@ -3148,6 +3148,7 @@ class EverblockTools extends ObjectModel
 
     private static function downloadImage($url)
     {
+        $url = str_replace(' ', '%20', $url);
         // Parse the URL to get the filename
         $parsedUrl = parse_url($url);
         $fileName = basename($parsedUrl['path']);
