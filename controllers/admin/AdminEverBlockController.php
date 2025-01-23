@@ -33,6 +33,9 @@ class AdminEverBlockController extends ModuleAdminController
         $this->context = Context::getContext();
         $this->identifier = 'id_everblock';
         $this->name = 'AdminEverBlockController';
+        $this->position_identifier = 'id_everblock';
+        $this->allow_export = true;
+        
         EverblockTools::checkAndFixDatabase();
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
@@ -42,88 +45,113 @@ class AdminEverBlockController extends ModuleAdminController
             'module_link' => $module_link,
             'everblock_dir' => _MODULE_DIR_ . '/everblock/',
         ]);
-        $this->_select = 'h.title AS hname';
 
-        $this->_join = 'LEFT JOIN `' . _DB_PREFIX_ . 'hook` h
-        ON (
-            h.`id_hook` = a.`id_hook`
-        )';
+        $this->_select = 'a.*, h.title AS hname, CONCAT(h.title, LPAD(a.position, 10, "0")) as sort_key';
+        $this->_join = 'LEFT JOIN `' . _DB_PREFIX_ . 'hook` h ON (h.`id_hook` = a.`id_hook`)';
+        $this->_orderBy = 'sort_key';
+        $this->_orderWay = 'ASC';
+        $this->_where = 'AND a.id_shop = ' . (int) $this->context->shop->id;
+
         $this->fields_list = [
             'id_everblock' => [
                 'title' => $this->l('ID'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true
             ],
             'name' => [
                 'title' => $this->l('Name'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true
             ],
             'hname' => [
                 'title' => $this->l('Hook'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true
             ],
             'position' => [
                 'title' => $this->l('Position'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true
             ],
             'only_home' => [
                 'title' => $this->l('Home only'),
                 'align' => 'left',
                 'width' => 'auto',
                 'type' => 'bool',
+                'search' => true,
+                'orderby' => true
             ],
             'only_category' => [
                 'title' => $this->l('Category only'),
                 'align' => 'left',
                 'width' => 'auto',
                 'type' => 'bool',
+                'search' => true,
+                'orderby' => true
             ],
             'only_manufacturer' => [
                 'title' => $this->l('Manufacturer only'),
                 'align' => 'left',
                 'width' => 'auto',
                 'type' => 'bool',
+                'search' => true,
+                'orderby' => true
             ],
             'only_supplier' => [
                 'title' => $this->l('Supplier only'),
                 'align' => 'left',
                 'width' => 'auto',
                 'type' => 'bool',
+                'search' => true,
+                'orderby' => true
             ],
             'only_cms_category' => [
                 'title' => $this->l('CMS category only'),
                 'align' => 'left',
                 'width' => 'auto',
                 'type' => 'bool',
+                'search' => true,
+                'orderby' => true
             ],
             'date_start' => [
                 'title' => $this->l('Date start'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true
             ],
             'date_end' => [
                 'title' => $this->l('Date end'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true
             ],
             'modal' => [
                 'title' => $this->l('Is modal'),
                 'align' => 'left',
                 'width' => 'auto',
                 'type' => 'bool',
+                'search' => true,
+                'orderby' => true
             ],
             'active' => [
                 'title' => $this->l('Status'),
                 'type' => 'bool',
                 'active' => 'status',
-                'orderby' => false,
-                'class' => 'fixed-width-sm',
+                'orderby' => true,
+                'search' => true,
+                'class' => 'fixed-width-sm'
             ],
         ];
-        $this->_where = 'AND a.id_shop =' . (int) $this->context->shop->id;
         $this->colorOnBackground = true;
         EverblockTools::checkAndFixDatabase();
         parent::__construct();
@@ -1046,6 +1074,12 @@ class AdminEverBlockController extends ModuleAdminController
 
     public function postProcess()
     {
+        parent::postProcess();
+        
+        if (Tools::isSubmit('submitFilter'.$this->table)) {
+            $this->processFilter();
+        }
+        
         if (Tools::getIsset('duplicate' . $this->table)) {
             $this->duplicate(
                 (int)Tools::getValue($this->identifier)
@@ -1361,6 +1395,32 @@ class AdminEverBlockController extends ModuleAdminController
         }
     }
 
+    public function processFilter()
+    {
+        $prefix = $this->getCookieFilterPrefix();
+        
+        foreach ($this->fields_list as $field => $values) {
+            $value = Tools::getValue($this->table.'Filter_'.$field);
+            
+            if ($value !== false && !empty($value)) {
+                $this->context->cookie->{$prefix.$field} = $value;
+            } elseif ($value !== false) {
+                unset($this->context->cookie->{$prefix.$field});
+            }
+        }
+        
+        $filters = Tools::getValue($this->table.'Filter_');
+        if (is_array($filters) && count($filters)) {
+            foreach ($filters as $field => $value) {
+                if ($value !== false && !empty($value)) {
+                    $this->context->cookie->{$prefix.$field} = $value;
+                } elseif ($value !== false) {
+                    unset($this->context->cookie->{$prefix.$field});
+                }
+            }
+        }
+    }
+
     /**
      * Return Hooks List.
      * @param bool $position
@@ -1387,5 +1447,31 @@ class AdminEverBlockController extends ModuleAdminController
             $return[] = $hook;
         }
         return $return;
+    }
+
+    public function getList($id_lang, $order_by = null, $order_way = null, $start = 0, $limit = null, $id_lang_shop = false)
+    {
+        if (empty($order_by)) {
+            $order_by = $this->_orderBy;
+        }
+        if (empty($order_way)) {
+            $order_way = $this->_orderWay;
+        }
+
+        if (Tools::getValue($this->table.'Orderby')) {
+            $order_by = Tools::getValue($this->table.'Orderby');
+        }
+        if (Tools::getValue($this->table.'Orderway')) {
+            $order_way = Tools::getValue($this->table.'Orderway');
+        }
+
+        // Dodaj sortowanie po position jako drugorzędne
+        if ($order_by === 'hname') {
+            $this->_orderBy = 'hname, position';
+        } else {
+            $this->_orderBy = $order_by;
+        }
+
+        parent::getList($id_lang, $order_by, $order_way, $start, $limit, $id_lang_shop);
     }
 }
