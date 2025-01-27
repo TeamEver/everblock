@@ -16,9 +16,9 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($storeInfos) && $storeInfos}
-  <section class="featured-store clearfix mt-3">
+  <section class="featured-store clearfix mt-3 row justify-content-center">
     {foreach $storeInfos item=store}
-      <div class="col-12 col-md-4 store-{$store.id_store}">
+      <div class="col-xs-12 col-md-4 store-{$store.id_store}">
         <div class="card">
           <img src="{$store.image_link}" alt="{$store.name}" class="card-img-top lazyload" loading="lazy">
           <div class="card-body text-center">
