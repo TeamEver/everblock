@@ -39,6 +39,7 @@ use Db;
 use Product;
 use Language;
 use Module;
+use Validate;
 use EverblockTools;
 use EverblockCache;
 
@@ -57,6 +58,7 @@ class ExecuteAction extends Command
         'droplogs',
         'refreshtokens',
         'securewithapache',
+        'saveproducts',
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -229,6 +231,35 @@ class ExecuteAction extends Command
             $output->writeln('<comment>Inline styles have been removed from all products</comment>');
             return self::SUCCESS;
         }
+    if ($action === 'saveproducts') {
+        $output->writeln('<comment>Start saving all products in the shop</comment>');
+
+        $sql = new DbQuery();
+        $sql->select('id_product');
+        $sql->from('product_shop');
+        $sql->where('id_shop = ' . (int) $shop->id);
+
+        $results = Db::getInstance()->executeS($sql);
+
+        foreach ($results as $result) {
+            $product = new Product((int) $result['id_product']);
+
+            if (!Validate::isLoadedObject($product)) {
+                $output->writeln('<warning>Product with ID ' . (int) $result['id_product'] . ' not found</warning>');
+                continue;
+            }
+
+            try {
+                $product->save();
+                $output->writeln('<success>Product ' . $product->id . ' has been saved successfully</success>');
+            } catch (Exception $e) {
+                $output->writeln('<warning>Failed to save product ' . $product->id . ': ' . $e->getMessage() . '</warning>');
+            }
+        }
+
+        $output->writeln('<comment>All products have been processed</comment>');
+        return self::SUCCESS;
+    }
         return self::ABORTED;
     }
 
