@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.3.2';
+        $this->version = '6.3.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -806,6 +806,13 @@ class Everblock extends Module
                         'name' => 'EVERPSJS_LINKS',
                     ],
                     [
+                        'type' => 'textarea',
+                        'label' => $this->l('Header scripts'),
+                        'desc' => $this->l('Add here your custom header scripts'),
+                        'hint' => $this->l('Header scripts like Clarity can be added here'),
+                        'name' => 'EVERPS_HEADER_SCRIPTS',
+                    ],
+                    [
                         'type' => 'select',
                         'class' => 'chosen',
                         'multiple' => true,
@@ -978,6 +985,12 @@ class Everblock extends Module
         $custom_js = Tools::file_get_contents(
             _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js'
         );
+        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts.js';
+        if (file_exists($filePath) && filesize($filePath) > 0) {
+            $headerScripts = file_get_contents($filePath);
+        } else {
+            $headerScripts = '';
+        }
         return [
             'EVEROPTIONS_POSITION' => Configuration::get('EVEROPTIONS_POSITION'),
             'EVEROPTIONS_TITLE' => $this->getConfigInMultipleLangs('EVEROPTIONS_TITLE'),
@@ -995,6 +1008,7 @@ class Everblock extends Module
             'EVERPSJS' => $custom_js,
             'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
             'EVERPSJS_LINKS' => Configuration::get('EVERPSJS_LINKS'),
+            'EVERPS_HEADER_SCRIPTS' => $headerScripts,
             'EVERPS_FEATURES_AS_FLAGS[]' => json_decode(Configuration::get('EVERPS_FEATURES_AS_FLAGS')),
             'EVERPS_DUMMY_NBR' => Configuration::get('EVERPS_DUMMY_NBR'),
             'EVERPSCSS_P_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_P_LLOREM_NUMBER'),
@@ -1171,6 +1185,9 @@ class Everblock extends Module
                 'EVEROPTIONS_TITLE_' . $lang['id_lang']
             ) : '';
         }
+        $headerScripts = Tools::getValue('EVERPS_HEADER_SCRIPTS');
+        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts.js';
+        file_put_contents($filePath, $headerScripts);
         Configuration::updateValue(
             'EVERPS_FEATURES_AS_FLAGS',
             json_encode(Tools::getValue('EVERPS_FEATURES_AS_FLAGS')),
@@ -2612,6 +2629,10 @@ class Everblock extends Module
                 ]
             ),
         ]);
+        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts.js';
+        if (file_exists($filePath) && filesize($filePath) > 0) {
+            return PHP_EOL . file_get_contents($filePath) . PHP_EOL;
+        }
     }
 
     public function hookActionRegisterBlock($params)
