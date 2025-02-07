@@ -264,7 +264,7 @@ class EverblockTools extends ObjectModel
         foreach ($matches as $match) {
             // Charger et rendre le contenu du template
             $renderedContent = $context->smarty->fetch($templatePath);
-            
+
             // Remplacer chaque occurrence du shortcode par le contenu rendu du template
             $txt = str_replace($match[0], $renderedContent, $txt);
         }
@@ -283,7 +283,7 @@ class EverblockTools extends ObjectModel
             $productIdsArray = array_map('intval', explode(',', $match[1]));
             $carousel = isset($match[2]) && $match[2] === 'true';
             $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
-            
+
             if (!empty($everPresentProducts)) {
                 // Assign products and carousel flag to the template
                 $context->smarty->assign([
@@ -291,7 +291,7 @@ class EverblockTools extends ObjectModel
                     'carousel' => $carousel
                 ]);
                 $renderedContent = $context->smarty->fetch($templatePath);
-                
+
                 $txt = str_replace($match[0], $renderedContent, $txt);
             }
         }
@@ -336,11 +336,11 @@ class EverblockTools extends ObjectModel
     protected static function getProductsByFeature(int $featureId, int $limit, Context $context)
     {
         $cacheId = 'everblock_getProductsByFeature_'
-        . (int) $featureId
-        . '_'
-        . (int) $limit
-        . '_'
-        . (int) $context->language->id;
+            . (int) $featureId
+            . '_'
+            . (int) $limit
+            . '_'
+            . (int) $context->language->id;
         if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = new DbQuery();
             $sql->select('p.id_product');
@@ -395,11 +395,11 @@ class EverblockTools extends ObjectModel
     protected static function getProductsByFeatureValue(int $featureValueId, int $limit, Context $context)
     {
         $cacheId = 'everblock_getProductsByFeatureValue_'
-        . (int) $featureValueId
-        . '_'
-        . (int) $limit
-        . '_'
-        . (int) $context->language->id;
+            . (int) $featureValueId
+            . '_'
+            . (int) $limit
+            . '_'
+            . (int) $context->language->id;
         if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = new DbQuery();
             $sql->select('p.id_product');
@@ -442,9 +442,9 @@ class EverblockTools extends ObjectModel
     protected static function getProductsByCategoryId(int $categoryId, int $limit): array
     {
         $cacheId = 'everblock_getProductsByCategoryId_'
-        . (int) $categoryId
-        . '_'
-        . (int) $limit;
+            . (int) $categoryId
+            . '_'
+            . (int) $limit;
         if (!EverblockCache::isCacheStored($cacheId)) {
             $category = new Category((int) $categoryId);
             $return = [];
@@ -494,9 +494,9 @@ class EverblockTools extends ObjectModel
     protected static function getProductsByManufacturerId(int $manufacturerId, int $limit): array
     {
         $cacheId = 'everblock_getProductsByManufacturerId_'
-        . (int) $manufacturerId
-        . '_'
-        . (int) $limit;
+            . (int) $manufacturerId
+            . '_'
+            . (int) $limit;
         if (!EverblockCache::isCacheStored($cacheId)) {
             $manufacturer = new Manufacturer($manufacturerId);
             $return = [];
@@ -536,9 +536,9 @@ class EverblockTools extends ObjectModel
     protected static function getBrandsData($limit, $context)
     {
         $cacheId = 'everblock_getBrandsData_'
-        . (int) $context->language->id
-        . '_'
-        . (int) $limit;
+            . (int) $context->language->id
+            . '_'
+            . (int) $limit;
         if (!EverblockCache::isCacheStored($cacheId)) {
             $brands = Manufacturer::getLiteManufacturersList(
                 (int) $context->language->id
@@ -594,25 +594,25 @@ class EverblockTools extends ObjectModel
         ) {
             // Définir le chemin vers le template
             $templatePath = $module->getLocalPath() . 'views/templates/hook/prettyblocks.tpl';
-            
+
             // Regex pour trouver les shortcodes de type [prettyblocks name="mon_nom"]
             $pattern = '/\[prettyblocks name="([^"]+)"\]/';
-            
+
             // Fonction de remplacement pour traiter chaque shortcode trouvé
             $replacementFunction = function($matches) use ($context, $templatePath) {
                 // Extraire le nom de la zone depuis le shortcode
                 $zoneName = $matches[1];
                 // Assigner le nom de la zone à Smarty
                 $context->smarty->assign('zone_name', $zoneName);
-                
+
                 // Récupérer le rendu du template avec Smarty
                 return $context->smarty->fetch($templatePath);
             };
-            
+
             // Remplacer tous les shortcodes trouvés par le rendu Smarty correspondant
             $txt = preg_replace_callback($pattern, $replacementFunction, $txt);
         }
-        
+
         return $txt;
     }
 
@@ -846,7 +846,7 @@ class EverblockTools extends ObjectModel
     {
         // Update regex to capture optional carousel parameter
         preg_match_all('/\[random_product\s+nb="(\d+)"(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
-        
+
         foreach ($matches as $match) {
             $limit = (int) $match[1];
             $carousel = isset($match[2]) && $match[2] === 'true';
@@ -1067,9 +1067,11 @@ class EverblockTools extends ObjectModel
 
     public static function getStoreShortcode(string $txt, Context $context, Everblock $module): string
     {
-        preg_match_all('/\[everstore\s+(\d+)\]/i', $txt, $matches);
-        foreach ($matches[1] as $match) {
-            $storeIds = explode(',', $match);
+        // Update regex to capture several stores
+        preg_match_all('/\[everstore\s+(\d+(?:,\s*\d+)*)?\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $storeIds = array_map('intval', explode(',', $match[1]));
             $storeInfo = [];
             foreach ($storeIds as $storeId) {
                 $store = new Store(
@@ -1099,18 +1101,12 @@ class EverblockTools extends ObjectModel
                     'date_upd' => $store->date_upd,
                 ];
             }
-            $context->smarty->assign('storeInfos', $storeInfo);
+            $context->smarty->assign('storeInfos' , $storeInfo);
             $templatePath = $module->getLocalPath() . 'views/templates/hook/store.tpl';
             $replacement = $context->smarty->fetch($templatePath);
-            $txt = preg_replace_callback(
-                '/\[everstore\s+' . preg_quote($match) . '\]/i',
-                function () use ($replacement) {
-                    return $replacement;
-                },
-                $txt
-            );
-        }
 
+            $txt = str_replace($match[0], $replacement, $txt);
+        }
         return $txt;
     }
 
@@ -1118,7 +1114,7 @@ class EverblockTools extends ObjectModel
      * Search & replace QCD ACF shortcodes from 410 Gone module
      * @param $txt : full DOM
      * @return $txt : full DOM fixed
-    */
+     */
     public static function getQcdAcfCode(string $txt, Context $context): string
     {
         if (!Module::isInstalled('qcdacf')
@@ -1207,7 +1203,7 @@ class EverblockTools extends ObjectModel
      * @param string $newUrl
      * @param int $id_shop
      * @return array of success/error messages
-    */
+     */
     public static function migrateUrls(?string $oldUrl, ?string $newUrl, int $id_shop): array
     {
         $postErrors = [];
@@ -1895,7 +1891,7 @@ class EverblockTools extends ObjectModel
             'querySuccess' => $querySuccess,
         ];
     }
-    
+
     public static function getVideoShortcode(string $txt): string
     {
         preg_match_all('/\[video\s+(.*?)\]/i', $txt, $videoMatches);
@@ -2121,7 +2117,7 @@ class EverblockTools extends ObjectModel
     public static function getAllManufacturers(int $shopId, int $langId): array
     {
         $cacheId = 'EverblockTools::getAllManufacturers_' . (int) $shopId . '_' . $langId;
-        
+
         if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = 'SELECT m.id_manufacturer, m.name
                     FROM ' . _DB_PREFIX_ . 'manufacturer AS m
@@ -2212,12 +2208,12 @@ class EverblockTools extends ObjectModel
         // Rechercher toutes les balises <img> dans le texte
         $pattern = '/<img\s+(?:[^>]*)src="([^"]*)"([^>]*)>/i';
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
-        
+
         // Parcourir les correspondances et ajouter la classe 'lazyload' et l'attribut 'loading="lazy"'
         foreach ($matches as $match) {
             $imageUrl = $match[1];
             $imageAttributes = $match[2];
-            
+
             // Rechercher l'attribut class
             if (preg_match('/class\s*=\s*"(.*?)"/i', $imageAttributes, $classMatch)) {
                 // Si l'attribut class existe, ajouter 'lazyload'
@@ -2227,17 +2223,17 @@ class EverblockTools extends ObjectModel
                 // Si l'attribut class n'existe pas, l'ajouter
                 $imageAttributesWithLazyLoad = 'class="lazyload" ' . trim($imageAttributes);
             }
-            
+
             // Ajouter l'attribut loading="lazy"
             if (stripos($imageAttributesWithLazyLoad, 'loading=') === false) {
                 $imageAttributesWithLazyLoad .= ' loading="lazy"';
             }
-            
+
             // Construire la nouvelle balise <img> avec la classe 'lazyload' et l'attribut 'loading="lazy"'
             $newTag = '<img src="' . $imageUrl . '" ' . $imageAttributesWithLazyLoad . '>';
             $text = str_replace($match[0], $newTag, $text);
         }
-        
+
         return $text;
     }
 
@@ -2557,11 +2553,11 @@ class EverblockTools extends ObjectModel
     {
         $resultHash = md5(json_encode($result));
         $cacheId = 'everblock_everPresentProducts_'
-        . (int) $context->shop->id
-        . '_'
-        . (int) $context->language->id
-        . '_'
-        . $resultHash;
+            . (int) $context->shop->id
+            . '_'
+            . (int) $context->language->id
+            . '_'
+            . $resultHash;
         $products = [];
         if (!EverblockCache::isCacheStored($cacheId)) {
             if (!empty($result)) {
@@ -2653,7 +2649,7 @@ class EverblockTools extends ObjectModel
 
     /**
      * Exporte les données des tables de module dans un fichier SQL.
-     * 
+     *
      * @return bool True en cas de succès, sinon False.
      */
     public static function exportModuleTablesSQL(): bool
@@ -2793,7 +2789,7 @@ class EverblockTools extends ObjectModel
      * Create fake products
      * @param shop id
      * @return bool
-    */
+     */
     public static function generateProducts(int $idShop): bool
     {
         $numProducts = (int) EverblockCache::getModuleConfiguration('EVERPS_DUMMY_NBR');
@@ -2893,7 +2889,7 @@ class EverblockTools extends ObjectModel
      * Check if module is on disk (PS issue when module has been deleted manually)
      * @param module name
      * @return bool
-    */
+     */
     public static function moduleDirectoryExists(string $moduleName): bool
     {
         $moduleDirPath = _PS_MODULE_DIR_ . $moduleName;
@@ -3057,7 +3053,7 @@ class EverblockTools extends ObjectModel
 
             // Convert the image to WebP
             $webpSrc = self::convertToWebP($src);
-            
+
             if ($webpSrc) {
                 // Replace the src with the new WebP src
                 $imgTag = str_replace($src, $webpSrc, $imgTag);
