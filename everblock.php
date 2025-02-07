@@ -2304,7 +2304,8 @@ class Everblock extends Module
         . '-idCurrency-'
         . (int) $context->currency->id
         . '-device-'
-        . (int) $context->getDevice();
+        . (int) $context->getDevice()
+        . $position;
         if (!EverblockCache::isCacheStored(str_replace('|', '-', $cacheId))) {
             if (isset($context->customer->id) && $context->customer->id) {
                 $id_entity = (int) $context->customer->id;
