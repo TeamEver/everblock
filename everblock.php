@@ -985,7 +985,7 @@ class Everblock extends Module
         $custom_js = Tools::file_get_contents(
             _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js'
         );
-        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts.js';
+        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
         if (file_exists($filePath) && filesize($filePath) > 0) {
             $headerScripts = file_get_contents($filePath);
         } else {
@@ -1186,7 +1186,7 @@ class Everblock extends Module
             ) : '';
         }
         $headerScripts = Tools::getValue('EVERPS_HEADER_SCRIPTS');
-        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts.js';
+        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
         file_put_contents($filePath, $headerScripts);
         Configuration::updateValue(
             'EVERPS_FEATURES_AS_FLAGS',
@@ -2630,7 +2630,7 @@ class Everblock extends Module
                 ]
             ),
         ]);
-        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts.js';
+        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
         if (file_exists($filePath) && filesize($filePath) > 0) {
             return PHP_EOL . file_get_contents($filePath) . PHP_EOL;
         }
