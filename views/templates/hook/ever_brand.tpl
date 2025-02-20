@@ -19,15 +19,16 @@
   <section class="featured-brands clearfix mt-3">
     <div class="brands row ever-slick-carousel">
       {foreach from=$brands item=brand}
-        <div class="col-md-3 mb-3">
+        <div class="col-md-3 mb-3 d-flex justify-content-center align-items-center text-center">
           <a href="{$brand.url|escape:'htmlall':'UTF-8'}" title="{$brand.name|escape:'htmlall':'UTF-8'}" class="brand-link">
-            <img src="{$brand.logo|escape:'htmlall':'UTF-8'}" alt="{$brand.name|escape:'htmlall':'UTF-8'}" width="{$brand.width|escape:'htmlall':'UTF-8'}" height="{$brand.height|escape:'htmlall':'UTF-8'}" class="brand-image lazyload" loading="lazy">
-            {* <div class="brand-name">{$brand.name|escape:'htmlall':'UTF-8'}</div> *}
+            <img src="{$brand.logo|escape:'htmlall':'UTF-8'}" alt="{$brand.name|escape:'htmlall':'UTF-8'}"
+                 width="{$brand.width|escape:'htmlall':'UTF-8'}"
+                 height="{$brand.height|escape:'htmlall':'UTF-8'}"
+                 class="brand-image lazyload" loading="lazy">
           </a>
         </div>
       {/foreach}
     </div>
   </section>
 {/if}
-
 
