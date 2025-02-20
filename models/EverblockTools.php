@@ -536,27 +536,44 @@ class EverblockTools extends ObjectModel
     protected static function getBrandsData($limit, $context)
     {
         $cacheId = 'everblock_getBrandsData_'
-        . (int) $context->language->id
-        . '_'
-        . (int) $limit;
+            . (int) $context->language->id
+            . '_'
+            . (int) $limit;
+
         if (!EverblockCache::isCacheStored($cacheId)) {
             $brands = Manufacturer::getLiteManufacturersList(
                 (int) $context->language->id
             );
             $limitedBrands = [];
-            // Limite du nombre de marques en fonction du paramètre $limit
+
             if (!empty($brands)) {
                 $brands = array_slice($brands, 0, $limit);
                 foreach ($brands as $brand) {
                     $name = $brand['name'];
+                    $imagePath = _PS_MANU_IMG_DIR_ . (int) $brand['id'] . '.jpg';
                     $logo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/m/' . (int) $brand['id'] . '.jpg';
+                    
+                    // Convertir en WebP si nécessaire
                     $logo = EverblockTools::convertToWebP($logo);
+
+                    // Initialiser les dimensions par défaut
+                    $width = null;
+                    $height = null;
+
+                    // Vérifier si le fichier image existe et récupérer ses dimensions
+                    if (file_exists($imagePath)) {
+                        list($width, $height) = getimagesize($imagePath);
+                    }
+
                     $url = $brand['link'];
+
                     $limitedBrands[] = [
                         'id' => $brand['id'],
                         'name' => $name,
                         'logo' => $logo,
                         'url' => $url,
+                        'width' => $width,
+                        'height' => $height,
                     ];
                 }
             }
