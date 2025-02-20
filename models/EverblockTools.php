@@ -550,21 +550,27 @@ class EverblockTools extends ObjectModel
                 $brands = array_slice($brands, 0, $limit);
                 foreach ($brands as $brand) {
                     $name = $brand['name'];
-                    $imagePath = _PS_MANU_IMG_DIR_ . (int) $brand['id'] . '.jpg';
-                    $logo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/m/' . (int) $brand['id'] . '.jpg';
-                    
-                    // Convertir en WebP si nécessaire
-                    $logo = EverblockTools::convertToWebP($logo);
-
-                    // Initialiser les dimensions par défaut
+                    $imageExtensions = ['jpg', 'png', 'webp'];
                     $width = null;
                     $height = null;
+                    $logo = false;
 
-                    // Vérifier si le fichier image existe et récupérer ses dimensions
-                    if (file_exists($imagePath)) {
-                        list($width, $height) = getimagesize($imagePath);
+                    // Vérifier tous les formats d'image
+                    foreach ($imageExtensions as $ext) {
+                        $imagePath = _PS_MANU_IMG_DIR_ . (int) $brand['id'] . '-default_m.' . $ext;
+                        if (file_exists($imagePath)) {
+                            list($width, $height) = getimagesize($imagePath);
+                            $logo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/m/' . (int) $brand['id'] . '-default_m.' . $ext;
+                            break; // Sort dès qu'une image valide est trouvée
+                        }
                     }
 
+                    // Image de secours
+                    if (!$logo) {
+                        $logo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/m/default.jpg';
+                        $width = 150;
+                        $height = 150;
+                    }
                     $url = $brand['link'];
 
                     $limitedBrands[] = [
