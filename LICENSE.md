@@ -1,4 +1,4 @@
-Copyright (c) 2019-2024 Team Ever.
+Copyright (c) 2019-2025 Team Ever.
 
 Academic Free License ("AFL") v. 3.0
 

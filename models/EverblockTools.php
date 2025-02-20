@@ -1,6 +1,6 @@
 <?php
 /**
- * 2019-2024 Team Ever
+ * 2019-2025 Team Ever
  *
  * NOTICE OF LICENSE
  *
@@ -13,7 +13,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    Team Ever <https://www.team-ever.com/>
- *  @copyright 2019-2024 Team Ever
+ *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 if (!defined('_PS_VERSION_')) {
@@ -2854,7 +2854,7 @@ class EverblockTools extends ObjectModel
     {
         return '<?php' . PHP_EOL .
             '/**' . PHP_EOL .
-            ' * 2019-2024 Team Ever' . PHP_EOL .
+            ' * 2019-2025 Team Ever' . PHP_EOL .
             ' *' . PHP_EOL .
             ' * NOTICE OF LICENSE' . PHP_EOL .
             ' *' . PHP_EOL .
@@ -2867,7 +2867,7 @@ class EverblockTools extends ObjectModel
             ' * to license@prestashop.com so we can send you a copy immediately.' . PHP_EOL .
             ' *' . PHP_EOL .
             ' *  @author    Team Ever <https://www.team-ever.com/>' . PHP_EOL .
-            ' *  @copyright 2019-2024 Team Ever' . PHP_EOL .
+            ' *  @copyright 2019-2025 Team Ever' . PHP_EOL .
             ' *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)' . PHP_EOL .
             ' */' . PHP_EOL .
             'if (!defined(\'_PS_VERSION_\')) {' . PHP_EOL .

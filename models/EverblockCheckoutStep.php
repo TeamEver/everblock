@@ -1,6 +1,6 @@
 <?php
 /**
- * 2019-2024 Team Ever
+ * 2019-2025 Team Ever
  *
  * NOTICE OF LICENSE
  *
