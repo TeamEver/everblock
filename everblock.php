@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.3.3';
+        $this->version = '6.3.4';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -948,26 +948,44 @@ class Everblock extends Module
                 ],
             ],
         ];
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
-            $formFields[] = [
-                'form' => [
-                    'legend' => [
-                        'title' => $this->l('Convert CMS to Pretty Blocks'),
-                        'icon' => 'icon-smile',
-                    ],
-                    'buttons' => [
-                        'convertCmsToPrettyBlocks' => [
-                            'name' => 'submitConvertCmsToPrettyBlocks',
-                            'type' => 'submit',
-                            'class' => 'btn btn-default pull-right',
-                            'icon' => 'process-icon-download',
-                            'title' => $this->l('Convert CMS to Prettyblocks'),
-                        ],
-                    ],
+
+        $bannedFeatures = Configuration::get('EVERPS_FEATURES_AS_FLAGS');
+        if (!$bannedFeatures) {
+            $bannedFeatures = [];
+        } else {
+            $bannedFeatures = json_decode($bannedFeatures, true);
+        }
+
+        $bannedFeaturesColors = [];
+        foreach ($bannedFeatures as $bannedFeature) {
+            $bannedFeaturesColors[] = [
+                'feature_id' => (int) $bannedFeature,
+                'color' => Configuration::get('EVERPS_FEATURE_COLOR_' . (int) $bannedFeature),
+            ];
+        }
+
+        // Ajouter les couleurs au formulaire
+        $formFields[] = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('Banned Features Colors'),
+                    'icon' => 'icon-palette',
                 ],
+                'input' => [],
+                'submit' => [
+                    'title' => $this->l('Save'),
+                ],
+            ],
+        ];
+
+        // Ajouter un champ par feature bannie
+        foreach ($bannedFeaturesColors as $bannedFeatureColor) {
+            $formFields[count($formFields) - 1]['form']['input'][] = [
+                'type' => 'color',
+                'label' => $this->l('Color for Feature ID: ') . $bannedFeatureColor['feature_id'],
+                'name' => 'EVERPS_FEATURE_COLOR_' . $bannedFeatureColor['feature_id'],
+                'size' => 20,
+                'required' => false,
             ];
         }
         return $formFields;
@@ -991,7 +1009,18 @@ class Everblock extends Module
         } else {
             $headerScripts = '';
         }
-        return [
+        $bannedFeatures = Configuration::get('EVERPS_FEATURES_AS_FLAGS');
+        if (!$bannedFeatures) {
+            $bannedFeatures = [];
+        } else {
+            $bannedFeatures = json_decode($bannedFeatures, true);
+        }
+
+        $bannedFeaturesColors = [];
+        foreach ($bannedFeatures as $bannedFeature) {
+            $bannedFeaturesColors['EVERPS_FEATURE_COLOR_' . (int) $bannedFeature] = Configuration::get('EVERPS_FEATURE_COLOR_' . (int) $bannedFeature);
+        }
+        $configData = [
             'EVEROPTIONS_POSITION' => Configuration::get('EVEROPTIONS_POSITION'),
             'EVEROPTIONS_TITLE' => $this->getConfigInMultipleLangs('EVEROPTIONS_TITLE'),
             'EVERBLOCK_MAINTENANCE_PSSWD' => Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD'),
@@ -1022,6 +1051,8 @@ class Everblock extends Module
             'EVERPS_FLAG_NB' => Configuration::get('EVERPS_FLAG_NB'),
             'TABS_FILE' => '',
         ];
+        $configData = array_merge($configData, $bannedFeaturesColors);
+        return $configData;
     }
 
     public function postValidation()
@@ -1188,11 +1219,19 @@ class Everblock extends Module
         $headerScripts = Tools::getValue('EVERPS_HEADER_SCRIPTS');
         $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
         file_put_contents($filePath, $headerScripts);
+        $bannedFeatures = Tools::getValue('EVERPS_FEATURES_AS_FLAGS');
         Configuration::updateValue(
             'EVERPS_FEATURES_AS_FLAGS',
-            json_encode(Tools::getValue('EVERPS_FEATURES_AS_FLAGS')),
+            json_encode($bannedFeatures),
             true
         );
+        if (!empty($bannedFeatures)) {
+            foreach ($bannedFeatures as $bannedFeature) {
+                $colorKey = 'EVERPS_FEATURE_COLOR_' . (int) $bannedFeature;
+                $colorValue = Tools::getValue($colorKey);
+                Configuration::updateValue($colorKey, $colorValue);
+            }
+        }
         Configuration::updateValue(
             'EVEROPTIONS_TITLE',
             $formTitle,
@@ -2080,6 +2119,7 @@ class Everblock extends Module
                         $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
                             'type' => 'custom-flag ' . $everpsflag->title,
                             'label' => strip_tags($everpsflag->content),
+                            'module' => $this->name,
                         ];
                     }
                 }
@@ -2092,7 +2132,9 @@ class Everblock extends Module
                     if (in_array($feature['id_feature'], $bannedFeatures)) {
                         $params['flags'][] = array(
                             'type' => 'feature_flag_' . $feature['id_feature'],
-                            'label' => $feature['value']
+                            'label' => $feature['value'],
+                            'module' => $this->name,
+                            'style' => 'style="background-color:' . Configuration::get('EVERPS_FEATURE_COLOR_' . $feature['id_feature']) . ';color:#fff;"'
                         );
                     }
                 }

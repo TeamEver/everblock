@@ -58,28 +58,32 @@ class AdminEverBlockController extends ModuleAdminController
                 'align' => 'left',
                 'width' => 'auto',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!id_everblock',
             ],
             'name' => [
                 'title' => $this->l('Name'),
+                'filter_key' => 'a!name',
                 'align' => 'left',
                 'width' => 'auto',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
             ],
             'hname' => [
                 'title' => $this->l('Hook'),
                 'align' => 'left',
                 'width' => 'auto',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'h!title', // Jointure avec la table hook
             ],
             'position' => [
                 'title' => $this->l('Position'),
                 'align' => 'left',
                 'width' => 'auto',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!position',
             ],
             'only_home' => [
                 'title' => $this->l('Home only'),
@@ -87,7 +91,8 @@ class AdminEverBlockController extends ModuleAdminController
                 'width' => 'auto',
                 'type' => 'bool',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!only_home',
             ],
             'only_category' => [
                 'title' => $this->l('Category only'),
@@ -95,7 +100,8 @@ class AdminEverBlockController extends ModuleAdminController
                 'width' => 'auto',
                 'type' => 'bool',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!only_category',
             ],
             'only_manufacturer' => [
                 'title' => $this->l('Manufacturer only'),
@@ -103,7 +109,8 @@ class AdminEverBlockController extends ModuleAdminController
                 'width' => 'auto',
                 'type' => 'bool',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!only_manufacturer',
             ],
             'only_supplier' => [
                 'title' => $this->l('Supplier only'),
@@ -111,7 +118,8 @@ class AdminEverBlockController extends ModuleAdminController
                 'width' => 'auto',
                 'type' => 'bool',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!only_supplier',
             ],
             'only_cms_category' => [
                 'title' => $this->l('CMS category only'),
@@ -119,21 +127,24 @@ class AdminEverBlockController extends ModuleAdminController
                 'width' => 'auto',
                 'type' => 'bool',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!only_cms_category',
             ],
             'date_start' => [
                 'title' => $this->l('Date start'),
                 'align' => 'left',
                 'width' => 'auto',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!date_start',
             ],
             'date_end' => [
                 'title' => $this->l('Date end'),
                 'align' => 'left',
                 'width' => 'auto',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!date_end',
             ],
             'modal' => [
                 'title' => $this->l('Is modal'),
@@ -141,7 +152,8 @@ class AdminEverBlockController extends ModuleAdminController
                 'width' => 'auto',
                 'type' => 'bool',
                 'search' => true,
-                'orderby' => true
+                'orderby' => true,
+                'filter_key' => 'a!modal',
             ],
             'active' => [
                 'title' => $this->l('Status'),
@@ -149,7 +161,8 @@ class AdminEverBlockController extends ModuleAdminController
                 'active' => 'status',
                 'orderby' => true,
                 'search' => true,
-                'class' => 'fixed-width-sm'
+                'class' => 'fixed-width-sm',
+                'filter_key' => 'a!active',
             ],
         ];
         $this->colorOnBackground = true;
@@ -302,6 +315,9 @@ class AdminEverBlockController extends ModuleAdminController
             true,
             false
         );
+        foreach ($categories_list as &$cat) {
+            $cat['name'] = $cat['id_category'] . ' - ' . $cat['name'];
+        }
         $manufacturersList = Manufacturer::getLiteManufacturersList(
             (int) $this->context->language->id
         );
@@ -1391,32 +1407,6 @@ class AdminEverBlockController extends ModuleAdminController
                 PrestaShopLogger::addLog(
                     'Admin Everblock GPT : ' . $e->getMessage()
                 );
-            }
-        }
-    }
-
-    public function processFilter()
-    {
-        $prefix = $this->getCookieFilterPrefix();
-        
-        foreach ($this->fields_list as $field => $values) {
-            $value = Tools::getValue($this->table.'Filter_'.$field);
-            
-            if ($value !== false && !empty($value)) {
-                $this->context->cookie->{$prefix.$field} = $value;
-            } elseif ($value !== false) {
-                unset($this->context->cookie->{$prefix.$field});
-            }
-        }
-        
-        $filters = Tools::getValue($this->table.'Filter_');
-        if (is_array($filters) && count($filters)) {
-            foreach ($filters as $field => $value) {
-                if ($value !== false && !empty($value)) {
-                    $this->context->cookie->{$prefix.$field} = $value;
-                } elseif ($value !== false) {
-                    unset($this->context->cookie->{$prefix.$field});
-                }
             }
         }
     }
