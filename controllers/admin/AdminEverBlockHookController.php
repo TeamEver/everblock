@@ -49,35 +49,48 @@ class AdminEverBlockHookController extends ModuleAdminController
                 'title' => $this->l('ID'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true,
+                'filter_key' => 'a!id_hook',
             ],
             'name' => [
                 'title' => $this->l('Name'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true,
+                'filter_key' => 'a!name',
             ],
             'title' => [
                 'title' => $this->l('Title'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true,
+                'filter_key' => 'a!title',
             ],
             'description' => [
                 'title' => $this->l('Description'),
                 'align' => 'left',
                 'width' => 'auto',
+                'search' => true,
+                'orderby' => true,
+                'filter_key' => 'a!description',
             ],
             'active' => [
                 'title' => $this->l('Active'),
                 'type' => 'bool',
                 'active' => 'status',
-                'orderby' => false,
+                'orderby' => true,
                 'class' => 'fixed-width-sm',
+                'search' => true,
+                'filter_key' => 'a!active',
             ],
         ];
         parent::__construct();
         // Do not load action hooks
         $this->_where = 'AND INSTR(name, "action") = 0 AND INSTR(name, "filter") = 0';
         $this->colorOnBackground = true;
-        EverblockTools::checkAndFixDatabase();
     }
 
     public function l($string, $class = null, $addslashes = false, $htmlentities = true)
@@ -358,6 +371,7 @@ class AdminEverBlockHookController extends ModuleAdminController
 
     public function postProcess()
     {
+        parent::postProcess();
         if (Tools::isSubmit('delete' . $this->table)) {
             $hook = new Hook(
                 (int) Tools::getValue('id_hook')

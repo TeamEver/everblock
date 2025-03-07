@@ -35,8 +35,6 @@ class AdminEverBlockController extends ModuleAdminController
         $this->name = 'AdminEverBlockController';
         $this->position_identifier = 'id_everblock';
         $this->allow_export = true;
-        
-        EverblockTools::checkAndFixDatabase();
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
         $m = Module::getInstanceByName('everblock');
