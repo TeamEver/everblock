@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.3.6';
+        $this->version = '6.3.7';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -2562,23 +2562,23 @@ class Everblock extends Module
         $this->context->controller->registerStylesheet(
             'module-' . $this->name . '-css',
             'modules/' . $this->name . '/views/css/' . $this->name . '.css',
-            ['media' => 'all', 'priority' => 200, 'version' => $this->version]
+            ['media' => 'all', 'priority' => 200]
         );
         if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_SLICK') === true) {
             $this->context->controller->registerStylesheet(
                 'module-slick-min-css',
                 'modules/' . $this->name . '/views/css/slick-min.css',
-                ['media' => 'all', 'priority' => 200, 'version' => $this->version]
+                ['media' => 'all', 'priority' => 200]
             );
             // $this->context->controller->registerStylesheet(
             //     'module-slick-theme-min-css',
             //     'modules/' . $this->name . '/views/css/slick-theme-min.css',
-            //     ['media' => 'all', 'priority' => 200, 'version' => $this->version]
+            //     ['media' => 'all', 'priority' => 200]
             // );
             $this->context->controller->registerJavascript(
                 'module-slick-min-js',
                 'modules/' . $this->name . '/views/js/slick-min.js',
-                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+                ['position' => 'bottom', 'priority' => 200]
             );
             Media::addJsDef([
                 'everblock_slick' => true,
@@ -2587,13 +2587,13 @@ class Everblock extends Module
         $this->context->controller->registerJavascript(
             'module-' . $this->name . '-js',
             'modules/' . $this->name . '/views/js/' . $this->name . '.js',
-            ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+            ['position' => 'bottom', 'priority' => 200]
         );
         if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_OBF') === true) {
             $this->context->controller->registerJavascript(
                 'module-' . $this->name . '-obf-js',
                 'modules/' . $this->name . '/views/js/' . $this->name . '-obfuscation.js',
-                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+                ['position' => 'bottom', 'priority' => 200]
             );
         }
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
@@ -2602,14 +2602,14 @@ class Everblock extends Module
             $this->context->controller->registerStylesheet(
                 'module-' . $this->name . '-custom-compressed-css',
                 'modules/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css',
-                ['media' => 'all', 'priority' => 200, 'version' => $this->version]
+                ['media' => 'all', 'priority' => 200]
             );
         }
         if (file_exists($compressedJs) && filesize($compressedJs) > 0) {
             $this->context->controller->registerJavascript(
                 'module-' . $this->name . '-compressed-js',
                 'modules/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js',
-                ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+                ['position' => 'bottom', 'priority' => 200]
             );
         }
         $externalJs = EverblockCache::getModuleConfiguration('EVERPSJS_LINKS');
@@ -2620,7 +2620,7 @@ class Everblock extends Module
                 $this->context->controller->registerJavascript(
                     'module-' . $this->name . '-custom-' . (int) $key . '-js',
                     $value,
-                    ['server' => 'remote', 'position' => 'bottom', 'priority' => 200, 'version' => $this->version]
+                    ['server' => 'remote', 'position' => 'bottom', 'priority' => 200]
                 );
             }
         }
@@ -2632,7 +2632,7 @@ class Everblock extends Module
                 $this->context->controller->registerStylesheet(
                     'module-' . $this->name . '-custom-' . (int) $key . '-js',
                     $value,
-                    ['server' => 'remote', 'media' => 'all', 'priority' => 200, 'version' => $this->version]
+                    ['server' => 'remote', 'media' => 'all', 'priority' => 200]
                 );
             }
         }
@@ -2646,13 +2646,13 @@ class Everblock extends Module
                     $this->context->controller->registerJavascript(
                         'module-' . $this->name . '-custom-gmap-js',
                         'https://maps.googleapis.com/maps/api/js?key=' . $apiKey . '&libraries=places,geometry',
-                        ['server' => 'remote', 'position' => 'bottom', 'priority' => 300, 'version' => $this->version, 'attributes' => 'defer']
+                        ['server' => 'remote', 'position' => 'bottom', 'priority' => 300, 'attributes' => 'defer']
                     );
                 }
                 $this->context->controller->registerJavascript(
                     'module-' . $this->name . '-shop-map-js',
                     'modules/' . $this->name . '/views/js/' . $filename,
-                    ['server' => 'local', 'position' => 'bottom', 'priority' => 400, 'version' => $this->version, 'attributes' => 'defer']
+                    ['server' => 'local', 'position' => 'bottom', 'priority' => 400, 'attributes' => 'defer']
                 );
             }
         }
