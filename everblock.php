@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.3.7';
+        $this->version = '6.3.8';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -2564,17 +2564,12 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/css/' . $this->name . '.css',
             ['media' => 'all', 'priority' => 200]
         );
-        if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_SLICK') === true) {
+        if ((bool) Configuration::get('EVERBLOCK_USE_SLICK') === true) {
             $this->context->controller->registerStylesheet(
                 'module-slick-min-css',
                 'modules/' . $this->name . '/views/css/slick-min.css',
                 ['media' => 'all', 'priority' => 200]
             );
-            // $this->context->controller->registerStylesheet(
-            //     'module-slick-theme-min-css',
-            //     'modules/' . $this->name . '/views/css/slick-theme-min.css',
-            //     ['media' => 'all', 'priority' => 200]
-            // );
             $this->context->controller->registerJavascript(
                 'module-slick-min-js',
                 'modules/' . $this->name . '/views/js/slick-min.js',
