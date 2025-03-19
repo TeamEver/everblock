@@ -1913,6 +1913,155 @@ class EverblockTools extends ObjectModel
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
         }
+        // Elementor
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'ce_meta
+            SET value =
+            REPLACE(
+                value,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                value,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Elementor CE Meta table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'ce_revision
+            SET content =
+            REPLACE(
+                content,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                content,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Elementor CE Revision table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'ce_template
+            SET content =
+            REPLACE(
+                content,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                content,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Elementor CE Revision table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // QCD CRON
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'qcd_cron
+            SET link =
+            REPLACE(
+                link,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                link,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'QCD Cron table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // qcdsearchproduct_options
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'qcdsearchproduct_options
+            SET url =
+            REPLACE(
+                url,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                url,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'QCD Search Product table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // qcdbanner_lang
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'qcdbanner_lang
+            SET content =
+            REPLACE(
+                content,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                content,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'QCD Banner lang table rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        // pm_advancedtopmenu_lang
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pm_advancedtopmenu_lang
+            SET value_under =
+            REPLACE(
+                value_under,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                value_under,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Advanced Top Menu value_under column rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
+        $sql =
+            'UPDATE ' . _DB_PREFIX_ . 'pm_advancedtopmenu_lang
+            SET value_over =
+            REPLACE(
+                value_over,
+                "' . pSQL($oldUrl, true) . '",
+                "' . pSQL($newUrl, true) . '"
+            )
+            WHERE INSTR(
+                value_over,
+                "' . pSQL($oldUrl, true) . '"
+            ) > 0';
+        try {
+            Db::getInstance()->execute($sql);
+            $querySuccess[] = 'Advanced Top Menu value_over column rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
         return [
             'postErrors' => $postErrors,
             'querySuccess' => $querySuccess,
@@ -3074,7 +3223,9 @@ class EverblockTools extends ObjectModel
     {
         // Regular expression to find img tags and their src attributes
         $pattern = '/<img\s+([^>]*src="([^"]+)"[^>]*)>/i';
-        $htmlContent = preg_replace_callback($pattern, function($matches) {
+        $shopName = Configuration::get('PS_SHOP_NAME');
+
+        $htmlContent = preg_replace_callback($pattern, function($matches) use ($shopName) {
             $imgTag = $matches[0];
             $imgAttributes = $matches[1];
             $src = $matches[2];
@@ -3093,13 +3244,17 @@ class EverblockTools extends ObjectModel
 
                     // Add width and height attributes if they don't already exist
                     if (strpos($imgAttributes, 'width=') === false && strpos($imgAttributes, 'height=') === false) {
-                        // Ensure the attributes are added properly
                         $imgTag = str_replace('<img ', '<img width="' . $width . '" height="' . $height . '" ', $imgTag);
                     } else {
-                        // Replace existing width and height attributes
                         $imgTag = preg_replace('/width="\d*"/i', 'width="' . $width . '"', $imgTag);
                         $imgTag = preg_replace('/height="\d*"/i', 'height="' . $height . '"', $imgTag);
                     }
+                }
+
+                // Add alt attribute if it doesn't exist
+                if (strpos($imgAttributes, 'alt=') === false) {
+                    // Ajoute l'attribut alt juste après <img
+                    $imgTag = preg_replace('/<img\s+/i', '<img alt="' . htmlspecialchars($shopName, ENT_QUOTES) . '" ', $imgTag);
                 }
             }
 
