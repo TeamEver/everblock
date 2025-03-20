@@ -996,22 +996,37 @@ class EverblockTools extends ObjectModel
 
     public static function getBestSalesShortcode(string $txt, Context $context, Everblock $module): string
     {
-        // Update regex to capture optional carousel parameter
-        preg_match_all('/\[best-sales\s+(\d+)(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+        // Regex pour capturer les paramètres optionnels nb, days, carousel
+        preg_match_all(
+            '/\[best-sales(?:\s+nb=(\d+))?(?:\s+days=(\d+))?(?:\s+carousel=(true|false))?\]/i',
+            $txt,
+            $matches,
+            PREG_SET_ORDER
+        );
 
         foreach ($matches as $match) {
-            $limit = (int) $match[1];
-            $carousel = isset($match[2]) && $match[2] === 'true';
+            $limit = isset($match[1]) ? (int)$match[1] : 10;
+            $days = isset($match[2]) ? (int)$match[2] : null; // null = pas de filtre date
+            $carousel = isset($match[3]) && $match[3] === 'true';
 
-            $cacheId = 'getBestSalesShortcode_' . (int) $context->shop->id;
+            $cacheId = 'getBestSalesShortcode_' . (int)$context->shop->id . "_$limit" . "_" . ($days ?? 'all');
+
             if (!EverblockCache::isCacheStored($cacheId)) {
                 $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity
                         FROM ' . _DB_PREFIX_ . 'order_detail od
+                        JOIN ' . _DB_PREFIX_ . 'orders o ON od.id_order = o.id_order
                         JOIN ' . _DB_PREFIX_ . 'product_shop ps ON od.product_id = ps.id_product
-                        WHERE ps.active = 1
-                        GROUP BY od.product_id
-                        ORDER BY total_quantity DESC
-                        LIMIT ' . (int) $limit;
+                        WHERE ps.active = 1';
+
+                if ($days !== null) {
+                    $dateFrom = date('Y-m-d H:i:s', strtotime("-$days days"));
+                    $sql .= ' AND o.date_add >= "' . pSQL($dateFrom) . '"';
+                }
+
+                $sql .= ' GROUP BY od.product_id
+                          ORDER BY total_quantity DESC
+                          LIMIT ' . (int)$limit;
+
                 $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
                 EverblockCache::cacheStore($cacheId, $productIds);
             } else {
@@ -1019,14 +1034,13 @@ class EverblockTools extends ObjectModel
             }
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(function($row) {
-                    return (int) $row['product_id'];
+                $productIdsArray = array_map(function ($row) {
+                    return (int)$row['product_id'];
                 }, $productIds);
 
                 $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
 
                 if (!empty($everPresentProducts)) {
-                    // Assign products and carousel flag to the template
                     $context->smarty->assign([
                         'everPresentProducts' => $everPresentProducts,
                         'carousel' => $carousel
@@ -1035,7 +1049,13 @@ class EverblockTools extends ObjectModel
                     $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
                     $replacement = $context->smarty->fetch($templatePath);
 
-                    $shortcode = '[best-sales ' . (int) $limit . ($carousel ? ' carousel=true' : '') . ']';
+                    // Recomposer le shortcode original
+                    $shortcodeParts = ['[best-sales'];
+                    if (isset($match[1])) $shortcodeParts[] = 'nb=' . $match[1];
+                    if (isset($match[2])) $shortcodeParts[] = 'days=' . $match[2];
+                    if (isset($match[3])) $shortcodeParts[] = 'carousel=' . $match[3];
+                    $shortcode = implode(' ', $shortcodeParts) . ']';
+
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
