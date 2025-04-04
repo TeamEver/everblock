@@ -968,7 +968,7 @@ class Everblock extends Module
         $formFields[] = [
             'form' => [
                 'legend' => [
-                    'title' => $this->l('Banned Features Colors'),
+                    'title' => $this->l('Features as flags Colors'),
                     'icon' => 'icon-palette',
                 ],
                 'input' => [],
@@ -980,10 +980,25 @@ class Everblock extends Module
 
         // Ajouter un champ par feature bannie
         foreach ($bannedFeaturesColors as $bannedFeatureColor) {
+            $featureId = $bannedFeatureColor['feature_id'];
+            $feature = new Feature((int) $featureId);
+            $idLang = (int) Context::getContext()->language->id;
+            $featureName = isset($feature->name[$idLang]) ? $feature->name[$idLang] : $this->l('Unnamed feature');
+
+            // Couleur de fond
             $formFields[count($formFields) - 1]['form']['input'][] = [
                 'type' => 'color',
-                'label' => $this->l('Color for Feature ID: ') . $bannedFeatureColor['feature_id'],
-                'name' => 'EVERPS_FEATURE_COLOR_' . $bannedFeatureColor['feature_id'],
+                'label' => $this->l('Background color for Feature: ') . $featureName,
+                'name' => 'EVERPS_FEATURE_COLOR_' . $featureId,
+                'size' => 20,
+                'required' => false,
+            ];
+
+            // Couleur du texte
+            $formFields[count($formFields) - 1]['form']['input'][] = [
+                'type' => 'color',
+                'label' => $this->l('Text color for Feature: ') . $featureName,
+                'name' => 'EVERPS_FEATURE_TEXTCOLOR_' . $featureId,
                 'size' => 20,
                 'required' => false,
             ];
@@ -1018,7 +1033,14 @@ class Everblock extends Module
 
         $bannedFeaturesColors = [];
         foreach ($bannedFeatures as $bannedFeature) {
-            $bannedFeaturesColors['EVERPS_FEATURE_COLOR_' . (int) $bannedFeature] = Configuration::get('EVERPS_FEATURE_COLOR_' . (int) $bannedFeature);
+            $featureId = (int) $bannedFeature;
+            $bannedFeaturesColors[
+                'EVERPS_FEATURE_COLOR_' . $featureId
+            ] = Configuration::get('EVERPS_FEATURE_COLOR_' . $featureId);
+
+            $bannedFeaturesColors[
+                'EVERPS_FEATURE_TEXTCOLOR_' . $featureId
+            ] = Configuration::get('EVERPS_FEATURE_TEXTCOLOR_' . $featureId);
         }
         $configData = [
             'EVEROPTIONS_POSITION' => Configuration::get('EVEROPTIONS_POSITION'),
@@ -1225,11 +1247,20 @@ class Everblock extends Module
             json_encode($bannedFeatures),
             true
         );
+
         if (!empty($bannedFeatures)) {
             foreach ($bannedFeatures as $bannedFeature) {
-                $colorKey = 'EVERPS_FEATURE_COLOR_' . (int) $bannedFeature;
-                $colorValue = Tools::getValue($colorKey);
-                Configuration::updateValue($colorKey, $colorValue);
+                $featureId = (int) $bannedFeature;
+
+                // Couleur de fond
+                $bgColorKey = 'EVERPS_FEATURE_COLOR_' . $featureId;
+                $bgColorValue = Tools::getValue($bgColorKey);
+                Configuration::updateValue($bgColorKey, $bgColorValue);
+
+                // Couleur du texte
+                $textColorKey = 'EVERPS_FEATURE_TEXTCOLOR_' . $featureId;
+                $textColorValue = Tools::getValue($textColorKey);
+                Configuration::updateValue($textColorKey, $textColorValue);
             }
         }
         Configuration::updateValue(
@@ -1338,7 +1369,52 @@ class Everblock extends Module
                 }
             }
         }
+        $this->generateFeatureFlagsCssFile();
         $this->postSuccess[] = $this->l('All settings have been saved');
+    }
+
+    protected function generateFeatureFlagsCssFile()
+    {
+        $idShop = (int) Context::getContext()->shop->id;
+        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/css/feature-flags-' . $idShop . '.css';
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+        $bannedFeatures = Configuration::get('EVERPS_FEATURES_AS_FLAGS');
+        if (!$bannedFeatures) {
+            return;
+        }
+
+        $bannedFeatures = json_decode($bannedFeatures, true);
+        if (!is_array($bannedFeatures) || empty($bannedFeatures)) {
+            return;
+        }
+
+        $css = "/* Auto-generated feature flags CSS */\n";
+
+        foreach ($bannedFeatures as $featureId) {
+            $featureId = (int) $featureId;
+            $bgColor = Configuration::get('EVERPS_FEATURE_COLOR_' . $featureId);
+            $textColor = Configuration::get('EVERPS_FEATURE_TEXTCOLOR_' . $featureId);
+
+            // Skip if both values are empty
+            if (empty($bgColor) && empty($textColor)) {
+                continue;
+            }
+
+            // Exemple de classe : .feature-flag-12
+            $css .= sprintf(
+                ".ever_feature_flag_%d {\n%s%s}\n",
+                $featureId,
+                $bgColor ? "  background-color: {$bgColor}!important;\n" : '',
+                $textColor ? "  color: {$textColor}!important;\n" : ''
+            );
+        }
+
+        // Écriture dans le fichier si on a généré quelque chose
+        if (trim($css) !== '') {
+            file_put_contents($filePath, $css);
+        }
     }
 
     protected function emptyAllCache()
@@ -2117,7 +2193,7 @@ class Everblock extends Module
                 foreach ($everpsflags as $everpsflag) {
                     if (Validate::isLoadedObject($everpsflag) && $everpsflag->title && $everpsflag->content) {
                         $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
-                            'type' => 'custom-flag ' . $everpsflag->title,
+                            'type' => 'custom-flag ' . $everpsflag->id_flag,
                             'label' => strip_tags($everpsflag->content),
                             'module' => $this->name,
                         ];
@@ -2131,7 +2207,7 @@ class Everblock extends Module
                 foreach ($features as $feature) {
                     if (in_array($feature['id_feature'], $bannedFeatures)) {
                         $params['flags'][] = array(
-                            'type' => 'feature_flag_' . $feature['id_feature'],
+                            'type' => 'ever_feature_flag_' . $feature['id_feature'],
                             'label' => $feature['value'],
                             'module' => $this->name,
                             'style' => 'style="background-color:' . Configuration::get('EVERPS_FEATURE_COLOR_' . $feature['id_feature']) . ';color:#fff;"'
@@ -2564,6 +2640,14 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/css/' . $this->name . '.css',
             ['media' => 'all', 'priority' => 200]
         );
+        $flagsCssFile = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/feature-flags-' . $idShop . '.css';
+        if (file_exists($flagsCssFile) && filesize($flagsCssFile) > 0) {
+            $this->context->controller->registerStylesheet(
+                'module-' . $this->name . '-feature-flags-css',
+                'modules/' . $this->name . '/views/css/feature-flags' . $idShop . '.css',
+                ['media' => 'all', 'priority' => 200]
+            );
+        }
         if ((bool) Configuration::get('EVERBLOCK_USE_SLICK') === true) {
             $this->context->controller->registerStylesheet(
                 'module-slick-min-css',
