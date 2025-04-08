@@ -31,25 +31,41 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
 
     protected function formProcess()
     {
-        $validToken = Tools::encrypt($this->module->name . '/token');
-        if (!Tools::getValue('token') || Tools::getValue('token') != $validToken) {
-            Tools::redirect('index.php');
-        }
-        $formData = Tools::getAllValues();
-        Hook::exec(
-            'hookActionContactFormSubmitBefore',
-            [
-                'formData' => &$formData,
-            ]
-        );
+        // ✅ Token CSRF sécurisé (lié à la session)
+        $validToken = Tools::getToken(); // équivalent de Tools::getAdminTokenLite sans dépendre de l'admin
+        $submittedToken = Tools::getValue('token');
 
+        if (!$submittedToken || $submittedToken !== $validToken) {
+            // Tu peux faire un redirect ou un die avec message custom
+            die($this->module->l('Invalid security token.'));
+        }
+
+        // ➕ Récupération du formulaire
+        $formData = Tools::getAllValues();
+
+        // ➕ Si vide ou si erreurs
+        if (empty($formData) || sizeof($this->context->controller->errors)) {
+            return $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
+        }
+
+        // ➕ Hook avant traitement
+        Hook::exec('hookActionContactFormSubmitBefore', ['formData' => &$formData]);
+
+        // ➕ Si erreurs existantes
         if (empty($formData) || sizeof($this->context->controller->errors)) {
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
             die($response);
         }
 
+        // ➕ Contenu du message HTML
         $messageContent = '';
+        $excludedKeys = ['token', 'everHide', 'submit', 'action'];
+
         foreach ($formData as $key => $value) {
+            if (in_array($key, $excludedKeys)) {
+                continue;
+            }
+
             $key = htmlspecialchars(str_replace('_', ' ', $key));
             if (is_array($value)) {
                 $messageContent .= '<p><strong>' . $key . ':</strong><br>';
@@ -62,58 +78,62 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             }
         }
 
-        $clientIP = Tools::getRemoteAddr();
-        $clientPlatform = Tools::getUserPlatform();
-        $clientBrowser = Tools::getUserBrowser();
-        $messageContent .= '<p><strong>' . $this->module->l('Client IP:') . '</strong> ' . $clientIP . '</p>';
-        $messageContent .= '<p><strong>' . $this->module->l('Client browser:') . '</strong> ' . $clientBrowser . '</p>';
-        $messageContent .= '<p><strong>' . $this->module->l('Client platform:') . '</strong> ' . $clientPlatform . '</p>';
+        // ✅ Si le contenu est vide (pas de message à envoyer)
+        if (trim(strip_tags($messageContent)) === '') {
+            return $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
+        }
 
+        // ➕ Infos client
+        $messageContent .= '<p><strong>' . $this->module->l('Client IP:') . '</strong> ' . Tools::getRemoteAddr() . '</p>';
+        $messageContent .= '<p><strong>' . $this->module->l('Client browser:') . '</strong> ' . Tools::getUserBrowser() . '</p>';
+        $messageContent .= '<p><strong>' . $this->module->l('Client platform:') . '</strong> ' . Tools::getUserPlatform() . '</p>';
+
+        // ➕ Pièces jointes
         $attachments = [];
         foreach ($_FILES as $fileKey => $fileData) {
             if (!empty($fileData['name']) && is_uploaded_file($fileData['tmp_name'])) {
                 $finfo = finfo_open(FILEINFO_MIME_TYPE);
                 $mime = finfo_file($finfo, $fileData['tmp_name']);
                 finfo_close($finfo);
-                $attachment = [
+
+                $attachments[] = [
                     'content' => Tools::file_get_contents($fileData['tmp_name']),
                     'name' => $fileData['name'],
                     'mime' => $mime,
                 ];
-                $attachments[] = $attachment;
             }
         }
 
+        // ➕ Destinataires
         $mailSubject = $this->module->l('New form submitted');
         $mailRecipient = Configuration::get('PS_SHOP_EMAIL');
 
         if ($everHideValue = Tools::getValue('everHide')) {
             $formMail = base64_decode($everHideValue);
-            $mailList = array_map('trim', explode(',', $formMail)); // Separate emails and trim spaces
-
-            // Validate and filter email addresses
+            $mailList = array_map('trim', explode(',', $formMail));
             $validMails = array_filter($mailList, function($email) {
                 return Validate::isEmail($email);
             });
 
             if (!empty($validMails)) {
-                $mailRecipient = $validMails; // Assign valid emails array to $mailRecipient
+                $mailRecipient = $validMails;
             }
         }
 
-        $mailTemplateName = 'evercontact';
+        $mailSender = Configuration::get('PS_SHOP_EMAIL');
         $templateVars = [
             '{shop_name}' => Configuration::get('PS_SHOP_NAME'),
             '{shop_logo}' => _PS_IMG_DIR_ . Configuration::get('PS_LOGO', null, null, (int) $this->context->shop->id),
             '{message}' => $messageContent,
         ];
         $mailFolder = _PS_MODULE_DIR_ . $this->module->name . '/mails/';
+        $mailTemplateName = 'evercontact';
 
         try {
             $allSent = true;
             if (is_array($mailRecipient)) {
                 foreach ($mailRecipient as $recipient) {
-                    $sent = Mail::send(
+                    if (!Mail::send(
                         (int) $this->context->language->id,
                         $mailTemplateName,
                         $mailSubject,
@@ -125,8 +145,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
                         !empty($attachments) ? $attachments : null,
                         null,
                         $mailFolder
-                    );
-                    if (!$sent) {
+                    )) {
                         $allSent = false;
                         break;
                     }
@@ -147,16 +166,12 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
                 );
             }
 
-            if ($allSent) {
-                $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/success.tpl');
-            } else {
-                $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
-            }
+            $template = $allSent ? 'success.tpl' : 'error.tpl';
         } catch (Exception $e) {
             PrestaShopLogger::addLog($e->getMessage());
-            $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
+            $template = 'error.tpl';
         }
 
-        die($response);
+        die($this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/' . $template));
     }
 }

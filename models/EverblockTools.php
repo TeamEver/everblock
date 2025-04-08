@@ -785,8 +785,18 @@ class EverblockTools extends ObjectModel
 
     public static function getFormShortcode(string $txt): string
     {
-        $txt = str_replace('[evercontactform_open]', '<div class="container"><form method="POST" class="evercontactform" action="#">', $txt);
+        $txt = str_replace(
+            '[evercontactform_open]',
+            '<div class="container"><form method="POST" enctype="multipart/form-data" class="evercontactform" action="#">',
+            $txt
+        );
         $txt = str_replace('[evercontactform_close]', '</form></div>', $txt);
+        $token = Tools::getToken();
+        $txt = str_replace(
+            '[evercontactform_close]',
+            '<input type="hidden" name="token" value="' . $token . '">[evercontactform_close]',
+            $txt
+        );
         $pattern = '/\[evercontact\s[^\]]+\]/';
         $result = preg_replace_callback($pattern, function ($matches) {
             // $matches[0] contient le shortcode trouvé

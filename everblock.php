@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.3.8';
+        $this->version = '6.3.9';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -948,14 +948,10 @@ class Everblock extends Module
                 ],
             ],
         ];
-
-        $bannedFeatures = Configuration::get('EVERPS_FEATURES_AS_FLAGS');
-        if (!$bannedFeatures) {
+        $bannedFeatures = json_decode(Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
+        if (!is_array($bannedFeatures)) {
             $bannedFeatures = [];
-        } else {
-            $bannedFeatures = json_decode($bannedFeatures, true);
         }
-
         $bannedFeaturesColors = [];
         foreach ($bannedFeatures as $bannedFeature) {
             $bannedFeaturesColors[] = [
@@ -1024,13 +1020,10 @@ class Everblock extends Module
         } else {
             $headerScripts = '';
         }
-        $bannedFeatures = Configuration::get('EVERPS_FEATURES_AS_FLAGS');
-        if (!$bannedFeatures) {
+        $bannedFeatures = json_decode(Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
+        if (!is_array($bannedFeatures)) {
             $bannedFeatures = [];
-        } else {
-            $bannedFeatures = json_decode($bannedFeatures, true);
         }
-
         $bannedFeaturesColors = [];
         foreach ($bannedFeatures as $bannedFeature) {
             $featureId = (int) $bannedFeature;
@@ -2735,21 +2728,22 @@ class Everblock extends Module
                 );
             }
         }
+        $contactLink = base64_encode(
+            $this->context->link->getModuleLink(
+                $this->name,
+                'contact'
+            )
+        );
+        $modalLink = base64_encode(
+            $this->context->link->getModuleLink(
+                $this->name,
+                'modal'
+            )
+        );
         Media::addJsDef([
-            'evercontact_link' => $this->context->link->getModuleLink(
-                $this->name,
-                'contact',
-                [
-                    'token' => Tools::encrypt($this->name . '/token'),
-                ]
-            ),
-            'evermodal_link' => $this->context->link->getModuleLink(
-                $this->name,
-                'modal',
-                [
-                    'token' => Tools::encrypt($this->name . '/token'),
-                ]
-            ),
+            'evercontact_link' => $contactLink,
+            'evermodal_link' => $modalLink,
+            'everblock_token' => Tools::getToken(),
         ]);
         $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
         if (file_exists($filePath) && filesize($filePath) > 0) {

@@ -37,7 +37,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
 
     protected function getModal()
     {
-        $validToken = Tools::encrypt($this->module->name . '/token');
+        $validToken = Tools::getToken();
         if (!Tools::getValue('token') || Tools::getValue('token') != $validToken) {
             Tools::redirect('index.php');
         }

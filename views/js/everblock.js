@@ -62,10 +62,14 @@ $(document).ready(function(){
     $(document).on('submit', '.evercontactform', function(e) {
         e.preventDefault();
         let $form = $(this);
+        let formData = new FormData(this);
+
         $.ajax({
-            url: evercontact_link,
+            url: atob(evercontact_link),
             type: 'POST',
-            data: $form.serialize(),
+            data: formData,
+            contentType: false,
+            processData: false,
             success: function(modal) {
                 $('#everblockModal').remove();
                 $('body').append(modal);
@@ -75,7 +79,7 @@ $(document).ready(function(){
                     $('.modal-backdrop').remove();
                 });
             },
-            error: function(xhr, status, error) {
+            error: function(xhr) {
                 console.log(xhr.responseText);
             }
         });
@@ -84,9 +88,9 @@ $(document).ready(function(){
         let blockId = $(this).attr('id').replace('everblock-', '');
         let timeout = $(this).data('evertimeout');
         $.ajax({
-            url: evermodal_link,
+            url: atob(evermodal_link),
             type: 'POST',
-            data: { id_everblock: blockId },
+            data: { id_everblock: blockId, token: everblock_token },
             success: function(modal) {
                 $(modal).insertAfter($('body'));
                 let $modal = $('#everblockModal');
