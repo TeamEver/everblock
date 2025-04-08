@@ -224,8 +224,7 @@ class EverblockTools extends ObjectModel
 
     public static function getFaqShortcodes(string $txt, Context $context, Everblock $module): string
     {
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/faq.tpl';
-
+        $templatePath = static::getTemplatePath('hook/faq.tpl', $module);
         $pattern = '/\[everfaq tag="([^"]+)"\]/';
 
         $txt = preg_replace_callback($pattern, function ($matches) use ($context, $templatePath) {
@@ -249,7 +248,7 @@ class EverblockTools extends ObjectModel
             $txt = str_replace('[everinstagram]', '', $txt);
             return $txt;
         }
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/instagram.tpl';
+        $templatePath = static::getTemplatePath('hook/instagram.tpl', $module);
         $context->smarty->assign([
             'everinsta_shopid' => $context->shop->id,
             'EVERINSTA_ACCESS_TOKEN' => Configuration::get('EVERINSTA_ACCESS_TOKEN'),
@@ -274,8 +273,7 @@ class EverblockTools extends ObjectModel
 
     public static function getProductShortcodes(string $txt, Context $context, Everblock $module): string
     {
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
-
+        $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
         // Update regex to capture optional carousel parameter
         preg_match_all('/\[product\s+(\d+(?:,\s*\d+)*)(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
 
@@ -301,7 +299,7 @@ class EverblockTools extends ObjectModel
 
     public static function getFeatureProductShortcodes(string $txt, Context $context, Everblock $module): string
     {
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+        $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
 
         // Mise à jour de la regex pour capturer les paramètres id, nb et carousel
         preg_match_all('/\[productfeature\s+id=(\d+)\s+nb=(\d+)\s+carousel=(true|false)\]/i', $txt, $matches, PREG_SET_ORDER);
@@ -360,8 +358,7 @@ class EverblockTools extends ObjectModel
 
     public static function getFeatureValueProductShortcodes(string $txt, Context $context, Everblock $module): string
     {
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
-
+        $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
         // Mise à jour de la regex pour capturer les paramètres id, nb et carousel
         preg_match_all('/\[productfeaturevalue\s+id=(\d+)\s+nb=(\d+)\s+carousel=(true|false)\]/i', $txt, $matches, PREG_SET_ORDER);
 
@@ -419,7 +416,7 @@ class EverblockTools extends ObjectModel
 
     public static function getCategoryShortcodes(string $txt, Context $context, Everblock $module): string
     {
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+        $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
         preg_match_all('/\[category\s+id="(\d+)"\s+nb="(\d+)"\]/i', $txt, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             $categoryId = (int) $match[1];
@@ -460,8 +457,7 @@ class EverblockTools extends ObjectModel
 
     public static function getManufacturerShortcodes($message, $context, Everblock $module)
     {
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
-
+        $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
         // Update regex to capture optional carousel parameter
         preg_match_all('/\[manufacturer\s+id="(\d+)"\s+nb="(\d+)"(?:\s+carousel=(true|false))?\]/i', $message, $matches, PREG_SET_ORDER);
 
@@ -519,7 +515,7 @@ class EverblockTools extends ObjectModel
 
     public static function getBrandsShortcode(string $txt, Context $context, Everblock $module): string
     {
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_brand.tpl';
+        $templatePath = static::getTemplatePath('hook/ever_brand.tpl', $module);
         preg_match_all('/\[brands\s+nb="(\d+)"\]/i', $txt, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             $brandCount = (int) $match[1];
@@ -616,8 +612,7 @@ class EverblockTools extends ObjectModel
             && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
         ) {
             // Définir le chemin vers le template
-            $templatePath = $module->getLocalPath() . 'views/templates/hook/prettyblocks.tpl';
-            
+            $templatePath = static::getTemplatePath('hook/prettyblocks.tpl', $module);
             // Regex pour trouver les shortcodes de type [prettyblocks name="mon_nom"]
             $pattern = '/\[prettyblocks name="([^"]+)"\]/';
             
@@ -839,7 +834,7 @@ class EverblockTools extends ObjectModel
 
     public static function getNativeContactShortcode(string $txt, Context $context, Everblock $module): string
     {
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/contact.tpl';
+        $templatePath = static::getTemplatePath('hook/contact.tpl', $module);
         $replacement = $context->smarty->fetch($templatePath);
         $txt = str_replace('[nativecontact]', $replacement, $txt);
         return $txt;
@@ -847,7 +842,7 @@ class EverblockTools extends ObjectModel
 
     public static function getCartShortcode(string $txt, Context $context, Everblock $module): string
     {
-        $templatePath = $module->getLocalPath() . 'views/templates/hook/cart.tpl';
+        $templatePath = static::getTemplatePath('hook/cart.tpl', $module);
         $replacement = $context->smarty->fetch($templatePath);
         $txt = str_replace('[evercart]', $replacement, $txt);
         return $txt;
@@ -905,7 +900,7 @@ class EverblockTools extends ObjectModel
                         'carousel' => $carousel
                     ]);
 
-                    $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+                    $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcode = '[random_product nb="' . (int) $limit . '"' . ($carousel ? ' carousel=true' : '') . ']';
@@ -948,7 +943,7 @@ class EverblockTools extends ObjectModel
                         'carousel' => $carousel
                     ]);
 
-                    $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+                    $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcode = '[last-products ' . (int) $limit . ($carousel ? ' carousel=true' : '') . ']';
@@ -992,7 +987,7 @@ class EverblockTools extends ObjectModel
                         'carousel' => $carousel
                     ]);
 
-                    $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+                    $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcode = '[promo-products ' . (int) $limit . ($carousel ? ' carousel=true' : '') . ']';
@@ -1056,7 +1051,7 @@ class EverblockTools extends ObjectModel
                         'carousel' => $carousel
                     ]);
 
-                    $templatePath = $module->getLocalPath() . 'views/templates/hook/ever_presented_products.tpl';
+                    $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
                     // Recomposer le shortcode original
@@ -1111,7 +1106,7 @@ class EverblockTools extends ObjectModel
                 $subCategory['image_link'] = $imageLink;
             }
             $context->smarty->assign('everSubCategories', $subCategories);
-            $templatePath = $module->getLocalPath() . 'views/templates/hook/subcategories.tpl';
+            $templatePath = static::getTemplatePath('hook/subcategories.tpl', $module);
             $replacement = $context->smarty->fetch($templatePath);
             $txt = str_replace($match[0], $replacement, $txt);
         }
@@ -1153,7 +1148,7 @@ class EverblockTools extends ObjectModel
                 ];
             }
             $context->smarty->assign('storeInfos', $storeInfo);
-            $templatePath = $module->getLocalPath() . 'views/templates/hook/store.tpl';
+            $templatePath = static::getTemplatePath('hook/store.tpl', $module);
             $replacement = $context->smarty->fetch($templatePath);
             $txt = preg_replace_callback(
                 '/\[everstore\s+' . preg_quote($match) . '\]/i',
@@ -2174,7 +2169,7 @@ class EverblockTools extends ObjectModel
         $stores = static::getStoreLocatorData();
         if (!empty($stores)) {
             $smarty = $context->smarty;
-            $templatePath = $module->getLocalPath() . 'views/templates/hook/storelocator.tpl';
+            $templatePath = static::getTemplatePath('hook/storelocator.tpl', $module);
             $smarty->assign([
                 'everblock_stores' => $stores,
             ]);
@@ -3407,5 +3402,12 @@ class EverblockTools extends ObjectModel
     private static function relativeToAbsolutePath($relativePath)
     {
         return _PS_ROOT_DIR_ . '/' . ltrim($relativePath, '/');
+    }
+
+    public static function getTemplatePath(string $relativePath, Module $module): string
+    {
+        // Normalise le chemin pour éviter les erreurs de slash
+        $relativePath = ltrim($relativePath, '/');
+        return 'module:' . $module->name . '/views/templates/' . $relativePath;
     }
 }
