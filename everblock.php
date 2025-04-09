@@ -1138,7 +1138,6 @@ class Everblock extends Module
         $custom_js = _PS_MODULE_DIR_ . $this->name . '/views/js/custom' . $idShop . '.js';
         // Compressed
         $compressedCss = _PS_MODULE_DIR_ . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        $compressedJs = _PS_MODULE_DIR_ . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         $cssCode = Tools::getValue('EVERPSCSS');
         $scssCode = Tools::getValue('EVERPSSASS');
         $jsCode = Tools::getValue('EVERPSJS');
@@ -1151,8 +1150,6 @@ class Everblock extends Module
         $compressedCssCode = $this->compressCSSCode(
             $cssCode
         );
-        // Compress JS code
-        $compressedJsCode = $this->compressJsCode($jsCode);
         // Create CSS file if need
         if (!empty($custom_css)) {
             $handle_css = fopen(
@@ -1235,10 +1232,6 @@ class Everblock extends Module
         file_put_contents(
             $compressedCss,
             $compressedCssCode
-        );
-        file_put_contents(
-            $compressedJs,
-            $compressedJsCode
         );
         Configuration::updateValue(
             'EVEROPTIONS_POSITION',
@@ -2694,7 +2687,7 @@ class Everblock extends Module
             );
         }
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        $compressedJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
+        $customJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
         if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
             $this->context->controller->registerStylesheet(
                 'module-' . $this->name . '-custom-compressed-css',
@@ -2702,10 +2695,10 @@ class Everblock extends Module
                 ['media' => 'all', 'priority' => 200]
             );
         }
-        if (file_exists($compressedJs) && filesize($compressedJs) > 0) {
+        if (file_exists($customJs) && filesize($customJs) > 0) {
             $this->context->controller->registerJavascript(
                 'module-' . $this->name . '-compressed-js',
-                'modules/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js',
+                'modules/' . $this->name . '/views/js/custom' . $idShop . '.js',
                 ['position' => 'bottom', 'priority' => 200]
             );
         }
@@ -2821,15 +2814,6 @@ class Everblock extends Module
         // Supprime les espaces inutiles entre les propriétés et les valeurs
         $css = preg_replace('/[\s]*:[\s]*(.*?)[\s]*;/', ':$1;', $css);
         return $css;
-    }
-
-    protected function compressJsCode($code)
-    {
-        // Supprimer les commentaires
-        $code = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $code);
-        // Supprimer les espaces inutiles
-        $code = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '    '], '', $code);
-        return $code;
     }
 
     protected function compileSass($sassCode)
