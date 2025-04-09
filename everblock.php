@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.3.9';
+        $this->version = '6.4.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -771,6 +771,26 @@ class Everblock extends Module
                         ],
                     ],
                     [
+                        'type' => 'switch',
+                        'label' => $this->l('Disable automatic conversion of images to webp format'),
+                        'desc' => $this->l('Will disable automatic conversion of images to webp format in HTML blocks'),
+                        'hint' => $this->l('If the setting is changed to no, images will not be converted to webp format'),
+                        'name' => 'EVERBLOCK_DISABLE_WEBP',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled'),
+                            ],
+                        ],
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('Custom CSS'),
                         'desc' => $this->l('Add here your custom CSS rules'),
@@ -1058,6 +1078,7 @@ class Everblock extends Module
             'EVERPSCSS_P_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_P_LLOREM_NUMBER'),
             'EVERPSCSS_S_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_S_LLOREM_NUMBER'),
             'EVERBLOCK_TINYMCE' => Configuration::get('EVERBLOCK_TINYMCE'),
+            'EVERBLOCK_DISABLE_WEBP' => Configuration::get('EVERBLOCK_DISABLE_WEBP'),
             'EVERPS_OLD_URL' => '',
             'EVERPS_NEW_URL' => '',
             'EVER_TAB_CONTENT' => $this->getConfigInMultipleLangs('EVER_TAB_CONTENT'),
@@ -1315,6 +1336,10 @@ class Everblock extends Module
             'EVERBLOCK_TINYMCE',
             Tools::getValue('EVERBLOCK_TINYMCE')
         );
+        Configuration::updateValue(
+            'EVERBLOCK_DISABLE_WEBP',
+            Tools::getValue('EVERBLOCK_DISABLE_WEBP')
+        );        
         Configuration::updateValue(
             'EVERPS_TAB_NB',
             Tools::getValue('EVERPS_TAB_NB')
