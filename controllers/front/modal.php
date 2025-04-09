@@ -58,7 +58,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             . $this->context->shop->id
             . Configuration::get('PS_SHOP_NAME')
         );
-        if ($modalDelay > 0) {
+        if ($modalDelay > 0 && (bool) Tools::getValue('force') != true) {
             if (!isset($_COOKIE[$cookieName])) {
                 $showModal = true;
                 $expiration = time() + ($modalDelay * 24 * 60 * 60);
