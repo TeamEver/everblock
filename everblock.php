@@ -1172,11 +1172,6 @@ class Everblock extends Module
                 'w+'
             );
             fclose($handle_js);
-            $handle_js = fopen(
-                $compressedJs,
-                'w+'
-            );
-            fclose($handle_js);
         }
         $tabTitle = [];
         $tabContent = [];
@@ -2687,7 +2682,7 @@ class Everblock extends Module
             );
         }
         $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        $customJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom-compressed' . $idShop . '.js';
+        $customJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
         if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
             $this->context->controller->registerStylesheet(
                 'module-' . $this->name . '-custom-compressed-css',

@@ -115,6 +115,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[everaddtocart') !== false) {
             $txt = static::getAddToCartShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[cms') !== false) {
+            $txt = static::getCmsShortcode($txt, $context);
+        }
         if (in_array($context->controller->controller_type, $controllerTypes)) {
             $txt = static::getCustomerShortcodes($txt, $context);
             $txt = static::obfuscateTextByClass($txt);
@@ -237,6 +240,29 @@ class EverblockTools extends ObjectModel
             return $context->smarty->fetch($templatePath);
 
         }, $txt);
+
+        return $txt;
+    }
+
+    // Todo : trigger shortcode
+    public static function getCmsShortcode(string $txt, Context $context): string
+    {
+        // Regex pour [cms id="X"]
+        preg_match_all('/\[cms\s+id="?(\d+)"?\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $cmsId = (int) $match[1];
+
+            // Récupération de la page CMS avec langue et boutique
+            $cms = new CMS($cmsId, $context->language->id, $context->shop->id);
+
+            if (Validate::isLoadedObject($cms) && $cms->active) {
+                $txt = str_replace($match[0], $cms->content, $txt);
+            } else {
+                // Si CMS non trouvé ou inactif, on retire le shortcode
+                $txt = str_replace($match[0], '', $txt);
+            }
+        }
 
         return $txt;
     }
@@ -609,7 +635,7 @@ class EverblockTools extends ObjectModel
     {
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+            && (bool) static::moduleDirectoryExists('prettyblocks') === true
         ) {
             // Définir le chemin vers le template
             $templatePath = static::getTemplatePath('hook/prettyblocks.tpl', $module);
