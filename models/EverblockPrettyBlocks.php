@@ -115,6 +115,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $accordeonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_accordeon.tpl';
             $textAndImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_text_and_image.tpl';
             $layoutTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_layout.tpl';
+            $featuredCategoryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl';
             $menuTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_menu.tpl';
             $supplierProductListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_supplier_product_list.tpl';
             $manufacturerProductListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_manufacturer_product_list.tpl';
@@ -787,6 +788,126 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'editor',
                             'label' => 'Layout content',
                             'default' => '[llorem]',
+                        ],
+                        'link' => [
+                            'type' => 'text',
+                            'label' => 'Layout link',
+                            'default' => '',
+                        ],
+                        'obfuscate' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Obfuscate link'),
+                            'default' => '0',
+                        ],
+                        'target_blank' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Open in new tab (only if not obfuscated)'),
+                            'default' => '0',
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (%)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (%)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (%)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (%)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (%)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (%)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (%)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (%)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Featured category'),
+                'description' => $module->l('Add featured category'),
+                'code' => 'everblock_category_highlight',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $featuredCategoryTemplate
+                ],
+                'repeater' => [
+                    'name' => 'Menu',
+                    'nameFrom' => 'name',
+                    'groups' => [
+                        'name' => [
+                            'type' => 'text',
+                            'label' => 'Featured category title',
+                            'default' => '',
+                        ],
+                        'category' => [
+                            'type' => 'selector',
+                            'label' => $module->l('Featured category'),
+                            'collection' => 'Category',
+                            'selector' => '{id} - {name}',
+                            'default' => \HelperBuilder::getRandomCategory((int) $context->language->id, (int) $context->shop->id),
+                            'force_default_value' => true,
+                        ],
+                        'order' => [
+                            'type' => 'select',
+                            'label' => 'Layout width', 
+                            'default' => 'col-12',
+                            'choices' => [
+                                'col-12' => '100%',
+                                'col-12 col-md-6' => '50%',
+                                'col-12 col-md-4' => '33,33%',
+                                'col-12 col-md-3' => '25%',
+                                'col-12 col-md-2' => '16,67%',
+                            ]
+                        ],
+                        'image' => [
+                            'type' => 'fileupload',
+                            'label' => 'Featured category image',
+                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'image_width' => [
+                            'type' => 'text',
+                            'label' => 'Image width (e.g., 100px or 50%)',
+                            'default' => '100%',
+                        ],
+                        'image_height' => [
+                            'type' => 'text',
+                            'label' => 'Image height (e.g., 100px)',
+                            'default' => 'auto',
                         ],
                         'link' => [
                             'type' => 'text',

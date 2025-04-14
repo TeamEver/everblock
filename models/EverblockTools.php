@@ -579,10 +579,10 @@ class EverblockTools extends ObjectModel
 
                     // Vérifier tous les formats d'image
                     foreach ($imageExtensions as $ext) {
-                        $imagePath = _PS_MANU_IMG_DIR_ . (int) $brand['id'] . '-default_m.' . $ext;
+                        $imagePath = _PS_MANU_IMG_DIR_ . (int) $brand['id'] . '-small_default.' . $ext;
                         if (file_exists($imagePath)) {
                             list($width, $height) = getimagesize($imagePath);
-                            $logo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/m/' . (int) $brand['id'] . '-default_m.' . $ext;
+                            $logo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/m/' . (int) $brand['id'] . '-small_default.' . $ext;
                             break; // Sort dès qu'une image valide est trouvée
                         }
                     }
