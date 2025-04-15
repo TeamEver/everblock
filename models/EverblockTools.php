@@ -443,10 +443,15 @@ class EverblockTools extends ObjectModel
     public static function getCategoryShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
-        preg_match_all('/\[category\s+id="(\d+)"\s+nb="(\d+)"\]/i', $txt, $matches, PREG_SET_ORDER);
+        
+        // Capture aussi le paramètre carousel (optionnel)
+        preg_match_all('/\[category\s+id="(\d+)"\s+nb="(\d+)"(?:\s+carousel=(?:"?(true|false)"?))?\]/i', $txt, $matches, PREG_SET_ORDER);
+
         foreach ($matches as $match) {
             $categoryId = (int) $match[1];
             $productCount = (int) $match[2];
+            $carousel = isset($match[3]) && strtolower($match[3]) === 'true';
+
             $categoryProducts = static::getProductsByCategoryId($categoryId, $productCount, $context);
             if (!empty($categoryProducts)) {
                 $productIds = [];
@@ -454,11 +459,15 @@ class EverblockTools extends ObjectModel
                     $productIds[] = (int) $categoryProduct['id_product'];
                 }
                 $everPresentProducts = static::everPresentProducts($productIds, $context);
-                $context->smarty->assign('everPresentProducts', $everPresentProducts);
+                $context->smarty->assign([
+                    'everPresentProducts' => $everPresentProducts,
+                    'carousel' => $carousel,
+                ]);
                 $renderedHtml = $context->smarty->fetch($templatePath);
                 $txt = str_replace($match[0], $renderedHtml, $txt);
             }
         }
+
         return $txt;
     }
 
@@ -900,7 +909,6 @@ class EverblockTools extends ObjectModel
     {
         // Update regex to capture optional carousel parameter
         preg_match_all('/\[random_product\s+nb="(\d+)"(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
-        
         foreach ($matches as $match) {
             $limit = (int) $match[1];
             $carousel = isset($match[2]) && $match[2] === 'true';
@@ -3275,6 +3283,7 @@ class EverblockTools extends ObjectModel
         if ((bool) Configuration::get('EVERBLOCK_DISABLE_WEBP') === true) {
             return $htmlContent;
         }
+        static::convertAllPrettyblocksImagesToWebP();
         // Regular expression to find img tags and their src attributes
         $pattern = '/<img\s+([^>]*src="([^"]+)"[^>]*)>/i';
         $shopName = Configuration::get('PS_SHOP_NAME');
@@ -3318,21 +3327,95 @@ class EverblockTools extends ObjectModel
         return $htmlContent;
     }
 
-    public static function convertToWebP($imagePath)
+    public static function convertAllPrettyblocksImagesToWebP(): int
     {
-        // Check if the path is a URL
+        $db = Db::getInstance();
+        $results = $db->executeS('SELECT id_prettyblocks, state FROM ' . _DB_PREFIX_ . 'prettyblocks WHERE state IS NOT NULL');
+
+        $updatedCount = 0;
+
+        foreach ($results as $row) {
+            $id = (int) $row['id_prettyblocks'];
+            $state = json_decode($row['state'], true);
+
+            if (!is_array($state)) {
+                continue;
+            }
+
+            $converted = self::convertRepeaterImagesToWebP($state);
+
+            // Si des modifications ont été faites, on met à jour
+            if (json_encode($state) !== json_encode($converted)) {
+                $db->update(
+                    'prettyblocks',
+                    ['state' => pSQL(json_encode($converted))],
+                    'id_prettyblocks = ' . $id
+                );
+                $updatedCount++;
+            }
+        }
+
+        return $updatedCount; // nombre de blocs modifiés
+    }
+
+    public static function convertRepeaterImagesToWebP(array $repeaterData): array
+    {
+        foreach ($repeaterData as &$group) {
+            if (
+                isset($group['image']['value']['url']) &&
+                is_string($group['image']['value']['url']) &&
+                !empty($group['image']['value']['url'])
+            ) {
+                $originalUrl = $group['image']['value']['url'];
+                $webpUrl = self::convertToWebP($originalUrl);
+
+                if ($webpUrl) {
+                    $group['image']['value']['url'] = $webpUrl;
+                    $group['image']['value']['extension'] = 'webp';
+                    $group['image']['value']['filename'] = pathinfo($webpUrl, PATHINFO_BASENAME);
+
+                    // Mettre à jour width/height si présents
+                    $webpPath = self::urlToFilePath($webpUrl);
+                    if (file_exists($webpPath)) {
+                        $dimensions = getimagesize($webpPath);
+                        if ($dimensions) {
+                            list($width, $height) = $dimensions;
+
+                            if (isset($group['image_width'])) {
+                                $group['image_width']['value'] = $width . 'px';
+                            }
+                            if (isset($group['image_height'])) {
+                                $group['image_height']['value'] = $height . 'px';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $repeaterData;
+    }
+
+    public static function convertToWebP($imagePath, int $maxWidth = 1920, int $maxHeight = 1920)
+    {
         if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
             $imagePath = self::urlToFilePath($imagePath);
         } else {
             $imagePath = self::relativeToAbsolutePath($imagePath);
         }
+
         $imagePath = str_replace(Tools::getHttpHost(true) . __PS_BASE_URI__, '', $imagePath);
+        if (!file_exists($imagePath)) {
+            return false;
+        }
 
         $pathInfo = pathinfo($imagePath);
         $webpPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.webp';
+
         if (file_exists($webpPath)) {
             return self::filePathToUrl($webpPath);
         }
+
         switch (strtolower($pathInfo['extension'])) {
             case 'jpeg':
             case 'jpg':
@@ -3348,11 +3431,33 @@ class EverblockTools extends ObjectModel
                 return false;
         }
 
-        if ($image === false) {
+        if (!$image) {
             return false;
         }
 
+        // Récupération des dimensions d’origine
+        $originalWidth = imagesx($image);
+        $originalHeight = imagesy($image);
+        // Redimensionner si plus grand que max
+        $resize = false;
+        if ($originalWidth > $maxWidth || $originalHeight > $maxHeight) {
+            $resize = true;
+
+            $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
+            $newWidth = (int) round($originalWidth * $ratio);
+            $newHeight = (int) round($originalHeight * $ratio);
+
+            $resized = imagecreatetruecolor($newWidth, $newHeight);
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+            imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
+
+            imagedestroy($image);
+            $image = $resized;
+        }
+
         imagepalettetotruecolor($image);
+
         if (imagewebp($image, $webpPath, 80)) {
             imagedestroy($image);
             return self::filePathToUrl($webpPath);

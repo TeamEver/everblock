@@ -7,3 +7,12 @@ views/js/custom1.js
 upgrade/*.php
 views/js/store-locator-1.js
 *.sql
+views/backup/css/custom-compressed1.css
+views/backup/css/custom.css
+views/backup/css/custom1.css
+views/backup/js/custom-compressed1.js
+views/backup/js/custom.js
+views/backup/js/custom1.js
+/views/img/prettyblocks
+views/js/custom.js
+views/js/header-scripts-1.js

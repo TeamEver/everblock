@@ -329,6 +329,7 @@ class Everblock extends Module
         $this->createUpgradeFile();
         $this->secureModuleFolder();
         EverblockTools::checkAndFixDatabase();
+        EverblockTools::convertAllPrettyblocksImagesToWebP();
         $this->checkHooks();
         $this->html = '';
         if (((bool) Tools::isSubmit('submit' . $this->name . 'Module')) == true) {

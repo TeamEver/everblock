@@ -774,6 +774,11 @@ class EverblockPrettyBlocks extends ObjectModel
                                 'url' => '',
                             ],
                         ],
+                        'image_as_background' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Use image as background'),
+                            'default' => false,
+                        ],
                         'image_width' => [
                             'type' => 'text',
                             'label' => 'Image width (e.g., 100px or 50%)',

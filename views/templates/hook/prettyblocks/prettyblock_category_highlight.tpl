@@ -4,10 +4,12 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-
   {foreach from=$block.states item=state}
+    {if isset($state.category.id) && $state.category.id}
     {assign var='category_link' value=Context::getContext()->link->getCategoryLink($state.category.id)}
-
+    {else}
+    {assign var='category_link' value='#'}
+    {/if}
     {* Bootstrap column class based on selected layout width *}
     {assign var="bootstrapClass" value="col-12"}
     {if $state.order == '50%'}
@@ -20,7 +22,7 @@
       {assign var="bootstrapClass" value="col-12 col-md-2"}
     {/if}
 
-    <div class="{$bootstrapClass} p-2 {$state.css_class|escape:'htmlall'}">
+    <div class="{$bootstrapClass} {$state.css_class|escape:'htmlall'}">
       <div class="position-relative overflow-hidden h-100 w-100" style="
         {if $state.padding_left}padding-left:{$state.padding_left}%;{/if}
         {if $state.padding_right}padding-right:{$state.padding_right}%;{/if}
@@ -33,23 +35,23 @@
       ">
         {if $state.obfuscate}
           {assign var="obflink" value=$category_link|base64_encode}
-          <span class="obflink d-block h-100 w-100" data-obflink="{$obflink}">
+          <span class="obflink obfme d-block h-100 w-100" data-obflink obfme="{$obflink}">
         {else}
           <a href="{$category_link}" title="{$state.name}" class="d-block h-100 w-100 text-decoration-none text-white"{if $state.target_blank} target="_blank"{/if}>
         {/if}
-
           {if $state.image.url}
             <img src="{$state.image.url}" 
                  alt="{$state.name|escape:'htmlall'}"
                  title="{$state.name|escape:'htmlall'}"
                  class="img-fluid w-100 h-100 object-fit-cover"
-                 style="display: block;"
+                 width="{$state.image_width}" 
+                 height="{$state.image_height}" 
                  loading="lazy">
           {/if}
 
           {if $state.name}
             <div class="position-absolute top-50 start-50 translate-middle text-center text-white px-3">
-              <h3 class="m-0">{$state.name nofilter}</h3>
+              <span class="m-0">{$state.name nofilter}</span>
             </div>
           {/if}
 
