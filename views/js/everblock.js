@@ -18,9 +18,9 @@
 $(document).ready(function(){
     if ($.fn.slick) {
         $('.ever-slick-carousel:not(.slick-initialised)').slick({
-            infinite: false,
-            arrows: true,
-            dots: false,
+            infinite: true,
+            arrows: false,
+            dots: true,
             slidesToShow: 4,
             slidesToScroll: 1,
             responsive: [{

@@ -15,21 +15,34 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<div class="mt-2{if $block.settings.default.container} container{/if}"  style="{if isset($block.settings.padding_left) && $block.settings.padding_left}padding-left:{$block.settings.padding_left|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.padding_right) && $block.settings.padding_right}padding-right:{$block.settings.padding_right|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.padding_top) && $block.settings.padding_top}padding-top:{$block.settings.padding_top|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.padding_bottom) && $block.settings.padding_bottom}padding-bottom:{$block.settings.padding_bottom|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.margin_left) && $block.settings.margin_left}margin-left:{$block.settings.margin_left|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.margin_right) && $block.settings.margin_right}margin-right:{$block.settings.margin_right|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.margin_top) && $block.settings.margin_top}margin-top:{$block.settings.margin_top|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.margin_bottom) && $block.settings.margin_bottom}margin-bottom:{$block.settings.margin_bottom|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
-    {if $block.settings.default.container}
-        <div class="row">
-    {/if}
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}w-100 px-0 mx-0{elseif $block.settings.default.container}container{/if}">
+  {if $block.settings.default.force_full_width}
+    <div class="row gx-0">
+  {elseif $block.settings.default.container}
+    <div class="row">
+  {/if}
     {if isset($block.states) && $block.states}
     {foreach from=$block.states item=state key=key}
-    <div class="col-12{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="{if isset($block.settings.padding_left) && $block.settings.padding_left}padding-left:{$block.settings.padding_left|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.padding_right) && $block.settings.padding_right}padding-right:{$block.settings.padding_right|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.padding_top) && $block.settings.padding_top}padding-top:{$block.settings.padding_top|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.padding_bottom) && $block.settings.padding_bottom}padding-bottom:{$block.settings.padding_bottom|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.margin_left) && $block.settings.margin_left}margin-left:{$block.settings.margin_left|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.margin_right) && $block.settings.margin_right}margin-right:{$block.settings.margin_right|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.margin_top) && $block.settings.margin_top}margin-top:{$block.settings.margin_top|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.margin_bottom) && $block.settings.margin_bottom}margin-bottom:{$block.settings.margin_bottom|escape:'htmlall':'UTF-8'}%;{/if}{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
-        
-            <div id="block-{$block.id_prettyblocks}-{$key}">
-                {$state.content nofilter}
-            </div>
+    <div id="block-{$block.id_prettyblocks}-{$key}" class="col-12{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="
+        {if $state.padding_left}padding-left:{$state.padding_left}%;{/if}
+        {if $state.padding_right}padding-right:{$state.padding_right}%;{/if}
+        {if $state.padding_top}padding-top:{$state.padding_top}%;{/if}
+        {if $state.padding_bottom}padding-bottom:{$state.padding_bottom}%;{/if}
+        {if $state.margin_left}margin-left:{$state.margin_left}%;{/if}
+        {if $state.margin_right}margin-right:{$state.margin_right}%;{/if}
+        {if $state.margin_top}margin-top:{$state.margin_top}%;{/if}
+        {if $state.margin_bottom}margin-bottom:{$state.margin_bottom}%;{/if}
+        {if isset($state.background_color) && $state.background_color}background-color:{$state.background_color};{/if}
+        {if isset($state.text_color) && $state.text_color}color:{$state.text_color};{/if}
+      ">
+        {$state.content nofilter}
     </div>
     {/foreach}
     {/if}
     {if $block.settings.default.container}
         </div>
     {/if}
+  {if $block.settings.default.force_full_width || $block.settings.default.container}
+    </div>
+  {/if}
 </div>

@@ -285,6 +285,7 @@ class Everblock extends Module
             }
             $tab->add();
         }
+        $this->registerHook('displayContentWrapperTop');
         $this->registerHook('actionCmsPageFormBuilderModifier');
         $this->registerHook('actionObjectCmsUpdateAfter');
         $this->registerHook('displayMaintenance');
@@ -2640,6 +2641,41 @@ class Everblock extends Module
                 (int) Tools::getValue('qty')
             );
         }
+        // Google Shopping hack
+        $modelId = (int) Tools::getValue('model_id');
+        if ($modelId) {
+            $modelAttributeId = (int) Tools::getValue('model_attribute_id');
+
+            $product = new Product($modelId, true, $this->context->language->id);
+            if (Validate::isLoadedObject($product)) {
+                $presentedProducts = EverblockTools::everPresentProducts(
+                    [$product->id],
+                    $this->context,
+                    $this
+                );
+                $presentedProduct = reset($presentedProducts);
+
+                // Injection de la bonne combinaison si précisée
+                if (!empty($modelAttributeId) && isset($presentedProduct['combinations'])) {
+                    foreach ($presentedProduct['combinations'] as $comb) {
+                        if ((int) $comb['id_product_attribute'] === $modelAttributeId) {
+                            $presentedProduct['id_product_attribute'] = $modelAttributeId;
+                            $presentedProduct['combination'] = $comb;
+                            // Important si tu veux forcer l'affichage correct de prix/image
+                            $presentedProduct['price'] = $comb['price'];
+                            $presentedProduct['price_amount'] = $comb['price_amount'];
+                            if (!empty($comb['images'][0])) {
+                                $presentedProduct['cover'] = $comb['images'][0]; // remplace l'image principale si nécessaire
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                $this->context->smarty->assign('ever_model', $presentedProduct);
+            }
+        }
+
         $idShop = (int) $this->context->shop->id;
         // Register your CSS file
         $this->context->controller->registerStylesheet(
@@ -2647,11 +2683,11 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/css/' . $this->name . '.css',
             ['media' => 'all', 'priority' => 200]
         );
-        $flagsCssFile = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/feature-flags-' . $idShop . '.css';
+        $flagsCssFile = _PS_MODULE_DIR_ . $this->name . '/views/css/feature-flags-' . $idShop . '.css';
         if (file_exists($flagsCssFile) && filesize($flagsCssFile) > 0) {
             $this->context->controller->registerStylesheet(
                 'module-' . $this->name . '-feature-flags-css',
-                'modules/' . $this->name . '/views/css/feature-flags' . $idShop . '.css',
+                'modules/' . $this->name . '/views/css/feature-flags-' . $idShop . '.css',
                 ['media' => 'all', 'priority' => 200]
             );
         }
@@ -2763,6 +2799,11 @@ class Everblock extends Module
         if (file_exists($filePath) && filesize($filePath) > 0) {
             return PHP_EOL . file_get_contents($filePath) . PHP_EOL;
         }
+    }
+
+    public function hookDisplayContentWrapperTop()
+    {
+        return $this->display(__FILE__, 'views/templates/hook/displayEverModel.tpl');
     }
 
     public function hookActionRegisterBlock($params)

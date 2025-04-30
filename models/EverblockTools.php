@@ -551,16 +551,29 @@ class EverblockTools extends ObjectModel
     public static function getBrandsShortcode(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_brand.tpl', $module);
-        preg_match_all('/\[brands\s+nb="(\d+)"\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        // Regex modifiée pour capturer un paramètre optionnel `carousel=true|false`
+        preg_match_all('/\[brands\s+nb="(\d+)"(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+
         foreach ($matches as $match) {
             $brandCount = (int) $match[1];
+            $carousel = isset($match[2]) && $match[2] === 'true';
+
             $brands = static::getBrandsData($brandCount, $context);
             if (!empty($brands)) {
-                $context->smarty->assign('brands', $brands);
+                $context->smarty->assign([
+                    'brands' => $brands,
+                    'carousel' => $carousel,
+                ]);
+
                 $renderedHtml = $context->smarty->fetch($templatePath);
-                $txt = str_replace($match[0], $renderedHtml, $txt);
+
+                // Reconstruire le shortcode d'origine pour un remplacement précis
+                $shortcode = '[brands nb="' . $brandCount . '"' . ($carousel ? ' carousel=true' : '') . ']';
+                $txt = str_replace($shortcode, $renderedHtml, $txt);
             }
         }
+
         return $txt;
     }
 
@@ -2173,10 +2186,27 @@ class EverblockTools extends ObjectModel
     {
         $context = Context::getContext();
         $cacheId = 'store_locator_data_' . (int) $context->shop->id;
+
         if (!EverblockCache::isCacheStored($cacheId)) {
             $stores = Store::getStores((int) $context->language->id);
+
+            $days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+            foreach ($stores as &$store) {
+                $decodedHours = json_decode($store['hours'], true);
+
+                $store['hours_display'] = [];
+                foreach ($days as $i => $day) {
+                    $store['hours_display'][] = [
+                        'day' => $day,
+                        'hours' => isset($decodedHours[$i][0]) ? $decodedHours[$i][0] : '',
+                    ];
+                }
+            }
+
             EverblockCache::cacheStore($cacheId, $stores);
         }
+
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
@@ -3361,31 +3391,36 @@ class EverblockTools extends ObjectModel
     public static function convertRepeaterImagesToWebP(array $repeaterData): array
     {
         foreach ($repeaterData as &$group) {
-            if (
-                isset($group['image']['value']['url']) &&
-                is_string($group['image']['value']['url']) &&
-                !empty($group['image']['value']['url'])
-            ) {
-                $originalUrl = $group['image']['value']['url'];
-                $webpUrl = self::convertToWebP($originalUrl);
+            foreach (['image', 'background_image'] as $imageKey) {
+                if (
+                    isset($group[$imageKey]['value']['url']) &&
+                    is_string($group[$imageKey]['value']['url']) &&
+                    !empty($group[$imageKey]['value']['url'])
+                ) {
+                    $originalUrl = $group[$imageKey]['value']['url'];
+                    $webpUrl = self::convertToWebP($originalUrl);
 
-                if ($webpUrl) {
-                    $group['image']['value']['url'] = $webpUrl;
-                    $group['image']['value']['extension'] = 'webp';
-                    $group['image']['value']['filename'] = pathinfo($webpUrl, PATHINFO_BASENAME);
+                    if ($webpUrl) {
+                        $group[$imageKey]['value']['url'] = $webpUrl;
+                        $group[$imageKey]['value']['extension'] = 'webp';
+                        $group[$imageKey]['value']['filename'] = pathinfo($webpUrl, PATHINFO_BASENAME);
 
-                    // Mettre à jour width/height si présents
-                    $webpPath = self::urlToFilePath($webpUrl);
-                    if (file_exists($webpPath)) {
-                        $dimensions = getimagesize($webpPath);
-                        if ($dimensions) {
-                            list($width, $height) = $dimensions;
+                        // Mettre à jour les dimensions si pertinents
+                        $webpPath = self::urlToFilePath($webpUrl);
+                        if (file_exists($webpPath)) {
+                            $dimensions = getimagesize($webpPath);
+                            if ($dimensions) {
+                                list($width, $height) = $dimensions;
 
-                            if (isset($group['image_width'])) {
-                                $group['image_width']['value'] = $width . 'px';
-                            }
-                            if (isset($group['image_height'])) {
-                                $group['image_height']['value'] = $height . 'px';
+                                $widthKey = $imageKey . '_width';
+                                $heightKey = $imageKey . '_height';
+
+                                if (isset($group[$widthKey])) {
+                                    $group[$widthKey]['value'] = $width . 'px';
+                                }
+                                if (isset($group[$heightKey])) {
+                                    $group[$heightKey]['value'] = $height . 'px';
+                                }
                             }
                         }
                     }
@@ -3543,5 +3578,21 @@ class EverblockTools extends ObjectModel
         // Normalise le chemin pour éviter les erreurs de slash
         $relativePath = ltrim($relativePath, '/');
         return 'module:' . $module->name . '/views/templates/' . $relativePath;
+    }
+
+    public static function getAvailableSvgIcons(): array
+    {
+        $iconsDir = _PS_MODULE_DIR_ . 'everblock/views/img/svg/';
+        $icons = [];
+
+        if (is_dir($iconsDir)) {
+            foreach (scandir($iconsDir) as $file) {
+                if (pathinfo($file, PATHINFO_EXTENSION) === 'svg') {
+                    $icons[$file] = pathinfo($file, PATHINFO_FILENAME); // label = filename
+                }
+            }
+        }
+
+        return $icons;
     }
 }

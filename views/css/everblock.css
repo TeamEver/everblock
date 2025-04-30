@@ -144,3 +144,16 @@
     border: 0;
     -webkit-appearance: none;
 }
+.ever-model-product.card {
+    border: 1px solid #dee2e6; /* même valeur que Bootstrap 4 */
+    border-radius: .25rem;
+    background-color: #fff;
+}
+.everblock-highlight {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.everblock-highlight:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}

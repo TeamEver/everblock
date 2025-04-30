@@ -1,10 +1,10 @@
-<div class="{if $block.settings.default.force_full_width}w-100 px-0 mx-0{elseif $block.settings.default.container}container{/if}">
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}w-100 px-0 mx-0{elseif $block.settings.default.container}container{/if}">
   {if $block.settings.default.force_full_width}
-    <div class="row gx-0">
+    <div class="row row-cols-1 row-cols-md-5 gx-0">
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-  {foreach from=$block.states item=state}
+  {foreach from=$block.states item=state key=key}
     {if isset($state.category.id) && $state.category.id}
     {assign var='category_link' value=Context::getContext()->link->getCategoryLink($state.category.id)}
     {else}
@@ -22,7 +22,7 @@
       {assign var="bootstrapClass" value="col-12 col-md-2"}
     {/if}
 
-    <div class="{$bootstrapClass} {$state.css_class|escape:'htmlall'}">
+    <div id="block-{$block.id_prettyblocks}-{$key}" class="col {$state.css_class|escape:'htmlall'}">
       <div class="position-relative overflow-hidden h-100 w-100" style="
         {if $state.padding_left}padding-left:{$state.padding_left}%;{/if}
         {if $state.padding_right}padding-right:{$state.padding_right}%;{/if}
@@ -49,11 +49,11 @@
                  loading="lazy">
           {/if}
 
-          {if $state.name}
-            <div class="position-absolute top-50 start-50 translate-middle text-center text-white px-3">
-              <span class="m-0">{$state.name nofilter}</span>
-            </div>
-          {/if}
+        {if $state.name}
+          <div class="position-absolute bottom-0 end-0 text-white category_state_name">
+            <h2 class="m-0 text-white">{$state.name nofilter}</h2>
+          </div>
+        {/if}
 
         {if $state.obfuscate}
           </span>
