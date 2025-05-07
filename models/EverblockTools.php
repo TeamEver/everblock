@@ -3595,4 +3595,42 @@ class EverblockTools extends ObjectModel
 
         return $icons;
     }
+
+    /**
+     * Warmup a given URL by performing a silent GET request.
+     *
+     * @param string $url The full URL to warm up (e.g., https://example.com/)
+     * @return void
+     */
+    public static function warmup(string $url)
+    {
+        try {
+            $ch = curl_init();
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_CONNECTTIMEOUT => 3,
+                CURLOPT_TIMEOUT => 5,
+                CURLOPT_USERAGENT => 'Prestashop-WarmupBot/1.0',
+                CURLOPT_HEADER => false,
+            ]);
+
+            curl_exec($ch);
+
+            if (curl_errno($ch)) {
+                PrestaShopLogger::addLog('Warmup curl error for ' . $url . ': ' . curl_error($ch), 2);
+            } else {
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                if ($httpCode >= 400) {
+                    PrestaShopLogger::addLog('Warmup returned HTTP ' . $httpCode . ' for ' . $url, 2);
+                }
+            }
+
+            curl_close($ch);
+        } catch (\Exception $e) {
+            PrestaShopLogger::addLog('Warmup exception for ' . $url . ': ' . $e->getMessage(), 3);
+        }
+    }
 }

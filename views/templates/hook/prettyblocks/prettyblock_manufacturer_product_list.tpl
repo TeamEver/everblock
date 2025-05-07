@@ -22,7 +22,7 @@
             <div class="carousel-inner">
                 {assign var="numProductsPerSlide" value=4}
                 {foreach from=$block.extra.presenteds item=product key=key}
-                    {if $key % $numProductsPerSlide == 0}
+                    {if $key  $numProductsPerSlide == 0}
                         {if $key == 0}
                             <div class="carousel-item active">
                         {else}
@@ -41,7 +41,7 @@
                         </div>
                     </div>
 
-                    {if ($key + 1) % $numProductsPerSlide == 0 || $key == count($block.extra.presenteds) - 1}
+                    {if ($key + 1)  $numProductsPerSlide == 0 || $key == count($block.extra.presenteds) - 1}
                         </div>
                     </div>
                     {/if}

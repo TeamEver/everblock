@@ -129,4 +129,30 @@ class EverblockTabsClass extends ObjectModel
         }
         return $return;
     }
+
+    public static function createTabForAllProducts(int $idShop, array $titles, array $contents, bool $drop = false): void
+    {
+        if ($drop) {
+            Db::getInstance()->execute('DELETE FROM `' . _DB_PREFIX_ . 'everblock_tabs`');
+            Db::getInstance()->execute('DELETE FROM `' . _DB_PREFIX_ . 'everblock_tabs_lang`');
+        }
+
+        $productIds = Db::getInstance()->executeS('SELECT id_product FROM `' . _DB_PREFIX_ . 'product`');
+
+        foreach ($productIds as $product) {
+            $tab = new self();
+            $tab->id_product = (int) $product['id_product'];
+            $tab->id_shop = $idShop;
+            $tab->id_tab = 0; // valeur logique ou à adapter
+
+            foreach ($titles as $idLang => $title) {
+                $tab->title[$idLang] = $title;
+            }
+            foreach ($contents as $idLang => $content) {
+                $tab->content[$idLang] = $content;
+            }
+
+            $tab->save();
+        }
+    }
 }

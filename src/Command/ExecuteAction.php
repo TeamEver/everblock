@@ -60,6 +60,7 @@ class ExecuteAction extends Command
         'securewithapache',
         'saveproducts',
         'webpprettyblock',
+        'removehn',
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -265,6 +266,76 @@ class ExecuteAction extends Command
             }
 
             $output->writeln('<comment>All products have been processed</comment>');
+            return self::SUCCESS;
+        }
+        if ($action === 'removehn') {
+            $output->writeln('<comment>Start replacing all Hn tags in product, category and manufacturer descriptions</comment>');
+            $pattern = '/<h([1-6])\b([^>]*)>(.*?)<\/h\1>/is';
+
+            // Produits
+            $output->writeln('<comment>Processing products…</comment>');
+            $sql = new DbQuery();
+            $sql->select('id_product');
+            $sql->from('product_shop');
+            $sql->where('id_shop = ' . (int) $shop->id);
+            $results = Db::getInstance()->executeS($sql);
+
+            foreach ($results as $result) {
+                $product = new Product((int) $result['id_product']);
+                foreach (Language::getLanguages(false) as $lang) {
+                    $product->description[$lang['id_lang']] = preg_replace_callback($pattern, function ($matches) {
+                        return sprintf('<p class="h%s"%s>%s</p>', $matches[1], $matches[2], $matches[3]);
+                    }, $product->description[$lang['id_lang']]);
+
+                    $product->description_short[$lang['id_lang']] = preg_replace_callback($pattern, function ($matches) {
+                        return sprintf('<p class="h%s"%s>%s</p>', $matches[1], $matches[2], $matches[3]);
+                    }, $product->description_short[$lang['id_lang']]);
+                }
+                try {
+                    $product->save();
+                    $output->writeln('<comment>Updated product ' . $product->id . '</comment>');
+                } catch (Exception $e) {
+                    $output->writeln('<warning>Product ' . $product->id . ' failed: ' . $e->getMessage() . '</warning>');
+                }
+            }
+
+            // Catégories
+            $output->writeln('<comment>Processing categories…</comment>');
+            $categories = \Category::getCategories($shop->id, false, false);
+            foreach ($categories as $cat) {
+                $category = new \Category($cat['id_category']);
+                foreach (Language::getLanguages(false) as $lang) {
+                    $category->description[$lang['id_lang']] = preg_replace_callback($pattern, function ($matches) {
+                        return sprintf('<p class="h%s"%s>%s</p>', $matches[1], $matches[2], $matches[3]);
+                    }, $category->description[$lang['id_lang']]);
+                }
+                try {
+                    $category->save();
+                    $output->writeln('<comment>Updated category ' . $category->id . '</comment>');
+                } catch (Exception $e) {
+                    $output->writeln('<warning>Category ' . $category->id . ' failed: ' . $e->getMessage() . '</warning>');
+                }
+            }
+
+            // Marques (Fabricants)
+            $output->writeln('<comment>Processing manufacturers…</comment>');
+            $manufacturers = \Manufacturer::getManufacturers(false, $context->language->id, true, false, false);
+            foreach ($manufacturers as $manu) {
+                $manufacturer = new \Manufacturer($manu['id_manufacturer']);
+                foreach (Language::getLanguages(false) as $lang) {
+                    $manufacturer->description[$lang['id_lang']] = preg_replace_callback($pattern, function ($matches) {
+                        return sprintf('<p class="h%s"%s>%s</p>', $matches[1], $matches[2], $matches[3]);
+                    }, $manufacturer->description[$lang['id_lang']]);
+                }
+                try {
+                    $manufacturer->save();
+                    $output->writeln('<comment>Updated manufacturer ' . $manufacturer->id . '</comment>');
+                } catch (Exception $e) {
+                    $output->writeln('<warning>Manufacturer ' . $manufacturer->id . ' failed: ' . $e->getMessage() . '</warning>');
+                }
+            }
+
+            $output->writeln('<success>All Hn tags replaced by <p class="hN"> in product, category, and manufacturer descriptions.</success>');
             return self::SUCCESS;
         }
         return self::ABORTED;

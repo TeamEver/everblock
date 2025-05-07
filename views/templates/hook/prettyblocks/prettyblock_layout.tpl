@@ -23,15 +23,15 @@
     
   {foreach from=$block.states item=state key=key}
     
-    {if $state.order == '100%'}
+    {if $state.order == '100'}
       {assign var="bootstrapClass" value="col-12"}
-    {elseif $state.order == '50%'}
+    {elseif $state.order == '50'}
       {assign var="bootstrapClass" value="col-12 col-md-6"}
-    {elseif $state.order == '33,33%'}
+    {elseif $state.order == '33,33'}
       {assign var="bootstrapClass" value="col-12 col-md-4"}
-    {elseif $state.order == '25%'}
+    {elseif $state.order == '25'}
       {assign var="bootstrapClass" value="col-12 col-md-3"}
-    {elseif $state.order == '16,67%'}
+    {elseif $state.order == '16,67'}
       {assign var="bootstrapClass" value="col-12 col-md-2"}
     {else}
       {assign var="bootstrapClass" value="col-12"}
@@ -47,14 +47,14 @@
             {/if}
         {/if}
       <div class="position-relative overflow-hidden h-100 w-100" style="
-        {if $state.padding_left}padding-left:{$state.padding_left}%;{/if}
-        {if $state.padding_right}padding-right:{$state.padding_right}%;{/if}
-        {if $state.padding_top}padding-top:{$state.padding_top}%;{/if}
-        {if $state.padding_bottom}padding-bottom:{$state.padding_bottom}%;{/if}
-        {if $state.margin_left}margin-left:{$state.margin_left}%;{/if}
-        {if $state.margin_right}margin-right:{$state.margin_right}%;{/if}
-        {if $state.margin_top}margin-top:{$state.margin_top}%;{/if}
-        {if $state.margin_bottom}margin-bottom:{$state.margin_bottom}%;{/if}
+        {if $state.padding_left}padding-left:{$state.padding_left};{/if}
+        {if $state.padding_right}padding-right:{$state.padding_right};{/if}
+        {if $state.padding_top}padding-top:{$state.padding_top};{/if}
+        {if $state.padding_bottom}padding-bottom:{$state.padding_bottom};{/if}
+        {if $state.margin_left}margin-left:{$state.margin_left};{/if}
+        {if $state.margin_right}margin-right:{$state.margin_right};{/if}
+        {if $state.margin_top}margin-top:{$state.margin_top};{/if}
+        {if $state.margin_bottom}margin-bottom:{$state.margin_bottom};{/if}
       ">
 
           {if $state.image.url}
