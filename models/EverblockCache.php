@@ -22,70 +22,74 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockCache extends ObjectModel
 {
-    /**
-     * Get module configuration from cache, store it if not stored on cache
-     * Do NOT store confidential informations
-     * @param configuration key
-     * @return configuration value
-    */
+    protected static function useNativeCache(): bool
+    {
+        return Configuration::get('EVERBLOCK_CACHE') !== '1';
+    }
+
     public static function getModuleConfiguration(string $key): string
     {
-        static::createCacheDir();
         $context = Context::getContext();
+
         if ($context->controller->controller_type == 'admin'
             || $context->controller->controller_type == 'moduleadmin'
         ) {
             return '';
         }
+
+        if (static::useNativeCache()) {
+            if (!Cache::isStored($key)) {
+                $value = Configuration::get($key);
+                Cache::store($key, $value);
+            }
+            return (string) Cache::retrieve($key);
+        }
+
+        static::createCacheDir();
+
         if (!static::isCacheStored($key)) {
             $value = Configuration::get($key);
             static::cacheStore($key, $value);
         }
-        return static::cacheRetrieve($key);
+        return (string) static::cacheRetrieve($key);
     }
 
-    /**
-     * Check if cache exists based on unique key
-     * No cache on admin, no cache if PS cache is disabled
-     * @return bool
-    */
     public static function isCacheStored(string $cacheKey): bool
     {
-        static::createCacheDir();
-        $context = Context::getContext();
-        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
-        if (file_exists($cacheFilePath)) {
-            return true;
+        if (static::useNativeCache()) {
+            return Cache::isStored($cacheKey);
         }
-        return false;
+
+        static::createCacheDir();
+        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
+        return file_exists($cacheFilePath);
     }
 
-    /**
-     * Store data on file, on Prestashop cache folder
-     * Do NOT store confidential informations
-     * @param cacheKey, must be unique
-     * @param value to store
-    */
     public static function cacheStore(string $cacheKey, $cacheValue)
     {
-        static::createCacheDir();
+        if (static::useNativeCache()) {
+            Cache::store($cacheKey, $cacheValue);
+            return;
+        }
+
         $context = Context::getContext();
         if ($context->controller->controller_type == 'admin'
             || $context->controller->controller_type == 'moduleadmin'
         ) {
             return;
         }
-        $cacheFilePath = _PS_CACHE_DIR_ .'everblock/' . $cacheKey . '.cache';
-        return file_put_contents($cacheFilePath, serialize($cacheValue));
+
+        static::createCacheDir();
+        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
+        file_put_contents($cacheFilePath, serialize($cacheValue));
     }
 
-    /**
-     * Retrieve value from cache
-     * @param cache key
-     * @return cache content
-    */
     public static function cacheRetrieve(string $cacheKey)
     {
+        if (static::useNativeCache()) {
+            return Cache::retrieve($cacheKey);
+        }
+
         static::createCacheDir();
         $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
@@ -97,6 +101,11 @@ class EverblockCache extends ObjectModel
 
     public static function cacheDrop(string $cacheKey)
     {
+        if (static::useNativeCache()) {
+            Cache::clean($cacheKey);
+            return;
+        }
+
         static::createCacheDir();
         $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
@@ -106,6 +115,11 @@ class EverblockCache extends ObjectModel
 
     public static function cacheDropByPattern(string $cacheKeyStart)
     {
+        if (static::useNativeCache()) {
+            // Pas de gestion native par motif → on pourrait itérer manuellement sur les clés si nécessaire
+            return;
+        }
+
         static::createCacheDir();
         $cacheDir = _PS_CACHE_DIR_ . 'everblock/';
         $pattern = $cacheDir . $cacheKeyStart . '*.cache';

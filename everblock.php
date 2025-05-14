@@ -62,7 +62,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '6.4.4';
+        $this->version = '6.4.5';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -188,7 +188,6 @@ class Everblock extends Module
 
     public function checkHooks()
     {
-        // Hook displayEverblockExtraOrderStep
         if (!Hook::getIdByName('displayEverblockExtraOrderStep')) {
             $hook = new Hook();
             $hook->name = 'displayEverblockExtraOrderStep';
@@ -196,7 +195,6 @@ class Everblock extends Module
             $hook->description = 'This hook is triggered on extra order step';
             $hook->save();
         }
-        // Hook actionGetEverBlockBefore
         if (!Hook::getIdByName('actionGetEverBlockBefore')) {
             $hook = new Hook();
             $hook->name = 'actionGetEverBlockBefore';
@@ -204,7 +202,6 @@ class Everblock extends Module
             $hook->description = 'This hook triggers before block is rendered';
             $hook->save();
         }
-        // Hook actionEverBlockChangeShortcodeBefore
         if (!Hook::getIdByName('actionEverBlockChangeShortcodeBefore')) {
             $hook = new Hook();
             $hook->name = 'actionEverBlockChangeShortcodeBefore';
@@ -212,12 +209,32 @@ class Everblock extends Module
             $hook->description = 'This hook triggers before every block shortcode is rendered';
             $hook->save();
         }
-        // Hook actionEverBlockChangeShortcodeBefore
         if (!Hook::getIdByName('actionEverBlockChangeShortcodeAfter')) {
             $hook = new Hook();
             $hook->name = 'actionEverBlockChangeShortcodeAfter';
             $hook->title = 'After block shortcodes are rendered';
             $hook->description = 'This hook triggers after every block shortcode is rendered';
+            $hook->save();
+        }
+        if (!Hook::getIdByName('displayBeforeStoreLocator')) {
+            $hook = new Hook();
+            $hook->name = 'displayBeforeStoreLocator';
+            $hook->title = 'display before Everblock store locator';
+            $hook->description = 'This hook triggers before store locator is rendered';
+            $hook->save();
+        }
+        if (!Hook::getIdByName('displayAfterStoreLocator')) {
+            $hook = new Hook();
+            $hook->name = 'displayAfterStoreLocator';
+            $hook->title = 'display after Everblock store locator';
+            $hook->description = 'This hook triggers after store locator is rendered';
+            $hook->save();
+        }
+        if (!Hook::getIdByName('displayAfterLocatorStore')) {
+            $hook = new Hook();
+            $hook->name = 'displayAfterLocatorStore';
+            $hook->title = 'display after store content on store locator';
+            $hook->description = 'This hook triggers after store content on store locator';
             $hook->save();
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
@@ -714,6 +731,26 @@ class Everblock extends Module
                     ],
                     [
                         'type' => 'switch',
+                        'label' => $this->l('Use module cache system instead of Prestashop native cache ?'),
+                        'desc' => $this->l('Set yes to use module cache, this will generate cache files on your server'),
+                        'hint' => $this->l('Else Prestashop native cache will be used'),
+                        'name' => 'EVERBLOCK_CACHE',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => true,
+                                'label' => $this->l('Yes'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => false,
+                                'label' => $this->l('No'),
+                            ],
+                        ],
+                    ],
+                    [
+                        'type' => 'switch',
                         'label' => $this->l('Enable front-office script for obfuscation ?'),
                         'desc' => $this->l('Will load JS file to manage obfuscated links'),
                         'hint' => $this->l('Leave it to "No" if you already have a script that manages obfuscated links'),
@@ -1067,6 +1104,7 @@ class Everblock extends Module
             'EVERBLOCK_USE_GMAP' => Configuration::get('EVERBLOCK_USE_GMAP'),
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
+            'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
             'EVERBLOCK_USE_SLICK' => Configuration::get('EVERBLOCK_USE_SLICK'),
             'EVERPSCSS' => $custom_css,
@@ -1209,6 +1247,10 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERPSCSS_CACHE',
             Tools::getValue('EVERPSCSS_CACHE')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_CACHE',
+            Tools::getValue('EVERBLOCK_CACHE')
         );
         Configuration::updateValue(
             'EVERBLOCK_USE_OBF',

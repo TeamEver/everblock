@@ -3313,7 +3313,6 @@ class EverblockTools extends ObjectModel
         if ((bool) Configuration::get('EVERBLOCK_DISABLE_WEBP') === true) {
             return $htmlContent;
         }
-        static::convertAllPrettyblocksImagesToWebP();
         // Regular expression to find img tags and their src attributes
         $pattern = '/<img\s+([^>]*src="([^"]+)"[^>]*)>/i';
         $shopName = Configuration::get('PS_SHOP_NAME');

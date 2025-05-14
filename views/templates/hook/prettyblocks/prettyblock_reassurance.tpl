@@ -20,7 +20,7 @@
         {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
       {/if}
 
-      <div id="block-{$block.id_prettyblocks}-{$key}" class="col-6 text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
+      <div id="block-{$block.id_prettyblocks}-{$key}" class="text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
         {if $state.padding_left}padding-left:{$state.padding_left};{/if}
         {if $state.padding_right}padding-right:{$state.padding_right};{/if}
         {if $state.padding_top}padding-top:{$state.padding_top};{/if}

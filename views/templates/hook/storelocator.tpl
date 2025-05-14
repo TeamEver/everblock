@@ -15,25 +15,28 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+{hook h='displayBeforeStoreLocator'}
 <div id="everblock-storelist" class="everblock-storelocator visible row">
   {foreach from=$everblock_stores item=item name=store_loop}
     <div class="col-12 col-md-4 mt-3 d-flex">
       <div class="card store-block shadow-sm border-0 w-100 d-flex flex-column h-100">
         <div class="store-image-wrapper" style="height: 200px; overflow: hidden;">
-          {if $item.latitude && $item.longitude}
-          <a href="https://www.google.com/maps/search/?api=1&query={$item.latitude},{$item.longitude}"
-               target="_blank" rel="noopener noreferrer" class="text-muted small text-decoration-none obfme">
+          {assign var="hasCoordinates" value=(isset($item.latitude) && isset($item.longitude) && $item.latitude != '' && $item.longitude != '')}
+          {if $hasCoordinates}
+            <a href="https://www.google.com/maps/search/?api=1&query={$item.latitude},{$item.longitude}"
+               target="_blank" rel="noopener noreferrer" class="text-muted small text-decoration-none">
           {/if}
+
           <img src="{$urls.img_store_url|escape:'htmlall':'UTF-8'}{$item.id|escape:'htmlall':'UTF-8'}.jpg"
                class="card-img-top img-fluid w-100 h-100 lazyload"
                style="object-fit: cover;"
                loading="lazy"
                alt="{$item.name|escape:'htmlall':'UTF-8'}">
-          {if $item.latitude && $item.longitude}
-          </a>
+
+          {if $hasCoordinates}
+            </a>
           {/if}
         </div>
-
         <div class="card-body d-flex flex-column flex-grow-1">
           <p class="store-name fw-bold mb-1">
             {$item.name|escape:'htmlall':'UTF-8'}
@@ -52,10 +55,10 @@
               </a>
             </p>
           {/if}
-          {if $item.latitude && $item.longitude}
+          {if $hasCoordinates}
           <p class="mb-2 gmaps-link">
             <a href="https://www.google.com/maps/search/?api=1&query={$item.latitude},{$item.longitude}"
-               target="_blank" rel="noopener noreferrer" class="text-muted small text-decoration-none obfme">
+               target="_blank" rel="noopener noreferrer" class="text-muted small text-decoration-none">
               <i class="material-icons align-middle me-1">location_on</i>
               {l s='Get directions' mod='everblock'}
             </a>
@@ -82,12 +85,13 @@
               </ul>
             </div>
           </div>
+          {hook h='displayAfterLocatorStore' store=$item}
         </div>
       </div>
     </div>
-
     {if $smarty.foreach.store_loop.iteration % 3 == 0}
       <div class="clearfix"></div>
     {/if}
   {/foreach}
 </div>
+{hook h='displayAfterStoreLocator'}
