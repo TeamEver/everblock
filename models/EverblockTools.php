@@ -315,7 +315,7 @@ class EverblockTools extends ObjectModel
                     'carousel' => $carousel
                 ]);
                 $renderedContent = $context->smarty->fetch($templatePath);
-                
+                $renderedContent = str_replace('owl-carousel', '', $renderedContent);
                 $txt = str_replace($match[0], $renderedContent, $txt);
             }
         }
