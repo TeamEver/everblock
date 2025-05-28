@@ -3,9 +3,9 @@
  * @author Team Ever
  * @license http://opensource.org/licenses/afl-3.0.php
 *}
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}w-100 px-0 mx-0{elseif $block.settings.default.container}container{/if}">
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}w-100 px-0 mx-0 mt-20px{elseif $block.settings.default.container}container{/if}">
   {if $block.settings.default.force_full_width}
-    <div class="row gx-0">
+    <div class="row g-10px">
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
@@ -34,7 +34,7 @@
       ">
         {if $icon_url}
           <div class="mb-2">
-            <img src="{$icon_url|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="40">
+            <img src="{$icon_url|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
           </div>
         {/if}
 

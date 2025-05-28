@@ -315,7 +315,7 @@ class EverblockTools extends ObjectModel
                     'carousel' => $carousel
                 ]);
                 $renderedContent = $context->smarty->fetch($templatePath);
-                $renderedContent = str_replace('owl-carousel', '', $renderedContent);
+                
                 $txt = str_replace($match[0], $renderedContent, $txt);
             }
         }
@@ -327,26 +327,43 @@ class EverblockTools extends ObjectModel
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
 
-        // Mise à jour de la regex pour capturer les paramètres id, nb et carousel
-        preg_match_all('/\[productfeature\s+id=(\d+)\s+nb=(\d+)\s+carousel=(true|false)\]/i', $txt, $matches, PREG_SET_ORDER);
+        // Regex mise à jour pour capturer les paramètres optionnels orderby et orderway
+        preg_match_all(
+            '/\[productfeature\s+id=(\d+)\s+nb=(\d+)\s+carousel=(true|false)(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
+            $txt,
+            $matches,
+            PREG_SET_ORDER
+        );
 
         foreach ($matches as $match) {
-            $featureId = intval($match[1]);
-            $productLimit = intval($match[2]);
-            $carousel = $match[3] === 'true';
+            $featureId = (int) $match[1];
+            $productLimit = (int) $match[2];
+            $carousel = strtolower($match[3]) === 'true';
 
-            // Rechercher les produits par caractéristique
-            $featureProducts = static::getProductsByFeature($featureId, $productLimit, $context);
+            $orderBy = isset($match[4]) ? strtolower($match[4]) : 'id_product';
+            $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'DESC';
+
+            // Validation des paramètres
+            $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
+            $allowedOrderWay = ['ASC', 'DESC'];
+
+            if (!in_array($orderBy, $allowedOrderBy)) {
+                $orderBy = 'id_product';
+            }
+            if (!in_array($orderWay, $allowedOrderWay)) {
+                $orderWay = 'DESC';
+            }
+
+            $featureProducts = static::getProductsByFeature($featureId, $productLimit, $context, $orderBy, $orderWay);
             $productIds = array_column($featureProducts, 'id_product');
             $everPresentProducts = static::everPresentProducts($productIds, $context);
+
             if (!empty($featureProducts)) {
-                // Assigner les produits et le flag carousel au template
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
                     'carousel' => $carousel
                 ]);
                 $renderedContent = $context->smarty->fetch($templatePath);
-
                 $txt = str_replace($match[0], $renderedContent, $txt);
             }
         }
@@ -357,14 +374,12 @@ class EverblockTools extends ObjectModel
     /**
      * Méthode pour obtenir les produits en fonction de l'ID de la caractéristique et de la limite de produits.
      */
-    protected static function getProductsByFeature(int $featureId, int $limit, Context $context)
+    protected static function getProductsByFeature(int $featureId, int $limit, Context $context, string $orderBy = 'id_product', string $orderWay = 'DESC')
     {
         $cacheId = 'everblock_getProductsByFeature_'
-        . (int) $featureId
-        . '_'
-        . (int) $limit
-        . '_'
-        . (int) $context->language->id;
+            . $featureId . '_' . $limit . '_' . $context->language->id
+            . '_' . $orderBy . '_' . $orderWay;
+
         if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = new DbQuery();
             $sql->select('p.id_product');
@@ -372,13 +387,14 @@ class EverblockTools extends ObjectModel
             $sql->innerJoin('feature_product', 'fp', 'p.id_product = fp.id_product');
             $sql->where('fp.id_feature = ' . (int) $featureId);
             $sql->where('p.active = 1');
-            $sql->orderBy('p.date_add DESC');
+            $sql->orderBy('p.' . pSQL($orderBy) . ' ' . pSQL($orderWay));
             $sql->limit($limit);
 
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
             EverblockCache::cacheStore($cacheId, $productIds);
             return $productIds;
         }
+
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
@@ -443,21 +459,25 @@ class EverblockTools extends ObjectModel
     public static function getCategoryShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
-        
-        // Capture aussi le paramètre carousel (optionnel)
-        preg_match_all('/\[category\s+id="(\d+)"\s+nb="(\d+)"(?:\s+carousel=(?:"?(true|false)"?))?\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        // Regex pour capturer : id, nb, carousel, orderBy, orderWay (tous optionnels sauf id et nb)
+        preg_match_all(
+            '/\[category\s+id="(\d+)"\s+nb="(\d+)"(?:\s+carousel=(?:"?(true|false)"?))?(?:\s+orderby="?(id_product|price|name|date_add|position)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
+            $txt,
+            $matches,
+            PREG_SET_ORDER
+        );
 
         foreach ($matches as $match) {
             $categoryId = (int) $match[1];
             $productCount = (int) $match[2];
             $carousel = isset($match[3]) && strtolower($match[3]) === 'true';
+            $orderBy = isset($match[4]) ? $match[4] : 'id_product';
+            $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'ASC';
 
-            $categoryProducts = static::getProductsByCategoryId($categoryId, $productCount, $context);
+            $categoryProducts = static::getProductsByCategoryId($categoryId, $productCount, $orderBy, $orderWay);
             if (!empty($categoryProducts)) {
-                $productIds = [];
-                foreach ($categoryProducts as $categoryProduct) {
-                    $productIds[] = (int) $categoryProduct['id_product'];
-                }
+                $productIds = array_column($categoryProducts, 'id_product');
                 $everPresentProducts = static::everPresentProducts($productIds, $context);
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
@@ -471,45 +491,67 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    protected static function getProductsByCategoryId(int $categoryId, int $limit): array
+    protected static function getProductsByCategoryId(int $categoryId, int $limit, string $orderBy = 'id_product', string $orderWay = 'ASC'): array
     {
-        $cacheId = 'everblock_getProductsByCategoryId_'
-        . (int) $categoryId
-        . '_'
-        . (int) $limit;
+        $cacheId = 'everblock_getProductsByCategoryId_' . $categoryId . '_' . $limit . '_' . $orderBy . '_' . $orderWay;
+
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $category = new Category((int) $categoryId);
+            $category = new Category($categoryId);
             $return = [];
+
             if (Validate::isLoadedObject($category)) {
-                $products = $category->getProducts(Context::getContext()->language->id, 1, $limit, 'id_product', 'ASC');
+                $products = $category->getProducts(
+                    Context::getContext()->language->id,
+                    1,
+                    $limit,
+                    $orderBy,
+                    $orderWay
+                );
                 $return = $products;
             }
+
             EverblockCache::cacheStore($cacheId, $return);
             return $return;
         }
+
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
     public static function getManufacturerShortcodes($message, $context, Everblock $module)
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
-        // Update regex to capture optional carousel parameter
-        preg_match_all('/\[manufacturer\s+id="(\d+)"\s+nb="(\d+)"(?:\s+carousel=(true|false))?\]/i', $message, $matches, PREG_SET_ORDER);
+
+        preg_match_all(
+            '/\[manufacturer\s+id="(\d+)"\s+nb="(\d+)"(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
+            $message,
+            $matches,
+            PREG_SET_ORDER
+        );
 
         foreach ($matches as $match) {
             $manufacturerId = (int) $match[1];
             $productCount = (int) $match[2];
             $carousel = isset($match[3]) && $match[3] === 'true';
+            $orderBy = isset($match[4]) ? strtolower($match[4]) : 'id_product';
+            $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'DESC';
 
-            $manufacturerProducts = static::getProductsByManufacturerId($manufacturerId, $productCount);
+            // Validation
+            $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
+            $allowedOrderWay = ['ASC', 'DESC'];
+
+            if (!in_array($orderBy, $allowedOrderBy)) {
+                $orderBy = 'id_product';
+            }
+            if (!in_array($orderWay, $allowedOrderWay)) {
+                $orderWay = 'DESC';
+            }
+
+            $manufacturerProducts = static::getProductsByManufacturerId($manufacturerId, $productCount, $orderBy, $orderWay);
+
             if (!empty($manufacturerProducts)) {
-                $productIds = [];
-                foreach ($manufacturerProducts as $manufacturerProduct) {
-                    $productIds[] = (int) $manufacturerProduct['id_product'];
-                }
+                $productIds = array_column($manufacturerProducts, 'id_product');
                 $everPresentProducts = static::everPresentProducts($productIds, $context);
 
-                // Assign products and carousel flag to the template
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
                     'carousel' => $carousel
@@ -522,29 +564,31 @@ class EverblockTools extends ObjectModel
         return $message;
     }
 
-    protected static function getProductsByManufacturerId(int $manufacturerId, int $limit): array
+    protected static function getProductsByManufacturerId(int $manufacturerId, int $limit, string $orderBy = 'id_product', string $orderWay = 'DESC'): array
     {
         $cacheId = 'everblock_getProductsByManufacturerId_'
-        . (int) $manufacturerId
-        . '_'
-        . (int) $limit;
+            . $manufacturerId . '_' . $limit . '_' . $orderBy . '_' . $orderWay;
+
         if (!EverblockCache::isCacheStored($cacheId)) {
             $manufacturer = new Manufacturer($manufacturerId);
             $return = [];
+
             if (Validate::isLoadedObject($manufacturer)) {
                 $products = Manufacturer::getProducts(
                     $manufacturer->id,
                     Context::getContext()->language->id,
                     1,
                     $limit,
-                    'id_product',
-                    'ASC'
+                    pSQL($orderBy),
+                    pSQL($orderWay)
                 );
                 $return = $products;
             }
+
             EverblockCache::cacheStore($cacheId, $return);
             return $return;
         }
+
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
@@ -1048,9 +1092,8 @@ class EverblockTools extends ObjectModel
 
     public static function getBestSalesShortcode(string $txt, Context $context, Everblock $module): string
     {
-        // Regex pour capturer les paramètres optionnels nb, days, carousel
         preg_match_all(
-            '/\[best-sales(?:\s+nb=(\d+))?(?:\s+days=(\d+))?(?:\s+carousel=(true|false))?\]/i',
+            '/\[best-sales(?:\s+nb=(\d+))?(?:\s+days=(\d+))?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
             $txt,
             $matches,
             PREG_SET_ORDER
@@ -1058,10 +1101,22 @@ class EverblockTools extends ObjectModel
 
         foreach ($matches as $match) {
             $limit = isset($match[1]) ? (int)$match[1] : 10;
-            $days = isset($match[2]) ? (int)$match[2] : null; // null = pas de filtre date
+            $days = isset($match[2]) ? (int)$match[2] : null;
             $carousel = isset($match[3]) && $match[3] === 'true';
+            $orderBy = isset($match[4]) ? strtolower($match[4]) : 'total_quantity';
+            $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'DESC';
 
-            $cacheId = 'getBestSalesShortcode_' . (int)$context->shop->id . "_$limit" . "_" . ($days ?? 'all');
+            // Validation
+            $allowedOrderBy = ['total_quantity', 'product_id'];
+            $allowedOrderWay = ['ASC', 'DESC'];
+            if (!in_array($orderBy, $allowedOrderBy)) {
+                $orderBy = 'total_quantity';
+            }
+            if (!in_array($orderWay, $allowedOrderWay)) {
+                $orderWay = 'DESC';
+            }
+
+            $cacheId = 'getBestSalesShortcode_' . (int)$context->shop->id . "_$limit" . "_" . ($days ?? 'all') . "_$orderBy_$orderWay";
 
             if (!EverblockCache::isCacheStored($cacheId)) {
                 $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity
@@ -1076,7 +1131,7 @@ class EverblockTools extends ObjectModel
                 }
 
                 $sql .= ' GROUP BY od.product_id
-                          ORDER BY total_quantity DESC
+                          ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay) . '
                           LIMIT ' . (int)$limit;
 
                 $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -1086,10 +1141,7 @@ class EverblockTools extends ObjectModel
             }
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(function ($row) {
-                    return (int)$row['product_id'];
-                }, $productIds);
-
+                $productIdsArray = array_map(fn($row) => (int)$row['product_id'], $productIds);
                 $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
 
                 if (!empty($everPresentProducts)) {
@@ -1101,11 +1153,13 @@ class EverblockTools extends ObjectModel
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
-                    // Recomposer le shortcode original
+                    // Recompose shortcode (avec tous les paramètres capturés)
                     $shortcodeParts = ['[best-sales'];
                     if (isset($match[1])) $shortcodeParts[] = 'nb=' . $match[1];
                     if (isset($match[2])) $shortcodeParts[] = 'days=' . $match[2];
                     if (isset($match[3])) $shortcodeParts[] = 'carousel=' . $match[3];
+                    if (isset($match[4])) $shortcodeParts[] = 'orderby=' . $match[4];
+                    if (isset($match[5])) $shortcodeParts[] = 'orderway=' . $match[5];
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
@@ -2185,22 +2239,90 @@ class EverblockTools extends ObjectModel
     public static function getStoreLocatorData()
     {
         $context = Context::getContext();
-        $cacheId = 'store_locator_data_' . (int) $context->shop->id;
+        $id_lang = (int) $context->language->id;
+        $id_shop = (int) $context->shop->id;
+        $cacheId = 'store_locator_data_' . $id_shop;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $stores = Store::getStores((int) $context->language->id);
-
+            $stores = Store::getStores($id_lang);
             $days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
-            foreach ($stores as &$store) {
-                $decodedHours = json_decode($store['hours'], true);
+            $now = new \DateTime('now', new \DateTimeZone(Configuration::get('PS_TIMEZONE')));
+            $todayIndex = (int) $now->format('w'); // 0 = dimanche
+            $currentTime = $now->format('H:i');
+            $todayDate = $now->format('Y-m-d');
+            $frenchHolidays = self::getFrenchHolidays((int) $now->format('Y'));
+            $isHoliday = in_array($todayDate, $frenchHolidays);
 
+            foreach ($stores as &$store) {
+                $id_store = (int) $store['id_store'];
+                $cms_id = (int) Configuration::get('QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $id_store, null, null, $id_shop);
+                $cms_link = null;
+
+                if ($cms_id > 0) {
+                    $cms = new CMS($cms_id, $id_lang, $id_shop);
+                    if (Validate::isLoadedObject($cms)) {
+                        $link = new Link();
+                        $cms_link = $link->getCMSLink($cms);
+                    }
+                }
+
+                $store['cms_id'] = $cms_id;
+                $store['cms_link'] = $cms_link;
+
+                $decodedHours = json_decode($store['hours'], true);
                 $store['hours_display'] = [];
+                $store['is_open'] = false;
+                $store['open_until'] = null;
+                $store['opens_at'] = null;
+
                 foreach ($days as $i => $day) {
+                    $slots = isset($decodedHours[$i]) ? $decodedHours[$i] : [];
+                    $hoursFormatted = [];
+
+                    foreach ($slots as $slot) {
+                        if (empty($slot)) {
+                            continue;
+                        }
+
+                        // Plusieurs créneaux ? → on découpe
+                        $subSlots = explode(' / ', $slot);
+                        foreach ($subSlots as $subSlot) {
+                            $hoursFormatted[] = trim($subSlot);
+
+                            if (!$isHoliday && $i === $todayIndex && strpos($subSlot, '-') !== false) {
+                                [$startRaw, $endRaw] = explode(' - ', $subSlot);
+                                $start = self::normalizeTime($startRaw);
+                                $end = self::normalizeTime($endRaw);
+                                if ($start && $end) {
+                                    if ($currentTime >= $start && $currentTime <= $end) {
+                                        $store['is_open'] = true;
+                                        $store['open_until'] = $end;
+                                    } elseif ($currentTime < $start) {
+                                        if ($store['opens_at'] === null || $start < $store['opens_at']) {
+                                            $store['opens_at'] = $start;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    $label = count($hoursFormatted) > 0 ? implode(' / ', $hoursFormatted) : 'Fermé';
+                    if ($isHoliday && $i === $todayIndex) {
+                        $label = 'Fermé (jour férié)';
+                    }
+
                     $store['hours_display'][] = [
                         'day' => $day,
-                        'hours' => isset($decodedHours[$i][0]) ? $decodedHours[$i][0] : '',
+                        'hours' => $label,
                     ];
+                }
+
+                if ($isHoliday) {
+                    $store['is_open'] = false;
+                    $store['open_until'] = null;
+                    $store['opens_at'] = null;
                 }
             }
 
@@ -2208,6 +2330,55 @@ class EverblockTools extends ObjectModel
         }
 
         return EverblockCache::cacheRetrieve($cacheId);
+    }
+
+    protected static function normalizeTime($str)
+    {
+        $str = trim($str);
+
+        // Cas : "9h30", "10h00", "20h", "20h00", etc.
+        if (preg_match('/^(\d{1,2})h(\d{2})?$/', $str, $matches)) {
+            $hour = (int) $matches[1];
+            $minute = isset($matches[2]) ? (int) $matches[2] : 0;
+            return sprintf('%02d:%02d', $hour, $minute);
+        }
+
+        // Cas : déjà formaté type "9:30"
+        if (preg_match('/^(\d{1,2}):(\d{2})$/', $str, $matches)) {
+            return sprintf('%02d:%02d', $matches[1], $matches[2]);
+        }
+
+        // Cas : juste "9" ou "20"
+        if (preg_match('/^(\d{1,2})$/', $str, $matches)) {
+            return sprintf('%02d:00', $matches[1]);
+        }
+
+        return null;
+    }
+
+
+    protected static function getFrenchHolidays($year)
+    {
+        $easterDate = easter_date($year);
+        $holidays = [
+            // Jours fixes
+            sprintf('%s-01-01', $year), // Jour de l'an
+            sprintf('%s-05-01', $year), // Fête du travail
+            sprintf('%s-05-08', $year), // Victoire 1945
+            sprintf('%s-07-14', $year), // Fête nationale
+            sprintf('%s-08-15', $year), // Assomption
+            sprintf('%s-11-01', $year), // Toussaint
+            sprintf('%s-11-11', $year), // Armistice
+            sprintf('%s-12-25', $year), // Noël
+
+            // Jours mobiles (basés sur Pâques)
+            date('Y-m-d', $easterDate), // Pâques
+            date('Y-m-d', strtotime('+39 days', $easterDate)), // Ascension
+            date('Y-m-d', strtotime('+49 days', $easterDate)), // Pentecôte
+            date('Y-m-d', strtotime('+50 days', $easterDate)), // Lundi de Pentecôte
+        ];
+
+        return $holidays;
     }
 
     public static function getStoreCoordinates(int $storeId): array

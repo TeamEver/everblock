@@ -15,67 +15,85 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+<div id="everblock-storelocator" class="everblock-storelocator visible row">
+  map
+</div>
+<div id="store-search-block" class="mt-3 mb-3">
+  <div class="input-group">
+    <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
+  </div>
+</div>
 {hook h='displayBeforeStoreLocator'}
-<div id="everblock-storelist" class="everblock-storelocator visible row">
+<div id="everblock-storelist" class="row g-4">
   {foreach from=$everblock_stores item=item name=store_loop}
-    <div class="col-12 col-md-4 mt-3 d-flex">
-      <div class="card store-block shadow-sm border-0 w-100 d-flex flex-column h-100">
-        <div class="store-image-wrapper" style="height: 200px; overflow: hidden;">
-          {assign var="hasCoordinates" value=(isset($item.latitude) && isset($item.longitude) && $item.latitude != '' && $item.longitude != '')}
-          {if $hasCoordinates}
-            <a href="https://www.google.com/maps/search/?api=1&query={$item.latitude},{$item.longitude}"
-               target="_blank" rel="noopener noreferrer" class="text-muted small text-decoration-none">
-          {/if}
-
+    {assign var="hasCoordinates" value=(isset($item.latitude) && isset($item.longitude) && $item.latitude != '' && $item.longitude != '')}
+    <div class="col-12 col-md-4">
+      <div class="d-flex align-items-start">
+        <div class="flex-shrink-0 me-3">
           <img src="{$urls.img_store_url|escape:'htmlall':'UTF-8'}{$item.id|escape:'htmlall':'UTF-8'}.jpg"
-               class="card-img-top img-fluid w-100 h-100 lazyload"
-               style="object-fit: cover;"
-               loading="lazy"
-               alt="{$item.name|escape:'htmlall':'UTF-8'}">
-
-          {if $hasCoordinates}
-            </a>
-          {/if}
+               class="rounded" alt="{$item.name|escape:'htmlall':'UTF-8'}"
+               style="width: 80px; height: 80px; object-fit: cover;">
         </div>
-        <div class="card-body d-flex flex-column flex-grow-1">
-          <p class="store-name fw-bold mb-1">
-            {$item.name|escape:'htmlall':'UTF-8'}
-          </p>
-
-          <p class="store-address mb-1">
-            {$item.address1|escape:'htmlall':'UTF-8'}
-            {if $item.address2}<br>{$item.address2|escape:'htmlall':'UTF-8'}{/if}
-          </p>
-          <p class="store-city mb-1">{$item.postcode|escape:'htmlall':'UTF-8'} {$item.city|escape:'htmlall':'UTF-8'}</p>
-
-          {if $item.phone}
-            <p class="store-phone mb-2">
-              <a href="tel:{$item.phone|replace:' ':''|trim|escape:'htmlall':'UTF-8'}" class="text-decoration-none">
-                <i class="material-icons align-middle me-1">phone</i>{$item.phone|escape:'htmlall':'UTF-8'}
+        <div class="flex-grow-1">
+          <h6 class="fw-bold mb-1">
+            {if $item.cms_link}
+              <a href="{$item.cms_link|escape:'htmlall':'UTF-8'}" class="text-dark text-decoration-none">
+                {$item.name|escape:'htmlall':'UTF-8'}
               </a>
+            {else}
+              {$item.name|escape:'htmlall':'UTF-8'}
+            {/if}
+          </h6>
+          <p class="mb-0 small text-muted">
+            {$item.address1|escape:'htmlall':'UTF-8'}<br>
+            {if $item.address2}{$item.address2|escape:'htmlall':'UTF-8'}<br>{/if}
+            {$item.postcode} {$item.city}
+          </p>
+          {if $item.phone}
+            <p class="mb-1 small">
+              <span class="text-muted">{l s='Tel:' mod='everblock'}</span>
+              <a href="tel:{$item.phone|replace:' ':''|escape:'htmlall':'UTF-8'}"
+                 class="text-dark text-decoration-none">+{$item.phone|escape:'htmlall':'UTF-8'}</a>
             </p>
           {/if}
-          {if $hasCoordinates}
-          <p class="mb-2 gmaps-link">
-            <a href="https://www.google.com/maps/search/?api=1&query={$item.latitude},{$item.longitude}"
-               target="_blank" rel="noopener noreferrer" class="text-muted small text-decoration-none">
-              <i class="material-icons align-middle me-1">location_on</i>
-              {l s='Get directions' mod='everblock'}
+
+          {* Status d'ouverture *}
+          <p class="mb-1 small d-flex align-items-center">
+            {if $item.is_open}
+              <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: #28a745;"></span>
+              {l s='Open today until %s' sprintf=[$item.open_until] mod='everblock'}
+            {elseif $item.opens_at}
+              <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: #ffc107;"></span>
+              {l s='Open today at %s' sprintf=[$item.opens_at] mod='everblock'}
+            {else}
+              <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: #dc3545;"></span>
+              {l s='Closed' mod='everblock'}
+            {/if}
+          </p>
+
+          {* Voir les horaires (ouvre une modal Bootstrap) *}
+          <p class="mb-0 small">
+            <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#storeHoursModal{$item.id}">
+              <u>{l s='See hours' mod='everblock'}</u>
+              <i class="ms-1 bi bi-chevron-right" style="font-size: 0.75rem;"></i>
             </a>
           </p>
-          {/if}
+        </div>
+      </div>
+      {hook h='displayAfterLocatorStore' store=$item}
 
-          <button class="btn btn-outline-primary w-100 mt-auto" type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapse-{$item.id}"
-                  aria-expanded="false"
-                  aria-controls="collapse-{$item.id}">
-            {l s='See more' mod='everblock'}
-          </button>
-
-          <div class="collapse mt-3" id="collapse-{$item.id}">
-            <div class="card card-body bg-light border rounded">
-              <ul class="list-unstyled mb-0">
+      {* Modal horaires *}
+      <div class="modal fade" id="storeHoursModal{$item.id}" tabindex="-1" aria-labelledby="storeHoursModalLabel{$item.id}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+              <h5 class="modal-title" id="storeHoursModalLabel{$item.id}">
+                {l s='Hours from %s' sprintf=[$item.name|escape:'htmlall':'UTF-8'] mod='everblock'}
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{l s='Close' mod='everblock'}"></button>
+            </div>
+            <div class="modal-body">
+              <ul class="list-unstyled mb-3">
                 {foreach from=$item.hours_display item=hour}
                   <li>
                     <strong>{$hour.day|escape:'htmlall':'UTF-8'} :</strong>
@@ -83,15 +101,22 @@
                   </li>
                 {/foreach}
               </ul>
+
+              {if $hasCoordinates}
+                <div class="text-center">
+                  <a href="https://www.google.com/maps/search/?api=1&query={$item.latitude},{$item.longitude}"
+                     target="_blank" rel="noopener noreferrer"
+                     class="btn btn-outline-secondary d-inline-flex align-items-center">
+                    <i class="material-icons me-2">location_on</i>
+                    {l s='Get directions' mod='everblock'}
+                  </a>
+                </div>
+              {/if}
             </div>
           </div>
-          {hook h='displayAfterLocatorStore' store=$item}
         </div>
       </div>
     </div>
-    {if $smarty.foreach.store_loop.iteration % 3 == 0}
-      <div class="clearfix"></div>
-    {/if}
   {/foreach}
 </div>
 {hook h='displayAfterStoreLocator'}

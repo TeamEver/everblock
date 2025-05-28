@@ -144,3 +144,103 @@
     border: 0;
     -webkit-appearance: none;
 }
+.ever-model-product.card {
+    border: 1px solid #dee2e6; /* même valeur que Bootstrap 4 */
+    border-radius: .25rem;
+    background-color: #fff;
+}
+.everblock-highlight {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.everblock-highlight:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+/* Responsive width */
+/* SM ≥576px */
+@media (min-width: 576px) {
+  .w-sm-25 { width: 25% !important; }
+  .w-sm-50 { width: 50% !important; }
+  .w-sm-75 { width: 75% !important; }
+  .w-sm-100 { width: 100% !important; }
+}
+
+/* MD ≥768px */
+@media (min-width: 768px) {
+  .w-md-25 { width: 25% !important; }
+  .w-md-50 { width: 50% !important; }
+  .w-md-75 { width: 75% !important; }
+  .w-md-100 { width: 100% !important; }
+}
+
+/* LG ≥992px */
+@media (min-width: 992px) {
+  .w-lg-25 { width: 25% !important; }
+  .w-lg-50 { width: 50% !important; }
+  .w-lg-75 { width: 75% !important; }
+  .w-lg-100 { width: 100% !important; }
+}
+
+/* XL ≥1200px */
+@media (min-width: 1200px) {
+  .w-xl-25 { width: 25% !important; }
+  .w-xl-50 { width: 50% !important; }
+  .w-xl-75 { width: 75% !important; }
+  .w-xl-100 { width: 100% !important; }
+}
+
+/* XXL ≥1400px */
+@media (min-width: 1400px) {
+  .w-xxl-25 { width: 25% !important; }
+  .w-xxl-50 { width: 50% !important; }
+  .w-xxl-75 { width: 75% !important; }
+  .w-xxl-100 { width: 100% !important; }
+}
+
+/* Responsive height */
+/* Height: 25%, 50%, 75%, 100% - Base (all sizes) */
+.h-25 { height: 25% !important; }
+.h-50 { height: 50% !important; }
+.h-75 { height: 75% !important; }
+.h-100 { height: 100% !important; }
+
+/* SM ≥576px */
+@media (min-width: 576px) {
+  .h-sm-25 { height: 25% !important; }
+  .h-sm-50 { height: 50% !important; }
+  .h-sm-75 { height: 75% !important; }
+  .h-sm-100 { height: 100% !important; }
+}
+
+/* MD ≥768px */
+@media (min-width: 768px) {
+  .h-md-25 { height: 25% !important; }
+  .h-md-50 { height: 50% !important; }
+  .h-md-75 { height: 75% !important; }
+  .h-md-100 { height: 100% !important; }
+}
+
+/* LG ≥992px */
+@media (min-width: 992px) {
+  .h-lg-25 { height: 25% !important; }
+  .h-lg-50 { height: 50% !important; }
+  .h-lg-75 { height: 75% !important; }
+  .h-lg-100 { height: 100% !important; }
+}
+
+/* XL ≥1200px */
+@media (min-width: 1200px) {
+  .h-xl-25 { height: 25% !important; }
+  .h-xl-50 { height: 50% !important; }
+  .h-xl-75 { height: 75% !important; }
+  .h-xl-100 { height: 100% !important; }
+}
+
+/* XXL ≥1400px */
+@media (min-width: 1400px) {
+  .h-xxl-25 { height: 25% !important; }
+  .h-xxl-50 { height: 50% !important; }
+  .h-xxl-75 { height: 75% !important; }
+  .h-xxl-100 { height: 100% !important; }
+}

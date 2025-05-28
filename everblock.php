@@ -1544,47 +1544,49 @@ class Everblock extends Module
 
     public function hookActionCmsPageFormBuilderModifier($params)
     {
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
-            $this->registerHook('actionRegisterBlock');
-            /** @var FormBuilderInterface $formBuilder */
-            $formBuilder = $params['form_builder'];
+        /** @var FormBuilderInterface $formBuilder */
+        $formBuilder = $params['form_builder'];
+        $idCms = (int) $params['id'];
 
-            $id_object = $params['id']; // Récupérer l'ID de la page CMS en cours
+        $stores = Store::getStores((int) Context::getContext()->language->id);
+        $choices = [];
+        $selectedStoreId = null;
 
-            // Ajout d'un switch On/Off pour la conversion en PrettyBlocks
-            $formBuilder->add('convert_to_prettyblock', \Symfony\Component\Form\Extension\Core\Type\CheckboxType::class, [
-                'label' => $this->l('Convert to PrettyBlocks'),
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-switch', // Classe CSS pour styliser le switch
-                ],
-            ]);
+        foreach ($stores as $store) {
+            $choices[$store['name']] = (int) $store['id_store'];
+
+            // Vérifie si ce store est lié à cette page CMS
+            $cmsLinked = (int) Configuration::get('QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $store['id_store']);
+            if ($cmsLinked === $idCms) {
+                $selectedStoreId = (int) $store['id_store'];
+            }
         }
+        $formBuilder->add('qcd_associated_store', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
+            'label' => $this->l('Associate with store'),
+            'required' => false,
+            'choices' => $choices,
+            'placeholder' => $this->l('Select a store'),
+            'data' => $selectedStoreId,
+            'attr' => [
+                'class' => 'form-select',
+            ],
+        ]);
     }
 
     public function hookActionObjectCmsUpdateAfter($params)
     {
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
-            $this->registerHook('actionRegisterBlock');
-            /** @var CMS $cms */
-            $cms = $params['object'];
-            $cmsPage = Tools::getValue('cms_page');
-            // Récupérer la valeur du switch depuis le formulaire
-            $convertToPrettyBlock = (bool) $cmsPage['convert_to_prettyblock'];
-            // Si l'option est activée, déclencher la méthode de conversion
-            if ($convertToPrettyBlock === true) {
-                // Récupérer l'ID du shop en cours
-                $id_shop = $this->context->shop->id;
+        /** @var CMS $cms */
+        $cms = $params['object'];
+        $cmsPage = Tools::getValue('cms_page');
 
-                // Appeler la méthode pour convertir la page CMS en PrettyBlock
-                EverblockPrettyBlocks::convertSingleCmsToPrettyBlock($id_shop, (int)$cms->id);
-            }
+        if (!empty($cmsPage['qcd_associated_store'])) {
+            $id_store = (int) $cmsPage['qcd_associated_store'];
+            Configuration::updateValue(
+                'QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $id_store,
+                (int) $cms->id,
+                false, // id_lang
+                $this->context->shop->id // id_shop
+            );
         }
     }
 
