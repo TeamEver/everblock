@@ -68,9 +68,9 @@ The module allows you to use many shortcodes anywhere in your store. However, re
 
 You can create your own shortcodes from the "Shortcodes" tab accessible in the "Ever block" submenu.
 
-### Basic shortcodes
-- `[product 1]`: Display product with ID 1.
-- `[product 1,2,3]`: Display products with IDs 1, 2, and 3.
+-### Basic shortcodes
+- `[product 1]`: Display product with ID 1. Supports `carousel=true`.
+- `[product 1,2,3]`: Display products with IDs 1, 2, and 3. Supports `carousel=true`.
 - `[entity_lastname]`: Display customer's last name.
 - `[entity_firstname]`: Display customer's first name.
 - `[entity_gender]`: Display customer's gender.
@@ -86,24 +86,33 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[theme_uri]`: Display the current theme's URL.
 - `[category id="8" nb="8"]`: Display 8 products from category with ID 8.
 - `[manufacturer id="2" nb="8"]`: Display 8 products from manufacturer with ID 2.
-- `[brands nb="8"]`: Display 8 brand names with their associated logos.
+- `[brands nb="8"]`: Display 8 brand names with their associated logos. Optional `carousel=true`.
 - `[storelocator]`: Show a store locator on any CMS page.
-- `[subcategories id="2" nb="8"]`: Display 8 subcategories (name, image, and link) of category 2.
-- `[last-products 4]`: Display the last 4 products listed in the store.
-- `[best-sales 4]`: Display the 4 best-selling products in your store.
+- `[subcategories id="2" nb="8"]`: Display 8 subcategories (name, image and link) of category 2.
+- `[last-products 4]`: Display the last 4 products listed in the store. Supports `carousel=true`.
+- `[best-sales 4]`: Display the 4 best-selling products in your store. Supports `carousel=true`.
 - `[evercart]`: Display dropdown cart.
 - `[evercontact]`: Display PrestaShop native contact form.
-- `[everstore 4]`: Display store information id 1.
+- `[everstore 4]`: Display store information for store ID 4 (several IDs can be separated with commas).
 - `[video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj]`: Display a YouTube iframe of the video whose sharing URL is in the parameter (may also works with Vimeo, Dailymotion, and Vidyard).
 - `[everaddtocart ref="1234" text="Add me to cart"]`: Creates an add to cart button for product reference 1234 with the text "Add me to cart". By clicking on the link, the product will be automatically added to the cart and the user will be redirected directly to the cart page. Also works in emails.
 - `[everfaq tag="faq1"]`: Shows FAQs related to the faq tag
 - `[productfeature id="2" nb="12" carousel="true"]`: Displays 12 products with the ID 2 feature, in the form of a carousel (the carousel is optional, you must have slick slider by activating it in the module configuration)
 - `[productfeaturevalue id="2" nb="12" carousel="true"]`: Same as before, but this time concerns products that have the characteristic value id 2
-- `[promo-products 10 carousel=true]`: Displays ten products on sale in a carousel format (slick slider must be present in your theme or enabled in the module configuration)
-- `[best-sales 10 carousel=true]`: Displays the top ten best-selling products in a carousel format (slick slider must be present in your theme or enabled in the module configuration)
-- `[random_product nb="10" carousel=true]`: Displays the ten random products in a carousel format (slick slider must be present in your theme or enabled in the module configuration)
-- `{hook h='displayHome'}`: Displays the displayHome hook (hooks are not allowed on modals)
+- `[promo-products 10 carousel=true]`: Displays ten products on sale in a carousel format.
+- `[best-sales 10 carousel=true]`: Displays the top ten best-selling products. Optional parameters: `days`, `orderby`, `orderway`.
+- `[random_product nb="10" carousel=true]`: Displays ten random products in a carousel.
+- `{hook h='displayHome'}`: Displays the `displayHome` hook (hooks are not allowed on modals)
+- `[everinstagram]`: Display your latest Instagram photos.
+- `[nativecontact]`: Embed the native PrestaShop contact form.
+- `[everimg name="image.jpg" class="img-fluid"]`: Display one or more CMS images.
+- `[displayQcdSvg name="icon" class="myclass" inline=true]`: Display a QCD SVG icon. Module available at [410 Gone](https://www.410-gone.fr/).
+- `[qcdacf field objectType objectId]`: Display a value from QCD ACF fields. Module available at [410 Gone](https://www.410-gone.fr/).
+- `[widget moduleName="mymodule" hookName="displayHome"]`: Render another module's widget.
 
+- `[prettyblocks name="myzone"]`: Render a PrettyBlocks zone if the module is installed.
+- `[everblock 3]`: Insert the content of block ID 3.
+- `[cms id="1"]`: Display the content of CMS page ID 1.
 ### Contact form shortcodes
 A contact form must start with the shortcode `[evercontactform_open]` and end with the shortcode `[evercontactform_close]`
 
