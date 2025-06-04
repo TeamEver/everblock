@@ -766,7 +766,7 @@ class EverblockPrettyBlocks extends ObjectModel
                     'nameFrom' => 'name',
                     'groups' => [
                         'name' => [
-                            'type' => 'text',
+                            'type' => 'editor',
                             'label' => 'Title',
                             'default' => Configuration::get('PS_SHOP_NAME'),
                         ],
@@ -786,22 +786,22 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => $module->l('Discover now'),
                         ],
                         'title' => [
-                            'type' => 'text',
+                            'type' => 'editor',
                             'label' => $module->l('Right column title'),
                             'default' => 'Le n°1 dans la protection et la santé du sportif',
                         ],
                         'description' => [
-                            'type' => 'textarea',
+                            'type' => 'editor',
                             'label' => $module->l('Right column description'),
                             'default' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec placerat, risus quis lobortis aliquam...',
                         ],
                         'text_highlight_1' => [
-                            'type' => 'text',
+                            'type' => 'editor',
                             'label' => $module->l('Highlight word 1'),
                             'default' => 'protection',
                         ],
                         'text_highlight_2' => [
-                            'type' => 'text',
+                            'type' => 'editor',
                             'label' => $module->l('Highlight word 2'),
                             'default' => 'santé',
                         ],
@@ -1424,6 +1424,16 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => [
                                 'url' => '',
                             ],
+                        ],
+                        'text_highlight_1' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Highlight text 1'),
+                            'default' => 'protection',
+                        ],
+                        'text_highlight_2' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Highlight text 2'),
+                            'default' => 'santé',
                         ],
                         'css_class' => [
                             'type' => 'text',

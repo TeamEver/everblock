@@ -25,9 +25,9 @@
     {if isset($block.settings.margin_top) && $block.settings.margin_top}margin-top:{$block.settings.margin_top|escape:'htmlall':'UTF-8'};{/if}
     {if isset($block.settings.margin_bottom) && $block.settings.margin_bottom}margin-bottom:{$block.settings.margin_bottom|escape:'htmlall':'UTF-8'};{/if}
     {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
-    
+    <div class="row">
     {foreach from=$block.states item=state key=key}
-    <div class="row" style="
+    <div class="{$state.css_class|escape:'htmlall':'UTF-8'} text-center" style="
         {if isset($state.padding_left) && $state.padding_left}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}
         {if isset($state.padding_right) && $state.padding_right}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}
         {if isset($state.padding_top) && $state.padding_top}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}
@@ -37,7 +37,7 @@
         {if isset($state.margin_top) && $state.margin_top}margin-top:{$state.margin_top|escape:'htmlall':'UTF-8'};{/if}
         {if isset($state.margin_bottom) && $state.margin_bottom}margin-bottom:{$state.margin_bottom|escape:'htmlall':'UTF-8'};{/if}
         {if isset($state.default.bg_color) && $state.default.bg_color}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
-        
+
         {if $state.link}
             {if $state.obfuscate}
                 {assign var="obflink" value=$state.link|base64_encode}
@@ -46,27 +46,28 @@
                 <a href="{$state.link}" title="{$state.name}"{if $state.target_blank} target="_blank"{/if}>
             {/if}
         {/if}
-        
-        <div class="col-12 col-md-6 p-2 {$state.css_class|escape:'htmlall':'UTF-8'}">
+
+        <div class="">
+
             {if $state.order == 'First image, then text'}
-                <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"
-                {if $state.image.width > 0} width="{$state.image.width}"{/if}
-                {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
+                {if $state.image.url}
+                    <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload mb-3"
+                        {if $state.image.width > 0} width="{$state.image.width}"{/if}
+                        {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
+                {/if}
+                <div class="state-content">{$state.content nofilter}</div>
+
             {else}
-                {$state.content nofilter}
+                <div class="state-content mb-3">{$state.content nofilter}</div>
+                {if $state.image.url}
+                    <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"
+                        {if $state.image.width > 0} width="{$state.image.width}"{/if}
+                        {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
+                {/if}
             {/if}
+
         </div>
-        
-        <div class="col-12 col-md-6 p-2">
-            {if $state.order == 'First image, then text'}
-                {$state.content nofilter}
-            {else}
-                <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"
-                {if $state.image.width > 0} width="{$state.image.width}"{/if}
-                {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
-            {/if}
-        </div>
-        
+
         {if $state.link}
             {if $state.obfuscate}
                 </span>
@@ -74,7 +75,8 @@
                 </a>
             {/if}
         {/if}
+
     </div>
     {/foreach}
-    
+    </div>
 </div>

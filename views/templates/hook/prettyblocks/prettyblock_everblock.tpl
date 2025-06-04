@@ -23,7 +23,7 @@
   {/if}
     {if isset($block.states) && $block.states}
     {foreach from=$block.states item=state key=key}
-    <div id="block-{$block.id_prettyblocks}-{$key}" class="col-12{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="
+    <div id="block-{$block.id_prettyblocks}-{$key}" class="{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="
         {if $state.padding_left}padding-left:{$state.padding_left};{/if}
         {if $state.padding_right}padding-right:{$state.padding_right};{/if}
         {if $state.padding_top}padding-top:{$state.padding_top};{/if}

@@ -82,6 +82,12 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[qcdacf') !== false) {
             $txt = static::getQcdAcfCode($txt, $context);
         }
+        if (strpos($txt, '[displayQcdSvg') !== false) {
+            $txt = static::getQcdSvgCode($txt, $context);
+        }
+        if (strpos($txt, '[everimg') !== false) {
+            $txt = static::getEverImgShortcode($txt);
+        }
         if (strpos($txt, '[best-sales') !== false) {
             $txt = static::getBestSalesShortcode($txt, $context, $module);
         }
@@ -731,164 +737,156 @@ class EverblockTools extends ObjectModel
         preg_match_all('/(\w+)\s*=\s*"([^"]+)"|(\w+)\s*=\s*([^"\s,]+)/', $shortcode, $matches, PREG_SET_ORDER);
         $attributes = [];
         static $uniqueIdentifier = 0;
+
         foreach ($matches as $match) {
             $attribute_name = $match[1] ?: $match[3];
             $attribute_value = $match[2] ?: $match[4];
             $attribute_value = trim($attribute_value, "\"");
             $attributes[$attribute_name] = $attribute_value;
         }
+
         $field_type = htmlspecialchars($attributes['type'], ENT_QUOTES);
         $label = htmlspecialchars($attributes['label'], ENT_QUOTES);
         $valueAttribute = isset($attributes['value']) ? ' value="' . htmlspecialchars($attributes['value'], ENT_QUOTES) . '"' : '';
         $template = '';
         $isRequired = isset($attributes['required']) && strtolower($attributes['required']) === 'true';
+
         switch ($field_type) {
             case 'sento':
                 $template = '<input type="hidden" name="everHide" value="' . base64_encode($label) . '">';
                 break;
+
             case 'password':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="password" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '></div>';
-                break;
             case 'tel':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="tel" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '></div>';
-                break;
             case 'email':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="email" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '></div>';
-                break;
             case 'datetime-local':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="datetime-local" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '></div>';
-                break;
             case 'date':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="date" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '></div>';
-                break;
             case 'text':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="text" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '></div>';
-                break;
             case 'number':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="number" class="form-control" name="' . $label . '" id="' . $label . '"' .  $valueAttribute;
+                $template = '<div class="form-group mb-4"><label for="' . $label . '" class="d-none">' . $label . '</label>';
+                $template .= '<input type="' . $field_type . '" class="form-control" name="' . $label . '" id="' . $label . '" placeholder="' . $label . '"' . $valueAttribute;
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '></div>';
                 break;
+
             case 'textarea':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><textarea class="form-control" name="' . $label . '" id="' . $label . '"';
+                $textareaValue = htmlspecialchars($attributes['value'] ?? '', ENT_QUOTES);
+                $template = '<div class="form-group mb-4"><label for="' . $label . '" class="d-none">' . $label . '</label>';
+                $template .= '<textarea class="form-control" name="' . $label . '" id="' . $label . '" placeholder="' . $label . '"';
                 if ($isRequired) {
                     $template .= ' required';
                 }
-                $textareaValue = htmlspecialchars($attributes['value'] ?? '', ENT_QUOTES);
                 $template .= '>' . $textareaValue . '</textarea></div>';
                 break;
+
             case 'select':
                 $values = explode(",", $attributes['values']);
-                $selectedValue = isset($attributes['value']) ? $attributes['value'] : null;
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><select class="form-control" name="' . $label . '" id="' . $label . '"';
+                $selectedValue = $attributes['value'] ?? null;
+                $template = '<div class="form-group mb-4"><label for="' . $label . '" class="d-none">' . $label . '</label>';
+                $template .= '<select class="form-control" name="' . $label . '" id="' . $label . '"';
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '>';
+                $template .= '<option value="" disabled selected>' . $label . '</option>';
                 foreach ($values as $value) {
-                    $selected = ($value === $selectedValue) ? ' selected' : '';
-                    $template .= '<option value="' . trim($value) . '"' . $selected . '>' . trim($value) . '</option>';
+                    $trimmedValue = trim($value);
+                    $selected = ($trimmedValue === $selectedValue) ? ' selected' : '';
+                    $template .= '<option value="' . $trimmedValue . '"' . $selected . '>' . $trimmedValue . '</option>';
                 }
                 $template .= '</select></div>';
                 break;
+
             case 'radio':
                 $values = explode(",", $attributes['values']);
-                $selectedValue = isset($attributes['value']) ? $attributes['value'] : null;
-                $template = '<div class="form-group"><label>' . $label . '</label><div class="form-check">';
+                $selectedValue = $attributes['value'] ?? null;
+                $template = '<div class="form-group mb-4"><label>' . $label . '</label><div class="form-check">';
                 foreach ($values as $value) {
-                    $uniqueIdentifier++; // Incrémentation du compteur
-                    $radioId = 'radio_' . $uniqueIdentifier; // Identifiant unique
-                    $checked = ($value === $selectedValue) ? ' checked' : '';
-                    $template .= '<div class="form-check-inline"><input type="radio" class="form-check-input" name="' . $label . '" value="' . trim($value) . '" id="' . $radioId . '"' . $checked;
+                    $uniqueIdentifier++;
+                    $radioId = 'radio_' . $uniqueIdentifier;
+                    $trimmedValue = trim($value);
+                    $checked = ($trimmedValue === $selectedValue) ? ' checked' : '';
+                    $template .= '<div class="form-check-inline">';
+                    $template .= '<input type="radio" class="form-check-input" name="' . $label . '" value="' . $trimmedValue . '" id="' . $radioId . '"' . $checked;
                     if ($isRequired) {
                         $template .= ' required';
                     }
-                    $template .= '><label class="form-check-label" for="' . $radioId . '">' . trim($value) . '</label></div>';
+                    $template .= '>';
+                    $template .= '<label class="form-check-label" for="' . $radioId . '">' . $trimmedValue . '</label></div>';
                 }
                 $template .= '</div></div>';
                 break;
+
             case 'checkbox':
                 $values = explode(",", $attributes['values']);
                 $checkedValues = isset($attributes['value']) ? explode(",", $attributes['value']) : [];
-                $template = '<div class="form-group"><label>' . $label . '</label><div class="form-check">';
+                $template = '<div class="form-group mb-4"><label class="d-none">' . $label . '</label><div class="form-check">';
                 foreach ($values as $value) {
                     $uniqueIdentifier++;
                     $checkboxId = 'checkbox_' . $uniqueIdentifier;
-                    $checked = in_array($value, $checkedValues) ? ' checked' : '';
-                    $template .= '<div class="form-check-inline"><input type="checkbox" class="form-check-input" name="' . $label . '[]" value="' . trim($value) . '" id="' . $checkboxId . '"' . $checked;
+                    $trimmedValue = trim($value);
+                    $checked = in_array($trimmedValue, $checkedValues) ? ' checked' : '';
+                    $template .= '<div class="form-check-inline">';
+                    $template .= '<input type="checkbox" class="form-check-input" name="' . $label . '[]" value="' . $trimmedValue . '" id="' . $checkboxId . '"' . $checked;
                     if ($isRequired) {
                         $template .= ' required';
                     }
-                    $template .= '><label class="form-check-label" for="' . $checkboxId . '">' . trim($value) . '</label></div>';
+                    $template .= '>';
+                    $template .= '<label class="form-check-label" for="' . $checkboxId . '">' . $trimmedValue . '</label></div>';
                 }
                 $template .= '</div></div>';
                 break;
+
             case 'file':
-                $template = '<div class="form-group"><label for="' . $label . '">' . $label . '</label><input type="file" class="form-control-file" name="' . $label . '" id="' . $label . '"';
+                $template = '<div class="form-group mb-4"><label for="' . $label . '" class="d-none">' . $label . '</label>';
+                $template .= '<input type="file" class="form-control-file" name="' . $label . '" id="' . $label . '"';
                 if ($isRequired) {
                     $template .= ' required';
                 }
                 $template .= '></div>';
                 break;
+
             case 'submit':
-                $template = '<button type="submit" class="btn btn-success evercontactsubmit">' . $label . '</button>';
+                $template = '<button type="submit" class="btn btn-primary evercontactsubmit">' . $label . '</button>';
                 break;
+
             case 'hidden':
                 $template = '<input type="hidden" name="hidden" value="' . $label . '">';
                 break;
+
             default:
-                // Type de champ inconnu
                 $template = '';
                 break;
         }
+
         return $template;
     }
 
     public static function getFormShortcode(string $txt): string
     {
+        // Remplace [evercontactform_open] par le formulaire ouvrant
         $txt = str_replace(
             '[evercontactform_open]',
             '<div class="container"><form method="POST" enctype="multipart/form-data" class="evercontactform" action="#">',
             $txt
         );
-        $txt = str_replace('[evercontactform_close]', '</form></div>', $txt);
+
+        // Remplace [evercontactform_close] par input token + fermeture du form
         $token = Tools::getToken();
         $txt = str_replace(
             '[evercontactform_close]',
-            '<input type="hidden" name="token" value="' . $token . '">[evercontactform_close]',
+            '<input type="hidden" name="token" value="' . $token . '"></form></div>',
             $txt
         );
+
+        // Recherche et remplace tous les shortcodes [evercontact ...]
         $pattern = '/\[evercontact\s[^\]]+\]/';
         $result = preg_replace_callback($pattern, function ($matches) {
-            // $matches[0] contient le shortcode trouvé
             return static::generateFormFromShortcode($matches[0]);
         }, $txt);
+
         return $result;
     }
 
@@ -1307,6 +1305,96 @@ class EverblockTools extends ObjectModel
             return '';
         }, $txt);
         return $modifiedTxt;
+    }
+
+    public static function getEverImgShortcode(string $txt): string
+    {
+        preg_match_all('/\[everimg\s+name="([^"]+)"(?:\s+class="([^"]*)")?\]/', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $filenames = array_map('trim', explode(',', $match[1]));
+            $class = isset($match[2]) ? trim($match[2]) : 'img-fluid';
+
+            $html = [];
+            foreach ($filenames as $filename) {
+                $safeFilename = basename($filename);
+                $filepath = _PS_IMG_DIR_ . 'cms/' . $safeFilename;
+                $webPath = _PS_BASE_URL_ . __PS_BASE_URI__ . 'img/cms/' . $safeFilename;
+
+                if (!file_exists($filepath)) {
+                    continue;
+                }
+
+                [$width, $height] = getimagesize($filepath);
+                $alt = htmlspecialchars(pathinfo($safeFilename, PATHINFO_FILENAME), ENT_QUOTES);
+                $classAttr = htmlspecialchars($class, ENT_QUOTES);
+
+                $imgTag = sprintf(
+                    '<img src="%s" width="%d" height="%d" alt="%s" loading="lazy" class="%s" />',
+                    htmlspecialchars($webPath, ENT_QUOTES),
+                    $width,
+                    $height,
+                    $alt,
+                    $classAttr
+                );
+
+                $html[] = count($filenames) > 1
+                    ? '<div class="col">' . $imgTag . '</div>'
+                    : $imgTag;
+            }
+
+            $replacement = '';
+            if (!empty($html)) {
+                $replacement = count($filenames) > 1
+                    ? '<div class="row">' . implode('', $html) . '</div>'
+                    : $html[0];
+            }
+
+            $txt = str_replace($match[0], $replacement, $txt);
+        }
+
+        return $txt;
+    }
+
+    public static function getQcdSvgCode(string $txt, Context $context): string
+    {
+        if (!Module::isInstalled('qcdsvg') || !static::moduleDirectoryExists('qcdsvg')) {
+            return $txt;
+        }
+
+        $module = Module::getInstanceByName('qcdsvg');
+        if (!is_callable([$module, 'hookDisplayQcdSvg'])) {
+            return $txt;
+        }
+
+        // Capture les shortcodes [displayQcdSvg name="calendar" class="..." inline=true]
+        $pattern = '/\[displayQcdSvg\s+([^\]]+)\]/i';
+
+        $txt = preg_replace_callback($pattern, function ($matches) use ($module) {
+            $attrString = $matches[1];
+            $params = [];
+
+            // Parse les attributs du shortcode
+            preg_match_all('/(\w+)=("([^"]*)"|\'([^\']*)\'|(\w+))/', $attrString, $attrMatches, PREG_SET_ORDER);
+            foreach ($attrMatches as $attr) {
+                $key = $attr[1];
+                $val = $attr[3] ?? $attr[4] ?? $attr[5]; // support "value", 'value', value
+
+                // Type casting basique
+                if (strtolower($val) === 'true') {
+                    $val = true;
+                } elseif (strtolower($val) === 'false') {
+                    $val = false;
+                }
+
+                $params[$key] = $val;
+            }
+
+            // Retourne le rendu SVG (inline ou img)
+            return $module->hookDisplayQcdSvg($params);
+        }, $txt);
+
+        return $txt;
     }
 
     public static function renderSmartyVars(string $txt, Context $context): string
@@ -3767,40 +3855,53 @@ class EverblockTools extends ObjectModel
     }
 
     /**
-     * Warmup a given URL by performing a silent GET request.
+     * Warmup a given URL in all active languages of the current shop.
      *
-     * @param string $url The full URL to warm up (e.g., https://example.com/)
+     * @param string $baseUrl The base URL without language code (e.g., https://example.com/)
+     * @param array $extraQuery Optional query parameters to add (e.g., ['force_warmup' => 1])
      * @return void
      */
-    public static function warmup(string $url)
+    public static function warmup(string $baseUrl, array $extraQuery = []): void
     {
         try {
-            $ch = curl_init();
+            $idShop = (int)Context::getContext()->shop->id;
+            $languages = Language::getLanguages(true, $idShop);
 
-            curl_setopt_array($ch, [
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_CONNECTTIMEOUT => 3,
-                CURLOPT_TIMEOUT => 5,
-                CURLOPT_USERAGENT => 'Prestashop-WarmupBot/1.0',
-                CURLOPT_HEADER => false,
-            ]);
+            foreach ($languages as $lang) {
+                $url = rtrim($baseUrl, '/') . '/' . $lang['iso_code'] . '/';
 
-            curl_exec($ch);
-
-            if (curl_errno($ch)) {
-                PrestaShopLogger::addLog('Warmup curl error for ' . $url . ': ' . curl_error($ch), 2);
-            } else {
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                if ($httpCode >= 400) {
-                    PrestaShopLogger::addLog('Warmup returned HTTP ' . $httpCode . ' for ' . $url, 2);
+                // Ajouter les paramètres GET additionnels s'il y en a
+                if (!empty($extraQuery)) {
+                    $url .= '?' . http_build_query($extraQuery);
                 }
-            }
 
-            curl_close($ch);
+                $ch = curl_init();
+
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => $url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_CONNECTTIMEOUT => 3,
+                    CURLOPT_TIMEOUT => 5,
+                    CURLOPT_USERAGENT => 'Prestashop-WarmupBot/1.0',
+                    CURLOPT_HEADER => false,
+                ]);
+
+                curl_exec($ch);
+
+                if (curl_errno($ch)) {
+                    PrestaShopLogger::addLog('[Warmup] Curl error for ' . $url . ': ' . curl_error($ch), 2);
+                } else {
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    if ($httpCode >= 400) {
+                        PrestaShopLogger::addLog('[Warmup] HTTP ' . $httpCode . ' for ' . $url, 2);
+                    }
+                }
+
+                curl_close($ch);
+            }
         } catch (\Exception $e) {
-            PrestaShopLogger::addLog('Warmup exception for ' . $url . ': ' . $e->getMessage(), 3);
+            PrestaShopLogger::addLog('[Warmup] Exception for ' . $baseUrl . ': ' . $e->getMessage(), 3);
         }
     }
 }
