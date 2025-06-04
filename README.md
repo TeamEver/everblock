@@ -102,6 +102,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[promo-products 10 carousel=true]`: Displays ten products on sale in a carousel format.
 - `[best-sales 10 carousel=true]`: Displays the top ten best-selling products. Optional parameters: `days`, `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Displays ten random products in a carousel.
+- `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Displays products linked to the current product in a Bootstrap carousel.
 - `{hook h='displayHome'}`: Displays the `displayHome` hook (hooks are not allowed on modals)
 - `[everinstagram]`: Display your latest Instagram photos.
 - `[nativecontact]`: Embed the native PrestaShop contact form.

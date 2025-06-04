@@ -112,6 +112,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[random_product') !== false) {
             $txt = static::getRandomProductsShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[linkedproducts') !== false) {
+            $txt = static::getLinkedProductsShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[widget') !== false) {
             $txt = $txt = static::getWidgetShortcode($txt);
         }
@@ -1158,6 +1161,81 @@ class EverblockTools extends ObjectModel
                     if (isset($match[3])) $shortcodeParts[] = 'carousel=' . $match[3];
                     if (isset($match[4])) $shortcodeParts[] = 'orderby=' . $match[4];
                     if (isset($match[5])) $shortcodeParts[] = 'orderway=' . $match[5];
+                    $shortcode = implode(' ', $shortcodeParts) . ']';
+
+                    $txt = str_replace($shortcode, $replacement, $txt);
+                }
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getLinkedProductsShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        if (!Tools::getValue('id_product')) {
+            return $txt;
+        }
+
+        preg_match_all(
+            '/\[linkedproducts(?:\s+nb="?(\d+)"?)?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
+            $txt,
+            $matches,
+            PREG_SET_ORDER
+        );
+
+        foreach ($matches as $match) {
+            $limit = isset($match[1]) ? (int) $match[1] : 8;
+            $orderBy = isset($match[2]) ? strtolower($match[2]) : 'position';
+            $orderWay = isset($match[3]) ? strtoupper($match[3]) : 'ASC';
+
+            $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
+            $allowedOrderWay = ['ASC', 'DESC'];
+            if (!in_array($orderBy, $allowedOrderBy)) {
+                $orderBy = 'position';
+            }
+            if (!in_array($orderWay, $allowedOrderWay)) {
+                $orderWay = 'ASC';
+            }
+
+            $productId = (int) Tools::getValue('id_product');
+            $cacheId = 'getLinkedProductsShortcode_'
+                . (int) $context->shop->id . '_' . $productId . '_' . $limit
+                . '_' . $orderBy . '_' . $orderWay;
+
+            if (!EverblockCache::isCacheStored($cacheId)) {
+                $sql = new DbQuery();
+                $sql->select('p.id_product');
+                $sql->from('product', 'p');
+                $sql->innerJoin('accessory', 'a', 'p.id_product = a.id_product_2');
+                $sql->where('a.id_product_1 = ' . (int) $productId);
+                $sql->where('p.active = 1');
+                $sql->orderBy('p.' . pSQL($orderBy) . ' ' . pSQL($orderWay));
+                $sql->limit($limit);
+
+                $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+                EverblockCache::cacheStore($cacheId, $productIds);
+            } else {
+                $productIds = EverblockCache::cacheRetrieve($cacheId);
+            }
+
+            if (!empty($productIds)) {
+                $productIdsArray = array_map(fn($row) => (int) $row['id_product'], $productIds);
+                $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
+
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel_id' => 'linkedProductsCarousel-' . uniqid(),
+                    ]);
+
+                    $templatePath = static::getTemplatePath('hook/linkedproducts_carousel.tpl', $module);
+                    $replacement = $context->smarty->fetch($templatePath);
+
+                    $shortcodeParts = ['[linkedproducts'];
+                    if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
+                    if (isset($match[2])) { $shortcodeParts[] = 'orderby="' . $match[2] . '"'; }
+                    if (isset($match[3])) { $shortcodeParts[] = 'orderway="' . $match[3] . '"'; }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
