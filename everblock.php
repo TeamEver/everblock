@@ -514,6 +514,7 @@ class Everblock extends Module
             'hook_admin_link' => $hookAdminLink,
             'shortcode_admin_link' => $shortcodeAdminLink,
             'cron_links' => $cronLinks,
+            'modules_list_link' => $this->context->link->getAdminLink('AdminModules'),
         ]);
         $this->html .= $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'

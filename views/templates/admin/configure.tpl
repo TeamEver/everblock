@@ -17,8 +17,8 @@
 *}
 
 <div class="alert alert-info">
-    <button class="btn btn-info btn-lg" type="button" data-toggle="collapse" data-target="#instructionsContent" aria-expanded="false" aria-controls="instructionsContent">
-        Instructions
+    <button class="btn btn-primary btn-lg mb-2" type="button" data-toggle="collapse" data-target="#instructionsContent" aria-expanded="false" aria-controls="instructionsContent">
+        <i class="icon-info-circle"></i> {l s='Instructions' mod='everblock'}
     </button>
     <div class="collapse" id="instructionsContent">
         <div class="card card-body">
