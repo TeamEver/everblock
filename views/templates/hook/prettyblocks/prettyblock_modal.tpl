@@ -26,13 +26,13 @@
                 <div class="modal-content">
                   <div class="modal-header">
                     <h4 class="modal-title" {if isset($state.modal_title_color) && $state.modal_title_color}style="color:{$state.modal_title_color};"{/if}>{$state.name}</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal">&times;</button>
                   </div>
                   <div class="modal-body">
                     {$state.content nofilter}
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{$state.close_name}</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">{$state.close_name}</button>
                   </div>
 
                 </div>
@@ -44,7 +44,7 @@
       {foreach from=$block.states item=state key=key}
       {if $state.auto_trigger_modal != 'Auto'}
           <div class="modal-button {$state.css_class|escape:'htmlall':'UTF-8'}">
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#everModal-{$block.id_prettyblocks}" {if isset($state.open_modal_button_bg_color) && $state.open_modal_button_bg_color} style="background-color:{$state.open_modal_button_bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#everModal-{$block.id_prettyblocks}" data-bs-toggle="modal" data-bs-target="#everModal-{$block.id_prettyblocks}" {if isset($state.open_modal_button_bg_color) && $state.open_modal_button_bg_color} style="background-color:{$state.open_modal_button_bg_color|escape:'htmlall':'UTF-8'};"{/if}>
               {$state.open_name}
             </button>
           </div>

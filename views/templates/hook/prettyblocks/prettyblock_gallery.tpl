@@ -34,7 +34,7 @@
                 <div class="col-md-3" style="{if isset($state.padding_left) && $state.padding_left}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}{if isset($state.padding_right) && $state.padding_right}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}{if isset($state.padding_top) && $state.padding_top}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}{if isset($state.padding_bottom) && $state.padding_bottom}padding-bottom:{$state.padding_bottom|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_left) && $state.margin_left}margin-left:{$state.margin_left|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_right) && $state.margin_right}margin-right:{$state.margin_right|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_top) && $state.margin_top}margin-top:{$state.margin_top|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_bottom) && $state.margin_bottom}margin-bottom:{$state.margin_bottom|escape:'htmlall':'UTF-8'};{/if}{if isset($state.default.bg_color) && $state.default.bg_color}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
                     <div class="card">
                         <img src="{$state.image.url}" class="img img-fluid card-img-top cursor-pointer lazyload" alt="{$state.name}" title="{$state.name}"
-                        data-toggle="modal" data-target="#imageModal-{$block.id_prettyblocks}" data-src="{$state.image.url}" data-slide-to="{$key}" loading="lazy">
+                        data-toggle="modal" data-target="#imageModal-{$block.id_prettyblocks}" data-bs-toggle="modal" data-bs-target="#imageModal-{$block.id_prettyblocks}" data-src="{$state.image.url}" data-slide-to="{$key}" data-bs-slide-to="{$key}" loading="lazy">
                     </div>
                 </div>
                 
@@ -51,7 +51,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <span class="modal-title h5" id="imageModalLabel"></span>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
