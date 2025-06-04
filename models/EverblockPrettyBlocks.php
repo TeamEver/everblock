@@ -132,6 +132,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $rowTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/row.tpl';
             $reassuranceTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_reassurance.tpl';
             $ctaTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cta.tpl';
+            $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -2040,6 +2041,66 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'checkbox',
                             'label' => $module->l('Open in new tab (only if not obfuscated)'),
                             'default' => '0',
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Page sharer'),
+                'description' => $module->l('Display social share buttons'),
+                'code' => 'everblock_sharer',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $sharerTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
                         ],
                         'padding_left' => [
                             'type' => 'text',
