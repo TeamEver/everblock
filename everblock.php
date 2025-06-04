@@ -29,7 +29,6 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPrettyBlocks.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCache.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockGpt.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCheckoutStep.php';
 
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
@@ -663,13 +662,6 @@ class Everblock extends Module
                     ],
                     [
                         'type' => 'text',
-                        'label' => $this->l('Chat GPT API key'),
-                        'desc' => $this->l('Add here your Chat GPT API key, it will be used for blocks generator'),
-                        'hint' => $this->l('Without API key, blocks generator won\'t work'),
-                        'name' => 'EVERGPT_API_KEY',
-                    ],
-                    [
-                        'type' => 'text',
                         'label' => $this->l('Instagram access token'),
                         'desc' => $this->l('Add here your Instagram access token'),
                         'hint' => $this->l('Without access token, you wont be able to show Instagram slider'),
@@ -1098,7 +1090,6 @@ class Everblock extends Module
             'EVEROPTIONS_POSITION' => Configuration::get('EVEROPTIONS_POSITION'),
             'EVEROPTIONS_TITLE' => $this->getConfigInMultipleLangs('EVEROPTIONS_TITLE'),
             'EVERBLOCK_MAINTENANCE_PSSWD' => Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD'),
-            'EVERGPT_API_KEY' => Configuration::get('EVERGPT_API_KEY'),
             'EVERINSTA_ACCESS_TOKEN' => Configuration::get('EVERINSTA_ACCESS_TOKEN'),
             'EVERINSTA_LINK' => Configuration::get('EVERINSTA_LINK'),
             'EVERBLOCK_USE_GMAP' => Configuration::get('EVERBLOCK_USE_GMAP'),
@@ -1313,10 +1304,6 @@ class Everblock extends Module
             'EVEROPTIONS_TITLE',
             $formTitle,
             true
-        );
-        Configuration::updateValue(
-            'EVERGPT_API_KEY',
-            Tools::getValue('EVERGPT_API_KEY')
         );
         Configuration::updateValue(
             'EVERBLOCK_MAINTENANCE_PSSWD',
