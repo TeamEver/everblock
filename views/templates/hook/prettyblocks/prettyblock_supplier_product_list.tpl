@@ -18,7 +18,7 @@
 {if isset($block.extra.presenteds) && $block.extra.presenteds}
     <div class="container mt-4">
         {if isset($block.settings.is_slider) && $block.settings.is_slider}
-            <div id="productSlideshow-{$block.id_prettyblocks}" class="carousel slide" data-ride="carousel">
+            <div id="productSlideshow-{$block.id_prettyblocks}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     {assign var="numProductsPerSlide" value=4}
                     {foreach from=$block.extra.presenteds item=product key=key}
@@ -47,13 +47,13 @@
                         {/if}
                     {/foreach}
                 </div>
-                <a class="carousel-control-prev" href="#productSlideshow-{$block.id_prettyblocks}" role="button" data-slide="prev">
+                <a class="carousel-control-prev" href="#productSlideshow-{$block.id_prettyblocks}" role="button" data-slide="prev" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Previous</span>
+                    <span class="sr-only visually-hidden">Previous</span>
                 </a>
-                <a class="carousel-control-next" href="#productSlideshow-{$block.id_prettyblocks}" role="button" data-slide="next">
+                <a class="carousel-control-next" href="#productSlideshow-{$block.id_prettyblocks}" role="button" data-slide="next" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Next</span>
+                    <span class="sr-only visually-hidden">Next</span>
                 </a>
             </div>
         {else}
