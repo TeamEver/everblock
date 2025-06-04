@@ -27,9 +27,6 @@ function initCustomTinyMCE() {
   }
 
   // TinyMCE est chargé, ajoutez vos configurations
-  const fontFormats = generateFontFormats(everblock_fonts);
-
-  console.log('TinyMCE Configuration:', fontFormats);
 
   window.defaultTinyMceConfig = {
     selector: '.evertranslatable',
@@ -49,7 +46,6 @@ function initCustomTinyMCE() {
     relative_urls: false,
     convert_urls: false,
     extended_valid_elements: "em[class|name|id]",
-    font_formats: fontFormats, // Ajouter les polices ici
     menu: {
       edit: { title: 'Edit', items: 'undo redo | cut copy paste | selectall' },
       insert: { title: 'Insert', items: 'media image link | pagebreak' },
