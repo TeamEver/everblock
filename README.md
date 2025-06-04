@@ -128,6 +128,9 @@ A contact form must start with the shortcode `[evercontactform_open]` and end wi
 - `[evercontact type="sento" label="me@email.fr"]` to display the recipient's email in a coded way. The recipient's email will not be clearly displayed on the pages. Not using this means sending the email to the email address defined in your store by default. You can specify multiple emails by separating them with commas. Be sure to use the EI Captcha module to secure email sending.
 - `[evercontact type="submit" label="Submit"]` to display a submit button for your custom contact form
 
+The HTML for each `[evercontact]` field is rendered through the `contact_field.tpl` template located in `views/templates/hook`.  
+Copy this file into your theme (`/themes/your_theme/modules/everblock/views/templates/hook/`) to customize the markup.
+
 No emails are saved on your store.
 A contact form can be added in a block used as a modal.
 
