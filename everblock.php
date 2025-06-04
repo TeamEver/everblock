@@ -1505,37 +1505,11 @@ class Everblock extends Module
             if ((bool) Configuration::get('EVERBLOCK_TINYMCE') === true
                 && Tools::getValue('configure') != $this->name
             ) {
-                // Ajouter une variable JS globale pour les polices
-                Media::addJsDef([
-                    'everblock_fonts' => $this->getThemeFonts(),
-                ]);
                 $this->context->controller->addJs($this->_path . 'views/js/adminTinyMce.js');
             }
         }
     }
 
-    public function getThemeFonts()
-    {
-        $themePath = _PS_THEME_DIR_; // Chemin du thème actuel
-        $fontsDir = $themePath . 'assets/fonts'; // Répertoire des polices (à ajuster si nécessaire)
-        $fonts = [];
-
-        if (is_dir($fontsDir)) {
-            $files = scandir($fontsDir);
-            foreach ($files as $file) {
-                // Vérifier si le fichier a une extension de police valide
-                if (preg_match('/\.(ttf|woff|woff2|otf)$/i', $file)) {
-                    $fontName = pathinfo($file, PATHINFO_FILENAME); // Nom de la police sans extension
-                    $fonts[] = [
-                        'name' => ucfirst($fontName), // Nom affichable
-                        'css' => $fontName . ', sans-serif' // Format CSS (par défaut sans-serif, ajustez si nécessaire)
-                    ];
-                }
-            }
-        }
-
-        return $fonts;
-    }
 
     public function hookActionClearCache($params)
     {
