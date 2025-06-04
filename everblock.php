@@ -494,7 +494,7 @@ class Everblock extends Module
         $shortcodeAdminLink = 'index.php?controller=AdminEverBlockShortcode&token=';
         $shortcodeAdminLink .= Tools::getAdminTokenLite('AdminEverBlockShortcode');
         $cronLinks = [];
-        $cronToken = Tools::encrypt($this->name . '/evercron');
+        $cronToken = EverblockTools::getSecureToken('cron');
         foreach ($this->allowedActions as $action) {
             $cronLinks[$action] = $this->context->link->getModuleLink(
                 $this->name,
@@ -2335,7 +2335,7 @@ class Everblock extends Module
         );
         $link = new Link();
         if (Validate::isLoadedObject($customer)) {
-            $everToken = Tools::encrypt($this->name . '/everlogin');
+            $everToken = EverblockTools::getSecureToken('login');
             $this->context->smarty->assign(array(
                 'login_customer' => $customer,
                 'lastname' => $customer->lastname,
@@ -2369,7 +2369,7 @@ class Everblock extends Module
             (int) $params['id_order']
         );
         if (Validate::isLoadedObject($order)) {
-            $everToken = Tools::encrypt($this->name . '/everlogin');
+            $everToken = EverblockTools::getSecureToken('login');
             $link = new Link();
             $connectLink = $link->getModuleLink(
                 $this->name,

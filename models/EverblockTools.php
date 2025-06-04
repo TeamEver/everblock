@@ -3982,4 +3982,23 @@ class EverblockTools extends ObjectModel
             PrestaShopLogger::addLog('[Warmup] Exception for ' . $baseUrl . ': ' . $e->getMessage(), 3);
         }
     }
+
+    /**
+     * Generate or retrieve a secure token for given action without using the database
+     *
+     * @param string $tokenName Token identifier (e.g. 'login' or 'cron')
+     * @return string
+     */
+    public static function getSecureToken(string $tokenName): string
+    {
+        $context = Context::getContext();
+        $cacheKey = 'everblock_' . $tokenName . '_token_' . (int) $context->shop->id;
+
+        if (!EverblockCache::isCacheStored($cacheKey)) {
+            $token = bin2hex(random_bytes(16));
+            EverblockCache::cacheStore($cacheKey, $token);
+        }
+
+        return (string) EverblockCache::cacheRetrieve($cacheKey);
+    }
 }
