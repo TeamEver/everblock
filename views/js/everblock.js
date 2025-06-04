@@ -121,6 +121,30 @@ $(document).ready(function(){
             }
         });
     });
+
+    $(document).on('click', '.everblock-modal-button', function(e) {
+        e.preventDefault();
+        let blockId = $(this).data('evermodal');
+        if (!blockId) {
+            return;
+        }
+        $.ajax({
+            url: atob(evermodal_link),
+            type: 'POST',
+            data: { id_everblock: blockId, token: everblock_token, force: 1 },
+            success: function(modal) {
+                $('#everblockModal').remove();
+                $('body').append(modal);
+                $('#everblockModal').modal('show');
+                $('#everblockModal').on('hidden.bs.modal', function () {
+                    $(this).remove();
+                });
+            },
+            error: function(xhr) {
+                console.log(xhr.responseText);
+            }
+        });
+    });
     $('.everModalAutoTrigger').modal('show');
     // Sélectionner tous les éléments avec la classe "ever-slide"
     let sliders = $('.ever-slide');

@@ -173,6 +173,18 @@ Make sure that the hook used in the block matches the criteria of the settings o
 
 Each block can be converted to a modal and can have shortcodes in its content (except hook and store locator shortcodes). You can therefore create contact forms in a modal.
 
+## Triggering modals from a button
+You can trigger an Everblock modal manually from any hook. Add a button with the
+class `everblock-modal-button` and provide the block ID in a `data-evermodal`
+attribute:
+
+```html
+<button class="everblock-modal-button" data-evermodal="12">Open modal</button>
+```
+
+When clicked, the module will load the corresponding modal content via AJAX and
+display it using Bootstrap.
+
 ## Cache & logs
 
 The module uses its own cache system in addition to the Prestashop one.
