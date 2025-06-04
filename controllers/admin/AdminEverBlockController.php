@@ -210,33 +210,16 @@ class AdminEverBlockController extends ModuleAdminController
         $this->addRowAction('delete');
         $this->addRowAction('duplicate');
         $this->toolbar_title = $this->l('HTML blocks Configuration');
-        if (Configuration::get('EVERGPT_API_KEY')) {
-            $this->bulk_actions = [
-                'duplicateall' => [
-                    'text' => $this->l('Duplicate selected items'),
-                    'confirm' => $this->l('Duplicate selected items ?'),
-                ],
-                'gptgenerate' => [
-                    'text' => $this->l('Generate content using chatGPT'),
-                    'confirm' => $this->l('Generate content using chatGPT ?'),
-                ],
-                'delete' => [
-                    'text' => $this->l('Delete selected items'),
-                    'confirm' => $this->l('Delete selected items ?'),
-                ],
-            ];
-        } else {
-            $this->bulk_actions = [
-                'duplicateall' => [
-                    'text' => $this->l('Duplicate selected items'),
-                    'confirm' => $this->l('Duplicate selected items ?'),
-                ],
-                'delete' => [
-                    'text' => $this->l('Delete selected items'),
-                    'confirm' => $this->l('Delete selected items ?'),
-                ],
-            ];
-        }
+        $this->bulk_actions = [
+            'duplicateall' => [
+                'text' => $this->l('Duplicate selected items'),
+                'confirm' => $this->l('Duplicate selected items ?'),
+            ],
+            'delete' => [
+                'text' => $this->l('Delete selected items'),
+                'confirm' => $this->l('Delete selected items ?'),
+            ],
+        ];
 
         if (Tools::isSubmit('submitBulkdelete' . $this->table)) {
             $this->processBulkDelete();
@@ -249,9 +232,6 @@ class AdminEverBlockController extends ModuleAdminController
         }
         if (Tools::isSubmit('submitBulkduplicateall' . $this->table)) {
             $this->processBulkDuplicate();
-        }
-        if (Tools::isSubmit('submitBulkgptgenerate' . $this->table)) {
-            $this->processBulkGptGenerate();
         }
         if (Tools::getValue('clearcache')) {
             Tools::clearAllCache();
@@ -1376,38 +1356,6 @@ class AdminEverBlockController extends ModuleAdminController
         }
     }
 
-    protected function processBulkGptGenerate()
-    {
-        foreach (Tools::getValue($this->table . 'Box') as $idEverBlock) {
-            try {
-                $obj = new $this->className(
-                    (int) $idEverBlock
-                );
-                $chatGPT = new EverblockGpt();
-                $chatGPT->initialize('text');
-                $results = [];
-                foreach (Language::getLanguages(true) as $language) {
-                    $prompt = EverblockGpt::getObjectPrompt(
-                        $obj,
-                        (int) $obj->id,
-                        (int) $language['id_lang'],
-                        (int) $this->context->shop->id
-                    );
-                    if ($prompt) {
-                        $requestResult = $chatGPT->createTextRequest($prompt);
-                        if ($requestResult) {
-                            $obj->content[$language['id_lang']] = $requestResult;
-                        }
-                    }
-                }
-                $obj->save();
-            } catch (Exception $e) {
-                PrestaShopLogger::addLog(
-                    'Admin Everblock GPT : ' . $e->getMessage()
-                );
-            }
-        }
-    }
 
     /**
      * Return Hooks List.
