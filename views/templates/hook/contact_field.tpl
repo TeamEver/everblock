@@ -21,23 +21,24 @@
 {assign var="values" value=$field.values}
 {assign var="value" value=$field.value}
 {assign var="unique" value=$field.unique}
+{assign var="id" value=$field.id}
 
 {if $type == 'sento'}
   <input type="hidden" name="everHide" value="{$label|base64_encode}">
 {elseif in_array($type, ['password','tel','email','datetime-local','date','text','number'])}
   <div class="form-group mb-4">
-    <label for="{$label}" class="d-none">{$label}</label>
-    <input type="{$type}" class="form-control" name="{$label}" id="{$label}" placeholder="{$label}"{if $value} value="{$value|escape:'htmlall':'UTF-8'}"{/if}{if $required} required{/if}>
+    <label for="{$id}" class="d-none">{$label}</label>
+    <input type="{$type}" class="form-control" name="{$label}" id="{$id}" placeholder="{$label}"{if $value} value="{$value|escape:'htmlall':'UTF-8'}"{/if}{if $required} required{/if}>
   </div>
 {elseif $type == 'textarea'}
   <div class="form-group mb-4">
-    <label for="{$label}" class="d-none">{$label}</label>
-    <textarea class="form-control" name="{$label}" id="{$label}" placeholder="{$label}"{if $required} required{/if}>{$value|escape:'htmlall':'UTF-8'}</textarea>
+    <label for="{$id}" class="d-none">{$label}</label>
+    <textarea class="form-control" name="{$label}" id="{$id}" placeholder="{$label}"{if $required} required{/if}>{$value|escape:'htmlall':'UTF-8'}</textarea>
   </div>
 {elseif $type == 'select'}
   <div class="form-group mb-4">
-    <label for="{$label}" class="d-none">{$label}</label>
-    <select class="form-control" name="{$label}" id="{$label}"{if $required} required{/if}>
+    <label for="{$id}" class="d-none">{$label}</label>
+    <select class="form-control" name="{$label}" id="{$id}"{if $required} required{/if}>
       <option value="" disabled selected>{$label}</option>
       {foreach from=$values item=val}
         {assign var='trimmed' value=$val|trim}
@@ -76,8 +77,8 @@
   </div>
 {elseif $type == 'file'}
   <div class="form-group mb-4">
-    <label for="{$label}" class="d-none">{$label}</label>
-    <input type="file" class="form-control-file" name="{$label}" id="{$label}"{if $required} required{/if}>
+    <label for="{$id}" class="d-none">{$label}</label>
+    <input type="file" class="form-control-file" name="{$label}" id="{$id}"{if $required} required{/if}>
   </div>
 {elseif $type == 'submit'}
   <button type="submit" class="btn btn-primary evercontactsubmit">{$label}</button>

@@ -752,13 +752,15 @@ class EverblockTools extends ObjectModel
             $attributes[$attribute_name] = $attribute_value;
         }
 
+        $uid = ++$uniqueIdentifier;
         $field = [
             'type' => htmlspecialchars($attributes['type'], ENT_QUOTES),
             'label' => htmlspecialchars($attributes['label'], ENT_QUOTES),
             'value' => $attributes['value'] ?? null,
             'values' => isset($attributes['values']) ? explode(',', $attributes['values']) : [],
             'required' => isset($attributes['required']) && strtolower($attributes['required']) === 'true',
-            'unique' => ++$uniqueIdentifier,
+            'unique' => $uid,
+            'id' => 'everfield_' . $uid,
         ];
 
         $context->smarty->assign('field', $field);
