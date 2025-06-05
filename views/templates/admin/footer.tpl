@@ -16,19 +16,24 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
-<div class="panel">
+<div class="panel everblock-footer text-center">
     <h3><i class="icon icon-smile"></i> {l s='Ever Block' mod='everblock'}</h3>
-    <a href="#everlogotop">
-        <img id="everlogobottom" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" style="max-width: 120px;">
+    <a href="#everlogotop" class="d-block mb-2">
+        <img id="everlogobottom" class="img-fluid" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" alt="{l s='Ever Block logo' mod='everblock'}" style="max-width: 120px;" />
     </a>
     <p>
         <strong>{l s='Thank you for your confidence :-)' mod='everblock'}</strong><br />
         {l s='Feel free to contact us for more support or help' mod='everblock'}
     </p>
+    <p class="mt-2">
+        <a href="#everlogotop" class="btn btn-default">
+            <i class="process-icon-arrow-up" aria-hidden="true"></i> {l s='Back to top' mod='everblock'}
+        </a>
+    </p>
     {if isset($cron_links) && $cron_links}
     <div class="panel">
         <div class="row">
-            <div class="col-md-12 mt-3">            
+            <div class="col-md-12 mt-3">
                 {foreach from=$cron_links key=action item=cron}
                 <a href="{$cron|escape:'htmlall':'UTF-8'}" class="btn btn-lg btn-info" target="_blank">{l s='Cron for' mod='everblock'} {$action}</a>
                 {/foreach}

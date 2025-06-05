@@ -23,7 +23,12 @@
     <div class="bootstrap cardbody everblock">
         <div class="panel-heading">
         {if isset($login_link) && $login_customer}
-        <p><a href="{$login_link|escape:'htmlall':'UTF-8'}" target="_blank" class="btn btn-info btn-lg"><strong>{l s='Click here to log as' mod='everblock'} {$login_customer->firstname|escape:'htmlall':'UTF-8'} {$login_customer->lastname|escape:'htmlall':'UTF-8'}</strong></a></p>
+        <p>
+            <a href="{$login_link|escape:'htmlall':'UTF-8'}" target="_blank" class="btn btn-primary">
+                <i class="icon-user"></i>
+                {l s='Log in as' mod='everblock'} {$login_customer->firstname|escape:'htmlall':'UTF-8'} {$login_customer->lastname|escape:'htmlall':'UTF-8'}
+            </a>
+        </p>
         {/if}
         </div>
     </div>

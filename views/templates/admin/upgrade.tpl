@@ -19,7 +19,10 @@
     <div class="panel-body">
         <div class="col-12 col-xs-12 col-lg-12">
             <p class="alert alert-warning">
-                {l s='An upgrade for Ever Block is available on our shop. Please check' mod='everblock'} <a href="https://www.team-ever.com" target="_blank">https://www.team-ever.com</a> {l s='to get latest version of this module' mod='everblock'}
+                {l s='An upgrade for Ever Block is available on our shop.' mod='everblock'}
+                <a class="btn btn-warning ml-2" href="https://www.team-ever.com" target="_blank">
+                    {l s='Get latest version' mod='everblock'}
+                </a>
             </p>
         </div>
     </div>

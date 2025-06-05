@@ -18,7 +18,7 @@
 <div id="everblock" class="panel">
     <fieldset class="form-group">
         {foreach from=$tabsData key=tabNumber item=everpstabs}
-        <div class="container">
+        <div class="container border rounded p-3 mb-3">
             <div class="row">
                 <div class="col-lg-12 col-xl-12">
                     <input type="hidden" name="{$tabNumber|escape:'htmlall':'UTF-8'}_everblock_id" value="{if isset($everpstabs->id_tab) && $everpstabs->id_tab}{$everpstabs->id_tab|escape:'htmlall':'UTF-8'}{/if}">
@@ -40,7 +40,7 @@
         {/foreach}
 
         {foreach from=$flagsData key=flagNumber item=everpsflags}
-        <div class="container">
+        <div class="container border rounded p-3 mb-3">
             <div class="row">
                 <div class="col-lg-12 col-xl-12">
                     <input type="hidden" name="{$flagNumber|escape:'htmlall':'UTF-8'}_everflag_id" value="{if isset($everpsflags->id_flag) && $everpsflags->id_flag}{$everpsflags->id_flag|escape:'htmlall':'UTF-8'}{/if}">
