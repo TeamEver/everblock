@@ -100,6 +100,15 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[evercart]') !== false) {
             $txt = static::getCartShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[cart_total]') !== false) {
+            $txt = static::getCartTotalShortcode($txt, $context);
+        }
+        if (strpos($txt, '[cart_quantity]') !== false) {
+            $txt = static::getCartQuantityShortcode($txt, $context);
+        }
+        if (strpos($txt, '[newsletter_form]') !== false) {
+            $txt = static::getNewsletterFormShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[nativecontact]') !== false) {
             $txt = static::getNativeContactShortcode($txt, $context, $module);
         }
@@ -938,6 +947,39 @@ class EverblockTools extends ObjectModel
         $templatePath = static::getTemplatePath('hook/cart.tpl', $module);
         $replacement = $context->smarty->fetch($templatePath);
         $txt = str_replace('[evercart]', $replacement, $txt);
+        return $txt;
+    }
+
+    public static function getCartTotalShortcode(string $txt, Context $context): string
+    {
+        $total = 0;
+        if (isset($context->cart) && $context->cart->id) {
+            $total = $context->cart->getOrderTotal(true, Cart::BOTH);
+        }
+        $formatted = Tools::displayPrice($total, $context->currency);
+        $txt = str_replace('[cart_total]', $formatted, $txt);
+        return $txt;
+    }
+
+    public static function getCartQuantityShortcode(string $txt, Context $context): string
+    {
+        $quantity = 0;
+        if (isset($context->cart) && $context->cart->id) {
+            $quantity = (int) $context->cart->getProductsQuantity();
+        }
+        $txt = str_replace('[cart_quantity]', (string) $quantity, $txt);
+        return $txt;
+    }
+
+    public static function getNewsletterFormShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        if (Module::isInstalled('ps_emailsubscription') && Module::isEnabled('ps_emailsubscription')) {
+            $newsletter = Module::getInstanceByName('ps_emailsubscription');
+            if (method_exists($newsletter, 'renderWidget')) {
+                $replacement = $newsletter->renderWidget('displayFooter', []);
+                $txt = str_replace('[newsletter_form]', $replacement, $txt);
+            }
+        }
         return $txt;
     }
 

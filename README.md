@@ -102,6 +102,9 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[last-products 4]`: Display the last 4 products listed in the store. Supports `carousel=true`.
 - `[best-sales 4]`: Display the 4 best-selling products in your store. Supports `carousel=true`.
 - `[evercart]`: Display dropdown cart.
+- `[cart_total]`: Display the total value of the current cart.
+- `[cart_quantity]`: Display the number of products currently in the cart.
+- `[newsletter_form]`: Display the PrestaShop newsletter subscription form.
 - `[evercontact]`: Display PrestaShop native contact form.
 - `[everstore 4]`: Display store information for store ID 4 (several IDs can be separated with commas).
 - `[video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj]`: Display a YouTube iframe of the video whose sharing URL is in the parameter (may also works with Vimeo, Dailymotion, and Vidyard).
