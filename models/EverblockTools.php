@@ -86,7 +86,7 @@ class EverblockTools extends ObjectModel
             $txt = static::getQcdSvgCode($txt, $context);
         }
         if (strpos($txt, '[everimg') !== false) {
-            $txt = static::getEverImgShortcode($txt);
+            $txt = static::getEverImgShortcode($txt, $context, $module);
         }
         if (strpos($txt, '[best-sales') !== false) {
             $txt = static::getBestSalesShortcode($txt, $context, $module);
@@ -1385,15 +1385,16 @@ class EverblockTools extends ObjectModel
         return $modifiedTxt;
     }
 
-    public static function getEverImgShortcode(string $txt): string
+    public static function getEverImgShortcode(string $txt, Context $context, Everblock $module): string
     {
-        preg_match_all('/\[everimg\s+name="([^"]+)"(?:\s+class="([^"]*)")?\]/', $txt, $matches, PREG_SET_ORDER);
+        preg_match_all('/\[everimg\s+name="([^"]+)"(?:\s+class="([^"]*)")?(?:\s+carousel=(true|false))?\]/', $txt, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
             $filenames = array_map('trim', explode(',', $match[1]));
             $class = isset($match[2]) ? trim($match[2]) : 'img-fluid';
+            $carousel = isset($match[3]) && $match[3] === 'true';
 
-            $html = [];
+            $images = [];
             foreach ($filenames as $filename) {
                 $safeFilename = basename($filename);
                 $filepath = _PS_IMG_DIR_ . 'cms/' . $safeFilename;
@@ -1407,25 +1408,39 @@ class EverblockTools extends ObjectModel
                 $alt = htmlspecialchars(pathinfo($safeFilename, PATHINFO_FILENAME), ENT_QUOTES);
                 $classAttr = htmlspecialchars($class, ENT_QUOTES);
 
-                $imgTag = sprintf(
-                    '<img src="%s" width="%d" height="%d" alt="%s" loading="lazy" class="%s" />',
-                    htmlspecialchars($webPath, ENT_QUOTES),
-                    $width,
-                    $height,
-                    $alt,
-                    $classAttr
-                );
-
-                $html[] = count($filenames) > 1
-                    ? '<div class="col">' . $imgTag . '</div>'
-                    : $imgTag;
+                $images[] = [
+                    'src' => htmlspecialchars($webPath, ENT_QUOTES),
+                    'width' => $width,
+                    'height' => $height,
+                    'alt' => $alt,
+                    'class' => $classAttr,
+                ];
             }
 
             $replacement = '';
-            if (!empty($html)) {
-                $replacement = count($filenames) > 1
-                    ? '<div class="row">' . implode('', $html) . '</div>'
-                    : $html[0];
+            if (!empty($images)) {
+                if ($carousel && count($images) > 1) {
+                    $context->smarty->assign([
+                        'images' => $images,
+                        'carousel_id' => 'everImgCarousel-' . uniqid(),
+                    ]);
+                    $templatePath = static::getTemplatePath('hook/ever_img_carousel.tpl', $module);
+                    $replacement = $context->smarty->fetch($templatePath);
+                } else {
+                    $html = [];
+                    foreach ($images as $img) {
+                        $imgTag = sprintf(
+                            '<img src="%s" width="%d" height="%d" alt="%s" loading="lazy" class="%s" />',
+                            $img['src'],
+                            $img['width'],
+                            $img['height'],
+                            $img['alt'],
+                            $img['class']
+                        );
+                        $html[] = count($images) > 1 ? '<div class="col">' . $imgTag . '</div>' : $imgTag;
+                    }
+                    $replacement = count($images) > 1 ? '<div class="row">' . implode('', $html) . '</div>' : $html[0];
+                }
             }
 
             $txt = str_replace($match[0], $replacement, $txt);

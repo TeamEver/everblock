@@ -116,7 +116,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `{hook h='displayHome'}`: Displays the `displayHome` hook (hooks are not allowed on modals)
 - `[everinstagram]`: Display your latest Instagram photos.
 - `[nativecontact]`: Embed the native PrestaShop contact form.
-- `[everimg name="image.jpg" class="img-fluid"]`: Display one or more CMS images.
+- `[everimg name="image.jpg" class="img-fluid" carousel=true]`: Display one or more CMS images. When `carousel=true` and multiple images are provided, a Bootstrap slideshow is rendered.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]`: Display a QCD SVG icon. Module available at [410 Gone](https://www.410-gone.fr/).
 - `[qcdacf field objectType objectId]`: Display a value from QCD ACF fields. Module available at [410 Gone](https://www.410-gone.fr/).
 - `[widget moduleName="mymodule" hookName="displayHome"]`: Render another module's widget.
