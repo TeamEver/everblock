@@ -40,8 +40,9 @@ class EverblockcronModuleFrontController extends ModuleFrontController
 
     public function initContent()
     {
+        $secureToken = EverblockTools::getSecureToken('cron');
         if (!Tools::getIsset('evertoken')
-            || Tools::encrypt($this->module->name . '/evercron') != Tools::getValue('evertoken')
+            || $secureToken != Tools::getValue('evertoken')
             || !Module::isInstalled($this->module->name)
         ) {
             Tools::redirect('index.php');
