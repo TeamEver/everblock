@@ -219,47 +219,53 @@ class ExportFileCommand extends Command
                 $spreadsheet->getActiveSheet()->getStyle("M" . $r)->getFont()->setSize(9);
                 $spreadsheet->getActiveSheet()->getColumnDimension("M")->setAutoSize(true);
 
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(14, $r, $block['bootstrap_class']);
+                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(14, $r, $block['data_attribute']);
                 $spreadsheet->getActiveSheet()->getStyle("N" . $r)->getFont()->setBold(true);
                 $spreadsheet->getActiveSheet()->getStyle("N" . $r)->getFont()->setName('Arial');
                 $spreadsheet->getActiveSheet()->getStyle("N" . $r)->getFont()->setSize(9);
                 $spreadsheet->getActiveSheet()->getColumnDimension("N")->setAutoSize(true);
 
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(15, $r, $block['position']);
+                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(15, $r, $block['bootstrap_class']);
                 $spreadsheet->getActiveSheet()->getStyle("O" . $r)->getFont()->setBold(true);
                 $spreadsheet->getActiveSheet()->getStyle("O" . $r)->getFont()->setName('Arial');
                 $spreadsheet->getActiveSheet()->getStyle("O" . $r)->getFont()->setSize(9);
                 $spreadsheet->getActiveSheet()->getColumnDimension("O")->setAutoSize(true);
 
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(16, $r, $block['date_start']);
+                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(16, $r, $block['position']);
                 $spreadsheet->getActiveSheet()->getStyle("P" . $r)->getFont()->setBold(true);
                 $spreadsheet->getActiveSheet()->getStyle("P" . $r)->getFont()->setName('Arial');
                 $spreadsheet->getActiveSheet()->getStyle("P" . $r)->getFont()->setSize(9);
                 $spreadsheet->getActiveSheet()->getColumnDimension("P")->setAutoSize(true);
 
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(17, $r, $block['date_end']);
+                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(17, $r, $block['date_start']);
                 $spreadsheet->getActiveSheet()->getStyle("Q" . $r)->getFont()->setBold(true);
                 $spreadsheet->getActiveSheet()->getStyle("Q" . $r)->getFont()->setName('Arial');
                 $spreadsheet->getActiveSheet()->getStyle("Q" . $r)->getFont()->setSize(9);
                 $spreadsheet->getActiveSheet()->getColumnDimension("Q")->setAutoSize(true);
 
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(18, $r, $block['active']);
+                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(18, $r, $block['date_end']);
                 $spreadsheet->getActiveSheet()->getStyle("R" . $r)->getFont()->setBold(true);
                 $spreadsheet->getActiveSheet()->getStyle("R" . $r)->getFont()->setName('Arial');
                 $spreadsheet->getActiveSheet()->getStyle("R" . $r)->getFont()->setSize(9);
                 $spreadsheet->getActiveSheet()->getColumnDimension("R")->setAutoSize(true);
 
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(19, $r, $block['content']);
+                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(19, $r, $block['active']);
                 $spreadsheet->getActiveSheet()->getStyle("S" . $r)->getFont()->setBold(true);
                 $spreadsheet->getActiveSheet()->getStyle("S" . $r)->getFont()->setName('Arial');
                 $spreadsheet->getActiveSheet()->getStyle("S" . $r)->getFont()->setSize(9);
                 $spreadsheet->getActiveSheet()->getColumnDimension("S")->setAutoSize(true);
 
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(20, $r, $block['custom_code']);
+                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(20, $r, $block['content']);
                 $spreadsheet->getActiveSheet()->getStyle("T" . $r)->getFont()->setBold(true);
                 $spreadsheet->getActiveSheet()->getStyle("T" . $r)->getFont()->setName('Arial');
                 $spreadsheet->getActiveSheet()->getStyle("T" . $r)->getFont()->setSize(9);
                 $spreadsheet->getActiveSheet()->getColumnDimension("T")->setAutoSize(true);
+
+                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(21, $r, $block['custom_code']);
+                $spreadsheet->getActiveSheet()->getStyle("U" . $r)->getFont()->setBold(true);
+                $spreadsheet->getActiveSheet()->getStyle("U" . $r)->getFont()->setName('Arial');
+                $spreadsheet->getActiveSheet()->getStyle("U" . $r)->getFont()->setSize(9);
+                $spreadsheet->getActiveSheet()->getColumnDimension("U")->setAutoSize(true);
 
                 $r++;
             }
@@ -277,19 +283,20 @@ class ExportFileCommand extends Command
             ->setCellValue('K1', 'groups')
             ->setCellValue('L1', 'background')
             ->setCellValue('M1', 'css_class')
-            ->setCellValue('N1', 'bootstrap_class')
-            ->setCellValue('O1', 'position')
-            ->setCellValue('P1', 'date_start')
-            ->setCellValue('Q1', 'date_end')
-            ->setCellValue('R1', 'active')
-            ->setCellValue('S1', 'content')
-            ->setCellValue('T1', 'custom_code');
-            $spreadsheet->getActiveSheet()->setAutoFilter('A1:T1');
+            ->setCellValue('N1', 'data_attribute')
+            ->setCellValue('O1', 'bootstrap_class')
+            ->setCellValue('P1', 'position')
+            ->setCellValue('Q1', 'date_start')
+            ->setCellValue('R1', 'date_end')
+            ->setCellValue('S1', 'active')
+            ->setCellValue('T1', 'content')
+            ->setCellValue('U1', 'custom_code');
+            $spreadsheet->getActiveSheet()->setAutoFilter('A1:U1');
             // Rename sheet
             $spreadsheet->getActiveSheet()->setTitle(\Tools::substr($reportName, 0, 31));
 
             //Text bold in first row
-            $spreadsheet->getActiveSheet()->getStyle('A1:T1')->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('A1:U1')->getFont()->setBold(true);
 
             //Freeze first row
             $spreadsheet->getActiveSheet()->freezePane('A2');
@@ -320,7 +327,7 @@ class ExportFileCommand extends Command
                 ],
             ];
 
-            $spreadsheet->getActiveSheet()->getStyle('A1:T1')->applyFromArray($styleArray);
+            $spreadsheet->getActiveSheet()->getStyle('A1:U1')->applyFromArray($styleArray);
 
             // Set active sheet index to the first sheet, so Excel opens this as the first sheet
             $spreadsheet->setActiveSheetIndex(0);
