@@ -700,6 +700,15 @@ class AdminEverBlockController extends ModuleAdminController
                         'lang' => false,
                     ],
                     [
+                        'type' => 'text',
+                        'label' => $this->l('Block data attributes'),
+                        'desc' => $this->l('Add custom data attributes'),
+                        'hint' => $this->l('Leave empty for no use'),
+                        'required' => false,
+                        'name' => 'data_attribute',
+                        'lang' => false,
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('Bloc size'),
                         'desc' => $this->l('Please select bloc size'),
@@ -928,6 +937,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'css_class' => (!empty(Tools::getValue('css_class')))
                 ? Tools::getValue('css_class')
                 : $obj->css_class,
+                'data_attribute' => (!empty(Tools::getValue('data_attribute')))
+                ? Tools::getValue('data_attribute')
+                : $obj->data_attribute,
                 'bootstrap_class' => (!empty(Tools::getValue('bootstrap_class')))
                 ? Tools::getValue('bootstrap_class')
                 : $obj->bootstrap_class,
@@ -1032,6 +1044,9 @@ class AdminEverBlockController extends ModuleAdminController
                 : '',
                 'css_class' => (!empty(Tools::getValue('css_class')))
                 ? Tools::getValue('css_class')
+                : '',
+                'data_attribute' => (!empty(Tools::getValue('data_attribute')))
+                ? Tools::getValue('data_attribute')
                 : '',
                 'bootstrap_class' => (!empty(Tools::getValue('bootstrap_class')))
                 ? Tools::getValue('bootstrap_class')
@@ -1167,6 +1182,11 @@ class AdminEverBlockController extends ModuleAdminController
             ) {
                 $this->errors[] = $this->l('Custom class name is not valid');
             }
+            if (Tools::getValue('data_attribute')
+                && !Validate::isString(Tools::getValue('data_attribute'))
+            ) {
+                $this->errors[] = $this->l('Data attributes value is not valid');
+            }
             if (Tools::getValue('bootstrap_class')
                 && !Validate::isString(Tools::getValue('bootstrap_class'))
             ) {
@@ -1227,6 +1247,7 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->position = (int) Tools::getValue('position');
             $everblock_obj->background =  pSQL(Tools::getValue('background'));
             $everblock_obj->css_class =  pSQL(Tools::getValue('css_class'));
+            $everblock_obj->data_attribute =  pSQL(Tools::getValue('data_attribute'));
             $everblock_obj->bootstrap_class =  pSQL(Tools::getValue('bootstrap_class'));
             $everblock_obj->device = (int) Tools::getValue('device');
             if (!Tools::getValue('groupBox')

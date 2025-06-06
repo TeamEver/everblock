@@ -239,6 +239,15 @@ class ImportFileCommand extends ContainerAwareCommand
                 $block->css_class = $line['css_class'];
             }
         }
+        if (isset($line['data_attribute'])) {
+            if (!Validate::isString($line['data_attribute'])) {
+                $output->writeln(
+                   '<error>data_attribute column is not valid : ' . $line['data_attribute'] . '</error>'
+                );
+            } else {
+                $block->data_attribute = $line['data_attribute'];
+            }
+        }
         if (isset($line['bootstrap_class'])) {
             if (!Validate::isString($line['bootstrap_class'])) {
                 $output->writeln(
