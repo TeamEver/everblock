@@ -124,6 +124,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[linkedproducts') !== false) {
             $txt = static::getLinkedProductsShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[crosselling') !== false) {
+            $txt = static::getCrossSellingShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[widget') !== false) {
             $txt = $txt = static::getWidgetShortcode($txt);
         }
@@ -141,6 +144,88 @@ class EverblockTools extends ObjectModel
             $txt = static::obfuscateTextByClass($txt);
         }
         $txt = static::renderSmartyVars($txt, $context);
+        return $txt;
+    }
+
+    public static function getCrossSellingShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        if (!$context->cart || !$context->cart->id) {
+            return $txt;
+        }
+
+        preg_match_all(
+            '/\[crosselling(?:\s+nb=(\d+))?(?:\s+orderby=(\w+))?(?:\s+orderway=(ASC|DESC))?\]/i',
+            $txt,
+            $matches,
+            PREG_SET_ORDER
+        );
+
+        foreach ($matches as $match) {
+            $limit = isset($match[1]) ? (int) $match[1] : 4;
+            $orderBy = isset($match[2]) ? strtolower($match[2]) : 'id_product';
+            $orderWay = isset($match[3]) ? strtoupper($match[3]) : 'ASC';
+
+            $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
+            $allowedOrderWay = ['ASC', 'DESC'];
+            if (!in_array($orderBy, $allowedOrderBy)) {
+                $orderBy = 'id_product';
+            }
+            if (!in_array($orderWay, $allowedOrderWay)) {
+                $orderWay = 'ASC';
+            }
+
+            $cartIds = array_map(fn($p) => (int) $p['id_product'], $context->cart->getProducts());
+            if (empty($cartIds)) {
+                continue;
+            }
+
+            $cacheId = 'getCrossSellingShortcode_' . md5(json_encode([$cartIds, $limit, $orderBy, $orderWay]));
+            if (!EverblockCache::isCacheStored($cacheId)) {
+                $sql = new DbQuery();
+                $sql->select('DISTINCT p.id_product');
+                $sql->from('accessory', 'a');
+                $sql->innerJoin('product', 'p', 'p.id_product = a.id_product_2');
+                $sql->where('a.id_product_1 IN (' . implode(',', $cartIds) . ')');
+                $sql->where('p.active = 1');
+                $sql->orderBy('p.' . pSQL($orderBy) . ' ' . pSQL($orderWay));
+                $sql->limit($limit * 2);
+                $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+                EverblockCache::cacheStore($cacheId, $productIds);
+            } else {
+                $productIds = EverblockCache::cacheRetrieve($cacheId);
+            }
+
+            $ids = [];
+            foreach ($productIds as $row) {
+                $id = (int) $row['id_product'];
+                if (!in_array($id, $cartIds) && !in_array($id, $ids)) {
+                    $ids[] = $id;
+                }
+                if (count($ids) >= $limit) {
+                    break;
+                }
+            }
+
+            if (empty($ids)) {
+                $shortcode = '[best-sales nb=' . $limit . ' orderby=' . $orderBy . ' orderway=' . $orderWay . ']';
+                $replacement = static::getBestSalesShortcode($shortcode, $context, $module);
+                $txt = str_replace($match[0], $replacement, $txt);
+                continue;
+            }
+
+            $everPresentProducts = static::everPresentProducts($ids, $context);
+
+            if (!empty($everPresentProducts)) {
+                $context->smarty->assign([
+                    'everPresentProducts' => $everPresentProducts,
+                    'carousel' => false,
+                ]);
+                $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
+                $replacement = $context->smarty->fetch($templatePath);
+                $txt = str_replace($match[0], $replacement, $txt);
+            }
+        }
+
         return $txt;
     }
 
