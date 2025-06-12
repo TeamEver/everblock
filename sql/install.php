@@ -46,6 +46,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock` (
         `groups` text DEFAULT NULL,
         `background` varchar(255) DEFAULT NULL,
         `css_class` varchar(255) DEFAULT NULL,
+        `data_attribute` varchar(255) DEFAULT NULL,
         `bootstrap_class` varchar(255) DEFAULT NULL,
         `modal` int(10) unsigned NOT NULL DEFAULT 0,
         `delay` int(10) unsigned NOT NULL DEFAULT 0,

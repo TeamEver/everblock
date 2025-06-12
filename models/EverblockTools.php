@@ -3151,6 +3151,7 @@ class EverblockTools extends ObjectModel
             'groups' => 'text DEFAULT NULL',
             'background' => 'varchar(255) DEFAULT NULL',
             'css_class' => 'varchar(255) DEFAULT NULL',
+            'data_attribute' => 'varchar(255) DEFAULT NULL',
             'bootstrap_class' => 'varchar(255) DEFAULT NULL',
             'delay' => 'int(10) unsigned NOT NULL DEFAULT 0',
             'timeout' => 'int(10) unsigned NOT NULL DEFAULT 0',

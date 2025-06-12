@@ -40,6 +40,7 @@ class EverBlockClass extends ObjectModel
     public $groups;
     public $background;
     public $css_class;
+    public $data_attribute;
     public $bootstrap_class;
     public $position;
     public $id_shop;
@@ -159,6 +160,12 @@ class EverBlockClass extends ObjectModel
                 'required' => false,
             ],
             'css_class' => [
+                'type' => self::TYPE_STRING,
+                'lang' => false,
+                'validate' => 'isString',
+                'required' => false,
+            ],
+            'data_attribute' => [
                 'type' => self::TYPE_STRING,
                 'lang' => false,
                 'validate' => 'isString',
