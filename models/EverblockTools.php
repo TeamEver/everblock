@@ -113,10 +113,10 @@ class EverblockTools extends ObjectModel
             $txt = static::getNativeContactShortcode($txt, $context, $module);
         }
         if (strpos($txt, '[evercontactform_open]') !== false) {
-            $txt = static::getFormShortcode($txt);
+            $txt = static::getFormShortcode($txt, $context, $module);
         }
         if (strpos($txt, '[everorderform_open]') !== false) {
-            $txt = static::getOrderFormShortcode($txt);
+            $txt = static::getOrderFormShortcode($txt, $context, $module);
         }
         if (strpos($txt, '[random_product') !== false) {
             $txt = static::getRandomProductsShortcode($txt, $context, $module);
@@ -829,7 +829,11 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function generateFormFromShortcode(string $shortcode)
+    public static function generateFormFromShortcode(
+        string $shortcode,
+        Context $context,
+        Everblock $module
+    )
     {
         preg_match_all('/(\w+)\s*=\s*"([^"]+)"|(\w+)\s*=\s*([^"\s,]+)/', $shortcode, $matches, PREG_SET_ORDER);
         $attributes = [];
@@ -842,126 +846,24 @@ class EverblockTools extends ObjectModel
             $attributes[$attribute_name] = $attribute_value;
         }
 
-        $field_type = htmlspecialchars($attributes['type'], ENT_QUOTES);
-        $label = htmlspecialchars($attributes['label'], ENT_QUOTES);
-        $valueAttribute = isset($attributes['value']) ? ' value="' . htmlspecialchars($attributes['value'], ENT_QUOTES) . '"' : '';
-        $template = '';
-        $isRequired = isset($attributes['required']) && strtolower($attributes['required']) === 'true';
+        $uid = ++$uniqueIdentifier;
+        $field = [
+            'type' => htmlspecialchars($attributes['type'], ENT_QUOTES),
+            'label' => htmlspecialchars($attributes['label'], ENT_QUOTES),
+            'value' => $attributes['value'] ?? null,
+            'values' => isset($attributes['values']) ? explode(',', $attributes['values']) : [],
+            'required' => isset($attributes['required']) && strtolower($attributes['required']) === 'true',
+            'unique' => $uid,
+            'id' => 'everfield_' . $uid,
+        ];
 
-        switch ($field_type) {
-            case 'sento':
-                $template = '<input type="hidden" name="everHide" value="' . base64_encode($label) . '">';
-                break;
+        $context->smarty->assign('field', $field);
+        $templatePath = static::getTemplatePath('hook/contact_field.tpl', $module);
 
-            case 'password':
-            case 'tel':
-            case 'email':
-            case 'datetime-local':
-            case 'date':
-            case 'text':
-            case 'number':
-                $template = '<div class="form-group mb-4"><label for="' . $label . '" class="d-none">' . $label . '</label>';
-                $template .= '<input type="' . $field_type . '" class="form-control" name="' . $label . '" id="' . $label . '" placeholder="' . $label . '"' . $valueAttribute;
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '></div>';
-                break;
-
-            case 'textarea':
-                $textareaValue = htmlspecialchars($attributes['value'] ?? '', ENT_QUOTES);
-                $template = '<div class="form-group mb-4"><label for="' . $label . '" class="d-none">' . $label . '</label>';
-                $template .= '<textarea class="form-control" name="' . $label . '" id="' . $label . '" placeholder="' . $label . '"';
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '>' . $textareaValue . '</textarea></div>';
-                break;
-
-            case 'select':
-                $values = explode(",", $attributes['values']);
-                $selectedValue = $attributes['value'] ?? null;
-                $template = '<div class="form-group mb-4"><label for="' . $label . '" class="d-none">' . $label . '</label>';
-                $template .= '<select class="form-control" name="' . $label . '" id="' . $label . '"';
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '>';
-                $template .= '<option value="" disabled selected>' . $label . '</option>';
-                foreach ($values as $value) {
-                    $trimmedValue = trim($value);
-                    $selected = ($trimmedValue === $selectedValue) ? ' selected' : '';
-                    $template .= '<option value="' . $trimmedValue . '"' . $selected . '>' . $trimmedValue . '</option>';
-                }
-                $template .= '</select></div>';
-                break;
-
-            case 'radio':
-                $values = explode(",", $attributes['values']);
-                $selectedValue = $attributes['value'] ?? null;
-                $template = '<div class="form-group mb-4"><label>' . $label . '</label><div class="form-check">';
-                foreach ($values as $value) {
-                    $uniqueIdentifier++;
-                    $radioId = 'radio_' . $uniqueIdentifier;
-                    $trimmedValue = trim($value);
-                    $checked = ($trimmedValue === $selectedValue) ? ' checked' : '';
-                    $template .= '<div class="form-check-inline">';
-                    $template .= '<input type="radio" class="form-check-input" name="' . $label . '" value="' . $trimmedValue . '" id="' . $radioId . '"' . $checked;
-                    if ($isRequired) {
-                        $template .= ' required';
-                    }
-                    $template .= '>';
-                    $template .= '<label class="form-check-label" for="' . $radioId . '">' . $trimmedValue . '</label></div>';
-                }
-                $template .= '</div></div>';
-                break;
-
-            case 'checkbox':
-                $values = explode(",", $attributes['values']);
-                $checkedValues = isset($attributes['value']) ? explode(",", $attributes['value']) : [];
-                $template = '<div class="form-group mb-4"><label class="d-none">' . $label . '</label><div class="form-check">';
-                foreach ($values as $value) {
-                    $uniqueIdentifier++;
-                    $checkboxId = 'checkbox_' . $uniqueIdentifier;
-                    $trimmedValue = trim($value);
-                    $checked = in_array($trimmedValue, $checkedValues) ? ' checked' : '';
-                    $template .= '<div class="form-check-inline">';
-                    $template .= '<input type="checkbox" class="form-check-input" name="' . $label . '[]" value="' . $trimmedValue . '" id="' . $checkboxId . '"' . $checked;
-                    if ($isRequired) {
-                        $template .= ' required';
-                    }
-                    $template .= '>';
-                    $template .= '<label class="form-check-label" for="' . $checkboxId . '">' . $trimmedValue . '</label></div>';
-                }
-                $template .= '</div></div>';
-                break;
-
-            case 'file':
-                $template = '<div class="form-group mb-4"><label for="' . $label . '" class="d-none">' . $label . '</label>';
-                $template .= '<input type="file" class="form-control-file" name="' . $label . '" id="' . $label . '"';
-                if ($isRequired) {
-                    $template .= ' required';
-                }
-                $template .= '></div>';
-                break;
-
-            case 'submit':
-                $template = '<button type="submit" class="btn btn-primary evercontactsubmit">' . $label . '</button>';
-                break;
-
-            case 'hidden':
-                $template = '<input type="hidden" name="hidden" value="' . $label . '">';
-                break;
-
-            default:
-                $template = '';
-                break;
-        }
-
-        return $template;
+        return $context->smarty->fetch($templatePath);
     }
 
-    public static function getFormShortcode(string $txt): string
+    public static function getFormShortcode(string $txt, Context $context, Everblock $module): string
     {
         // Remplace [evercontactform_open] par le formulaire ouvrant
         $txt = str_replace(
@@ -980,21 +882,21 @@ class EverblockTools extends ObjectModel
 
         // Recherche et remplace tous les shortcodes [evercontact ...]
         $pattern = '/\[evercontact\s[^\]]+\]/';
-        $result = preg_replace_callback($pattern, function ($matches) {
-            return static::generateFormFromShortcode($matches[0]);
+        $result = preg_replace_callback($pattern, function ($matches) use ($context, $module) {
+            return static::generateFormFromShortcode($matches[0], $context, $module);
         }, $txt);
 
         return $result;
     }
 
-    public static function getOrderFormShortcode(string $txt): string
+    public static function getOrderFormShortcode(string $txt, Context $context, Everblock $module): string
     {
         $txt = str_replace('[everorderform_open]', '<div class="container">', $txt);
         $txt = str_replace('[everorderform_close]', '</div>', $txt);
         $pattern = '/\[everorderform\s[^\]]+\]/';
-        $result = preg_replace_callback($pattern, function ($matches) {
+        $result = preg_replace_callback($pattern, function ($matches) use ($context, $module) {
             // $matches[0] contient le shortcode trouvé
-            return static::generateFormFromShortcode($matches[0]);
+            return static::generateFormFromShortcode($matches[0], $context, $module);
         }, $txt);
         return $result;
     }
