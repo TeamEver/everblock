@@ -116,7 +116,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[best-sales 10 carousel=true]`: Displays the top ten best-selling products. Optional parameters: `days`, `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Displays ten random products in a carousel.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Displays products linked to the current product in a Bootstrap carousel.
-- `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Show accessories of products currently in the cart. Falls back to best sellers if none found.
+- `[crosselling nb=4 orderby="id_product" orderway="asc" carousel=true]`: Show accessories of products currently in the cart. `carousel` parameter makes them display in a carousel. Falls back to best sellers if none found.
 - `{hook h='displayHome'}`: Displays the `displayHome` hook (hooks are not allowed on modals)
 - `[everinstagram]`: Display your latest Instagram photos.
 - `[nativecontact]`: Embed the native PrestaShop contact form.
@@ -300,7 +300,7 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[best-sales 10 carousel=true]` : Affiche les dix meilleures ventes. Paramètres optionnels : `days`, `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]` : Affiche dix produits aléatoires en carousel.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]` : Affiche les produits liés au produit courant en carousel Bootstrap.
-- `[crosselling nb=4 orderby="id_product" orderway="asc"]` : Affiche les accessoires des produits du panier. Si aucun résultat, les meilleures ventes sont proposées.
+- `[crosselling nb=4 orderby="id_product" orderway="asc" carousel=true]` : Affiche les accessoires des produits du panier. Utilisez `carousel=true` pour les afficher en carrousel. Si aucun résultat, les meilleures ventes sont proposées.
 - `{hook h='displayHome'}` : Affiche le hook `displayHome` (les hooks ne sont pas autorisés dans les modales)
 - `[everinstagram]` : Affiche vos dernières photos Instagram.
 - `[nativecontact]` : Intègre le formulaire de contact natif PrestaShop.
@@ -474,7 +474,7 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 - `[best-sales 10 carousel=true]`: Muestra los diez productos más vendidos. Parámetros opcionales: `days`, `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Muestra diez productos aleatorios en carrusel.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Muestra productos relacionados con el producto actual en un carrusel Bootstrap.
-- `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Muestra accesorios de los productos del carrito. Si no hay resultados se proponen los más vendidos.
+- `[crosselling nb=4 orderby="id_product" orderway="asc" carousel=true]`: Muestra accesorios de los productos del carrito. Usa `carousel=true` para mostrarlos en carrusel. Si no hay resultados se proponen los más vendidos.
 - `{hook h='displayHome'}`: Muestra el hook `displayHome` (los hooks no están permitidos en modales)
 - `[everinstagram]`: Muestra tus últimas fotos de Instagram.
 - `[nativecontact]`: Inserta el formulario de contacto nativo de PrestaShop.
@@ -648,7 +648,7 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 - `[best-sales 10 carousel=true]`: Mostra i dieci prodotti più venduti. Parametri opzionali: `days`, `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Mostra dieci prodotti casuali in carosello.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Mostra i prodotti collegati a quello attuale in un carosello Bootstrap.
-- `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Mostra gli accessori dei prodotti presenti nel carrello. Se non ci sono risultati vengono mostrati i più venduti.
+- `[crosselling nb=4 orderby="id_product" orderway="asc" carousel=true]`: Mostra gli accessori dei prodotti presenti nel carrello. Usa `carousel=true` per mostrarli in un carosello. Se non ci sono risultati vengono mostrati i più venduti.
 - `{hook h='displayHome'}`: Mostra l'hook `displayHome` (gli hook non sono consentiti nelle modali)
 - `[everinstagram]`: Mostra le ultime foto di Instagram.
 - `[nativecontact]`: Inserisce il modulo di contatto nativo di PrestaShop.

@@ -154,7 +154,7 @@ class EverblockTools extends ObjectModel
         }
 
         preg_match_all(
-            '/\[crosselling(?:\s+nb=(\d+))?(?:\s+orderby=(\w+))?(?:\s+orderway=(ASC|DESC))?\]/i',
+            '/\[crosselling(?:\s+nb=(\d+))?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
             $txt,
             $matches,
             PREG_SET_ORDER
@@ -162,8 +162,9 @@ class EverblockTools extends ObjectModel
 
         foreach ($matches as $match) {
             $limit = isset($match[1]) ? (int) $match[1] : 4;
-            $orderBy = isset($match[2]) ? strtolower($match[2]) : 'id_product';
-            $orderWay = isset($match[3]) ? strtoupper($match[3]) : 'ASC';
+            $carousel = isset($match[2]) && $match[2] === 'true';
+            $orderBy = isset($match[3]) ? strtolower($match[3]) : 'id_product';
+            $orderWay = isset($match[4]) ? strtoupper($match[4]) : 'ASC';
 
             $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
             $allowedOrderWay = ['ASC', 'DESC'];
@@ -179,7 +180,7 @@ class EverblockTools extends ObjectModel
                 continue;
             }
 
-            $cacheId = 'getCrossSellingShortcode_' . md5(json_encode([$cartIds, $limit, $orderBy, $orderWay]));
+            $cacheId = 'getCrossSellingShortcode_' . md5(json_encode([$cartIds, $limit, $orderBy, $orderWay, $carousel]));
             if (!EverblockCache::isCacheStored($cacheId)) {
                 $sql = new DbQuery();
                 $sql->select('DISTINCT p.id_product');
@@ -207,7 +208,11 @@ class EverblockTools extends ObjectModel
             }
 
             if (empty($ids)) {
-                $shortcode = '[best-sales nb=' . $limit . ' orderby=' . $orderBy . ' orderway=' . $orderWay . ']';
+                $shortcode = '[best-sales nb=' . $limit . ' orderby=' . $orderBy . ' orderway=' . $orderWay;
+                if ($carousel) {
+                    $shortcode .= ' carousel=true';
+                }
+                $shortcode .= ']';
                 $replacement = static::getBestSalesShortcode($shortcode, $context, $module);
                 $txt = str_replace($match[0], $replacement, $txt);
                 continue;
@@ -218,7 +223,7 @@ class EverblockTools extends ObjectModel
             if (!empty($everPresentProducts)) {
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
-                    'carousel' => false,
+                    'carousel' => $carousel,
                 ]);
                 $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                 $replacement = $context->smarty->fetch($templatePath);
