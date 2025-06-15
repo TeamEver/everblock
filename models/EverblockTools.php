@@ -2227,6 +2227,28 @@ class EverblockTools extends ObjectModel
         } catch (Exception $e) {
             $postErrors[] = $e->getMessage();
         }
+        // Handle JSON formatted data in PrettyBlocks tables
+        try {
+            $rows = Db::getInstance()->executeS('SELECT id_prettyblocks, config, state FROM ' . _DB_PREFIX_ . 'prettyblocks');
+            foreach ($rows as $row) {
+                $newConfig = static::replaceUrlsInJsonString($row['config'], $oldUrl, $newUrl);
+                $newState = static::replaceUrlsInJsonString($row['state'], $oldUrl, $newUrl);
+
+                if ($newConfig !== $row['config'] || $newState !== $row['state']) {
+                    Db::getInstance()->update(
+                        'prettyblocks',
+                        [
+                            'config' => pSQL($newConfig),
+                            'state' => pSQL($newState),
+                        ],
+                        'id_prettyblocks = ' . (int) $row['id_prettyblocks']
+                    );
+                }
+            }
+            $querySuccess[] = 'Prettyblocks JSON fields rewrited';
+        } catch (Exception $e) {
+            $postErrors[] = $e->getMessage();
+        }
         if ((bool) EverblockCache::getModuleConfiguration('EVERPSCSS_CACHE') === true) {
             Tools::clearAllCache();
         }
@@ -3952,6 +3974,35 @@ class EverblockTools extends ObjectModel
     private static function relativeToAbsolutePath($relativePath)
     {
         return _PS_ROOT_DIR_ . '/' . ltrim($relativePath, '/');
+    }
+
+    private static function replaceUrlsInJsonString($jsonString, $oldUrl, $newUrl)
+    {
+        if (empty($jsonString)) {
+            return $jsonString;
+        }
+
+        $data = json_decode($jsonString, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $jsonString;
+        }
+
+        $data = static::replaceUrlsRecursively($data, $oldUrl, $newUrl);
+
+        return json_encode($data);
+    }
+
+    private static function replaceUrlsRecursively($data, $oldUrl, $newUrl)
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = static::replaceUrlsRecursively($value, $oldUrl, $newUrl);
+            } elseif (is_string($value)) {
+                $data[$key] = str_replace($oldUrl, $newUrl, $value);
+            }
+        }
+
+        return $data;
     }
 
     public static function getTemplatePath(string $relativePath, Module $module): string
