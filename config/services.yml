@@ -27,3 +27,9 @@ services:
         tags:
             - { name: 'console.command' }
 
+    everblock.tools.prettyblocks:
+        class: Everblock\Tools\Command\PrettyBlocksCommand
+        public: true
+        tags:
+            - { name: 'console.command' }
+
