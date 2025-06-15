@@ -61,6 +61,7 @@ class ExecuteAction extends Command
         'saveproducts',
         'webpprettyblock',
         'removehn',
+        'duplicateblockslang',
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -74,6 +75,8 @@ class ExecuteAction extends Command
         $this->setDescription('Execute action');
         $this->addArgument('action', InputArgument::REQUIRED, sprintf('Action to execute (Allowed actions: %s).', implode(' / ', $this->allowedActions)));
         $this->addArgument('idshop id', InputArgument::OPTIONAL, 'Shop ID');
+        $this->addArgument('fromlang id', InputArgument::OPTIONAL, 'Source language ID');
+        $this->addArgument('tolang id', InputArgument::OPTIONAL, 'Target language ID');
         $help = sprintf("Allowed actions: %s\n", implode(' / ', $this->allowedActions));
         $this->setHelp($help);
         $this->module = Module::getInstanceByName('everblock');
@@ -83,6 +86,8 @@ class ExecuteAction extends Command
     {
         $action = $input->getArgument('action');
         $idShop = $input->getArgument('idshop id');
+        $idLangFrom = $input->getArgument('fromlang id');
+        $idLangTo = $input->getArgument('tolang id');
         $context = (new ContextAdapter())->getContext();
         $context->employee = new \Employee(1);
         $context->currency = new Currency(
@@ -266,6 +271,40 @@ class ExecuteAction extends Command
             }
 
             $output->writeln('<comment>All products have been processed</comment>');
+            return self::SUCCESS;
+        }
+        if ($action === 'duplicateblockslang') {
+            if (!$idLangFrom || !$idLangTo) {
+                $output->writeln('<warning>Missing language IDs</warning>');
+                return self::ABORTED;
+            }
+            $langFrom = new Language((int) $idLangFrom);
+            $langTo = new Language((int) $idLangTo);
+            if (!Validate::isLoadedObject($langFrom) || !Validate::isLoadedObject($langTo)) {
+                $output->writeln('<warning>Invalid language ID(s)</warning>');
+                return self::ABORTED;
+            }
+            $sql = new DbQuery();
+            $sql->select('id_everblock');
+            $sql->from('everblock');
+            $sql->where('id_shop = ' . (int) $shop->id);
+            $blocks = Db::getInstance()->executeS($sql);
+            foreach ($blocks as $blk) {
+                $block = new EverBlockClass((int) $blk['id_everblock']);
+                if (isset($block->content[$idLangFrom])) {
+                    $block->content[(int) $idLangTo] = $block->content[$idLangFrom];
+                }
+                if (isset($block->custom_code[$idLangFrom])) {
+                    $block->custom_code[(int) $idLangTo] = $block->custom_code[$idLangFrom];
+                }
+                try {
+                    $block->save();
+                    $output->writeln('<comment>Duplicated block ' . $block->id . ' from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</comment>');
+                } catch (Exception $e) {
+                    $output->writeln('<warning>' . $e->getMessage() . '</warning>');
+                }
+            }
+            $output->writeln('<success>All blocks duplicated from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</success>');
             return self::SUCCESS;
         }
         if ($action === 'removehn') {
