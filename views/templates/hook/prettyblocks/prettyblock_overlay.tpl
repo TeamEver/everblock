@@ -22,9 +22,13 @@
     {/if}
         <div class="everblock-overlay">
             <div id="overlay-{$block.id_prettyblocks}" class="everblock-overlay">
-                  <div class="image-overlay-container">
-                      <img src="{$block.settings.image.url}" alt="{$block.settings.name}" title="{$block.settings.name}" class="lazyload" loading="lazy">
-                      <div class="overlay">
+                    <div class="image-overlay-container">
+                        <picture>
+                          <source srcset="{$block.settings.image.url}" type="image/webp">
+                          <source srcset="{$block.settings.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                          <img src="{$block.settings.image.url|replace:'.webp':'.jpg'}" alt="{$block.settings.name}" title="{$block.settings.name}" class="lazyload" loading="lazy">
+                        </picture>
+                        <div class="overlay">
                           {$block.settings.content nofilter}
                       </div>
                   </div>

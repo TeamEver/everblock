@@ -20,7 +20,11 @@
     <div class="carousel-inner">
       {foreach from=$images item=image key=key}
         <div class="carousel-item{if $key == 0} active{/if}">
-          <img src="{$image.src}" class="{$image.class} d-block w-100" width="{$image.width}" height="{$image.height}" alt="{$image.alt}" loading="lazy">
+          <picture>
+            <source srcset="{$image.src}" type="image/webp">
+            <source srcset="{$image.src|replace:'.webp':'.jpg'}" type="image/jpeg">
+            <img src="{$image.src|replace:'.webp':'.jpg'}" class="{$image.class} d-block w-100" width="{$image.width}" height="{$image.height}" alt="{$image.alt}" loading="lazy">
+          </picture>
         </div>
       {/foreach}
     </div>

@@ -34,7 +34,11 @@
                     <div class="testimonial">
                         <div class="testimonial-author text-center">
                             <p class="author-name">{$state.name}</p>
-                            <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="rounded-circle img img-fluid lazyload" loading="lazy" width="60">
+                            <picture>
+                              <source srcset="{$state.image.url}" type="image/webp">
+                              <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                              <img src="{$state.image.url|replace:'.webp':'.jpg'}" alt="{$state.name}" title="{$state.name}" class="rounded-circle img img-fluid lazyload" loading="lazy" width="60">
+                            </picture>
                         </div>
                         <div class="testimonial-content text-center">
                             <p>{$state.content nofilter}</p>
