@@ -36,7 +36,11 @@
                   <a href="{$state.link}" title="{$state.name}" {if $state.target_blank}target="_blank"{/if} class="d-block">
                 {/if}
               {/if}
-                  <img src="{$state.image.url}" title="{$state.name}" alt="{$state.name}" class="img img-fluid lazyload" loading="lazy">
+                    <picture>
+                      <source srcset="{$state.image.url}" type="image/webp">
+                      <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                      <img src="{$state.image.url|replace:'.webp':'.jpg'}" title="{$state.name}" alt="{$state.name}" class="img img-fluid lazyload" loading="lazy">
+                    </picture>
               {if $state.link}
                 {if $state.obfuscate}
                   </span>

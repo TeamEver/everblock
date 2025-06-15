@@ -4,7 +4,11 @@
         <div class="card-body row">
             <div class="col-12 col-md-6 d-flex align-items-center justify-content-center">
                 <a href="{$ever_model.url}" title="{$ever_model.name|escape:'htmlall'}">
-                    <img class="img-fluid mx-auto" src="{$ever_model.cover.bySize.medium_default.url}" alt="{$ever_model.name|escape:'htmlall'}" />
+                    <picture>
+                      <source srcset="{$ever_model.cover.bySize.medium_default.url}" type="image/webp">
+                      <source srcset="{$ever_model.cover.bySize.medium_default.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                      <img class="img-fluid mx-auto" src="{$ever_model.cover.bySize.medium_default.url|replace:'.webp':'.jpg'}" alt="{$ever_model.name|escape:'htmlall'}" loading="lazy" />
+                    </picture>
                 </a>
             </div>
             <div class="col-12 col-md-6">

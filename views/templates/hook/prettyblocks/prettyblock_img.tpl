@@ -33,11 +33,15 @@
         {if isset($state.url) && $state.url}
           <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative">
         {/if}
-          <img src="{$state.banner.url}" 
-               {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
-               {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
-               {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
-               class="img img-fluid lazyload" loading="lazy">
+          <picture>
+            <source srcset="{$state.banner.url}" type="image/webp">
+            <source srcset="{$state.banner.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+            <img src="{$state.banner.url|replace:'.webp':'.jpg'}"
+                 {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
+                 {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
+                 {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
+                 class="img img-fluid lazyload" loading="lazy">
+          </picture>
 
           <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
             {if $state.text_highlight_1}

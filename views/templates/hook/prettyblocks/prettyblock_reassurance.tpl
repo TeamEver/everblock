@@ -33,9 +33,13 @@
         {if $state.text_color}color:{$state.text_color};{/if}
       ">
         {if $icon_url}
-          <div class="mb-2">
-            <img src="{$icon_url|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
-          </div>
+            <div class="mb-2">
+              <picture>
+                <source srcset="{$icon_url|escape:'htmlall'}" type="image/webp">
+                <source srcset="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" type="image/jpeg">
+                <img src="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
+              </picture>
+            </div>
         {/if}
 
         {if $state.title}

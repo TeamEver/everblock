@@ -30,7 +30,11 @@
                            data-media-type="{if $img.is_video}video{else}image{/if}"
                            title="{if $img.is_video}{l s='Click to view full video' mod='everblock'}{else}{l s='Click to view full image' mod='everblock'}{/if}"
                         >
-                            <img {if $img.caption}alt="{$img.caption|escape:'html':'UTF-8'}"{/if} src="{$img.thumbnail|escape:'quotes':'UTF-8'}" loading="lazy" />
+                            <picture>
+                              <source srcset="{$img.thumbnail|escape:'quotes':'UTF-8'}" type="image/webp">
+                              <source srcset="{$img.thumbnail|replace:'.webp':'.jpg'|escape:'quotes':'UTF-8'}" type="image/jpeg">
+                              <img {if $img.caption}alt="{$img.caption|escape:'html':'UTF-8'}"{/if} src="{$img.thumbnail|replace:'.webp':'.jpg'|escape:'quotes':'UTF-8'}" loading="lazy" />
+                            </picture>
                         </span>
                         {if $img.is_video}
                             <video controls style="display: none; padding: 0; width: auto;" id="ever_insta_video_{$key+1|escape:'quotes':'UTF-8'}">

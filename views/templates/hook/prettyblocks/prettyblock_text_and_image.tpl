@@ -51,18 +51,26 @@
 
             {if $state.order == 'First image, then text'}
                 {if $state.image.url}
-                    <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload mb-3"
-                        {if $state.image.width > 0} width="{$state.image.width}"{/if}
-                        {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
+                    <picture>
+                      <source srcset="{$state.image.url}" type="image/webp">
+                      <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                      <img src="{$state.image.url|replace:'.webp':'.jpg'}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload mb-3"
+                          {if $state.image.width > 0} width="{$state.image.width}"{/if}
+                          {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
+                    </picture>
                 {/if}
                 <div class="state-content">{$state.content nofilter}</div>
 
             {else}
                 <div class="state-content mb-3">{$state.content nofilter}</div>
                 {if $state.image.url}
-                    <img src="{$state.image.url}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"
-                        {if $state.image.width > 0} width="{$state.image.width}"{/if}
-                        {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
+                    <picture>
+                      <source srcset="{$state.image.url}" type="image/webp">
+                      <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                      <img src="{$state.image.url|replace:'.webp':'.jpg'}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"
+                          {if $state.image.width > 0} width="{$state.image.width}"{/if}
+                          {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
+                    </picture>
                 {/if}
             {/if}
 

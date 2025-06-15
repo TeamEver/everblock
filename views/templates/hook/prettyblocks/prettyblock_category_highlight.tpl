@@ -40,13 +40,17 @@
           <a href="{$category_link}" title="{$state.name}" class="d-block h-100 w-100 text-decoration-none text-white"{if $state.target_blank} target="_blank"{/if}>
         {/if}
           {if $state.image.url}
-            <img src="{$state.image.url}" 
-                 alt="{$state.name|escape:'htmlall'}"
-                 title="{$state.name|escape:'htmlall'}"
-                 class="img-fluid w-100 h-100 object-fit-cover"
-                 width="{$state.image_width}" 
-                 height="{$state.image_height}" 
-                 loading="lazy">
+            <picture>
+              <source srcset="{$state.image.url}" type="image/webp">
+              <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+              <img src="{$state.image.url|replace:'.webp':'.jpg'}"
+                   alt="{$state.name|escape:'htmlall'}"
+                   title="{$state.name|escape:'htmlall'}"
+                   class="img-fluid w-100 h-100 object-fit-cover"
+                   width="{$state.image_width}"
+                   height="{$state.image_height}"
+                   loading="lazy">
+            </picture>
           {/if}
 
         {if $state.name}
