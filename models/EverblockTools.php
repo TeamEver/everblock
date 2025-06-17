@@ -29,6 +29,7 @@ class EverblockTools extends ObjectModel
 {
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
+        Hook::exec('BeforeRenderingShortcodes', ['html' => &$txt]);
         $controllerTypes = [
             'front',
             'modulefront',
@@ -144,6 +145,7 @@ class EverblockTools extends ObjectModel
             $txt = static::obfuscateTextByClass($txt);
         }
         $txt = static::renderSmartyVars($txt, $context);
+        Hook::exec('AfterRenderingShortcodes', ['html' => &$txt]);
         return $txt;
     }
 

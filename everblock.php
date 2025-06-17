@@ -132,6 +132,22 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after every block shortcode is rendered';
             $hook->save();
         }
+        // Hook BeforeRenderingShortcodes
+        if (!Hook::getIdByName('BeforeRenderingShortcodes')) {
+            $hook = new Hook();
+            $hook->name = 'BeforeRenderingShortcodes';
+            $hook->title = 'Before rendering shortcodes';
+            $hook->description = 'This hook triggers before shortcodes are rendered';
+            $hook->save();
+        }
+        // Hook AfterRenderingShortcodes
+        if (!Hook::getIdByName('AfterRenderingShortcodes')) {
+            $hook = new Hook();
+            $hook->name = 'AfterRenderingShortcodes';
+            $hook->title = 'After rendering shortcodes';
+            $hook->description = 'This hook triggers after shortcodes are rendered';
+            $hook->save();
+        }
         return (parent::install()
             && $this->registerHook('displayHeader')
             && $this->registerHook('actionAdminControllerSetMedia')
@@ -213,6 +229,20 @@ class Everblock extends Module
             $hook->name = 'actionEverBlockChangeShortcodeAfter';
             $hook->title = 'After block shortcodes are rendered';
             $hook->description = 'This hook triggers after every block shortcode is rendered';
+            $hook->save();
+        }
+        if (!Hook::getIdByName('BeforeRenderingShortcodes')) {
+            $hook = new Hook();
+            $hook->name = 'BeforeRenderingShortcodes';
+            $hook->title = 'Before rendering shortcodes';
+            $hook->description = 'This hook triggers before shortcodes are rendered';
+            $hook->save();
+        }
+        if (!Hook::getIdByName('AfterRenderingShortcodes')) {
+            $hook = new Hook();
+            $hook->name = 'AfterRenderingShortcodes';
+            $hook->title = 'After rendering shortcodes';
+            $hook->description = 'This hook triggers after shortcodes are rendered';
             $hook->save();
         }
         if (!Hook::getIdByName('displayBeforeStoreLocator')) {
