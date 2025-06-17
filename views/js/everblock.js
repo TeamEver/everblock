@@ -124,7 +124,7 @@ $(document).ready(function(){
 
     $(document).on('click', '.everblock-modal-button', function(e) {
         e.preventDefault();
-        let blockId = $(this).data('evermodal');
+        let blockId = $(this).data('everclickmodal');
         if (!blockId) {
             return;
         }
