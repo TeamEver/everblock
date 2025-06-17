@@ -2285,6 +2285,7 @@ class EverblockPrettyBlocks extends ObjectModel
                         ],
                     ],
                 ],
+            ];
             $blocks[] = [
                 'name' => $module->l('Product highlight'),
                 'description' => $module->l('Highlight one product with custom text'),
