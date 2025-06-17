@@ -3077,4 +3077,23 @@ class Everblock extends Module
             );
         }
     }
+
+    public function hookbeforeRenderingEverblockProductHighlight($params)
+    {
+        $product = false;
+        $settings = $params['block']['settings'];
+
+        if (isset($settings['id_product']) && (int) $settings['id_product'] > 0) {
+            $presented = EverblockTools::everPresentProducts([
+                (int) $settings['id_product'],
+            ], $this->context);
+            if (!empty($presented)) {
+                $product = reset($presented);
+            }
+        }
+
+        return [
+            'product' => $product,
+        ];
+    }
 }
