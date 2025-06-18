@@ -41,3 +41,18 @@
 .everlist{
     list-style-type: none;
 }
+
+/* FAQ styles */
+.faq-accordion .card-header {
+    background-color: #f7f7f7;
+}
+.faq-question i {
+    transition: transform 0.3s ease;
+}
+.faq-question[aria-expanded="true"] i {
+    transform: rotate(180deg);
+}
+.faq-answer {
+    padding: 15px;
+}
+
