@@ -270,6 +270,7 @@ class EverblockTools extends ObjectModel
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
                     'carousel' => false,
+                    'shortcodeClass' => 'crosselling',
                 ]);
                 $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                 $replacement = $context->smarty->fetch($templatePath);
@@ -468,7 +469,8 @@ class EverblockTools extends ObjectModel
                 // Assign products and carousel flag to the template
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
-                    'carousel' => $carousel
+                    'carousel' => $carousel,
+                    'shortcodeClass' => 'product'
                 ]);
                 $renderedContent = $context->smarty->fetch($templatePath);
                 
@@ -517,7 +519,8 @@ class EverblockTools extends ObjectModel
             if (!empty($featureProducts)) {
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
-                    'carousel' => $carousel
+                    'carousel' => $carousel,
+                    'shortcodeClass' => 'productfeature'
                 ]);
                 $renderedContent = $context->smarty->fetch($templatePath);
                 $txt = str_replace($match[0], $renderedContent, $txt);
@@ -573,7 +576,8 @@ class EverblockTools extends ObjectModel
                 // Assigner les produits et le flag carousel au template
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
-                    'carousel' => $carousel
+                    'carousel' => $carousel,
+                    'shortcodeClass' => 'productfeaturevalue'
                 ]);
                 $renderedContent = $context->smarty->fetch($templatePath);
 
@@ -638,6 +642,7 @@ class EverblockTools extends ObjectModel
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
                     'carousel' => $carousel,
+                    'shortcodeClass' => 'category',
                 ]);
                 $renderedHtml = $context->smarty->fetch($templatePath);
                 $txt = str_replace($match[0], $renderedHtml, $txt);
@@ -710,7 +715,8 @@ class EverblockTools extends ObjectModel
 
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
-                    'carousel' => $carousel
+                    'carousel' => $carousel,
+                    'shortcodeClass' => 'manufacturer'
                 ]);
                 $renderedHtml = $context->smarty->fetch($templatePath);
                 $message = str_replace($match[0], $renderedHtml, $message);
@@ -1106,7 +1112,8 @@ class EverblockTools extends ObjectModel
                     // Assign products and carousel flag to the template
                     $context->smarty->assign([
                         'everPresentProducts' => $everPresentProducts,
-                        'carousel' => $carousel
+                        'carousel' => $carousel,
+                        'shortcodeClass' => 'random_product'
                     ]);
 
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -1149,7 +1156,8 @@ class EverblockTools extends ObjectModel
                     // Assign products and carousel flag to the template
                     $context->smarty->assign([
                         'everPresentProducts' => $everPresentProducts,
-                        'carousel' => $carousel
+                        'carousel' => $carousel,
+                        'shortcodeClass' => 'last-products'
                     ]);
 
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -1193,7 +1201,8 @@ class EverblockTools extends ObjectModel
                     // Assign products and carousel flag to the template
                     $context->smarty->assign([
                         'everPresentProducts' => $everPresentProducts,
-                        'carousel' => $carousel
+                        'carousel' => $carousel,
+                        'shortcodeClass' => 'promo-products'
                     ]);
 
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -1265,7 +1274,8 @@ class EverblockTools extends ObjectModel
                 if (!empty($everPresentProducts)) {
                     $context->smarty->assign([
                         'everPresentProducts' => $everPresentProducts,
-                        'carousel' => $carousel
+                        'carousel' => $carousel,
+                        'shortcodeClass' => 'best-sales'
                     ]);
 
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
