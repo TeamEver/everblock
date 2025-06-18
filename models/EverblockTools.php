@@ -154,9 +154,6 @@ class EverblockTools extends ObjectModel
 
     public static function getCrossSellingShortcode(string $txt, Context $context, Everblock $module): string
     {
-        if (!$context->cart || !$context->cart->id) {
-            return $txt;
-        }
 
         preg_match_all(
             '/\[crosselling(?:\s+nb=(\d+))?(?:\s+orderby=(\w+))?(?:\s+orderway=(ASC|DESC))?\]/i',
@@ -179,8 +176,15 @@ class EverblockTools extends ObjectModel
                 $orderWay = 'ASC';
             }
 
-            $cartIds = array_map(fn($p) => (int) $p['id_product'], $context->cart->getProducts());
+            $cartIds = [];
+            if ($context->cart && $context->cart->id) {
+                $cartIds = array_map(fn($p) => (int) $p['id_product'], $context->cart->getProducts());
+            }
+
             if (empty($cartIds)) {
+                $shortcode = '[best-sales nb=' . $limit . ' orderby=' . $orderBy . ' orderway=' . $orderWay . ']';
+                $replacement = static::getBestSalesShortcode($shortcode, $context, $module);
+                $txt = str_replace($match[0], $replacement, $txt);
                 continue;
             }
 
@@ -208,6 +212,30 @@ class EverblockTools extends ObjectModel
                 }
                 if (count($ids) >= $limit) {
                     break;
+                }
+            }
+
+            if (count($ids) < $limit) {
+                $categoryIds = [];
+                foreach ($cartIds as $cartId) {
+                    foreach (Product::getProductCategories($cartId) as $cid) {
+                        $categoryIds[(int) $cid] = true;
+                    }
+                }
+                foreach (array_keys($categoryIds) as $cid) {
+                    if (count($ids) >= $limit) {
+                        break;
+                    }
+                    $categoryProducts = static::getProductsByCategoryId($cid, $limit * 2, $orderBy, $orderWay);
+                    foreach ($categoryProducts as $cproduct) {
+                        $pid = (int) $cproduct['id_product'];
+                        if (!in_array($pid, $cartIds) && !in_array($pid, $ids)) {
+                            $ids[] = $pid;
+                        }
+                        if (count($ids) >= $limit) {
+                            break 2;
+                        }
+                    }
                 }
             }
 
