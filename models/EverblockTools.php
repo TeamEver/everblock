@@ -125,6 +125,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[linkedproducts') !== false) {
             $txt = static::getLinkedProductsShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[categoryproducts') !== false) {
+            $txt = static::getCurrentCategoryProductsShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[crosselling') !== false) {
             $txt = static::getCrossSellingShortcode($txt, $context, $module);
         }
@@ -1265,6 +1268,89 @@ class EverblockTools extends ObjectModel
 
                     $shortcodeParts = ['[linkedproducts'];
                     if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
+                    if (isset($match[2])) { $shortcodeParts[] = 'orderby="' . $match[2] . '"'; }
+                    if (isset($match[3])) { $shortcodeParts[] = 'orderway="' . $match[3] . '"'; }
+                    $shortcode = implode(' ', $shortcodeParts) . ']';
+
+                    $txt = str_replace($shortcode, $replacement, $txt);
+                }
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getCurrentCategoryProductsShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        if (!Tools::getValue('id_product')) {
+            return $txt;
+        }
+
+        preg_match_all(
+            '/\[categoryproducts\s+nb="?(\d+)"?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
+            $txt,
+            $matches,
+            PREG_SET_ORDER
+        );
+
+        foreach ($matches as $match) {
+            $limit = isset($match[1]) ? (int) $match[1] : 8;
+            $orderBy = isset($match[2]) ? strtolower($match[2]) : 'position';
+            $orderWay = isset($match[3]) ? strtoupper($match[3]) : 'ASC';
+
+            $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
+            $allowedOrderWay = ['ASC', 'DESC'];
+            if (!in_array($orderBy, $allowedOrderBy)) {
+                $orderBy = 'position';
+            }
+            if (!in_array($orderWay, $allowedOrderWay)) {
+                $orderWay = 'ASC';
+            }
+
+            $productId = (int) Tools::getValue('id_product');
+            $categoryRows = Db::getInstance()->executeS('SELECT id_category FROM ' . _DB_PREFIX_ . 'category_product WHERE id_product = ' . $productId);
+            $categoryIds = array_map(fn($row) => (int) $row['id_category'], $categoryRows);
+            if (empty($categoryIds)) {
+                continue;
+            }
+
+            $cacheId = 'getCurrentCategoryProductsShortcode_'
+                . (int) $context->shop->id . '_' . $productId . '_' . md5(json_encode($categoryIds)) . '_'
+                . $limit . '_' . $orderBy . '_' . $orderWay;
+
+            if (!EverblockCache::isCacheStored($cacheId)) {
+                $productIds = [];
+                foreach ($categoryIds as $categoryId) {
+                    $products = static::getProductsByCategoryId($categoryId, $limit, $orderBy, $orderWay);
+                    foreach ($products as $product) {
+                        $pid = (int) $product['id_product'];
+                        if ($pid === $productId || in_array($pid, $productIds)) {
+                            continue;
+                        }
+                        $productIds[] = $pid;
+                        if (count($productIds) >= $limit) {
+                            break 2;
+                        }
+                    }
+                }
+                EverblockCache::cacheStore($cacheId, $productIds);
+            } else {
+                $productIds = EverblockCache::cacheRetrieve($cacheId);
+            }
+
+            if (!empty($productIds)) {
+                $everPresentProducts = static::everPresentProducts($productIds, $context);
+
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel_id' => 'categoryProductsCarousel-' . uniqid(),
+                    ]);
+
+                    $templatePath = static::getTemplatePath('hook/linkedproducts_carousel.tpl', $module);
+                    $replacement = $context->smarty->fetch($templatePath);
+
+                    $shortcodeParts = ['[categoryproducts', 'nb="' . $match[1] . '"'];
                     if (isset($match[2])) { $shortcodeParts[] = 'orderby="' . $match[2] . '"'; }
                     if (isset($match[3])) { $shortcodeParts[] = 'orderway="' . $match[3] . '"'; }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
