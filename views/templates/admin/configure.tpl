@@ -132,6 +132,7 @@
                 <li><p>[evercontact type="select" label="You are" values="Man,Woman,Other"] {l s='to display a select field with the label "Your are" and options "Man,Woman,Other"' mod='everblock'}</p></li>
                 <li><p>[evercontact type="radio" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using radio buttons instead of select' mod='everblock'}</p></li>
                 <li><p>[evercontact type="checkbox" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using checkbox buttons instead of select' mod='everblock'}</p></li>
+                <li><p>[evercontact type="multiselect" label="You are" values="Man,Woman,Other"] {l s='to display a multiple select field with the label "You are" and options "Man,Woman,Other"' mod='everblock'}</p></li>
                 <li><p>[evercontact type="file" label="Pièce jointe"] {l s='to display a file upload field' mod='everblock'}</p></li>
                 <li><p>[evercontact type="hidden" label="Champ caché"] {l s='to display a hidden field with value & label "Champ caché"' mod='everblock'}</p></li>
                 <li><p>[evercontact type="sento" label="me@email.fr"] {l s='to display the recipient\'s email in an encoded manner. The recipient\'s email will not be clearly displayed on the pages. Not using this means sending the email to the email address set in your default store.' mod='everblock'}</p></li>
@@ -150,6 +151,7 @@
                 <li><p>[everorderform type="select" label="You are" values="Man,Woman,Other"] {l s='to display a select field with the label "Your are" and options "Man,Woman,Other"' mod='everblock'}</p></li>
                 <li><p>[everorderform type="radio" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using radio buttons instead of select' mod='everblock'}</p></li>
                 <li><p>[everorderform type="checkbox" label="You are" values="Man,Woman,Other"] {l s='is same than select, but using checkbox buttons instead of select' mod='everblock'}</p></li>
+                <li><p>[everorderform type="multiselect" label="You are" values="Man,Woman,Other"] {l s='to display a multiple select field with the label "You are" and options "Man,Woman,Other"' mod='everblock'}</p></li>
                 <li><p>[everorderform type="hidden" label="Champ caché"] {l s='to display a hidden field with value & label "Champ caché"' mod='everblock'}</p></li>
             </ul>
             <br>

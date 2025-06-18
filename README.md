@@ -137,6 +137,7 @@ A contact form must start with the shortcode `[evercontactform_open]` and end wi
 - `[evercontact type="select" label="You are" values="Man,Woman,Other"]` to display a select field with the label "You are" and the options "Man, Woman, Other"
 - `[evercontact type="radio" label="You are" values="Man,Woman,Other"]` is the same as select, but using radio buttons instead of select
 - `[evercontact type="checkbox" label="You are" values="Man,Woman,Other"]` is the same as select, but using checkboxes instead of select
+- `[evercontact type="multiselect" label="You are" values="Man,Woman,Other"]` to display a multiple select field with the label "You are" and the options "Man, Woman, Other"
 - `[evercontact type="file" label="Attachment"]` to display a file upload field
 - `[evercontact type="hidden" label="Hidden field"]` to display a hidden field that will have the label and value "Hidden field"
 - `[evercontact type="sento" label="me@email.fr"]` to display the recipient's email in a coded way. The recipient's email will not be clearly displayed on the pages. Not using this means sending the email to the email address defined in your store by default. You can specify multiple emails by separating them with commas. Be sure to use the EI Captcha module to secure email sending.
@@ -164,6 +165,7 @@ You can add the following fields between these two shortcodes:
 `[everorderform type="select" label="You are" values="Man,Woman,Other"]` to display a select field with the label "You are" and the options "Man, Woman, Other"
 `[everorderform type="radio" label="You are" values="Man,Woman,Other"]` is the same as select, but using radio buttons instead of select
 `[everorderform type="checkbox" label="You are" values="Man,Woman,Other"]` is the same as select, but using checkboxes instead of select
+`[everorderform type="multiselect" label="You are" values="Man,Woman,Other"]` to display a multiple select field with the label "You are" and the options "Man, Woman, Other"
 `[everorderform type="hidden" label="Hidden field"]` to display a hidden field which will have the label and value "Hidden field"
 
 The choices made in the form of the additional step of the order tunnel will be displayed in invoices, delivery notes, in the order confirmation page and in the order administration page.
@@ -323,6 +325,7 @@ Un formulaire de contact doit commencer par `[evercontactform_open]` et se termi
 - `[evercontact type="select" label="Vous êtes" values="Homme,Femme,Autre"]` : champ select
 - `[evercontact type="radio" label="Vous êtes" values="Homme,Femme,Autre"]` : boutons radio
 - `[evercontact type="checkbox" label="Vous êtes" values="Homme,Femme,Autre"]` : cases à cocher
+- `[evercontact type="multiselect" label="Vous êtes" values="Homme,Femme,Autre"]` : champ multisélection
 - `[evercontact type="file" label="Pièce jointe"]` : upload de fichier
 - `[evercontact type="hidden" label="Champ caché"]` : champ caché avec valeur "Champ caché"
 - `[evercontact type="sento" label="me@email.fr"]` : email destinataire chiffré
@@ -344,6 +347,7 @@ Un formulaire d'étape supplémentaire commence par `[everorderform_open]` et se
 `[everorderform type="select" label="Vous êtes" values="Homme,Femme,Autre"]` : champ select
 `[everorderform type="radio" label="Vous êtes" values="Homme,Femme,Autre"]` : boutons radio
 `[everorderform type="checkbox" label="Vous êtes" values="Homme,Femme,Autre"]` : cases à cocher
+`[everorderform type="multiselect" label="Vous êtes" values="Homme,Femme,Autre"]` : champ multisélection
 `[everorderform type="hidden" label="Champ caché"]` : champ caché "Champ caché"
 
 Les choix faits dans cette étape supplémentaire apparaîtront sur les factures, les bons de livraison, la page de confirmation de commande et dans l'administration des commandes.
@@ -497,6 +501,7 @@ Un formulario de contacto debe comenzar con `[evercontactform_open]` y finalizar
 - `[evercontact type="select" label="Eres" values="Hombre,Mujer,Otro"]`: campo select
 - `[evercontact type="radio" label="Eres" values="Hombre,Mujer,Otro"]`: botones radio
 - `[evercontact type="checkbox" label="Eres" values="Hombre,Mujer,Otro"]`: casillas de verificación
+- `[evercontact type="multiselect" label="Eres" values="Hombre,Mujer,Otro"]`: lista de selección múltiple
 - `[evercontact type="file" label="Adjunto"]`: subida de archivo
 - `[evercontact type="hidden" label="Campo oculto"]`: campo oculto con valor "Campo oculto"
 - `[evercontact type="sento" label="me@email.fr"]`: correo destinatario cifrado
@@ -518,6 +523,7 @@ Un formulario de paso adicional empieza con `[everorderform_open]` y termina con
 `[everorderform type="select" label="Eres" values="Hombre,Mujer,Otro"]`: campo select
 `[everorderform type="radio" label="Eres" values="Hombre,Mujer,Otro"]`: botones radio
 `[everorderform type="checkbox" label="Eres" values="Hombre,Mujer,Otro"]`: casillas de verificación
+`[everorderform type="multiselect" label="Eres" values="Hombre,Mujer,Otro"]`: lista de selección múltiple
 `[everorderform type="hidden" label="Campo oculto"]`: campo oculto "Campo oculto"
 
 Las elecciones realizadas en este paso adicional se mostrarán en facturas, albaranes, en la página de confirmación y en la administración de pedidos.
@@ -671,6 +677,7 @@ Un modulo di contatto deve iniziare con `[evercontactform_open]` e terminare con
 - `[evercontact type="select" label="Sei" values="Uomo,Donna,Altro"]`: campo select
 - `[evercontact type="radio" label="Sei" values="Uomo,Donna,Altro"]`: pulsanti radio
 - `[evercontact type="checkbox" label="Sei" values="Uomo,Donna,Altro"]`: caselle di controllo
+- `[evercontact type="multiselect" label="Sei" values="Uomo,Donna,Altro"]`: elenco multiselezione
 - `[evercontact type="file" label="Allegato"]`: caricamento file
 - `[evercontact type="hidden" label="Campo nascosto"]`: campo nascosto con valore "Campo nascosto"
 - `[evercontact type="sento" label="me@email.fr"]`: indirizzo email cifrato del destinatario
@@ -692,6 +699,7 @@ Un modulo di passaggio aggiuntivo inizia con `[everorderform_open]` e termina co
 `[everorderform type="select" label="Sei" values="Uomo,Donna,Altro"]`: campo select
 `[everorderform type="radio" label="Sei" values="Uomo,Donna,Altro"]`: pulsanti radio
 `[everorderform type="checkbox" label="Sei" values="Uomo,Donna,Altro"]`: caselle di controllo
+`[everorderform type="multiselect" label="Sei" values="Uomo,Donna,Altro"]`: elenco multiselezione
 `[everorderform type="hidden" label="Campo nascosto"]`: campo nascosto "Campo nascosto"
 
 Le scelte effettuate in questo passaggio aggiuntivo saranno mostrate nelle fatture, nei documenti di consegna, nella pagina di conferma dell'ordine e nell'amministrazione degli ordini.

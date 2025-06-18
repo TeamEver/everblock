@@ -46,6 +46,17 @@
       {/foreach}
     </select>
   </div>
+{elseif $type == 'multiselect'}
+  <div class="form-group mb-4">
+    <label for="{$id}" class="d-none">{$label}</label>
+    {assign var='selectedValues' value=","|explode:$value}
+    <select class="form-control" name="{$label}[]" id="{$id}" multiple{if $required} required{/if}>
+      {foreach from=$values item=val}
+        {assign var='trimmed' value=$val|trim}
+        <option value="{$trimmed}"{if in_array($trimmed,$selectedValues)} selected{/if}>{$trimmed}</option>
+      {/foreach}
+    </select>
+  </div>
 {elseif $type == 'radio'}
   <div class="form-group mb-4">
     <label>{$label}</label>
