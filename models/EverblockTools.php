@@ -184,6 +184,9 @@ class EverblockTools extends ObjectModel
             if (empty($cartIds)) {
                 $shortcode = '[best-sales nb=' . $limit . ' orderby=' . $orderBy . ' orderway=' . $orderWay . ']';
                 $replacement = static::getBestSalesShortcode($shortcode, $context, $module);
+                if ($replacement === $shortcode) {
+                    $replacement = '';
+                }
                 $txt = str_replace($match[0], $replacement, $txt);
                 continue;
             }
@@ -239,9 +242,24 @@ class EverblockTools extends ObjectModel
                 }
             }
 
+            if (count($ids) < $limit) {
+                $bestIds = static::getBestSellingProductIds($limit * 2, $orderBy, $orderWay);
+                foreach ($bestIds as $bid) {
+                    if (count($ids) >= $limit) {
+                        break;
+                    }
+                    if (!in_array($bid, $cartIds) && !in_array($bid, $ids)) {
+                        $ids[] = $bid;
+                    }
+                }
+            }
+
             if (empty($ids)) {
                 $shortcode = '[best-sales nb=' . $limit . ' orderby=' . $orderBy . ' orderway=' . $orderWay . ']';
                 $replacement = static::getBestSalesShortcode($shortcode, $context, $module);
+                if ($replacement === $shortcode) {
+                    $replacement = '';
+                }
                 $txt = str_replace($match[0], $replacement, $txt);
                 continue;
             }
@@ -256,6 +274,8 @@ class EverblockTools extends ObjectModel
                 $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                 $replacement = $context->smarty->fetch($templatePath);
                 $txt = str_replace($match[0], $replacement, $txt);
+            } else {
+                $txt = str_replace($match[0], '', $txt);
             }
         }
 
@@ -810,6 +830,41 @@ class EverblockTools extends ObjectModel
             EverblockCache::cacheStore($cacheId, $limitedBrands);
             return $limitedBrands;
         }
+        return EverblockCache::cacheRetrieve($cacheId);
+    }
+
+    protected static function getBestSellingProductIds(int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
+    {
+        $context = Context::getContext();
+        $cacheId = 'everblock_bestSellingProductIds_'
+            . (int) $context->shop->id . '_'
+            . $limit . '_'
+            . ($days ?? 'all') . '_'
+            . $orderBy . '_'
+            . $orderWay;
+
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
+                . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
+                . ' JOIN ' . _DB_PREFIX_ . 'orders o ON od.id_order = o.id_order'
+                . ' JOIN ' . _DB_PREFIX_ . 'product_shop ps ON od.product_id = ps.id_product'
+                . ' WHERE ps.active = 1';
+
+            if ($days !== null) {
+                $dateFrom = date('Y-m-d H:i:s', strtotime("-$days days"));
+                $sql .= ' AND o.date_add >= "' . pSQL($dateFrom) . '"';
+            }
+
+            $sql .= ' GROUP BY od.product_id'
+                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
+                . ' LIMIT ' . (int) $limit;
+
+            $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            $ids = array_map(fn($row) => (int) $row['product_id'], $rows);
+            EverblockCache::cacheStore($cacheId, $ids);
+            return $ids;
+        }
+
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
