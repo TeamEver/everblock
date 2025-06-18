@@ -116,6 +116,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[best-sales 10 carousel=true]`: Displays the top ten best-selling products. Optional parameters: `days`, `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Displays ten random products in a carousel.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Displays products linked to the current product in a Bootstrap carousel.
+- `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Displays accessories of the current product in a Bootstrap carousel.
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Show accessories of products currently in the cart. If needed, completes with items from the same categories before falling back to best sellers.
 - `{hook h='displayHome'}`: Displays the `displayHome` hook (hooks are not allowed on modals)
 - `[everinstagram]`: Display your latest Instagram photos.
@@ -305,6 +306,7 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[best-sales 10 carousel=true]` : Affiche les dix meilleures ventes. Paramètres optionnels : `days`, `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]` : Affiche dix produits aléatoires en carousel.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]` : Affiche les produits liés au produit courant en carousel Bootstrap.
+- `[accessories nb="8" orderby="date_add" orderway="DESC"]` : Affiche les accessoires du produit courant en carousel Bootstrap.
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]` : Affiche les accessoires des produits du panier. Si nécessaire, complète avec les articles des mêmes catégories puis affiche les meilleures ventes en dernier recours.
 - `{hook h='displayHome'}` : Affiche le hook `displayHome` (les hooks ne sont pas autorisés dans les modales)
 - `[everinstagram]` : Affiche vos dernières photos Instagram.
@@ -481,6 +483,7 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 - `[best-sales 10 carousel=true]`: Muestra los diez productos más vendidos. Parámetros opcionales: `days`, `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Muestra diez productos aleatorios en carrusel.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Muestra productos relacionados con el producto actual en un carrusel Bootstrap.
+- `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Muestra los accesorios del producto actual en un carrusel Bootstrap.
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Muestra accesorios de los productos del carrito. Si es necesario, se completa con artículos de las mismas categorías y finalmente se muestran los más vendidos.
 - `{hook h='displayHome'}`: Muestra el hook `displayHome` (los hooks no están permitidos en modales)
 - `[everinstagram]`: Muestra tus últimas fotos de Instagram.
@@ -657,6 +660,7 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 - `[best-sales 10 carousel=true]`: Mostra i dieci prodotti più venduti. Parametri opzionali: `days`, `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Mostra dieci prodotti casuali in carosello.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Mostra i prodotti collegati a quello attuale in un carosello Bootstrap.
+- `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Mostra gli accessori del prodotto corrente in un carosello Bootstrap.
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Mostra gli accessori dei prodotti presenti nel carrello. Se necessario, completa con articoli delle stesse categorie e infine mostra i più venduti.
 - `{hook h='displayHome'}`: Mostra l'hook `displayHome` (gli hook non sono consentiti nelle modali)
 - `[everinstagram]`: Mostra le ultime foto di Instagram.
