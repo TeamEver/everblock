@@ -1308,7 +1308,9 @@ class EverblockTools extends ObjectModel
             }
 
             $productId = (int) Tools::getValue('id_product');
-            $categoryRows = Db::getInstance()->executeS('SELECT id_category FROM ' . _DB_PREFIX_ . 'category_product WHERE id_product = ' . $productId);
+            $categoryRows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                'SELECT id_category FROM ' . _DB_PREFIX_ . 'category_product WHERE id_product = ' . (int) $productId
+            );
             $categoryIds = array_map(fn($row) => (int) $row['id_category'], $categoryRows);
             if (empty($categoryIds)) {
                 continue;
