@@ -3464,7 +3464,7 @@ class EverblockTools extends ObjectModel
     */
     public static function generateProducts(int $idShop): bool
     {
-        $numProducts = (int) EverblockCache::getModuleConfiguration('EVERPS_DUMMY_NBR');
+        $numProducts = (int) Configuration::get('EVERPS_DUMMY_NBR');
         if ($numProducts <= 0) {
             $numProducts = 5;
         }
@@ -3482,6 +3482,29 @@ class EverblockTools extends ObjectModel
                     $categories = [2];
                     $product->addToCategories($categories);
                     StockAvailable::setQuantity($product->id, 0, $product->quantity);
+
+                    $image = new Image();
+                    $image->id_product = $product->id;
+                    $image->position = Image::getHighestPosition($product->id) + 1;
+                    $image->cover = 1;
+                    if ($image->add()) {
+                        $image->associateTo([$idShop]);
+                        $tmpFile = tempnam(_PS_TMP_IMG_DIR_, 'ever');
+                        $fakeUrl = 'https://picsum.photos/600/600?random=' . mt_rand();
+                        Tools::copy($fakeUrl, $tmpFile);
+                        $path = _PS_PROD_IMG_DIR_ . $image->getExistingImgPath() . '.jpg';
+                        ImageManager::resize($tmpFile, $path);
+                        $types = ImageType::getImagesTypes('products');
+                        foreach ($types as $type) {
+                            ImageManager::resize(
+                                $tmpFile,
+                                _PS_PROD_IMG_DIR_ . $image->getExistingImgPath() . '-' . $type['name'] . '.jpg',
+                                $type['width'],
+                                $type['height']
+                            );
+                        }
+                        unlink($tmpFile);
+                    }
                 } else {
                     PrestaShopLogger::addLog('Failed to create Product ' . ($i + 1), 3); // Niveau d'erreur : 3 (erreur)
                     return false;
