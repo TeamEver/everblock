@@ -127,7 +127,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 
 - `[prettyblocks name="myzone"]`: Render a PrettyBlocks zone if the module is installed.
 - `[everblock 3]`: Insert the content of block ID 3.
-- `[cms id="1"]`: Display the content of CMS page ID 1.
+- `[cms id="1"]` or `[evercms id="1"]`: Display the content of CMS page ID 1.
 ### Contact form shortcodes
 A contact form must start with the shortcode `[evercontactform_open]` and end with the shortcode `[evercontactform_close]`
 
@@ -313,7 +313,7 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[widget moduleName="mymodule" hookName="displayHome"]` : Affiche le widget d'un autre module.
 - `[prettyblocks name="myzone"]` : Affiche une zone PrettyBlocks si le module est installé.
 - `[everblock 3]` : Insère le contenu du bloc ayant l'ID 3.
-- `[cms id="1"]` : Affiche le contenu de la page CMS ayant l'ID 1.
+- `[cms id="1"]` or `[evercms id="1"]` : Affiche le contenu de la page CMS ayant l'ID 1.
 
 ### Shortcodes de formulaire de contact
 Un formulaire de contact doit commencer par `[evercontactform_open]` et se terminer par `[evercontactform_close]`
@@ -487,7 +487,7 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 - `[widget moduleName="mymodule" hookName="displayHome"]`: Muestra el widget de otro módulo.
 - `[prettyblocks name="myzone"]`: Muestra una zona PrettyBlocks si el módulo está instalado.
 - `[everblock 3]`: Inserta el contenido del bloque con ID 3.
-- `[cms id="1"]`: Muestra el contenido de la página CMS con ID 1.
+- `[cms id="1"]` or `[evercms id="1"]`: Muestra el contenido de la página CMS con ID 1.
 
 ### Shortcodes para formularios de contacto
 Un formulario de contacto debe comenzar con `[evercontactform_open]` y finalizar con `[evercontactform_close]`
@@ -661,7 +661,7 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 - `[widget moduleName="mymodule" hookName="displayHome"]`: Mostra il widget di un altro modulo.
 - `[prettyblocks name="myzone"]`: Mostra una zona PrettyBlocks se il modulo è installato.
 - `[everblock 3]`: Inserisce il contenuto del blocco con ID 3.
-- `[cms id="1"]`: Mostra il contenuto della pagina CMS con ID 1.
+- `[cms id="1"]` or `[evercms id="1"]`: Mostra il contenuto della pagina CMS con ID 1.
 
 ### Shortcode per moduli di contatto
 Un modulo di contatto deve iniziare con `[evercontactform_open]` e terminare con `[evercontactform_close]`

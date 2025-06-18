@@ -352,8 +352,8 @@ class EverblockTools extends ObjectModel
     // Todo : trigger shortcode
     public static function getCmsShortcode(string $txt, Context $context): string
     {
-        // Regex pour [cms id="X"]
-        preg_match_all('/\[cms\s+id="?(\d+)"?\]/i', $txt, $matches, PREG_SET_ORDER);
+        // Regex pour [cms id="X"] ou [evercms id="X"]
+        preg_match_all('/\[(?:cms|evercms)\s+id="?(\d+)"?\]/i', $txt, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
             $cmsId = (int) $match[1];
