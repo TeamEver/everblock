@@ -617,3 +617,4 @@ $_MODULE['<{everblock}prestashop>prettyblock_shopping_cart_96b0141273eabab320119
 $_MODULE['<{everblock}prestashop>prettyblock_shopping_cart_59fc69e031ecb0f82efe467fd6692383'] = 'Voir le panier';
 $_MODULE['<{everblock}prestashop>prettyblock_silo_78f6f209024537ab3369e54b172c94b6'] = 'Retrouvez ce produit dans nos univers';
 $_MODULE['<{everblock}prestashop>prettyblock_silo_5becdb6da34b0a9ce1de8b8e1066baae'] = 'Retrouvez cette catégorie dans nos univers';
+$_MODULE['<{everblock}prestashop>ever_presented_products_124117dd22bc1dce2b0687b65f35f091'] = 'Vous pourriez aussi aimer';
