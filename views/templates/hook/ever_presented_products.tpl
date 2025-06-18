@@ -16,6 +16,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($everPresentProducts) && $everPresentProducts}
+  <h2 class="h4 my-3 text-center">{l s='You may also like' mod='everblock'}</h2>
   <section class="ever-featured-products featured-products clearfix mt-3">
     <div class="products row {if isset($carousel) && $carousel}ever-slick-carousel{/if}">
       {foreach $everPresentProducts item=product}
