@@ -326,8 +326,16 @@ class AdminEverBlockController extends ModuleAdminController
         ];
         $bootstrapSizes = [
             [
-                'id_bootstrap' => 6,
-                'size' => $this->l('1/6')
+                'id_bootstrap' => 0,
+                'size' => $this->l('None')
+            ],
+            [
+                'id_bootstrap' => 1,
+                'size' => $this->l('100%')
+            ],
+            [
+                'id_bootstrap' => 2,
+                'size' => $this->l('1/2')
             ],
             [
                 'id_bootstrap' => 4,
@@ -338,16 +346,8 @@ class AdminEverBlockController extends ModuleAdminController
                 'size' => $this->l('1/4')
             ],
             [
-                'id_bootstrap' => 2,
-                'size' => $this->l('1/2')
-            ],
-            [
-                'id_bootstrap' => 1,
-                'size' => $this->l('100%')
-            ],
-            [
-                'id_bootstrap' => 0,
-                'size' => $this->l('None')
+                'id_bootstrap' => 6,
+                'size' => $this->l('1/6')
             ],
         ];
         $everblock_obj = $this->loadObject(true);
