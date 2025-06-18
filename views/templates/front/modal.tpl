@@ -19,7 +19,7 @@
 {if isset($everblock_modal) && $everblock_modal}
 <div class="modal fade everblockModal" id="everblockModal" tabindex="-1" role="dialog" aria-labelledby="everblockModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content text-center"
+        <div class="modal-content"
             {if isset($everblock_modal->background) && $everblock_modal->background} 
             style="background-color:{$everblock_modal->background|escape:'htmlall':'UTF-8'};" 
             {/if}>
@@ -28,7 +28,7 @@
                 {l s='Modal' mod='everblock'}
             </p>
             <!-- Contenu de la modal -->
-            <div class="modal-body text-center">
+            <div class="modal-body">
                 <!-- Bouton de fermeture aligné à droite -->
                 <button type="button" class="close float-right" data-bs-dismiss="modal" data-dismiss="modal" aria-label="{l s='Close' mod='everblock'}">
                     <span aria-hidden="true">&times;</span>
