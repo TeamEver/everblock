@@ -20,7 +20,12 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-require_once _PS_ROOT_DIR_ . '/app/AppKernel.php';
+
+if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
+    require_once _PS_ROOT_DIR_ . '/app/AdminKernel.php';
+} else {
+    require_once _PS_ROOT_DIR_ . '/app/AppKernel.php';
+}
 
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -64,7 +69,11 @@ class EverblockcronModuleFrontController extends ModuleFrontController
                 $env = 'prod';
                 $debug = false;
             }
-            $kernel = new \AppKernel($env, $debug);
+            if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
+                $kernel = new \AdminKernel($env, $debug);
+            } else {
+                $kernel = new \AppKernel($env, $debug);
+            }
             $kernel->boot();
 
             $container = $kernel->getContainer();
