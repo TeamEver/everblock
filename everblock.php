@@ -266,6 +266,20 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after store content on store locator';
             $hook->save();
         }
+        if (!Hook::getIdByName('displayBeforeProductMiniature')) {
+            $hook = new Hook();
+            $hook->name = 'displayBeforeProductMiniature';
+            $hook->title = 'display before product miniature';
+            $hook->description = 'This hook triggers before product miniature is rendered';
+            $hook->save();
+        }
+        if (!Hook::getIdByName('displayAfterProductMiniature')) {
+            $hook = new Hook();
+            $hook->name = 'displayAfterProductMiniature';
+            $hook->title = 'display after product miniature';
+            $hook->description = 'This hook triggers after product miniature is rendered';
+            $hook->save();
+        }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
         if (!$id_tab) {
