@@ -17,7 +17,7 @@
 *}
 {if isset($everPresentProducts) && $everPresentProducts}
   <h2 class="h4 my-3 text-center">{l s='You may also like' mod='everblock'}</h2>
-  <section class="ever-featured-products featured-products clearfix mt-3">
+  <section class="ever-featured-products featured-products clearfix mt-3{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     <div class="products row {if isset($carousel) && $carousel}ever-slick-carousel{/if}">
       {foreach $everPresentProducts item=product}
         {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
