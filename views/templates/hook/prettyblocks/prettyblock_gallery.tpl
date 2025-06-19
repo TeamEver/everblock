@@ -27,7 +27,7 @@
             {assign var="numPerRow" value=4}
             {assign var="count" value=0}
             {foreach from=$block.states item=state key=key}
-                {if $count  $numPerRow == 0}
+                {if $count && $numPerRow == 0}
                     <div class="row justify-content-center row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gx-0 no-gutters">
                 {/if}
 
@@ -44,7 +44,7 @@
 
                 {assign var="count" value=$count+1}
 
-                {if $count  $numPerRow == 0 || $smarty.foreach.states.last}
+                {if $count && $numPerRow == 0 || $smarty.foreach.states.last}
                     </div>
                 {/if}
             {/foreach}
