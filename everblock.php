@@ -3100,7 +3100,7 @@ class Everblock extends Module
         }
     }
 
-    public function hookbeforeRenderingEverblockProductHighlight($params)
+    public function hookBeforeRenderingEverblockProductHighlight($params)
     {
         $product = false;
         $settings = $params['block']['settings'];

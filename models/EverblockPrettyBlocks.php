@@ -2296,8 +2296,10 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $productHighlightTemplate,
                 ],
-                'config' => [
-                    'fields' => [
+                'repeater' => [
+                    'name' => 'Product',
+                    'nameFrom' => 'id_product',
+                    'groups' => [
                         'id_product' => [
                             'type' => 'text',
                             'label' => $module->l('Product ID'),
