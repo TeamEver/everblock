@@ -22,9 +22,9 @@ if (!defined('_PS_VERSION_')) {
 }
 require_once _PS_ROOT_DIR_ . '/app/AppKernel.php';
 
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
 
 class EverblockcronModuleFrontController extends ModuleFrontController
 {
@@ -41,7 +41,7 @@ class EverblockcronModuleFrontController extends ModuleFrontController
     public function initContent()
     {
         if (!Tools::getIsset('evertoken')
-            || Tools::encrypt($this->module->name . '/evercron') != Tools::getValue('evertoken')
+            || $this->module->encrypt($this->module->name . '/evercron') != Tools::getValue('evertoken')
             || !Module::isInstalled($this->module->name)
         ) {
             Tools::redirect('index.php');

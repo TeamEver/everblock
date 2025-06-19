@@ -53,7 +53,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
         }
         $modalDelay = (int) $block->delay;
         $showModal = false;
-        $cookieName = Tools::encrypt(
+        $cookieName = $this->module->encrypt(
             $this->module->name
             . $this->context->shop->id
             . Configuration::get('PS_SHOP_NAME')

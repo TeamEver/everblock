@@ -31,14 +31,14 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPrettyBlocks.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCache.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCheckoutStep.php';
 
+use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use Everblock\Tools\Service\ImportFile;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
-use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
-use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContent;
+use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use ScssPhp\ScssPhp\Compiler;
-use Everblock\Tools\Service\ImportFile;
 
 class Everblock extends Module
 {
@@ -538,7 +538,7 @@ class Everblock extends Module
         $shortcodeAdminLink = 'index.php?controller=AdminEverBlockShortcode&token=';
         $shortcodeAdminLink .= Tools::getAdminTokenLite('AdminEverBlockShortcode');
         $cronLinks = [];
-        $cronToken = Tools::encrypt($this->name . '/evercron');
+        $cronToken = $this->encrypt($this->name . '/evercron');
         foreach ($this->allowedActions as $action) {
             $cronLinks[$action] = $this->context->link->getModuleLink(
                 $this->name,
@@ -2380,7 +2380,7 @@ class Everblock extends Module
         );
         $link = new Link();
         if (Validate::isLoadedObject($customer)) {
-            $everToken = Tools::encrypt($this->name . '/everlogin');
+            $everToken = $this->encrypt($this->name . '/everlogin');
             $this->context->smarty->assign(array(
                 'login_customer' => $customer,
                 'lastname' => $customer->lastname,
@@ -2414,7 +2414,7 @@ class Everblock extends Module
             (int) $params['id_order']
         );
         if (Validate::isLoadedObject($order)) {
-            $everToken = Tools::encrypt($this->name . '/everlogin');
+            $everToken = $this->encrypt($this->name . '/everlogin');
             $link = new Link();
             $connectLink = $link->getModuleLink(
                 $this->name,
@@ -3109,5 +3109,14 @@ class Everblock extends Module
         return [
             'product' => $product,
         ];
+    }
+
+    public function encrypt($data)
+    {
+        if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
+            return Tools::hash($data);
+        }
+
+        return Tools::encrypt($data);
     }
 }

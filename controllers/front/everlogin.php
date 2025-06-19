@@ -26,7 +26,7 @@ class EverblockEverloginModuleFrontController extends ModuleFrontController
     public function initContent()
     {
         if (!Tools::getIsset('evertoken')
-            || Tools::encrypt($this->module->name . '/everlogin') != Tools::getValue('evertoken')
+            || $this->module->encrypt($this->module->name . '/everlogin') != Tools::getValue('evertoken')
             || !Module::isInstalled($this->module->name)
         ) {
             Tools::redirect('index.php');
