@@ -19,11 +19,11 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
+use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
-use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
-use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 
 class EverblockTools extends ObjectModel
 {
@@ -3703,13 +3703,15 @@ class EverblockTools extends ObjectModel
                         $tmpFile = tempnam(_PS_TMP_IMG_DIR_, 'ever');
                         $fakeUrl = 'https://picsum.photos/600/600?random=' . mt_rand();
                         Tools::copy($fakeUrl, $tmpFile);
-                        $path = _PS_PROD_IMG_DIR_ . $image->getExistingImgPath() . '.jpg';
+                        $path = (defined('_PS_PRODUCT_IMG_DIR_') ? _PS_PRODUCT_IMG_DIR_ : _PS_PROD_IMG_DIR_) . $image->getExistingImgPath() . '.jpg';
                         ImageManager::resize($tmpFile, $path);
                         $types = ImageType::getImagesTypes('products');
                         foreach ($types as $type) {
+                            $pathToType = (defined('_PS_PRODUCT_IMG_DIR_') ? _PS_PRODUCT_IMG_DIR_ : _PS_PROD_IMG_DIR_) . $image->getExistingImgPath() . '-' . $type['name'] . '.jpg';
+
                             ImageManager::resize(
                                 $tmpFile,
-                                _PS_PROD_IMG_DIR_ . $image->getExistingImgPath() . '-' . $type['name'] . '.jpg',
+                                $pathToType,
                                 $type['width'],
                                 $type['height']
                             );
