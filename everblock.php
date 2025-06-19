@@ -132,18 +132,18 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after every block shortcode is rendered';
             $hook->save();
         }
-        // Hook BeforeRenderingShortcodes
-        if (!Hook::getIdByName('BeforeRenderingShortcodes')) {
+        // Hook displayBeforeRenderingShortcodes
+        if (!Hook::getIdByName('displayBeforeRenderingShortcodes')) {
             $hook = new Hook();
-            $hook->name = 'BeforeRenderingShortcodes';
+            $hook->name = 'displayBeforeRenderingShortcodes';
             $hook->title = 'Before rendering shortcodes';
             $hook->description = 'This hook triggers before shortcodes are rendered';
             $hook->save();
         }
-        // Hook AfterRenderingShortcodes
-        if (!Hook::getIdByName('AfterRenderingShortcodes')) {
+        // Hook displayAfterRenderingShortcodes
+        if (!Hook::getIdByName('displayAfterRenderingShortcodes')) {
             $hook = new Hook();
-            $hook->name = 'AfterRenderingShortcodes';
+            $hook->name = 'displayAfterRenderingShortcodes';
             $hook->title = 'After rendering shortcodes';
             $hook->description = 'This hook triggers after shortcodes are rendered';
             $hook->save();
@@ -231,16 +231,16 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after every block shortcode is rendered';
             $hook->save();
         }
-        if (!Hook::getIdByName('BeforeRenderingShortcodes')) {
+        if (!Hook::getIdByName('displayBeforeRenderingShortcodes')) {
             $hook = new Hook();
-            $hook->name = 'BeforeRenderingShortcodes';
+            $hook->name = 'displayBeforeRenderingShortcodes';
             $hook->title = 'Before rendering shortcodes';
             $hook->description = 'This hook triggers before shortcodes are rendered';
             $hook->save();
         }
-        if (!Hook::getIdByName('AfterRenderingShortcodes')) {
+        if (!Hook::getIdByName('displayAfterRenderingShortcodes')) {
             $hook = new Hook();
-            $hook->name = 'AfterRenderingShortcodes';
+            $hook->name = 'displayAfterRenderingShortcodes';
             $hook->title = 'After rendering shortcodes';
             $hook->description = 'This hook triggers after shortcodes are rendered';
             $hook->save();
