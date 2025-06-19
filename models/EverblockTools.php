@@ -156,16 +156,16 @@ class EverblockTools extends ObjectModel
     {
 
         preg_match_all(
-            '/\[crosselling(?:\s+nb=(\d+))?(?:\s+orderby=(\w+))?(?:\s+orderway=(ASC|DESC))?\]/i',
+            '/\[crosselling(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?(?:\s+orderby=(\w+))?(?:\s+orderway=(ASC|DESC))?\]/i',
             $txt,
             $matches,
             PREG_SET_ORDER
         );
 
         foreach ($matches as $match) {
-            $limit = isset($match[1]) ? (int) $match[1] : 4;
-            $orderBy = isset($match[2]) ? strtolower($match[2]) : 'id_product';
-            $orderWay = isset($match[3]) ? strtoupper($match[3]) : 'ASC';
+            $limit = isset($match[1]) && $match[1] !== '' ? (int) $match[1] : (isset($match[2]) ? (int) $match[2] : 4);
+            $orderBy = isset($match[3]) ? strtolower($match[3]) : 'id_product';
+            $orderWay = isset($match[4]) ? strtoupper($match[4]) : 'ASC';
 
             $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
             $allowedOrderWay = ['ASC', 'DESC'];
@@ -487,7 +487,7 @@ class EverblockTools extends ObjectModel
 
         // Regex mise à jour pour capturer les paramètres optionnels orderby et orderway
         preg_match_all(
-            '/\[productfeature\s+id=(\d+)\s+nb=(\d+)\s+carousel=(true|false)(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
+            '/\[productfeature\s+id=(\d+)(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?\s+carousel=(true|false)(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
             $txt,
             $matches,
             PREG_SET_ORDER
@@ -495,11 +495,11 @@ class EverblockTools extends ObjectModel
 
         foreach ($matches as $match) {
             $featureId = (int) $match[1];
-            $productLimit = (int) $match[2];
-            $carousel = strtolower($match[3]) === 'true';
+            $productLimit = isset($match[2]) && $match[2] !== '' ? (int) $match[2] : (isset($match[3]) ? (int) $match[3] : 10);
+            $carousel = strtolower($match[4]) === 'true';
 
-            $orderBy = isset($match[4]) ? strtolower($match[4]) : 'id_product';
-            $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'DESC';
+            $orderBy = isset($match[5]) ? strtolower($match[5]) : 'id_product';
+            $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
             // Validation des paramètres
             $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
@@ -560,16 +560,18 @@ class EverblockTools extends ObjectModel
     public static function getFeatureValueProductShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
-        // Mise à jour de la regex pour capturer les paramètres id, nb et carousel
-        preg_match_all('/\[productfeaturevalue\s+id=(\d+)\s+nb=(\d+)\s+carousel=(true|false)\]/i', $txt, $matches, PREG_SET_ORDER);
+        // Mise à jour de la regex pour capturer les paramètres id, nb, limit, carousel, orderby et orderway
+        preg_match_all('/\[productfeaturevalue\s+id=(\d+)(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i', $txt, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
             $featureId = intval($match[1]);
-            $productLimit = intval($match[2]);
-            $carousel = $match[3] === 'true';
+            $productLimit = isset($match[2]) && $match[2] !== '' ? intval($match[2]) : (isset($match[3]) ? intval($match[3]) : 10);
+            $carousel = isset($match[4]) && $match[4] === 'true';
+            $orderBy = isset($match[5]) ? strtolower($match[5]) : 'date_add';
+            $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
             // Rechercher les produits par caractéristique
-            $featureProducts = static::getProductsByFeatureValue($featureId, $productLimit, $context);
+            $featureProducts = static::getProductsByFeatureValue($featureId, $productLimit, $context, $orderBy, $orderWay);
             $productIds = array_column($featureProducts, 'id_product');
             $everPresentProducts = static::everPresentProducts($productIds, $context);
             if (!empty($featureProducts)) {
@@ -591,14 +593,15 @@ class EverblockTools extends ObjectModel
     /**
      * Méthode pour obtenir les produits en fonction de l'ID de la caractéristique et de la limite de produits.
      */
-    protected static function getProductsByFeatureValue(int $featureValueId, int $limit, Context $context)
+    protected static function getProductsByFeatureValue(int $featureValueId, int $limit, Context $context, string $orderBy = 'date_add', string $orderWay = 'DESC')
     {
         $cacheId = 'everblock_getProductsByFeatureValue_'
         . (int) $featureValueId
         . '_'
         . (int) $limit
         . '_'
-        . (int) $context->language->id;
+        . (int) $context->language->id
+        . '_' . $orderBy . '_' . $orderWay;
         if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = new DbQuery();
             $sql->select('p.id_product');
@@ -606,7 +609,7 @@ class EverblockTools extends ObjectModel
             $sql->innerJoin('feature_product', 'fp', 'p.id_product = fp.id_product');
             $sql->where('fp.id_feature_value = ' . (int) $featureValueId);
             $sql->where('p.active = 1');
-            $sql->orderBy('p.date_add DESC');
+            $sql->orderBy('p.' . pSQL($orderBy) . ' ' . pSQL($orderWay));
             $sql->limit($limit);
 
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -622,7 +625,7 @@ class EverblockTools extends ObjectModel
 
         // Regex pour capturer : id, nb, carousel, orderBy, orderWay (tous optionnels sauf id et nb)
         preg_match_all(
-            '/\[category\s+id="(\d+)"\s+nb="(\d+)"(?:\s+carousel=(?:"?(true|false)"?))?(?:\s+orderby="?(id_product|price|name|date_add|position)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
+            '/\[category\s+id="(\d+)"(?:\s+nb="?(\d+)"?)?(?:\s+limit="?(\d+)"?)?(?:\s+carousel=(?:"?(true|false)"?))?(?:\s+orderby="?(id_product|price|name|date_add|position)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
             $txt,
             $matches,
             PREG_SET_ORDER
@@ -630,10 +633,10 @@ class EverblockTools extends ObjectModel
 
         foreach ($matches as $match) {
             $categoryId = (int) $match[1];
-            $productCount = (int) $match[2];
-            $carousel = isset($match[3]) && strtolower($match[3]) === 'true';
-            $orderBy = isset($match[4]) ? $match[4] : 'id_product';
-            $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'ASC';
+            $productCount = isset($match[2]) && $match[2] !== '' ? (int) $match[2] : (isset($match[3]) ? (int) $match[3] : 10);
+            $carousel = isset($match[4]) && strtolower($match[4]) === 'true';
+            $orderBy = isset($match[5]) ? $match[5] : 'id_product';
+            $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'ASC';
 
             $categoryProducts = static::getProductsByCategoryId($categoryId, $productCount, $orderBy, $orderWay);
             if (!empty($categoryProducts)) {
@@ -683,7 +686,7 @@ class EverblockTools extends ObjectModel
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
 
         preg_match_all(
-            '/\[manufacturer\s+id="(\d+)"\s+nb="(\d+)"(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
+            '/\[manufacturer\s+id="(\d+)"(?:\s+nb="?(\d+)"?)?(?:\s+limit="?(\d+)"?)?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
             $message,
             $matches,
             PREG_SET_ORDER
@@ -691,10 +694,10 @@ class EverblockTools extends ObjectModel
 
         foreach ($matches as $match) {
             $manufacturerId = (int) $match[1];
-            $productCount = (int) $match[2];
-            $carousel = isset($match[3]) && $match[3] === 'true';
-            $orderBy = isset($match[4]) ? strtolower($match[4]) : 'id_product';
-            $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'DESC';
+            $productCount = isset($match[2]) && $match[2] !== '' ? (int) $match[2] : (isset($match[3]) ? (int) $match[3] : 10);
+            $carousel = isset($match[4]) && $match[4] === 'true';
+            $orderBy = isset($match[5]) ? strtolower($match[5]) : 'id_product';
+            $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
             // Validation
             $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
@@ -1088,17 +1091,24 @@ class EverblockTools extends ObjectModel
 
     public static function getRandomProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
-        // Update regex to capture optional carousel parameter
-        preg_match_all('/\[random_product\s+nb="(\d+)"(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+        // Update regex to capture optional params nb, limit, carousel, orderby and orderway
+        preg_match_all('/\[random_product(?:\s+nb="?(\d+)")?(?:\s+limit="?(\d+)")?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i', $txt, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
-            $limit = (int) $match[1];
-            $carousel = isset($match[2]) && $match[2] === 'true';
+            $limit = isset($match[1]) && $match[1] !== '' ? (int) $match[1] : (isset($match[2]) ? (int) $match[2] : 8);
+            $carousel = isset($match[3]) && $match[3] === 'true';
+            $orderBy = isset($match[4]) ? strtolower($match[4]) : '';
+            $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'ASC';
 
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
-                    ORDER BY RAND()
-                    LIMIT ' . (int) $limit;
+                    ';
+            if ($orderBy) {
+                $sql .= 'ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay);
+            } else {
+                $sql .= 'ORDER BY RAND()';
+            }
+            $sql .= ' LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
             if (!empty($productIds)) {
@@ -1119,7 +1129,13 @@ class EverblockTools extends ObjectModel
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
-                    $shortcode = '[random_product nb="' . (int) $limit . '"' . ($carousel ? ' carousel=true' : '') . ']';
+                    $shortcodeParts = ['[random_product'];
+                    if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
+                    elseif (isset($match[2])) { $shortcodeParts[] = 'limit="' . $match[2] . '"'; }
+                    if (isset($match[3])) { $shortcodeParts[] = 'carousel=' . $match[3]; }
+                    if (isset($match[4])) { $shortcodeParts[] = 'orderby=' . $match[4]; }
+                    if (isset($match[5])) { $shortcodeParts[] = 'orderway=' . $match[5]; }
+                    $shortcode = implode(' ', $shortcodeParts) . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
@@ -1130,18 +1146,20 @@ class EverblockTools extends ObjectModel
 
     public static function getLastProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
-        // Update regex to capture optional carousel parameter
-        preg_match_all('/\[last-products\s+(\d+)(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+        // Update regex to capture optional nb, limit, carousel, orderby and orderway
+        preg_match_all('/\[last-products(?:\s+(\d+))?(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i', $txt, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            $limit = (int) $match[1];
-            $carousel = isset($match[2]) && $match[2] === 'true';
+            $limit = isset($match[2]) && $match[2] !== '' ? (int) $match[2] : (isset($match[1]) && $match[1] !== '' ? (int) $match[1] : (isset($match[3]) ? (int) $match[3] : 8));
+            $carousel = isset($match[4]) && $match[4] === 'true';
+            $orderBy = isset($match[5]) ? strtolower($match[5]) : 'date_add';
+            $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
                     AND p.active = 1
-                    ORDER BY p.date_add DESC
+                    ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay) . '
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
@@ -1163,7 +1181,14 @@ class EverblockTools extends ObjectModel
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
-                    $shortcode = '[last-products ' . (int) $limit . ($carousel ? ' carousel=true' : '') . ']';
+                    $shortcodeParts = ['[last-products'];
+                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
+                    elseif (isset($match[1]) && $match[1] !== '') { $shortcodeParts[] = $match[1]; }
+                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
+                    if (isset($match[4])) { $shortcodeParts[] = 'carousel=' . $match[4]; }
+                    if (isset($match[5])) { $shortcodeParts[] = 'orderby=' . $match[5]; }
+                    if (isset($match[6])) { $shortcodeParts[] = 'orderway=' . $match[6]; }
+                    $shortcode = implode(' ', $shortcodeParts) . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
@@ -1174,19 +1199,21 @@ class EverblockTools extends ObjectModel
 
     public static function getPromoProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
-        // Update regex to capture optional carousel parameter
-        preg_match_all('/\[promo-products\s+(\d+)(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+        // Update regex to capture optional nb, limit, carousel, orderby and orderway
+        preg_match_all('/\[promo-products(?:\s+(\d+))?(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i', $txt, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            $limit = (int) $match[1];
-            $carousel = isset($match[2]) && $match[2] === 'true';
+            $limit = isset($match[2]) && $match[2] !== '' ? (int) $match[2] : (isset($match[1]) && $match[1] !== '' ? (int) $match[1] : (isset($match[3]) ? (int) $match[3] : 8));
+            $carousel = isset($match[4]) && $match[4] === 'true';
+            $orderBy = isset($match[5]) ? strtolower($match[5]) : 'date_add';
+            $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
                     AND p.active = 1
                     AND p.on_sale = 1
-                    ORDER BY p.date_add DESC
+                    ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay) . '
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
@@ -1208,7 +1235,14 @@ class EverblockTools extends ObjectModel
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
-                    $shortcode = '[promo-products ' . (int) $limit . ($carousel ? ' carousel=true' : '') . ']';
+                    $shortcodeParts = ['[promo-products'];
+                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
+                    elseif (isset($match[1]) && $match[1] !== '') { $shortcodeParts[] = $match[1]; }
+                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
+                    if (isset($match[4])) { $shortcodeParts[] = 'carousel=' . $match[4]; }
+                    if (isset($match[5])) { $shortcodeParts[] = 'orderby=' . $match[5]; }
+                    if (isset($match[6])) { $shortcodeParts[] = 'orderway=' . $match[6]; }
+                    $shortcode = implode(' ', $shortcodeParts) . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
             }
@@ -1220,18 +1254,18 @@ class EverblockTools extends ObjectModel
     public static function getBestSalesShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all(
-            '/\[best-sales(?:\s+nb=(\d+))?(?:\s+days=(\d+))?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
+            '/\[best-sales(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?(?:\s+days=(\d+))?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
             $txt,
             $matches,
             PREG_SET_ORDER
         );
 
         foreach ($matches as $match) {
-            $limit = isset($match[1]) ? (int)$match[1] : 10;
-            $days = isset($match[2]) ? (int)$match[2] : null;
-            $carousel = isset($match[3]) && $match[3] === 'true';
-            $orderBy = isset($match[4]) ? strtolower($match[4]) : 'total_quantity';
-            $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'DESC';
+            $limit = isset($match[1]) && $match[1] !== '' ? (int)$match[1] : (isset($match[2]) ? (int)$match[2] : 10);
+            $days = isset($match[3]) ? (int)$match[3] : null;
+            $carousel = isset($match[4]) && $match[4] === 'true';
+            $orderBy = isset($match[5]) ? strtolower($match[5]) : 'total_quantity';
+            $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
             // Validation
             $allowedOrderBy = ['total_quantity', 'product_id'];
@@ -1283,11 +1317,12 @@ class EverblockTools extends ObjectModel
 
                     // Recompose shortcode (avec tous les paramètres capturés)
                     $shortcodeParts = ['[best-sales'];
-                    if (isset($match[1])) $shortcodeParts[] = 'nb=' . $match[1];
-                    if (isset($match[2])) $shortcodeParts[] = 'days=' . $match[2];
-                    if (isset($match[3])) $shortcodeParts[] = 'carousel=' . $match[3];
-                    if (isset($match[4])) $shortcodeParts[] = 'orderby=' . $match[4];
-                    if (isset($match[5])) $shortcodeParts[] = 'orderway=' . $match[5];
+                    if (isset($match[1]) && $match[1] !== '') { $shortcodeParts[] = 'nb=' . $match[1]; }
+                    elseif (isset($match[2])) { $shortcodeParts[] = 'limit=' . $match[2]; }
+                    if (isset($match[3])) $shortcodeParts[] = 'days=' . $match[3];
+                    if (isset($match[4])) $shortcodeParts[] = 'carousel=' . $match[4];
+                    if (isset($match[5])) $shortcodeParts[] = 'orderby=' . $match[5];
+                    if (isset($match[6])) $shortcodeParts[] = 'orderway=' . $match[6];
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
@@ -1305,16 +1340,16 @@ class EverblockTools extends ObjectModel
         }
 
         preg_match_all(
-            '/\[linkedproducts(?:\s+nb="?(\d+)"?)?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
+            '/\[linkedproducts(?:\s+nb="?(\d+)"?)?(?:\s+limit="?(\d+)"?)?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
             $txt,
             $matches,
             PREG_SET_ORDER
         );
 
         foreach ($matches as $match) {
-            $limit = isset($match[1]) ? (int) $match[1] : 8;
-            $orderBy = isset($match[2]) ? strtolower($match[2]) : 'position';
-            $orderWay = isset($match[3]) ? strtoupper($match[3]) : 'ASC';
+            $limit = isset($match[1]) && $match[1] !== '' ? (int) $match[1] : (isset($match[2]) ? (int) $match[2] : 8);
+            $orderBy = isset($match[3]) ? strtolower($match[3]) : 'position';
+            $orderWay = isset($match[4]) ? strtoupper($match[4]) : 'ASC';
 
             $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
             $allowedOrderWay = ['ASC', 'DESC'];
@@ -1361,8 +1396,9 @@ class EverblockTools extends ObjectModel
 
                     $shortcodeParts = ['[linkedproducts'];
                     if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
-                    if (isset($match[2])) { $shortcodeParts[] = 'orderby="' . $match[2] . '"'; }
-                    if (isset($match[3])) { $shortcodeParts[] = 'orderway="' . $match[3] . '"'; }
+                    elseif (isset($match[2])) { $shortcodeParts[] = 'limit="' . $match[2] . '"'; }
+                    if (isset($match[3])) { $shortcodeParts[] = 'orderby="' . $match[3] . '"'; }
+                    if (isset($match[4])) { $shortcodeParts[] = 'orderway="' . $match[4] . '"'; }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
@@ -1380,19 +1416,19 @@ class EverblockTools extends ObjectModel
         }
 
         preg_match_all(
-            '/\[accessories\s+nb="?(\d+)"(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
+            '/\[accessories(?:\s+nb="?(\d+)")?(?:\s+limit="?(\d+)")?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(ASC|DESC)"?)?\]/i',
             $txt,
             $matches,
             PREG_SET_ORDER
         );
 
         foreach ($matches as $match) {
-            $limit = isset($match[1]) ? (int) $match[1] : 0;
+            $limit = isset($match[1]) && $match[1] !== '' ? (int) $match[1] : (isset($match[2]) ? (int) $match[2] : 0);
             if ($limit <= 0) {
                 continue;
             }
-            $orderBy = isset($match[2]) ? strtolower($match[2]) : 'position';
-            $orderWay = isset($match[3]) ? strtoupper($match[3]) : 'ASC';
+            $orderBy = isset($match[3]) ? strtolower($match[3]) : 'position';
+            $orderWay = isset($match[4]) ? strtoupper($match[4]) : 'ASC';
 
             $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
             $allowedOrderWay = ['ASC', 'DESC'];
@@ -1437,9 +1473,11 @@ class EverblockTools extends ObjectModel
                     $templatePath = static::getTemplatePath('hook/linkedproducts_carousel.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
-                    $shortcodeParts = ['[accessories', 'nb="' . $match[1] . '"'];
-                    if (isset($match[2])) { $shortcodeParts[] = 'orderby="' . $match[2] . '"'; }
-                    if (isset($match[3])) { $shortcodeParts[] = 'orderway="' . $match[3] . '"'; }
+                    $shortcodeParts = ['[accessories'];
+                    if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
+                    elseif (isset($match[2])) { $shortcodeParts[] = 'limit="' . $match[2] . '"'; }
+                    if (isset($match[3])) { $shortcodeParts[] = 'orderby="' . $match[3] . '"'; }
+                    if (isset($match[4])) { $shortcodeParts[] = 'orderway="' . $match[4] . '"'; }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
