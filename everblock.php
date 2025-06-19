@@ -529,14 +529,22 @@ class Everblock extends Module
                 $this->html .= $this->displayConfirmation($success);
             }
         }
-        $blockAdminLink = 'index.php?controller=AdminEverBlock&token=';
-        $blockAdminLink .= Tools::getAdminTokenLite('AdminEverBlock');
-        $faqAdminLink = 'index.php?controller=AdminEverBlockFaq&token=';
-        $faqAdminLink .= Tools::getAdminTokenLite('AdminEverBlockFaq');
-        $hookAdminLink = 'index.php?controller=AdminEverBlockHook&token=';
-        $hookAdminLink .= Tools::getAdminTokenLite('AdminEverBlockHook');
-        $shortcodeAdminLink = 'index.php?controller=AdminEverBlockShortcode&token=';
-        $shortcodeAdminLink .= Tools::getAdminTokenLite('AdminEverBlockShortcode');
+        $blockAdminLink = $this->context->link->getAdminLink('AdminEverBlock', true, [], [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ]);
+        $faqAdminLink = $this->context->link->getAdminLink('AdminEverBlockFaq', true, [], [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ]);
+        $hookAdminLink = $this->context->link->getAdminLink('AdminEverBlockHook', true, [], [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ]);
+        $shortcodeAdminLink = $this->context->link->getAdminLink('AdminEverBlockShortcode', true, [], [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ]);
         $cronLinks = [];
         $cronToken = $this->encrypt($this->name . '/evercron');
         foreach ($this->allowedActions as $action) {
