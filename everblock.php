@@ -31,14 +31,14 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPrettyBlocks.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCache.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCheckoutStep.php';
 
+use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use Everblock\Tools\Service\ImportFile;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
-use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
-use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContent;
+use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use ScssPhp\ScssPhp\Compiler;
-use Everblock\Tools\Service\ImportFile;
 
 class Everblock extends Module
 {
@@ -529,16 +529,24 @@ class Everblock extends Module
                 $this->html .= $this->displayConfirmation($success);
             }
         }
-        $blockAdminLink = 'index.php?controller=AdminEverBlock&token=';
-        $blockAdminLink .= Tools::getAdminTokenLite('AdminEverBlock');
-        $faqAdminLink = 'index.php?controller=AdminEverBlockFaq&token=';
-        $faqAdminLink .= Tools::getAdminTokenLite('AdminEverBlockFaq');
-        $hookAdminLink = 'index.php?controller=AdminEverBlockHook&token=';
-        $hookAdminLink .= Tools::getAdminTokenLite('AdminEverBlockHook');
-        $shortcodeAdminLink = 'index.php?controller=AdminEverBlockShortcode&token=';
-        $shortcodeAdminLink .= Tools::getAdminTokenLite('AdminEverBlockShortcode');
+        $blockAdminLink = $this->context->link->getAdminLink('AdminEverBlock', true, [], [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ]);
+        $faqAdminLink = $this->context->link->getAdminLink('AdminEverBlockFaq', true, [], [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ]);
+        $hookAdminLink = $this->context->link->getAdminLink('AdminEverBlockHook', true, [], [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ]);
+        $shortcodeAdminLink = $this->context->link->getAdminLink('AdminEverBlockShortcode', true, [], [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ]);
         $cronLinks = [];
-        $cronToken = Tools::encrypt($this->name . '/evercron');
+        $cronToken = $this->encrypt($this->name . '/evercron');
         foreach ($this->allowedActions as $action) {
             $cronLinks[$action] = $this->context->link->getModuleLink(
                 $this->name,
@@ -2380,7 +2388,7 @@ class Everblock extends Module
         );
         $link = new Link();
         if (Validate::isLoadedObject($customer)) {
-            $everToken = Tools::encrypt($this->name . '/everlogin');
+            $everToken = $this->encrypt($this->name . '/everlogin');
             $this->context->smarty->assign(array(
                 'login_customer' => $customer,
                 'lastname' => $customer->lastname,
@@ -2414,7 +2422,7 @@ class Everblock extends Module
             (int) $params['id_order']
         );
         if (Validate::isLoadedObject($order)) {
-            $everToken = Tools::encrypt($this->name . '/everlogin');
+            $everToken = $this->encrypt($this->name . '/everlogin');
             $link = new Link();
             $connectLink = $link->getModuleLink(
                 $this->name,
@@ -3109,5 +3117,14 @@ class Everblock extends Module
         return [
             'product' => $product,
         ];
+    }
+
+    public function encrypt($data)
+    {
+        if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
+            return Tools::hash($data);
+        }
+
+        return Tools::encrypt($data);
     }
 }

@@ -23,16 +23,16 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Everblock\Tools\Service\ImportFile;
+use Language;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Everblock\Tools\Service\ImportFile;
 use Validate;
-use Language;
 
-class ImportTabCommand extends ContainerAwareCommand
+class ImportTabCommand extends Command
 {
     const SUCCESS = 0;
     const FAILURE = 1;
