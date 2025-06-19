@@ -23,25 +23,24 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Configuration;
+use Currency;
+use Db;
+use DbQuery;
+use Everblock\Tools\Service\ImportFile;
+use EverblockCache;
+use EverblockTools;
+use Language;
+use Module;
 use PrestaShop\PrestaShop\Adapter\LegacyContext as ContextAdapter;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
+use Product;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Everblock\Tools\Service\ImportFile;
-use Currency;
-use Configuration;
-use DbQuery;
-use Db;
-use Product;
-use Language;
-use Module;
 use Validate;
-use EverblockTools;
-use EverblockCache;
 
 class ExecuteAction extends Command
 {
