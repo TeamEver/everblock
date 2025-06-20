@@ -18,7 +18,7 @@
 
 {if isset($everblock_modal) && $everblock_modal}
 <div class="modal fade everblockModal" id="everblockModal" tabindex="-1" role="dialog" aria-labelledby="everblockModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content"
             {if isset($everblock_modal->background) && $everblock_modal->background} 
             style="background-color:{$everblock_modal->background|escape:'htmlall':'UTF-8'};" 
