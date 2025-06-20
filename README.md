@@ -203,6 +203,13 @@ attribute:
 <button class="everblock-modal-button" data-evermodal="12">Open modal</button>
 ```
 
+To display the content of a CMS page in a modal, use the same class with a
+`data-evercms` attribute holding the CMS page ID:
+
+```html
+<button class="everblock-modal-button" data-evercms="5">Open CMS</button>
+```
+
 When clicked, the module will load the corresponding modal content via AJAX and
 display it using Bootstrap.
 
@@ -382,6 +389,11 @@ Vous pouvez déclencher manuellement une modal Everblock depuis n'importe quel h
 ```html
 <button class="everblock-modal-button" data-evermodal="12">Ouvrir la modal</button>
 ```
+Vous pouvez également afficher le contenu d'une page CMS en utilisant l'attribut `data-evercms` avec l'identifiant de la page :
+
+```html
+<button class="everblock-modal-button" data-evercms="5">Ouvrir la page CMS</button>
+```
 Lors du clic, le module chargera le contenu de la modal via AJAX et l'affichera avec Bootstrap.
 
 ## Cache et logs
@@ -559,6 +571,11 @@ Puedes lanzar una modal de Everblock manualmente desde cualquier hook. Añade un
 ```html
 <button class="everblock-modal-button" data-evermodal="12">Abrir modal</button>
 ```
+Tambien puedes mostrar el contenido de una página CMS usando el atributo `data-evercms` con el ID de la página:
+
+```html
+<button class="everblock-modal-button" data-evercms="5">Abrir CMS</button>
+```
 Al hacer clic, el módulo cargará el contenido de la modal vía AJAX y lo mostrará con Bootstrap.
 
 ## Caché y logs
@@ -735,6 +752,11 @@ Ogni blocco può essere convertito in modale e può contenere shortcode (tranne 
 Puoi attivare manualmente una modale Everblock da qualsiasi hook. Aggiungi un pulsante con la classe `everblock-modal-button` e indica l'ID del blocco nell'attributo `data-evermodal`:
 ```html
 <button class="everblock-modal-button" data-evermodal="12">Apri modale</button>
+```
+Puoi anche mostrare il contenuto di una pagina CMS usando l'attributo `data-evercms` con l'ID della pagina:
+
+```html
+<button class="everblock-modal-button" data-evercms="5">Apri CMS</button>
 ```
 Al clic, il modulo caricherà il contenuto della modale tramite AJAX e lo mostrerà con Bootstrap.
 

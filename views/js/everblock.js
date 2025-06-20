@@ -125,13 +125,21 @@ $(document).ready(function(){
     $(document).on('click', '.everblock-modal-button', function(e) {
         e.preventDefault();
         let blockId = $(this).data('everclickmodal');
-        if (!blockId) {
+        let cmsId = $(this).data('evercms');
+        if (!blockId && !cmsId) {
             return;
+        }
+        let data = { token: everblock_token, force: 1 };
+        if (blockId) {
+            data.id_everblock = blockId;
+        }
+        if (cmsId) {
+            data.id_cms = cmsId;
         }
         $.ajax({
             url: atob(evermodal_link),
             type: 'POST',
-            data: { id_everblock: blockId, token: everblock_token, force: 1 },
+            data: data,
             success: function(modal) {
                 $('#everblockModal').remove();
                 $('body').append(modal);
