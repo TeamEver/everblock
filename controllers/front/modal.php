@@ -42,6 +42,24 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             Tools::redirect('index.php');
         }
         $blockId = (int) Tools::getValue('id_everblock');
+        $cmsId = (int) Tools::getValue('id_cms');
+
+        if ($cmsId && !$blockId) {
+            $cms = new CMS($cmsId, $this->context->language->id, $this->context->shop->id);
+            if (!Validate::isLoadedObject($cms) || !(bool) $cms->active) {
+                die();
+            }
+            $cmsContent = EverblockTools::renderShortcodes(
+                $cms->content,
+                $this->context,
+                $this->module
+            );
+            $this->context->smarty->assign([
+                'everblock_modal' => (object) ['content' => $cmsContent],
+            ]);
+            $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
+            die($response);
+        }
         $block = new EverBlockClass(
             $blockId,
             $this->context->language->id,
