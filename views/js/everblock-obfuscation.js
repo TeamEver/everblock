@@ -131,3 +131,4 @@ function clickAndMousedownActions(selector) {
         }
       });
 }
+
