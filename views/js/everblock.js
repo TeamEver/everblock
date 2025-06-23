@@ -180,4 +180,43 @@ $(document).ready(function(){
         backdrop: true,
         show: false
     });
+
+    reloadShortcodes('body');
+
+    prestashop.on('updateProductList', function() {
+        reloadShortcodes('#js-product-list');
+    });
+
+    prestashop.on('updatedProduct', function() {
+        reloadShortcodes('.product-actions.js-product-actions');
+    });
+
+    prestashop.on('updatedCart', function() {
+        reloadShortcodes('body');
+    });
+    prestashop.on('updateShoppingCart', function() {
+        reloadShortcodes('.blockcart');
+    });
 });
+
+function reloadShortcodes(selector) {
+    let target = 'body';
+    if (typeof selector !== 'undefined') {
+        target = selector;
+    }
+    let content = $(target).html();
+    $.ajax({
+        url: atob(evershortcode_link),
+        type: 'POST',
+        data: { html: content, token: everblock_token },
+        success: function(res) {
+            $(target).html(res);
+            if (typeof clickAndMousedownActions === 'function') {
+                clickAndMousedownActions(target);
+            }
+        },
+        error: function(xhr) {
+            console.log(xhr.responseText);
+        }
+    });
+}
