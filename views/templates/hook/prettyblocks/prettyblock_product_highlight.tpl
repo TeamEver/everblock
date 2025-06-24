@@ -4,16 +4,36 @@
 {if $block.extra.product}
   {assign var="product" value=$block.extra.product}
   <div class="{if $block.settings.default.container}container{/if}">
-    {if $block.settings.default.container}<div class="row align-items-center">{/if}
-      <div class="col-12 col-md-6 mb-3 mb-md-0 text-center">
-        <img src="{$product.cover.bySize.large_default.url|replace:'.webp':'.jpg'}" alt="{$product.name|escape:'htmlall'}" class="img-fluid w-100" loading="lazy">
+    {if $block.settings.default.container}
+      <div class="row align-items-center border rounded p-4 shadow-sm" style="background-color: #fff;">
+    {/if}
+
+      <div class="col-12 col-md-5 mb-3 mb-md-0 text-center">
+        <img src="{$product.cover.bySize.large_default.url|replace:'.webp':'.jpg'}"
+             alt="{$product.name|escape:'htmlall'}"
+             class="img-fluid w-100"
+             style="max-width: 260px"
+             loading="lazy">
       </div>
-      <div class="col-12 col-md-6 text-center text-md-start">
-        <div class="mb-2 text-danger"><i class="fa fa-heart me-2"></i>{l s='Coup de coeur du moment' mod='everblock'}</div>
-        <h3 class="h4">{$product.name}</h3>
-        {$block.settings.custom_text nofilter}
-        <a href="{$product.url}" class="btn btn-primary mt-3">{l s='Voir le produit' mod='everblock'}</a>
+
+      <div class="col-12 col-md-7 text-center text-md-start">
+
+        <div class="d-inline-block px-3 py-1 mb-4 rounded-pill bg-light fw-bold text-dark" style="font-size: 1rem;">
+          ❤️ {l s='Our current favorite!' mod='everblock'}
+        </div>
+
+        <div class="h5 fw-bold mb-2">{$product.name}</div>
+
+        <p class="fst-italic mb-3">
+          {$block.settings.custom_text nofilter}
+        </p>
+
+        <a href="{$product.url}" class="btn fw-bold rounded-pill px-4 py-2"
+           style="background-color: #C6F219; color: #000; border: none;">
+          {l s='See the product' mod='everblock'}
+        </a>
       </div>
+
     {if $block.settings.default.container}</div>{/if}
   </div>
 {/if}
