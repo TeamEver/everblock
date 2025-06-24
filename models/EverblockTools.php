@@ -3473,7 +3473,7 @@ class EverblockTools extends ObjectModel
                         'id_shop' => $context->shop->id,
                     ];
                     $pproduct = $assembler->assembleProduct($rawProduct);
-                    if (Product::checkAccessStatic((int) $productId, false)) {
+                    if (Product::checkAccessStatic((int) $productId, (int) $context->customer->id)) {
                         $products[] = $presenter->present(
                             $presentationSettings,
                             $pproduct,

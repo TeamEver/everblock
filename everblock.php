@@ -77,6 +77,7 @@ class Everblock extends Module
 
     public function __call($method, $args)
     {
+        $this->registerHook('beforeRenderingEverblockProductHighlight');
         if (php_sapi_name() == 'cli') {
             return;
         }
@@ -2694,6 +2695,7 @@ class Everblock extends Module
 
     public function hookDisplayHeader()
     {
+        $this->registerHook('beforeRenderingEverblockProductHighlight');
         if (Tools::getValue('eac')
             && Validate::isInt(Tools::getValue('eac'))
         ) {
@@ -3110,20 +3112,19 @@ class Everblock extends Module
     public function hookBeforeRenderingEverblockProductHighlight($params)
     {
         $product = false;
-        $settings = $params['block']['settings'];
-
-        if (isset($settings['id_product']) && (int) $settings['id_product'] > 0) {
-            $presented = EverblockTools::everPresentProducts([
-                (int) $settings['id_product'],
-            ], $this->context);
-            if (!empty($presented)) {
-                $product = reset($presented);
+        foreach ($params['block']['states'] as $state) {
+            if (!empty($state['id_product'])) {
+                $presented = EverblockTools::everPresentProducts(
+                    [(int) $state['id_product']],
+                    $this->context
+                );
+                if (!empty($presented)) {
+                    $product = reset($presented);
+                }
             }
         }
 
-        return [
-            'product' => $product,
-        ];
+        return ['product' => $product];
     }
 
     public function encrypt($data)
