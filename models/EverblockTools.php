@@ -143,6 +143,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[cms') !== false) {
             $txt = static::getCmsShortcode($txt, $context);
         }
+        if (strpos($txt, '[evertpl') !== false) {
+            $txt = static::getThemeTplShortcode($txt, $context);
+        }
         if (in_array($context->controller->controller_type, $controllerTypes)) {
             $txt = static::getCustomerShortcodes($txt, $context);
             $txt = static::obfuscateTextByClass($txt);
@@ -419,6 +422,28 @@ class EverblockTools extends ObjectModel
                 // Si CMS non trouvé ou inactif, on retire le shortcode
                 $txt = str_replace($match[0], '', $txt);
             }
+        }
+
+        return $txt;
+    }
+
+    public static function getThemeTplShortcode(string $txt, Context $context): string
+    {
+        preg_match_all('/\[evertpl\s+name="([^"]+)"\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $tplName = trim($match[1]);
+            $themeDir = rtrim(_PS_THEME_DIR_, '/') . '/';
+            $relativePath = ltrim($tplName, '/');
+            $filePath = realpath($themeDir . $relativePath);
+
+            if ($filePath && strpos($filePath, $themeDir) === 0 && is_file($filePath)) {
+                $replacement = $context->smarty->fetch($filePath);
+            } else {
+                $replacement = '';
+            }
+
+            $txt = str_replace($match[0], $replacement, $txt);
         }
 
         return $txt;
