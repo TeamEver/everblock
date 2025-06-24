@@ -3112,15 +3112,13 @@ class Everblock extends Module
     public function hookBeforeRenderingEverblockProductHighlight($params)
     {
         $product = false;
-        foreach ($params['block']['states'] as $state) {
-            if (!empty($state['id_product'])) {
-                $presented = EverblockTools::everPresentProducts(
-                    [(int) $state['id_product']],
-                    $this->context
-                );
-                if (!empty($presented)) {
-                    $product = reset($presented);
-                }
+        if (!empty($params['block']['settings']['id_product'])) {
+            $presented = EverblockTools::everPresentProducts(
+                [(int) $params['block']['settings']['id_product']],
+                $this->context
+            );
+            if (!empty($presented)) {
+                $product = reset($presented);
             }
         }
 

@@ -2296,14 +2296,17 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $productHighlightTemplate,
                 ],
-                'repeater' => [
-                    'name' => 'Product',
-                    'nameFrom' => 'id_product',
-                    'groups' => [
+                'config' => [
+                    'fields' => [
                         'id_product' => [
                             'type' => 'text',
                             'label' => $module->l('Product ID'),
                             'default' => '',
+                        ],
+                        'badge_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('Badge text'),
+                            'default' => $module->l('Our current favorite!'),
                         ],
                         'custom_text' => [
                             'type' => 'editor',
