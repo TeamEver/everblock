@@ -16,10 +16,10 @@
              loading="lazy">
       </div>
 
-      <div class="col-12 col-md-7 text-center text-md-start">
+      <div class="col-12 col-md-7 text-start">
 
         <div class="d-inline-block px-3 py-1 mb-4 rounded-pill bg-light fw-bold text-dark" style="font-size: 1rem;">
-          ❤️ {l s='Our current favorite!' mod='everblock'}
+          ❤️ {$block.settings.badge_text|escape:'htmlall':'UTF-8'}
         </div>
 
         <div class="h5 fw-bold mb-2">{$product.name}</div>
