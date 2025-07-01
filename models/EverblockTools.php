@@ -4072,7 +4072,7 @@ class EverblockTools extends ObjectModel
         return $repeaterData;
     }
 
-    public static function convertToWebP($imagePath, int $maxWidth = 1920, int $maxHeight = 1920)
+    public static function convertToWebP($imagePath, int $maxWidth = 1920, int $maxHeight = 600)
     {
         // Si déjà en webp, on ne fait rien
         if (strtolower(pathinfo($imagePath, PATHINFO_EXTENSION)) === 'webp') {
