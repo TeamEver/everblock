@@ -4074,6 +4074,11 @@ class EverblockTools extends ObjectModel
 
     public static function convertToWebP($imagePath, int $maxWidth = 1920, int $maxHeight = 1920)
     {
+        // Si déjà en webp, on ne fait rien
+        if (strtolower(pathinfo($imagePath, PATHINFO_EXTENSION)) === 'webp') {
+            return $imagePath;
+        }
+
         if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
             $imagePath = self::urlToFilePath($imagePath);
         } else {
@@ -4086,7 +4091,9 @@ class EverblockTools extends ObjectModel
         }
 
         $pathInfo = pathinfo($imagePath);
-        $webpPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.webp';
+        $hash = substr(sha1($imagePath . filemtime($imagePath)), 0, 12); // hash court et unique par contenu
+        $webpFilename = $hash . '.webp';
+        $webpPath = $pathInfo['dirname'] . '/' . $webpFilename;
 
         if (file_exists($webpPath)) {
             return self::filePathToUrl($webpPath);
@@ -4111,14 +4118,10 @@ class EverblockTools extends ObjectModel
             return false;
         }
 
-        // Récupération des dimensions d’origine
         $originalWidth = imagesx($image);
         $originalHeight = imagesy($image);
-        // Redimensionner si plus grand que max
-        $resize = false;
-        if ($originalWidth > $maxWidth || $originalHeight > $maxHeight) {
-            $resize = true;
 
+        if ($originalWidth > $maxWidth || $originalHeight > $maxHeight) {
             $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
             $newWidth = (int) round($originalWidth * $ratio);
             $newHeight = (int) round($originalHeight * $ratio);
@@ -4162,25 +4165,29 @@ class EverblockTools extends ObjectModel
 
     private static function downloadImage($url)
     {
-        $url = str_replace(' ', '%20', $url);
-        // Parse the URL to get the filename
-        $parsedUrl = parse_url($url);
-        $fileName = basename($parsedUrl['path']);
+        try {
+            $url = str_replace(' ', '%20', $url);
+            // Parse the URL to get the filename
+            $parsedUrl = parse_url($url);
+            $fileName = basename($parsedUrl['path']);
 
-        // Define the local path where the image will be saved
-        $localPath = _PS_ROOT_DIR_ . '/img/cms/' . $fileName;
+            // Define the local path where the image will be saved
+            $localPath = _PS_ROOT_DIR_ . '/img/cms/' . $fileName;
 
-        // Download the image
-        $imageContents = file_get_contents($url);
-        if ($imageContents === false) {
-            return false; // Return false if the download failed
+            // Download the image
+            $imageContents = file_get_contents($url);
+            if ($imageContents === false) {
+                return false; // Return false if the download failed
+            }
+
+            // Save the image to the local path
+            file_put_contents($localPath, $imageContents);
+
+            // Return the local path
+            return $localPath;
+        } catch (Exception $e) {
+            return false;
         }
-
-        // Save the image to the local path
-        file_put_contents($localPath, $imageContents);
-
-        // Return the local path
-        return $localPath;
     }
 
     private static function encodeUrl($url)
