@@ -4089,7 +4089,7 @@ class EverblockTools extends ObjectModel
         $webpPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.webp';
 
         if (file_exists($webpPath)) {
-            return self::filePathToUrl($webpPath);
+            unlink($webpPath);
         }
 
         switch (strtolower($pathInfo['extension'])) {
