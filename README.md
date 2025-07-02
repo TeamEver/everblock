@@ -1,15 +1,15 @@
 # Ever Block - Free HTML Block Module for PrestaShop
 ![Ever Block logo](logo.png)
 
-Ever Block lets PrestaShop 1.7 and 8 users add unlimited custom HTML blocks anywhere using hooks and shortcodes.
+Ever Block lets PrestaShop 1.7, 8 and 9 users add unlimited custom HTML blocks anywhere using hooks and shortcodes.
 
-Works seamlessly with PrestaShop hooks and is fully compatible with PrestaShop 1.7 and 8.
+Works seamlessly with PrestaShop hooks and is fully compatible with PrestaShop 1.7, 8 and 9.
 
 [Learn more on Team Ever](https://www.team-ever.com/prestashop-module-bloc-editeur-html-illimite-shortcode/)
 ## Key Features
 - Unlimited HTML blocks in any PrestaShop hook
 - Shortcodes for products, forms, categories and more
-- Compatible with PrestaShop 1.7 & 8
+- Compatible with PrestaShop 1.7, 8 & 9
 - Works with Pretty Blocks page builder
 - Supports QCD ACF custom fields module
 - Built-in cache and obfuscation tools for SEO
@@ -21,7 +21,7 @@ This free module allows you to create unlimited HTML blocks on your shop
 
 [You can make a donation to support the development of free modules by clicking on this link](https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE)
 
-## PrestaShop 1.7 & 8 hooks 
+## PrestaShop 1.7, 8 & 9 hooks 
 Dev documentation show every native PrestaShop hook :
 [PrestaShop 1.7 hook list](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
 Please check ps_hook table on your database to see every available hook on your shop. Only display hooks are used with this module
@@ -230,16 +230,16 @@ Clearing the native PrestaShop cache will also clear the module cache, but the m
 # Ever Block - Module gratuit de bloc HTML pour PrestaShop
 ![Ever Block logo](logo.png)
 
-Ever Block permet aux utilisateurs de PrestaShop 1.7 et 8 d'ajouter un nombre illimité de blocs HTML personnalisés n'importe où grâce aux hooks et aux shortcodes.
+Ever Block permet aux utilisateurs de PrestaShop 1.7, 8 et 9 d'ajouter un nombre illimité de blocs HTML personnalisés n'importe où grâce aux hooks et aux shortcodes.
 
-Il fonctionne parfaitement avec les hooks PrestaShop et est totalement compatible avec PrestaShop 1.7 et 8.
+Il fonctionne parfaitement avec les hooks PrestaShop et est totalement compatible avec PrestaShop 1.7, 8 et 9.
 
 [En savoir plus sur Team Ever](https://www.team-ever.com/prestashop-module-bloc-editeur-html-illimite-shortcode/)
 
 ## Fonctionnalités clés
 - Blocs HTML illimités sur n'importe quel hook PrestaShop
 - Shortcodes pour produits, formulaires, catégories et plus encore
-- Compatible avec PrestaShop 1.7 & 8
+- Compatible avec PrestaShop 1.7, 8 & 9
 - Fonctionne avec le constructeur de pages Pretty Blocks
 - Prend en charge le module de champs personnalisés QCD ACF
 - Outils intégrés de cache et d'obfuscation pour le SEO
@@ -250,7 +250,7 @@ Ce module gratuit vous permet de créer un nombre illimité de blocs HTML sur vo
 
 [Vous pouvez faire un don pour soutenir le développement de modules gratuits en cliquant sur ce lien](https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE)
 
-## Hooks PrestaShop 1.7 & 8
+## Hooks PrestaShop 1.7, 8 & 9
 La documentation développeur présente tous les hooks PrestaShop natifs :
 [Liste des hooks PrestaShop 1.7](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
 Veuillez consulter la table ps_hook de votre base de données pour voir tous les hooks disponibles sur votre boutique. Seuls les hooks d'affichage sont utilisés avec ce module
@@ -412,16 +412,16 @@ Vider le cache natif de PrestaShop videra également le cache du module, mais ce
 # Ever Block - Módulo de bloque HTML gratuito para PrestaShop
 ![Ever Block logo](logo.png)
 
-Ever Block permite a los usuarios de PrestaShop 1.7 y 8 añadir bloques HTML personalizados ilimitados en cualquier parte mediante hooks y shortcodes.
+Ever Block permite a los usuarios de PrestaShop 1.7, 8 y 9 añadir bloques HTML personalizados ilimitados en cualquier parte mediante hooks y shortcodes.
 
-Funciona sin problemas con los hooks de PrestaShop y es totalmente compatible con PrestaShop 1.7 y 8.
+Funciona sin problemas con los hooks de PrestaShop y es totalmente compatible con PrestaShop 1.7, 8 y 9.
 
 [Más información en Team Ever](https://www.team-ever.com/prestashop-module-bloc-editeur-html-illimite-shortcode/)
 
 ## Funcionalidades clave
 - Bloques HTML ilimitados en cualquier hook de PrestaShop
 - Shortcodes para productos, formularios, categorías y más
-- Compatible con PrestaShop 1.7 y 8
+- Compatible con PrestaShop 1.7, 8 y 9
 - Funciona con el constructor de páginas Pretty Blocks
 - Soporta el módulo de campos personalizados QCD ACF
 - Herramientas integradas de caché y ofuscación para SEO
@@ -432,7 +432,7 @@ Este módulo gratuito te permite crear un número ilimitado de bloques HTML en t
 
 [Puedes hacer una donación para apoyar el desarrollo de módulos gratuitos haciendo clic en este enlace](https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE)
 
-## Hooks de PrestaShop 1.7 y 8
+## Hooks de PrestaShop 1.7, 8 y 9
 La documentación de desarrolladores muestra todos los hooks nativos de PrestaShop:
 [Lista de hooks PrestaShop 1.7](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
 Consulta la tabla ps_hook de tu base de datos para ver todos los hooks disponibles en tu tienda. Solo se utilizan hooks de display con este módulo
@@ -594,16 +594,16 @@ Borrar la caché nativa de PrestaShop también limpiará la del módulo, pero es
 # Ever Block - Modulo gratuito di blocchi HTML per PrestaShop
 ![Ever Block logo](logo.png)
 
-Ever Block consente agli utenti di PrestaShop 1.7 e 8 di aggiungere blocchi HTML personalizzati illimitati ovunque mediante hook e shortcode.
+Ever Block consente agli utenti di PrestaShop 1.7, 8 e 9 di aggiungere blocchi HTML personalizzati illimitati ovunque mediante hook e shortcode.
 
-Funziona perfettamente con gli hook di PrestaShop ed è completamente compatibile con PrestaShop 1.7 e 8.
+Funziona perfettamente con gli hook di PrestaShop ed è completamente compatibile con PrestaShop 1.7, 8 e 9.
 
 [Per saperne di più su Team Ever](https://www.team-ever.com/prestashop-module-bloc-editeur-html-illimite-shortcode/)
 
 ## Funzionalità principali
 - Blocchi HTML illimitati in qualsiasi hook di PrestaShop
 - Shortcode per prodotti, moduli, categorie e altro
-- Compatibile con PrestaShop 1.7 e 8
+- Compatibile con PrestaShop 1.7, 8 e 9
 - Funziona con il page builder Pretty Blocks
 - Supporta il modulo di campi personalizzati QCD ACF
 - Strumenti integrati di cache e offuscamento per la SEO
@@ -614,7 +614,7 @@ Questo modulo gratuito permette di creare un numero illimitato di blocchi HTML n
 
 [Puoi fare una donazione per sostenere lo sviluppo di moduli gratuiti cliccando su questo link](https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE)
 
-## Hook PrestaShop 1.7 e 8
+## Hook PrestaShop 1.7, 8 e 9
 La documentazione per sviluppatori mostra tutti gli hook nativi di PrestaShop:
 [Elenco hook PrestaShop 1.7](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
 Controlla la tabella ps_hook del tuo database per vedere tutti gli hook disponibili sul tuo shop. Con questo modulo vengono utilizzati solo gli hook di display
