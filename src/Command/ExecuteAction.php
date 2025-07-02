@@ -309,6 +309,9 @@ class ExecuteAction extends Command
         if ($action === 'removehn') {
             $output->writeln('<comment>Start replacing all Hn tags in product, category and manufacturer descriptions</comment>');
             $pattern = '/<h([1-6])\b([^>]*)>(.*?)<\/h\1>/is';
+            $callback = function ($matches) {
+                return sprintf('<p class="h%s"%s>%s</p>', $matches[1], $matches[2], $matches[3]);
+            };
 
             // Produits
             $output->writeln('<comment>Processing products…</comment>');
@@ -319,58 +322,73 @@ class ExecuteAction extends Command
             $results = Db::getInstance()->executeS($sql);
 
             foreach ($results as $result) {
-                $product = new Product((int) $result['id_product']);
+                $idProduct = (int) $result['id_product'];
                 foreach (Language::getLanguages(false) as $lang) {
-                    $product->description[$lang['id_lang']] = preg_replace_callback($pattern, function ($matches) {
-                        return sprintf('<p class="h%s"%s>%s</p>', $matches[1], $matches[2], $matches[3]);
-                    }, $product->description[$lang['id_lang']]);
-
-                    $product->description_short[$lang['id_lang']] = preg_replace_callback($pattern, function ($matches) {
-                        return sprintf('<p class="h%s"%s>%s</p>', $matches[1], $matches[2], $matches[3]);
-                    }, $product->description_short[$lang['id_lang']]);
+                    $idLang = (int) $lang['id_lang'];
+                    $row = Db::getInstance()->getRow(
+                        'SELECT description, description_short FROM ' . _DB_PREFIX_ . 'product_lang WHERE id_product = ' . $idProduct . ' AND id_lang = ' . $idLang . ' AND id_shop = ' . (int) $shop->id
+                    );
+                    if (!$row) {
+                        continue;
+                    }
+                    $newDesc = preg_replace_callback($pattern, $callback, $row['description']);
+                    $newShort = preg_replace_callback($pattern, $callback, $row['description_short']);
+                    Db::getInstance()->update(
+                        'product_lang',
+                        [
+                            'description' => pSQL($newDesc, true),
+                            'description_short' => pSQL($newShort, true),
+                        ],
+                        'id_product = ' . $idProduct . ' AND id_lang = ' . $idLang . ' AND id_shop = ' . (int) $shop->id
+                    );
                 }
-                try {
-                    $product->save();
-                    $output->writeln('<comment>Updated product ' . $product->id . '</comment>');
-                } catch (Exception $e) {
-                    $output->writeln('<warning>Product ' . $product->id . ' failed: ' . $e->getMessage() . '</warning>');
-                }
+                $output->writeln('<comment>Updated product ' . $idProduct . '</comment>');
             }
 
             // Catégories
             $output->writeln('<comment>Processing categories…</comment>');
-            $categories = \Category::getCategories($shop->id, false, false);
+            $categories = Db::getInstance()->executeS('SELECT id_category FROM ' . _DB_PREFIX_ . 'category_shop WHERE id_shop = ' . (int) $shop->id);
             foreach ($categories as $cat) {
-                $category = new \Category($cat['id_category']);
+                $idCategory = (int) $cat['id_category'];
                 foreach (Language::getLanguages(false) as $lang) {
-                    $category->description[$lang['id_lang']] = preg_replace_callback($pattern, function ($matches) {
-                        return sprintf('<p class="h%s"%s>%s</p>', $matches[1], $matches[2], $matches[3]);
-                    }, $category->description[$lang['id_lang']]);
+                    $idLang = (int) $lang['id_lang'];
+                    $row = Db::getInstance()->getRow(
+                        'SELECT description FROM ' . _DB_PREFIX_ . 'category_lang WHERE id_category = ' . $idCategory . ' AND id_lang = ' . $idLang . ' AND id_shop = ' . (int) $shop->id
+                    );
+                    if (!$row) {
+                        continue;
+                    }
+                    $newDesc = preg_replace_callback($pattern, $callback, $row['description']);
+                    Db::getInstance()->update(
+                        'category_lang',
+                        ['description' => pSQL($newDesc, true)],
+                        'id_category = ' . $idCategory . ' AND id_lang = ' . $idLang . ' AND id_shop = ' . (int) $shop->id
+                    );
                 }
-                try {
-                    $category->save();
-                    $output->writeln('<comment>Updated category ' . $category->id . '</comment>');
-                } catch (Exception $e) {
-                    $output->writeln('<warning>Category ' . $category->id . ' failed: ' . $e->getMessage() . '</warning>');
-                }
+                $output->writeln('<comment>Updated category ' . $idCategory . '</comment>');
             }
 
             // Marques (Fabricants)
             $output->writeln('<comment>Processing manufacturers…</comment>');
-            $manufacturers = \Manufacturer::getManufacturers(false, $context->language->id, true, false, false);
+            $manufacturers = Db::getInstance()->executeS('SELECT id_manufacturer FROM ' . _DB_PREFIX_ . 'manufacturer');
             foreach ($manufacturers as $manu) {
-                $manufacturer = new \Manufacturer($manu['id_manufacturer']);
+                $idManufacturer = (int) $manu['id_manufacturer'];
                 foreach (Language::getLanguages(false) as $lang) {
-                    $manufacturer->description[$lang['id_lang']] = preg_replace_callback($pattern, function ($matches) {
-                        return sprintf('<p class="h%s"%s>%s</p>', $matches[1], $matches[2], $matches[3]);
-                    }, $manufacturer->description[$lang['id_lang']]);
+                    $idLang = (int) $lang['id_lang'];
+                    $row = Db::getInstance()->getRow(
+                        'SELECT description FROM ' . _DB_PREFIX_ . 'manufacturer_lang WHERE id_manufacturer = ' . $idManufacturer . ' AND id_lang = ' . $idLang
+                    );
+                    if (!$row) {
+                        continue;
+                    }
+                    $newDesc = preg_replace_callback($pattern, $callback, $row['description']);
+                    Db::getInstance()->update(
+                        'manufacturer_lang',
+                        ['description' => pSQL($newDesc, true)],
+                        'id_manufacturer = ' . $idManufacturer . ' AND id_lang = ' . $idLang
+                    );
                 }
-                try {
-                    $manufacturer->save();
-                    $output->writeln('<comment>Updated manufacturer ' . $manufacturer->id . '</comment>');
-                } catch (Exception $e) {
-                    $output->writeln('<warning>Manufacturer ' . $manufacturer->id . ' failed: ' . $e->getMessage() . '</warning>');
-                }
+                $output->writeln('<comment>Updated manufacturer ' . $idManufacturer . '</comment>');
             }
 
             $output->writeln('<success>All Hn tags replaced by <p class="hN"> in product, category, and manufacturer descriptions.</success>');
