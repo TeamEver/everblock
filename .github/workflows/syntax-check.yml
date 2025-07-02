@@ -23,10 +23,11 @@ jobs:
         run: composer global require smarty/smarty:^3
       - name: PHP lint
         run: |
-          find . -name '*.php' -print0 | xargs -0 -n1 -I{} php -l {}
+          # Ignore vendor directory to avoid linting third-party code
+          find . -path ./vendor -prune -o -name '*.php' -print0 | xargs -0 -n1 -I{} php -l {}
       - name: Smarty lint
         run: |
-          files=$(find . -name '*.tpl')
+          files=$(find . -path ./vendor -prune -o -name '*.tpl' -print)
           if [ -n "$files" ]; then
             for f in $files; do
               php -r "require '$(composer global config home)/vendor/autoload.php'; \$smarty=new Smarty(); \$smarty->compileCheck=true; try{ \$smarty->fetch('$f'); } catch(Exception \$e){ echo \$e->getMessage(); exit(1);}"

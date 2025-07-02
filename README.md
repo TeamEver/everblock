@@ -769,4 +769,4 @@ La cartella log si trova in /var/logs/
 
 Cancellare la cache nativa di PrestaShop cancellerà anche quella del modulo, ma quest'ultimo la pulisce automaticamente alla scadenza di un blocco.
 ## Continuous Integration
-A GitHub Actions workflow checks PHP and Smarty template syntax on every push or pull request.
+A GitHub Actions workflow checks PHP and Smarty template syntax on every push or pull request. The `vendor` directory is skipped during these checks to avoid issues with third-party code.
