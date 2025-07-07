@@ -30,6 +30,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Validate;
+use Hook;
+use PrestaShopLogger;
 
 class ImportFileCommand extends Command
 {
@@ -48,7 +50,7 @@ class ImportFileCommand extends Command
     protected function configure()
     {
         $this->setName('everblock:tools:import');
-        $this->setDescription('Update SEO datas for categories & products');
+        $this->setDescription('Import HTML blocks from xlsx file');
         $this->filename = _PS_MODULE_DIR_ . 'everblock/input/everblock.xlsx';
         $this->logFile = _PS_ROOT_DIR_ . '/var/logs/log-everblock-import-' . date('Y-m-d') . '.log';
         $help = sprintf(
@@ -92,14 +94,6 @@ class ImportFileCommand extends Command
 
     protected function updateEverblocks($line, $output)
     {
-        if (!isset($line['id_everblock'])
-            || !Validate::isInt($line['id_everblock'])
-        ) {
-            $output->writeln(
-               '<error>Missing id_everblock column</error>'
-            );
-            return;
-        }
         if (!isset($line['id_lang'])
             || !Validate::isInt($line['id_lang'])
         ) {
@@ -116,11 +110,40 @@ class ImportFileCommand extends Command
             );
             return;
         }
-        $block = new \Everblock(
-            (int) $line['id_everblock'],
-            (int) $line['id_lang'],
-            (int) $line['id_shop']
-        );
+        $create = false;
+        if (isset($line['id_everblock']) && Validate::isUnsignedInt($line['id_everblock']) && (int)$line['id_everblock'] > 0) {
+            $block = new \Everblock(
+                (int) $line['id_everblock'],
+                (int) $line['id_lang'],
+                (int) $line['id_shop']
+            );
+            if (!Validate::isLoadedObject($block)) {
+                $block = new \Everblock();
+                $create = true;
+            }
+        } else {
+            $block = new \Everblock();
+            $create = true;
+        }
+        if ($create) {
+            $block->id_shop = (int) $line['id_shop'];
+            if (!isset($line['name']) || !Validate::isString($line['name'])) {
+                $output->writeln('<error>name column is required for creation</error>');
+                return;
+            }
+            if (!isset($line['hook']) || !Validate::isHookName($line['hook'])) {
+                $output->writeln('<error>hook column is required for creation</error>');
+                return;
+            }
+            $idHook = (int) Hook::getIdByName($line['hook']);
+            if (!$idHook) {
+                $output->writeln('<error>Hook not found: ' . $line['hook'] . '</error>');
+                PrestaShopLogger::addLog('Everblock import - Hook not found: ' . $line['hook']);
+                return;
+            }
+            $block->name = pSQL($line['name']);
+            $block->id_hook = $idHook;
+        }
         if (isset($line['name'])) {
             if (!Validate::isString($line['name'])) {
                 $output->writeln(
@@ -194,13 +217,19 @@ class ImportFileCommand extends Command
                 $block->only_category_product = $line['only_category_product'];
             }
         }
-        if (isset($line['id_hook'])) {
-            if (!Validate::isBool($line['id_hook'])) {
+        if (isset($line['hook'])) {
+            if (!Validate::isHookName($line['hook'])) {
                 $output->writeln(
-                   '<error>id_hook column is not valid : ' . $line['id_hook'] . '</error>'
+                   '<error>hook column is not valid : ' . $line['hook'] . '</error>'
                 );
             } else {
-                $block->id_hook = $line['id_hook'];
+                $idHook = (int) Hook::getIdByName($line['hook']);
+                if (!$idHook) {
+                    $output->writeln('<error>Hook not found: ' . $line['hook'] . '</error>');
+                    PrestaShopLogger::addLog('Everblock import - Hook not found: ' . $line['hook']);
+                } else {
+                    $block->id_hook = $idHook;
+                }
             }
         }
         if (isset($line['device'])) {

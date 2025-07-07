@@ -404,6 +404,9 @@ class Everblock extends Module
         if ((bool) Tools::isSubmit('submitUploadTabsFile') === true) {
             $this->uploadTabsFile();
         }
+        if ((bool) Tools::isSubmit('submitUploadBlocksFile') === true) {
+            $this->uploadBlocksFile();
+        }
         if ((bool) Tools::isSubmit('submitEmptyCache') === true) {
             $this->emptyAllCache();
         }
@@ -1053,6 +1056,34 @@ class Everblock extends Module
                 ],
             ],
         ];
+        $formFields[] = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('Import HTML blocks'),
+                    'icon' => 'icon-smile',
+                ],
+                'input' => [
+                    [
+                        'type' => 'file',
+                        'label' => $this->l('Upload Excel blocks file'),
+                        'desc' => $this->l('Upload an Excel file to create HTML blocks with all settings'),
+                        'hint' => $this->l('This file must contain the same columns as the export command'),
+                        'name' => 'BLOCKS_FILE',
+                        'display_image' => false,
+                        'required' => false,
+                    ],
+                ],
+                'buttons' => [
+                    'import' => [
+                        'name' => 'submitUploadBlocksFile',
+                        'type' => 'submit',
+                        'class' => 'btn btn-default pull-right',
+                        'icon' => 'process-icon-download',
+                        'title' => $this->l('Upload file'),
+                    ],
+                ],
+            ],
+        ];
         $bannedFeatures = json_decode(Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
         if (!is_array($bannedFeatures)) {
             $bannedFeatures = [];
@@ -1171,6 +1202,7 @@ class Everblock extends Module
             'EVERPS_TAB_NB' => Configuration::get('EVERPS_TAB_NB'),
             'EVERPS_FLAG_NB' => Configuration::get('EVERPS_FLAG_NB'),
             'TABS_FILE' => '',
+            'BLOCKS_FILE' => '',
         ];
         $configData = array_merge($configData, $bannedFeaturesColors);
         return $configData;
@@ -3032,6 +3064,31 @@ class Everblock extends Module
         }
     }
 
+    protected function uploadBlocksFile()
+    {
+        if (isset($_FILES['BLOCKS_FILE'])
+            && isset($_FILES['BLOCKS_FILE']['tmp_name'])
+            && !empty($_FILES['BLOCKS_FILE']['tmp_name'])
+        ) {
+            $filename = $_FILES['BLOCKS_FILE']['name'];
+            $exploded_filename = explode('.', $filename);
+            $ext = end($exploded_filename);
+            if (Tools::strtolower($ext) != 'xlsx') {
+                $this->postErrors[] = $this->l('Error : File is not valid.');
+                return false;
+            }
+            if (!($tmp_name = tempnam(_PS_TMP_IMG_DIR_, 'PS'))
+                || !move_uploaded_file($_FILES['BLOCKS_FILE']['tmp_name'], $tmp_name)
+            ) {
+                return false;
+            }
+
+            copy($tmp_name, _PS_MODULE_DIR_ . $this->name . '/input/blocks.xlsx');
+            $this->processBlocksFile();
+            $this->html .= $this->displayConfirmation($this->l('File has been imported'));
+        }
+    }
+
     protected function processTabsFile()
     {
         $tabsFile = _PS_MODULE_DIR_ . $this->name . '/input/tabs.xlsx';
@@ -3045,6 +3102,21 @@ class Everblock extends Module
             $this->updateProductTabs($line);
         }
         unlink($tabsFile);
+    }
+
+    protected function processBlocksFile()
+    {
+        $blocksFile = _PS_MODULE_DIR_ . $this->name . '/input/blocks.xlsx';
+        if (!file_exists($blocksFile)) {
+            return;
+        }
+        $file = new ImportFile($blocksFile);
+        $lines = $file->getLines();
+        foreach ($lines as $line) {
+            $this->createBlockFromExcel($line);
+        }
+        unlink($blocksFile);
+        Tools::clearAllCache();
     }
 
     protected function updateProductTabs($line)
@@ -3106,6 +3178,95 @@ class Everblock extends Module
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
+        }
+    }
+
+    protected function createBlockFromExcel($line)
+    {
+        if (!isset($line['name']) || !Validate::isGenericName($line['name'])) {
+            $this->postErrors[] = $this->l('Missing or invalid name column');
+            return;
+        }
+        if (!isset($line['hook']) || !Validate::isHookName($line['hook'])) {
+            $this->postErrors[] = $this->l('Missing or invalid hook column');
+            return;
+        }
+        $idHook = (int) Hook::getIdByName($line['hook']);
+        if (!$idHook) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $this->l('Hook not found') . ' : ' . $line['hook']);
+            return;
+        }
+        if (!isset($line['id_shop']) || !Validate::isInt($line['id_shop'])) {
+            $this->postErrors[] = $this->l('Missing or invalid id_shop column');
+            return;
+        }
+        if (!isset($line['id_lang']) || !Validate::isInt($line['id_lang'])) {
+            $this->postErrors[] = $this->l('Missing or invalid id_lang column');
+            return;
+        }
+
+        $block = new EverblockClass();
+        $block->name = pSQL($line['name']);
+        $block->id_hook = $idHook;
+        $block->id_shop = (int) $line['id_shop'];
+
+        if (isset($line['position']) && Validate::isUnsignedInt($line['position'])) {
+            $block->position = (int) $line['position'];
+        } else {
+            $block->position = 0;
+        }
+        if (isset($line['active']) && Validate::isBool($line['active'])) {
+            $block->active = (int) $line['active'];
+        } else {
+            $block->active = 1;
+        }
+        if (isset($line['only_home']) && Validate::isBool($line['only_home'])) {
+            $block->only_home = $line['only_home'];
+        }
+        if (isset($line['only_category']) && Validate::isBool($line['only_category'])) {
+            $block->only_category = $line['only_category'];
+        }
+        if (isset($line['only_category_product']) && Validate::isBool($line['only_category_product'])) {
+            $block->only_category_product = $line['only_category_product'];
+        }
+        if (isset($line['device']) && Validate::isUnsignedInt($line['device'])) {
+            $block->device = $line['device'];
+        }
+        if (isset($line['categories']) && Validate::isString($line['categories'])) {
+            $block->categories = json_encode(explode(',', $line['categories']));
+        }
+        if (isset($line['groups']) && Validate::isString($line['groups'])) {
+            $block->groups = json_encode(explode(',', $line['groups']));
+        }
+        if (isset($line['background']) && Validate::isColor($line['background'])) {
+            $block->background = $line['background'];
+        }
+        if (isset($line['css_class']) && Validate::isString($line['css_class'])) {
+            $block->css_class = $line['css_class'];
+        }
+        if (isset($line['data_attribute']) && Validate::isString($line['data_attribute'])) {
+            $block->data_attribute = $line['data_attribute'];
+        }
+        if (isset($line['bootstrap_class']) && Validate::isString($line['bootstrap_class'])) {
+            $block->bootstrap_class = $line['bootstrap_class'];
+        }
+        if (isset($line['date_start']) && Validate::isDateFormat($line['date_start'])) {
+            $block->date_start = $line['date_start'];
+        }
+        if (isset($line['date_end']) && Validate::isDateFormat($line['date_end'])) {
+            $block->date_end = $line['date_end'];
+        }
+        if (isset($line['content']) && Validate::isAnything($line['content'])) {
+            $block->content[(int) $line['id_lang']] = $line['content'];
+        }
+        if (isset($line['custom_code']) && Validate::isAnything($line['custom_code'])) {
+            $block->custom_code[(int) $line['id_lang']] = $line['custom_code'];
+        }
+
+        try {
+            $block->save();
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
         }
     }
 
