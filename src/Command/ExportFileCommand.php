@@ -32,6 +32,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use Hook;
 use Validate;
 
 class ExportFileCommand extends Command
@@ -122,180 +124,99 @@ class ExportFileCommand extends Command
                                          ->setDescription($title)
                                          ->setCategory($title);
             $spreadsheet->setActiveSheetIndex(0);
-            $r = 2;
+            $row = 2;
+            $headers = [
+                'id_everblock',
+                'id_shop',
+                'id_lang',
+                'name',
+                'hook',
+                'only_home',
+                'only_category',
+                'only_category_product',
+                'only_manufacturer',
+                'only_supplier',
+                'only_cms_category',
+                'obfuscate_link',
+                'add_container',
+                'lazyload',
+                'device',
+                'categories',
+                'manufacturers',
+                'suppliers',
+                'cms_categories',
+                'groups',
+                'background',
+                'css_class',
+                'data_attribute',
+                'bootstrap_class',
+                'position',
+                'modal',
+                'delay',
+                'timeout',
+                'date_start',
+                'date_end',
+                'active',
+                'content',
+                'custom_code',
+            ];
             foreach ($dataSet as $block) {
-                if ($block['categories']
-                    && $block['categories'] != 'false'
-                    && Validate::isJson($block['categories'])
-                ) {
-                    $categories = implode(',', json_decode($block['categories']));
-                } else {
-                    $categories = '';
+                $values = [
+                    $block['id_everblock'],
+                    $block['id_shop'],
+                    $block['id_lang'],
+                    $block['name'],
+                    Hook::getNameById((int) $block['id_hook']),
+                    $block['only_home'],
+                    $block['only_category'],
+                    $block['only_category_product'],
+                    $block['only_manufacturer'],
+                    $block['only_supplier'],
+                    $block['only_cms_category'],
+                    $block['obfuscate_link'],
+                    $block['add_container'],
+                    $block['lazyload'],
+                    $block['device'],
+                    $this->decodeField($block['categories']),
+                    $this->decodeField($block['manufacturers']),
+                    $this->decodeField($block['suppliers']),
+                    $this->decodeField($block['cms_categories']),
+                    $this->decodeField($block['groups']),
+                    $block['background'],
+                    $block['css_class'],
+                    $block['data_attribute'],
+                    $block['bootstrap_class'],
+                    $block['position'],
+                    $block['modal'],
+                    $block['delay'],
+                    $block['timeout'],
+                    $block['date_start'],
+                    $block['date_end'],
+                    $block['active'],
+                    $block['content'],
+                    $block['custom_code'],
+                ];
+                foreach ($values as $i => $value) {
+                    $col = $i + 1;
+                    $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $value);
+                    $letter = Coordinate::stringFromColumnIndex($col);
+                    $spreadsheet->getActiveSheet()->getStyle($letter . $row)->getFont()->setBold(true)->setName('Arial')->setSize(9);
+                    $spreadsheet->getActiveSheet()->getColumnDimension($letter)->setAutoSize(true);
                 }
-                if ($block['groups']
-                    && $block['groups'] != 'false'
-                    && Validate::isJson($block['groups'])
-                ) {
-                    $groups = implode(',', json_decode($block['groups']));
-                } else {
-                    $groups = '';
-                }
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(1, $r, $block['id_everblock']);
-                $spreadsheet->getActiveSheet()->getStyle("A" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("A" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("A" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("A")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(2, $r, $block['id_shop']);
-                $spreadsheet->getActiveSheet()->getStyle("B" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("B" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("B" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("B")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(3, $r, $block['id_lang']);
-                $spreadsheet->getActiveSheet()->getStyle("C" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("C" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("C" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("C")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(4, $r, $block['id_hook']);
-                $spreadsheet->getActiveSheet()->getStyle("D" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("D" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("D" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("D")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(5, $r, $block['name']);
-                $spreadsheet->getActiveSheet()->getStyle("E" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("E" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("E" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("E")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(6, $r, $block['only_home']);
-                $spreadsheet->getActiveSheet()->getStyle("F" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("F" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("F" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("F")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(7, $r, $block['only_category']);
-                $spreadsheet->getActiveSheet()->getStyle("G" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("G" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("G" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("G")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(8, $r, $block['only_category_product']);
-                $spreadsheet->getActiveSheet()->getStyle("H" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("H" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("H" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("H")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(9, $r, $block['device']);
-                $spreadsheet->getActiveSheet()->getStyle("I" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("I" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("I" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("I")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(10, $r, $categories);
-                $spreadsheet->getActiveSheet()->getStyle("J" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("J" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("J" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("J")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(11, $r, $groups);
-                $spreadsheet->getActiveSheet()->getStyle("K" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("K" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("K" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("K")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(12, $r, $block['background']);
-                $spreadsheet->getActiveSheet()->getStyle("L" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("L" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("L" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("L")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(13, $r, $block['css_class']);
-                $spreadsheet->getActiveSheet()->getStyle("M" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("M" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("M" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("M")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(14, $r, $block['data_attribute']);
-                $spreadsheet->getActiveSheet()->getStyle("N" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("N" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("N" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("N")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(15, $r, $block['bootstrap_class']);
-                $spreadsheet->getActiveSheet()->getStyle("O" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("O" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("O" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("O")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(16, $r, $block['position']);
-                $spreadsheet->getActiveSheet()->getStyle("P" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("P" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("P" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("P")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(17, $r, $block['date_start']);
-                $spreadsheet->getActiveSheet()->getStyle("Q" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("Q" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("Q" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("Q")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(18, $r, $block['date_end']);
-                $spreadsheet->getActiveSheet()->getStyle("R" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("R" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("R" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("R")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(19, $r, $block['active']);
-                $spreadsheet->getActiveSheet()->getStyle("S" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("S" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("S" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("S")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(20, $r, $block['content']);
-                $spreadsheet->getActiveSheet()->getStyle("T" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("T" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("T" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("T")->setAutoSize(true);
-
-                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow(21, $r, $block['custom_code']);
-                $spreadsheet->getActiveSheet()->getStyle("U" . $r)->getFont()->setBold(true);
-                $spreadsheet->getActiveSheet()->getStyle("U" . $r)->getFont()->setName('Arial');
-                $spreadsheet->getActiveSheet()->getStyle("U" . $r)->getFont()->setSize(9);
-                $spreadsheet->getActiveSheet()->getColumnDimension("U")->setAutoSize(true);
-
-                $r++;
+                $row++;
             }
-            $spreadsheet->setActiveSheetIndex(0)
-            ->setCellValue('A1', 'id_everblock')
-            ->setCellValue('B1', 'id_shop')
-            ->setCellValue('C1', 'id_lang')
-            ->setCellValue('D1', 'name')
-            ->setCellValue('E1', 'id_hook')
-            ->setCellValue('F1', 'only_home')
-            ->setCellValue('G1', 'only_category')
-            ->setCellValue('H1', 'only_category_product')
-            ->setCellValue('I1', 'device')
-            ->setCellValue('J1', 'categories')
-            ->setCellValue('K1', 'groups')
-            ->setCellValue('L1', 'background')
-            ->setCellValue('M1', 'css_class')
-            ->setCellValue('N1', 'data_attribute')
-            ->setCellValue('O1', 'bootstrap_class')
-            ->setCellValue('P1', 'position')
-            ->setCellValue('Q1', 'date_start')
-            ->setCellValue('R1', 'date_end')
-            ->setCellValue('S1', 'active')
-            ->setCellValue('T1', 'content')
-            ->setCellValue('U1', 'custom_code');
-            $spreadsheet->getActiveSheet()->setAutoFilter('A1:U1');
+            $spreadsheet->setActiveSheetIndex(0);
+            foreach ($headers as $i => $header) {
+                $col = $i + 1;
+                $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow($col, 1, $header);
+            }
+            $lastColumn = Coordinate::stringFromColumnIndex(count($headers));
+            $spreadsheet->getActiveSheet()->setAutoFilter('A1:' . $lastColumn . '1');
             // Rename sheet
             $spreadsheet->getActiveSheet()->setTitle(\Tools::substr($reportName, 0, 31));
 
             //Text bold in first row
-            $spreadsheet->getActiveSheet()->getStyle('A1:U1')->getFont()->setBold(true);
+            $spreadsheet->getActiveSheet()->getStyle('A1:' . $lastColumn . '1')->getFont()->setBold(true);
 
             //Freeze first row
             $spreadsheet->getActiveSheet()->freezePane('A2');
@@ -326,7 +247,7 @@ class ExportFileCommand extends Command
                 ],
             ];
 
-            $spreadsheet->getActiveSheet()->getStyle('A1:U1')->applyFromArray($styleArray);
+            $spreadsheet->getActiveSheet()->getStyle('A1:' . $lastColumn . '1')->applyFromArray($styleArray);
 
             // Set active sheet index to the first sheet, so Excel opens this as the first sheet
             $spreadsheet->setActiveSheetIndex(0);
@@ -359,6 +280,18 @@ class ExportFileCommand extends Command
         $sql->where('ebl.id_lang = ' . (int) $idLang);
         $allBlocks = \Db::getInstance()->executeS($sql);
         return $allBlocks;
+    }
+
+    protected function decodeField($json)
+    {
+        if ($json && $json != 'false' && Validate::isJson($json)) {
+            $items = json_decode($json);
+            if (is_array($items)) {
+                return implode(',', $items);
+            }
+        }
+
+        return '';
     }
 
 
