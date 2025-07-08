@@ -306,6 +306,114 @@ class ImportFileCommand extends Command
                 $block->categories = json_encode($categories);
             }
         }
+        if (isset($line['only_manufacturer'])) {
+            if (!Validate::isBool($line['only_manufacturer'])) {
+                $output->writeln(
+                   '<error>only_manufacturer column is not valid : ' . $line['only_manufacturer'] . '</error>'
+                );
+            } else {
+                $block->only_manufacturer = $line['only_manufacturer'];
+            }
+        }
+        if (isset($line['only_supplier'])) {
+            if (!Validate::isBool($line['only_supplier'])) {
+                $output->writeln(
+                   '<error>only_supplier column is not valid : ' . $line['only_supplier'] . '</error>'
+                );
+            } else {
+                $block->only_supplier = $line['only_supplier'];
+            }
+        }
+        if (isset($line['only_cms_category'])) {
+            if (!Validate::isBool($line['only_cms_category'])) {
+                $output->writeln(
+                   '<error>only_cms_category column is not valid : ' . $line['only_cms_category'] . '</error>'
+                );
+            } else {
+                $block->only_cms_category = $line['only_cms_category'];
+            }
+        }
+        if (isset($line['manufacturers'])) {
+            if (!Validate::isString($line['manufacturers'])) {
+                $output->writeln(
+                   '<error>manufacturers column is not valid : ' . $line['manufacturers'] . '</error>'
+                );
+            } else {
+                $block->manufacturers = json_encode(explode(',', $line['manufacturers']));
+            }
+        }
+        if (isset($line['suppliers'])) {
+            if (!Validate::isString($line['suppliers'])) {
+                $output->writeln(
+                   '<error>suppliers column is not valid : ' . $line['suppliers'] . '</error>'
+                );
+            } else {
+                $block->suppliers = json_encode(explode(',', $line['suppliers']));
+            }
+        }
+        if (isset($line['cms_categories'])) {
+            if (!Validate::isString($line['cms_categories'])) {
+                $output->writeln(
+                   '<error>cms_categories column is not valid : ' . $line['cms_categories'] . '</error>'
+                );
+            } else {
+                $block->cms_categories = json_encode(explode(',', $line['cms_categories']));
+            }
+        }
+        if (isset($line['obfuscate_link'])) {
+            if (!Validate::isBool($line['obfuscate_link'])) {
+                $output->writeln(
+                   '<error>obfuscate_link column is not valid : ' . $line['obfuscate_link'] . '</error>'
+                );
+            } else {
+                $block->obfuscate_link = $line['obfuscate_link'];
+            }
+        }
+        if (isset($line['add_container'])) {
+            if (!Validate::isBool($line['add_container'])) {
+                $output->writeln(
+                   '<error>add_container column is not valid : ' . $line['add_container'] . '</error>'
+                );
+            } else {
+                $block->add_container = $line['add_container'];
+            }
+        }
+        if (isset($line['lazyload'])) {
+            if (!Validate::isBool($line['lazyload'])) {
+                $output->writeln(
+                   '<error>lazyload column is not valid : ' . $line['lazyload'] . '</error>'
+                );
+            } else {
+                $block->lazyload = $line['lazyload'];
+            }
+        }
+        if (isset($line['modal'])) {
+            if (!Validate::isBool($line['modal'])) {
+                $output->writeln(
+                   '<error>modal column is not valid : ' . $line['modal'] . '</error>'
+                );
+            } else {
+                $block->modal = $line['modal'];
+            }
+        }
+        if (isset($line['delay'])) {
+            if (!Validate::isUnsignedInt($line['delay'])) {
+                $output->writeln(
+                   '<error>delay column is not valid : ' . $line['delay'] . '</error>'
+                );
+            } else {
+                $block->delay = $line['delay'];
+            }
+        }
+        if (isset($line['timeout'])) {
+            if (!Validate::isUnsignedInt($line['timeout'])) {
+                $output->writeln(
+                   '<error>timeout column is not valid : ' . $line['timeout'] . '</error>'
+                );
+            } else {
+                $block->timeout = $line['timeout'];
+            }
+        }
         try {
             $block->save();
         } catch (Exception $e) {

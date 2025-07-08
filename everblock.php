@@ -3238,6 +3238,33 @@ class Everblock extends Module
         if (isset($line['groups']) && Validate::isString($line['groups'])) {
             $block->groups = json_encode(explode(',', $line['groups']));
         }
+        if (isset($line['only_manufacturer']) && Validate::isBool($line['only_manufacturer'])) {
+            $block->only_manufacturer = $line['only_manufacturer'];
+        }
+        if (isset($line['only_supplier']) && Validate::isBool($line['only_supplier'])) {
+            $block->only_supplier = $line['only_supplier'];
+        }
+        if (isset($line['only_cms_category']) && Validate::isBool($line['only_cms_category'])) {
+            $block->only_cms_category = $line['only_cms_category'];
+        }
+        if (isset($line['manufacturers']) && Validate::isString($line['manufacturers'])) {
+            $block->manufacturers = json_encode(explode(',', $line['manufacturers']));
+        }
+        if (isset($line['suppliers']) && Validate::isString($line['suppliers'])) {
+            $block->suppliers = json_encode(explode(',', $line['suppliers']));
+        }
+        if (isset($line['cms_categories']) && Validate::isString($line['cms_categories'])) {
+            $block->cms_categories = json_encode(explode(',', $line['cms_categories']));
+        }
+        if (isset($line['obfuscate_link']) && Validate::isBool($line['obfuscate_link'])) {
+            $block->obfuscate_link = $line['obfuscate_link'];
+        }
+        if (isset($line['add_container']) && Validate::isBool($line['add_container'])) {
+            $block->add_container = $line['add_container'];
+        }
+        if (isset($line['lazyload']) && Validate::isBool($line['lazyload'])) {
+            $block->lazyload = $line['lazyload'];
+        }
         if (isset($line['background']) && Validate::isColor($line['background'])) {
             $block->background = $line['background'];
         }
@@ -3249,6 +3276,15 @@ class Everblock extends Module
         }
         if (isset($line['bootstrap_class']) && Validate::isString($line['bootstrap_class'])) {
             $block->bootstrap_class = $line['bootstrap_class'];
+        }
+        if (isset($line['modal']) && Validate::isBool($line['modal'])) {
+            $block->modal = $line['modal'];
+        }
+        if (isset($line['delay']) && Validate::isUnsignedInt($line['delay'])) {
+            $block->delay = $line['delay'];
+        }
+        if (isset($line['timeout']) && Validate::isUnsignedInt($line['timeout'])) {
+            $block->timeout = $line['timeout'];
         }
         if (isset($line['date_start']) && Validate::isDateFormat($line['date_start'])) {
             $block->date_start = $line['date_start'];
