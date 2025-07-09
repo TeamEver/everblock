@@ -2510,10 +2510,10 @@ class Everblock extends Module
         if (Tools::getValue('id_cms')) {
             $idObj = (int) Tools::getValue('id_cms');
         }
-        $cacheId = $this->name
+        $cacheIdBase = $this->name
         . '-id_hook-'
-        . (int) $id_hook
-        . '-controller-'
+        . (int) $id_hook;
+        $cacheIdDetails = '-controller-'
         . trim(Tools::getValue('controller'))
         . '-hookName-'
         . trim($hookName)
@@ -2528,6 +2528,13 @@ class Everblock extends Module
         . '-device-'
         . (int) $context->getDevice()
         . $position;
+        if (Configuration::get('EVERBLOCK_CACHE')) {
+            // When using file cache, hash the details part to avoid creating
+            // huge filenames that could lead to millions of files on disk
+            $cacheId = $cacheIdBase . '-' . md5($cacheIdDetails);
+        } else {
+            $cacheId = $cacheIdBase . $cacheIdDetails;
+        }
         if (!EverblockCache::isCacheStored(str_replace('|', '-', $cacheId))) {
             if (isset($context->customer->id) && $context->customer->id) {
                 $id_entity = (int) $context->customer->id;
