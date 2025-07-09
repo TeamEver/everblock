@@ -149,6 +149,14 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after shortcodes are rendered';
             $hook->save();
         }
+        // Hook displayFakeHook
+        if (!Hook::getIdByName('displayFakeHook')) {
+            $hook = new Hook();
+            $hook->name = 'displayFakeHook';
+            $hook->title = 'Fake hook';
+            $hook->description = 'Ne pas afficher ce hook en front, il sera utilisé pour du contenu asynchrone';
+            $hook->save();
+        }
         return (parent::install()
             && $this->registerHook('displayHeader')
             && $this->registerHook('actionAdminControllerSetMedia')
@@ -244,6 +252,13 @@ class Everblock extends Module
             $hook->name = 'displayAfterRenderingShortcodes';
             $hook->title = 'After rendering shortcodes';
             $hook->description = 'This hook triggers after shortcodes are rendered';
+            $hook->save();
+        }
+        if (!Hook::getIdByName('displayFakeHook')) {
+            $hook = new Hook();
+            $hook->name = 'displayFakeHook';
+            $hook->title = 'Fake hook';
+            $hook->description = 'Ne pas afficher ce hook en front, il sera utilisé pour du contenu asynchrone';
             $hook->save();
         }
         if (!Hook::getIdByName('displayBeforeStoreLocator')) {
