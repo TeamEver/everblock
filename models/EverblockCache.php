@@ -22,6 +22,7 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockCache extends ObjectModel
 {
+    protected const TTL = 86400; // 24 hours
     protected static function useNativeCache(): bool
     {
         return Configuration::get('EVERBLOCK_CACHE') !== '1';
@@ -62,7 +63,14 @@ class EverblockCache extends ObjectModel
 
         static::createCacheDir();
         $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
-        return file_exists($cacheFilePath);
+        if (file_exists($cacheFilePath)) {
+            if (time() - filemtime($cacheFilePath) > self::TTL) {
+                unlink($cacheFilePath);
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     public static function cacheStore(string $cacheKey, $cacheValue)
@@ -93,6 +101,10 @@ class EverblockCache extends ObjectModel
         static::createCacheDir();
         $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
         if (file_exists($cacheFilePath)) {
+            if (time() - filemtime($cacheFilePath) > self::TTL) {
+                unlink($cacheFilePath);
+                return '';
+            }
             $cachedData = Tools::file_get_contents($cacheFilePath);
             return unserialize($cachedData);
         }
@@ -138,8 +150,21 @@ class EverblockCache extends ObjectModel
             if (!is_dir($cacheDir)) {
                 mkdir($cacheDir, 0755, true);
             }
+            static::cleanOldFiles($cacheDir);
         } catch (Exception $e) {
             PrestaShopLogger::addLog('Unable to create Everblock cache dir');
+        }
+    }
+
+    protected static function cleanOldFiles(string $cacheDir)
+    {
+        $files = glob($cacheDir . '/*.cache');
+        if ($files !== false) {
+            foreach ($files as $file) {
+                if (time() - filemtime($file) > self::TTL) {
+                    unlink($file);
+                }
+            }
         }
     }
 }
