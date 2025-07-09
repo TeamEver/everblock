@@ -18,11 +18,11 @@
 {if isset($everPresentProducts) && $everPresentProducts}
   <section class="ever-featured-products featured-products clearfix mt-3{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     <div class="products row {if isset($carousel) && $carousel}ever-slick-carousel{/if}">
-      {hook h='displayBeforeProductMiniature'}
+      {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass page_name=$page.page_name}
       {foreach $everPresentProducts item=product}
         {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
       {/foreach}
-      {hook h='displayAfterProductMiniature'}
+      {hook h='displayAfterProductMiniature' products=$everPresentProducts origin=$shortcodeClass page_name=$page.page_name}
     </div>
   </section>
 {/if}
