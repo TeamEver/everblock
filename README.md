@@ -114,6 +114,8 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[productfeaturevalue id="2" nb="12" carousel="true"]`: Same as before, but this time concerns products that have the characteristic value id 2
 - `[promo-products 10 carousel=true]`: Displays ten products on sale in a carousel format.
 - `[best-sales 10 carousel=true]`: Displays the top ten best-selling products. Optional parameters: `days`, `orderby`, `orderway`.
+- `[categorybestsales id="8" nb="10"]`: Displays the best-selling products from category ID 8. Optional parameters: `orderby`, `orderway`.
+- `[brandbestsales id="3" nb="10"]`: Displays the best-selling products from brand ID 3. Optional parameters: `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Displays ten random products in a carousel.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Displays products linked to the current product in a Bootstrap carousel.
 - `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Displays accessories of the current product in a Bootstrap carousel.
@@ -311,6 +313,8 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[entity_lastname]` : Affiche le nom du client connecté.
 - `[promo-products 10 carousel=true]` : Affiche dix produits en promotion en carousel.
 - `[best-sales 10 carousel=true]` : Affiche les dix meilleures ventes. Paramètres optionnels : `days`, `orderby`, `orderway`.
+- `[categorybestsales id="8" nb="10"]` : Affiche les meilleures ventes de la catégorie 8. Paramètres optionnels : `orderby`, `orderway`.
+- `[brandbestsales id="3" nb="10"]` : Affiche les meilleures ventes de la marque 3. Paramètres optionnels : `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]` : Affiche dix produits aléatoires en carousel.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]` : Affiche les produits liés au produit courant en carousel Bootstrap.
 - `[accessories nb="8" orderby="date_add" orderway="DESC"]` : Affiche les accessoires du produit courant en carousel Bootstrap.
@@ -493,6 +497,8 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 - `[entity_lastname]`: Muestra el apellido del cliente conectado.
 - `[promo-products 10 carousel=true]`: Muestra diez productos en promoción en un carrusel.
 - `[best-sales 10 carousel=true]`: Muestra los diez productos más vendidos. Parámetros opcionales: `days`, `orderby`, `orderway`.
+- `[categorybestsales id="8" nb="10"]`: Muestra los productos más vendidos de la categoría 8. Parámetros opcionales: `orderby`, `orderway`.
+- `[brandbestsales id="3" nb="10"]`: Muestra los productos más vendidos de la marca 3. Parámetros opcionales: `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Muestra diez productos aleatorios en carrusel.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Muestra productos relacionados con el producto actual en un carrusel Bootstrap.
 - `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Muestra los accesorios del producto actual en un carrusel Bootstrap.
@@ -675,6 +681,8 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 - `[entity_lastname]`: Mostra il cognome del cliente loggato.
 - `[promo-products 10 carousel=true]`: Mostra dieci prodotti in promozione in un carosello.
 - `[best-sales 10 carousel=true]`: Mostra i dieci prodotti più venduti. Parametri opzionali: `days`, `orderby`, `orderway`.
+- `[categorybestsales id="8" nb="10"]`: Mostra i prodotti più venduti della categoria 8. Parametri opzionali: `orderby`, `orderway`.
+- `[brandbestsales id="3" nb="10"]`: Mostra i prodotti più venduti del marchio 3. Parametri opzionali: `orderby`, `orderway`.
 - `[random_product nb="10" carousel=true]`: Mostra dieci prodotti casuali in carosello.
 - `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Mostra i prodotti collegati a quello attuale in un carosello Bootstrap.
 - `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Mostra gli accessori del prodotto corrente in un carosello Bootstrap.
