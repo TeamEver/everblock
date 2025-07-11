@@ -498,20 +498,6 @@ class Everblock extends Module
                 $this->postErrors[] = $this->l('Products creation failed');
             }
         }
-        if ((bool) Tools::isSubmit('submitConvertCmsToPrettyBlocks') === true) {
-            $cmsPages = Db::getInstance()->executeS('
-                SELECT c.id_cms
-                FROM ' . _DB_PREFIX_ . 'cms c
-                INNER JOIN ' . _DB_PREFIX_ . 'cms_shop cs ON c.id_cms = cs.id_cms
-                WHERE cs.id_shop = ' . (int)$this->context->shop->id
-            );
-            foreach ($cmsPages as $cms) {
-                EverblockPrettyBlocks::convertSingleCmsToPrettyBlock(
-                    $this->context->shop->id,
-                    $cms['id_cms']
-                );
-            }
-        }
         if ((bool) Tools::isSubmit('submitMigrateUrls') === true
             && Tools::getValue('EVERPS_OLD_URL')
             && Tools::getValue('EVERPS_NEW_URL')

@@ -22,69 +22,6 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockPrettyBlocks extends ObjectModel
 {
-    public static function convertSingleCmsToPrettyBlock(int $id_shop, int $id_cms)
-    {
-        // Récupérer toutes les langues disponibles pour le shop
-        $languages = Language::getLanguages(true, $id_shop);
-
-        foreach ($languages as $language) {
-            // Sélectionner une seule page CMS pour la langue spécifique
-            $cmsPage = Db::getInstance()->getRow('
-                SELECT c.id_cms, cl.id_lang, cl.content, cl.meta_title 
-                FROM ' . _DB_PREFIX_ . 'cms c
-                INNER JOIN ' . _DB_PREFIX_ . 'cms_lang cl ON c.id_cms = cl.id_cms
-                INNER JOIN ' . _DB_PREFIX_ . 'cms_shop cs ON c.id_cms = cs.id_cms
-                WHERE c.id_cms = ' . (int)$id_cms . ' 
-                AND cl.id_lang = ' . (int)$language['id_lang'] . ' 
-                AND cs.id_shop = ' . (int)$id_shop
-            );
-
-            // Si la page CMS n'existe pas pour cette langue, on passe à la langue suivante
-            if (!$cmsPage) {
-                continue;
-            }
-
-            // Récupérer les informations de la CMS pour cette langue
-            $id_lang = (int)$cmsPage['id_lang'];
-            $content = $cmsPage['content'];
-            $metaTitle = $cmsPage['meta_title'];
-            $module = Module::getInstanceByName('everblock');
-            $defaultTemplate = 'module:prettyblocks/views/templates/blocks/custom_text/default.tpl';
-
-            // Créer une zone spécifique pour la CMS et la langue
-            $zoneName = 'cms|' . $id_cms;
-
-            // Créer un nouveau bloc PrettyBlocks pour cette CMS et langue
-            $prettyBlock = new PrettyBlocksModel();
-            $prettyBlock->id_shop = $id_shop;
-            $prettyBlock->id_lang = $id_lang;
-            $prettyBlock->code = 'prettyblocks_custom_text';
-            $prettyBlock->name = $metaTitle;
-            $prettyBlock->zone_name = $zoneName;
-            $prettyBlock->template = $defaultTemplate;
-
-            // Configuration du bloc avec des champs par défaut et contenu pour cette langue
-            $prettyBlock->config = json_encode([
-                'content' => [
-                    'type' => 'editor',
-                    'label' => 'Content',
-                    'default' => '<p> lorem ipsum </p>',
-                    'force_default_value' => true,
-                    'value' => $content,
-                ],
-            ]);
-
-            // Sauvegarder le bloc
-            $prettyBlock->add();
-
-            // Facultatif : Une fois le bloc créé, supprimer le contenu de la CMS pour cette langue
-            Db::getInstance()->execute('
-                UPDATE ' . _DB_PREFIX_ . 'cms_lang
-                SET content = ""
-                WHERE id_cms = ' . (int)$id_cms . ' AND id_lang = ' . (int)$id_lang
-            );
-        }
-    }
 
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
     {
