@@ -248,11 +248,12 @@
 /* Masonry gallery */
 .everblock-masonry-gallery {
     column-count: 3;
-    column-gap: 1rem;
+    column-gap: 0;
 }
 .everblock-masonry-gallery .masonry-item {
     break-inside: avoid;
-    margin-bottom: 1rem;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 @media (max-width: 768px) {
     .everblock-masonry-gallery { column-count: 2; }
