@@ -181,6 +181,49 @@ $(document).ready(function(){
         show: false
     });
 
+    // Masonry gallery modal generation
+    $(document).on('click', '.everblock-masonry-gallery img', function () {
+        let $img = $(this);
+        let $gallery = $img.closest('.everblock-masonry-gallery');
+        let galleryId = $gallery.data('gallery-id');
+        let modalId = 'ever-masonry-modal-' + galleryId;
+
+        if ($('#' + modalId).length === 0) {
+            let modalHtml = '<div class="modal fade" id="' + modalId + '" tabindex="-1" aria-hidden="true">' +
+                '<div class="modal-dialog modal-dialog-centered modal-lg">' +
+                '<div class="modal-content">' +
+                '<div class="modal-header">' +
+                '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
+                '</div>' +
+                '<div class="modal-body">' +
+                '<div id="' + modalId + '-carousel" class="carousel slide" data-bs-ride="carousel">' +
+                '<div class="carousel-inner"></div>' +
+                '<button class="carousel-control-prev" type="button" data-bs-target="#' + modalId + '-carousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>' +
+                '<button class="carousel-control-next" type="button" data-bs-target="#' + modalId + '-carousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            $('body').append(modalHtml);
+        }
+
+        let $carouselInner = $('#' + modalId + '-carousel .carousel-inner');
+        $carouselInner.empty();
+        let currentIndex = $img.data('index');
+        $gallery.find('img').each(function (idx) {
+            let src = $(this).data('src');
+            let alt = $(this).attr('alt');
+            let active = (idx === currentIndex) ? ' active' : '';
+            $carouselInner.append('<div class="carousel-item' + active + '"><img src="' + src + '" class="d-block w-100" alt="' + alt + '"></div>');
+        });
+
+        $('#' + modalId).modal('show');
+        $('#' + modalId).on('hidden.bs.modal', function () {
+            $(this).remove();
+        });
+    });
+
     reloadShortcodes('body');
 
     prestashop.on('updateProductList', function() {
