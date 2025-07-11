@@ -188,11 +188,21 @@ class EverblockTools extends ObjectModel
             }
 
             if (empty($cartIds)) {
-                $shortcode = '[best-sales nb=' . $limit . ' orderby=' . $orderBy . ' orderway=' . $orderWay . ']';
-                $replacement = static::getBestSalesShortcode($shortcode, $context, $module);
-                if ($replacement === $shortcode) {
+                $bestIds = static::getBestSellingProductIds($limit, $orderBy, $orderWay);
+                $everPresentProducts = static::everPresentProducts($bestIds, $context);
+
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel' => false,
+                        'shortcodeClass' => 'crosselling',
+                    ]);
+                    $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
+                    $replacement = $context->smarty->fetch($templatePath);
+                } else {
                     $replacement = '';
                 }
+
                 $txt = str_replace($match[0], $replacement, $txt);
                 continue;
             }
@@ -261,11 +271,21 @@ class EverblockTools extends ObjectModel
             }
 
             if (empty($ids)) {
-                $shortcode = '[best-sales nb=' . $limit . ' orderby=' . $orderBy . ' orderway=' . $orderWay . ']';
-                $replacement = static::getBestSalesShortcode($shortcode, $context, $module);
-                if ($replacement === $shortcode) {
+                $bestIds = static::getBestSellingProductIds($limit, $orderBy, $orderWay);
+                $everPresentProducts = static::everPresentProducts($bestIds, $context);
+
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel' => false,
+                        'shortcodeClass' => 'crosselling',
+                    ]);
+                    $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
+                    $replacement = $context->smarty->fetch($templatePath);
+                } else {
                     $replacement = '';
                 }
+
                 $txt = str_replace($match[0], $replacement, $txt);
                 continue;
             }
