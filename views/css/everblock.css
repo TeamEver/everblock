@@ -261,3 +261,9 @@
 @media (max-width: 576px) {
     .everblock-masonry-gallery { column-count: 1; }
 }
+
+/* PrettyBlocks progress bars */
+.everblock-progress {
+    height: 1.5rem;
+    margin-bottom: 0.25rem;
+}
