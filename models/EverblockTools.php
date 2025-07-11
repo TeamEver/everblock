@@ -1798,6 +1798,7 @@ class EverblockTools extends ObjectModel
             return $txt;
         }
         $objectId = 0;
+        $objectType = '';
         if (Tools::getValue('id_product')) {
             $objectId = (int) Tools::getValue('id_product');
             $objectType = 'product';
@@ -1820,7 +1821,7 @@ class EverblockTools extends ObjectModel
         }
         Module::getInstanceByName('qcdacf');
         $pattern = '/\[qcdacf\s+(\w+)\s+(\w+)\s+(\w+)\]/i';
-        $modifiedTxt = preg_replace_callback($pattern, function ($matches) {
+        $modifiedTxt = preg_replace_callback($pattern, function ($matches) use ($objectType, $objectId, $context) {
             $name = $matches[1];
             $value = qcdacf::getVar($name, $objectType, $objectId, $context->language->id);
             if ($value) {
