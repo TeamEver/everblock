@@ -22,15 +22,16 @@
       <div class="col-12">
         <div class="accordion faq-accordion" id="faqAccordion">
           {foreach from=$everFaqs item=faq name=faqloop}
-            <div class="card mb-4">
-              <div class="card-header p-0" id="headingEverFaq{$faq->id_everblock_faq}">
-                <button class="btn btn-link faq-question d-flex justify-content-between align-items-center w-100 text-body py-3 px-4" type="button" data-toggle="collapse"
-                        data-target="#collapse{$faq->id_everblock_faq}" aria-expanded="{if $smarty.foreach.faqloop.first}true{else}false{/if}"
-                        aria-controls="collapse{$faq->id_everblock_faq}"><span>{$faq->title}</span><i class="icon-angle-down" aria-hidden="true"></i></button>
-              </div>
-              <div id="collapse{$faq->id_everblock_faq}" class="collapse {if $smarty.foreach.faqloop.first}show{/if}"
-                   aria-labelledby="headingEverFaq{$faq->id_everblock_faq}" data-parent="#faqAccordion">
-                <div class="card-body faq-answer">{$faq->content nofilter}</div>
+            <div class="accordion-item card mb-4">
+              <h2 class="accordion-header card-header p-0" id="headingEverFaq{$faq->id_everblock_faq}">
+                <button class="accordion-button btn btn-link faq-question d-flex justify-content-between align-items-center w-100 text-body py-3 px-4 {if !$smarty.foreach.faqloop.first}collapsed{/if}" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#collapse{$faq->id_everblock_faq}" data-bs-target="#collapse{$faq->id_everblock_faq}"
+                        aria-expanded="{if $smarty.foreach.faqloop.first}true{else}false{/if}" aria-controls="collapse{$faq->id_everblock_faq}">
+                  <span>{$faq->title}</span><i class="icon-angle-down" aria-hidden="true"></i>
+                </button>
+              </h2>
+              <div id="collapse{$faq->id_everblock_faq}" class="accordion-collapse collapse {if $smarty.foreach.faqloop.first}show{/if}"
+                   aria-labelledby="headingEverFaq{$faq->id_everblock_faq}" data-parent="#faqAccordion" data-bs-parent="#faqAccordion">
+                <div class="accordion-body card-body faq-answer">{$faq->content nofilter}</div>
               </div>
             </div>
           {/foreach}
@@ -54,15 +55,6 @@
       }{if !$smarty.foreach.faqjson.last},{/if}
       {/foreach}
     ]
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    "name": "Sel",
-    "description": "Sel de qualité",
-    "sku": "SEL-001"
   }
   </script>
 {/if}

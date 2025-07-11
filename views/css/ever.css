@@ -43,16 +43,22 @@
 }
 
 /* FAQ styles */
-.faq-accordion .card-header {
+.faq-accordion .card-header,
+.faq-accordion .accordion-header {
     background-color: #f7f7f7;
 }
 .faq-question i {
     transition: transform 0.3s ease;
 }
+.faq-accordion .accordion-button {
+    background: none;
+    box-shadow: none;
+}
 .faq-question[aria-expanded="true"] i {
     transform: rotate(180deg);
 }
-.faq-answer {
+.faq-answer,
+.faq-accordion .accordion-body {
     padding: 15px;
 }
 
