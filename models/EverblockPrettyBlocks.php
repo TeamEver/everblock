@@ -100,7 +100,6 @@ class EverblockPrettyBlocks extends ObjectModel
         $module = Module::getInstanceByName('everblock');
         if (!EverblockCache::isCacheStored($cacheId)) {
             $defaultTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_' . $module->name . '.tpl';
-            $smartyTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_smarty.tpl';
             $modalTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_modal.tpl';
             $alertTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_alert.tpl';
             $buttonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_button.tpl';
@@ -109,17 +108,11 @@ class EverblockPrettyBlocks extends ObjectModel
             $iframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_iframe.tpl';
             $loginTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_login.tpl';
             $contactTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_contact.tpl';
-            $hookTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_hook.tpl';
-            $productTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product.tpl';
             $shoppingCartTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl';
             $accordeonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_accordeon.tpl';
             $textAndImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_text_and_image.tpl';
             $layoutTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_layout.tpl';
             $featuredCategoryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl';
-            $menuTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_menu.tpl';
-            $supplierProductListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_supplier_product_list.tpl';
-            $manufacturerProductListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_manufacturer_product_list.tpl';
-            $productSliderListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_slider.tpl';
             $imgSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img_slider.tpl';
             $tabTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_tab.tpl';
             $dividerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
@@ -127,9 +120,6 @@ class EverblockPrettyBlocks extends ObjectModel
             $masonryGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl';
             $testimonialTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial.tpl';
             $testimonialSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial_slider.tpl';
-            $parallaxTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_parallax.tpl';
-            $overlayTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_overlay.tpl';
-            $tartifletteTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_tartiflette.tpl';
             $imgTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img.tpl';
             $rowTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/row.tpl';
             $reassuranceTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_reassurance.tpl';
