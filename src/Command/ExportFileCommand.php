@@ -298,6 +298,11 @@ class ExportFileCommand extends Command
 
     protected function logCommand($msg)
     {
+        $msg = trim($msg);
+        if ($msg === '') {
+            return;
+        }
+
         $log  = 'Msg: ' . $msg . PHP_EOL .
                 date('j.n.Y') . PHP_EOL .
                 '-------------------------' . PHP_EOL;

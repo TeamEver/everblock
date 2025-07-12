@@ -3993,6 +3993,13 @@ class EverblockTools extends ObjectModel
     public static function setLog(string $logKey, string $logValue)
     {
         $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
+        $logValue = trim($logValue);
+        if ($logValue === '') {
+            if (file_exists($logFilePath)) {
+                unlink($logFilePath);
+            }
+            return;
+        }
         file_put_contents($logFilePath, $logValue);
     }
 

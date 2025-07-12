@@ -425,6 +425,11 @@ class ImportFileCommand extends Command
 
     protected function logCommand($msg)
     {
+        $msg = trim($msg);
+        if ($msg === '') {
+            return;
+        }
+
         $log  = 'Msg: '
         . $msg
         . PHP_EOL
