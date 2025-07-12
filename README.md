@@ -105,7 +105,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[cart_total]`: Display the total value of the current cart.
 - `[cart_quantity]`: Display the number of products currently in the cart.
 - `[newsletter_form]`: Display the PrestaShop newsletter subscription form.
-- `[evercontact]`: Display PrestaShop native contact form.
+- `[nativecontact]`: Embed the native PrestaShop contact form (this replaces the obsolete `[evercontact]` shortcode).
 - `[everstore 4]`: Display store information for store ID 4 (several IDs can be separated with commas).
 - `[video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj]`: Display a YouTube iframe of the video whose sharing URL is in the parameter (may also works with Vimeo, Dailymotion, and Vidyard).
 - `[everaddtocart ref="1234" text="Add me to cart"]`: Creates an add to cart button for product reference 1234 with the text "Add me to cart". By clicking on the link, the product will be automatically added to the cart and the user will be redirected directly to the cart page. Also works in emails.
