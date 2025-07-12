@@ -104,7 +104,7 @@
                 <li><p>[everblock 1] {l s='to show block ID 1' mod='everblock'}</p></li>
                 <li><p>[product 1] {l s='to show product ID 1' mod='everblock'}</p></li>
                 <li><p>[product 1,2,3] {l s='to show products ID 1, 2 and 3' mod='everblock'}</p></li>
-                <li><p>[random_product nb="4"] {l s='to show 4 random products' mod='everblock'}</p></li>        
+                <li><p>[random_product nb="10" carousel=true] {l s='to show ten random products in a carousel' mod='everblock'}</p></li>
                 <li><p>[entity_lastname] {l s='for customer lastname' mod='everblock'}</p></li>
                 <li><p>[entity_firstname] {l s='for customer firstname' mod='everblock'}</p></li>
                 <li><p>[entity_gender] {l s='for customer gender' mod='everblock'}</p></li>
@@ -120,6 +120,26 @@
                 <li><p>[nativecontact] {l s='to display Prestashop native contact form' mod='everblock'}</p></li>
                 <li><p>[everstore 4] {l s='to display store information id 1' mod='everblock'}</p></li>
                 <li><p>[video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj] {l s='to display a YouTube iframe of the video whose sharing URL is in parameter (also works with Vimeo, Dailymotion, and Vidyard)' mod='everblock'}</p></li>
+                <li><p>[everaddtocart ref="1234" text="Add me to cart"] {l s='creates an add to cart link for product reference 1234' mod='everblock'}</p></li>
+                <li><p>[everfaq tag="faq1"] {l s='shows FAQs related to the faq tag' mod='everblock'}</p></li>
+                <li><p>[productfeature id="2" nb="12" carousel="true"] {l s='displays 12 products with feature ID 2 as a carousel' mod='everblock'}</p></li>
+                <li><p>[productfeaturevalue id="2" nb="12" carousel="true"] {l s='same as before but for feature value ID 2' mod='everblock'}</p></li>
+                <li><p>[promo-products 10 carousel=true] {l s='displays ten products on sale in a carousel' mod='everblock'}</p></li>
+                <li><p>[best-sales 10 carousel=true] {l s='displays the top ten best-selling products' mod='everblock'}</p></li>
+                <li><p>[categorybestsales id="8" nb="10"] {l s='displays the best-selling products from category ID 8' mod='everblock'}</p></li>
+                <li><p>[brandbestsales id="3" nb="10"] {l s='displays the best-selling products from brand ID 3' mod='everblock'}</p></li>
+                <li><p>[linkedproducts nb="8" orderby="date_add" orderway="DESC"] {l s='displays products linked to the current product' mod='everblock'}</p></li>
+                <li><p>[accessories nb="8" orderby="date_add" orderway="DESC"] {l s='displays accessories of the current product' mod='everblock'}</p></li>
+                <li><p>[crosselling nb=4 orderby="id_product" orderway="asc"] {l s='shows cross-selling products when the cart is empty' mod='everblock'}</p></li>
+                <li><p>{hook h='displayHome'} {l s='displays the displayHome hook' mod='everblock'}</p></li>
+                <li><p>[everinstagram] {l s='display your latest Instagram photos' mod='everblock'}</p></li>
+                <li><p>[everimg name="image.jpg" class="img-fluid" carousel=true] {l s='display one or more CMS images (carousel optional)' mod='everblock'}</p></li>
+                <li><p>[displayQcdSvg name="icon" class="myclass" inline=true] {l s='display a QCD SVG icon' mod='everblock'}</p></li>
+                <li><p>[qcdacf field objectType objectId] {l s='display a value from QCD ACF fields' mod='everblock'}</p></li>
+                <li><p>[widget moduleName="mymodule" hookName="displayHome"] {l s='render another module widget' mod='everblock'}</p></li>
+                <li><p>[prettyblocks name="myzone"] {l s='render a PrettyBlocks zone if the module is installed' mod='everblock'}</p></li>
+                <li><p>[everblock 3] {l s='insert block ID 3' mod='everblock'}</p></li>
+                <li><p>[cms id="1"] {l s='display the content of CMS page ID 1' mod='everblock'}</p></li>
             </ul>
             <br>
             <h4>{l s='Create a custom contact form using shortcodes' mod='everblock'}</h3>
