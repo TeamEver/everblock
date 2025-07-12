@@ -222,6 +222,7 @@ The module uses its own cache system in addition to the PrestaShop one.
 The cache directory is located in /var/cache/dev?prod/everblock/
 
 The logs directory is located in /var/logs/
+Log files are created only when there is content to log.
 
 Clearing the native PrestaShop cache will also clear the module cache, but the module will clear its own cache on a block expiry automatically.
 
@@ -406,6 +407,7 @@ Le module utilise son propre système de cache en plus de celui de PrestaShop.
 Le dossier du cache se situe dans /var/cache/dev?prod/everblock/
 
 Le dossier des logs se situe dans /var/logs/
+Les fichiers de log ne sont créés que s'il y a un message à enregistrer.
 
 Vider le cache natif de PrestaShop videra également le cache du module, mais ce dernier vide automatiquement son cache lorsqu'un bloc expire.
 
@@ -590,6 +592,7 @@ El módulo utiliza su propio sistema de caché además del de PrestaShop.
 El directorio de caché está en /var/cache/dev?prod/everblock/
 
 El directorio de logs está en /var/logs/
+Los archivos de registro solo se crean si contienen información.
 
 Borrar la caché nativa de PrestaShop también limpiará la del módulo, pero este limpia automáticamente su caché cuando expira un bloque.
 
@@ -774,6 +777,7 @@ Il modulo utilizza un proprio sistema di cache oltre a quello di PrestaShop.
 La cartella cache si trova in /var/cache/dev?prod/everblock/
 
 La cartella log si trova in /var/logs/
+I file di log vengono creati solo se contengono dei messaggi.
 
 Cancellare la cache nativa di PrestaShop cancellerà anche quella del modulo, ma quest'ultimo la pulisce automaticamente alla scadenza di un blocco.
 ## Continuous Integration
