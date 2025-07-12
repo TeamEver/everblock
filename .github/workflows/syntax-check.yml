@@ -3,14 +3,14 @@ name: PHP Syntax Check
 on:
   push:
     paths:
-      - '**.php'
-      - '**.tpl'
+      - '**/*.php'
+      - '**/*.tpl'
     paths-ignore:
       - 'vendor/**'
   pull_request:
     paths:
-      - '**.php'
-      - '**.tpl'
+      - '**/*.php'
+      - '**/*.tpl'
     paths-ignore:
       - 'vendor/**'
 
