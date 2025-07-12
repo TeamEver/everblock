@@ -4118,7 +4118,13 @@ class EverblockTools extends ObjectModel
 
     public static function isBot()
     {
-        $userAgent = $_SERVER['HTTP_USER_AGENT'];
+        $userAgent = '';
+        if (isset($_SERVER['HTTP_USER_AGENT'])) {
+            $userAgent = $_SERVER['HTTP_USER_AGENT'];
+        }
+        if ($userAgent === '') {
+            return false;
+        }
         $botUserAgents = array(
             'Googlebot',
             'Bingbot',
