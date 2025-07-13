@@ -3655,6 +3655,7 @@ class EverblockTools extends ObjectModel
                 }
             }
         }
+        static::cleanObsoleteFiles();
     }
 
     public static function everPresentProducts(array $result, Context $context): array
@@ -4074,6 +4075,56 @@ class EverblockTools extends ObjectModel
             'postErrors' => $postErrors,
             'querySuccess' => $querySuccess,
         ];
+    }
+
+    public static function cleanObsoleteFiles(): void
+    {
+        $moduleDir = _PS_MODULE_DIR_ . 'everblock/';
+        $allowedFile = $moduleDir . 'config/allowed_files.php';
+        if (!file_exists($allowedFile)) {
+            return;
+        }
+        $allowedFiles = include $allowedFile;
+        if (!is_array($allowedFiles)) {
+            return;
+        }
+        $allowed = array_flip(array_map('trim', $allowedFiles));
+
+        $ignorePatterns = ['views/img/*'];
+        $gitignore = $moduleDir . '.gitignore';
+        if (file_exists($gitignore)) {
+            $lines = file($gitignore, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if ($line === '' || strpos($line, '#') === 0) {
+                    continue;
+                }
+                $ignorePatterns[] = $line;
+            }
+        }
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($moduleDir, RecursiveDirectoryIterator::SKIP_DOTS)
+        );
+        foreach ($iterator as $fileInfo) {
+            if ($fileInfo->isDir()) {
+                continue;
+            }
+            $relativePath = str_replace('\\', '/', substr($fileInfo->getPathname(), strlen($moduleDir)));
+            $skip = false;
+            foreach ($ignorePatterns as $pattern) {
+                if (fnmatch($pattern, $relativePath)) {
+                    $skip = true;
+                    break;
+                }
+            }
+            if ($skip) {
+                continue;
+            }
+            if (!isset($allowed[$relativePath])) {
+                @unlink($fileInfo->getPathname());
+            }
+        }
     }
 
     public static function fetchInstagramImages()
