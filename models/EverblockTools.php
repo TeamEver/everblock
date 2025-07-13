@@ -3927,7 +3927,9 @@ class EverblockTools extends ObjectModel
                         $image->associateTo([$idShop]);
                         $tmpFile = tempnam(_PS_TMP_IMG_DIR_, 'ever');
                         $fakeUrl = 'https://picsum.photos/600/600?random=' . mt_rand();
-                        Tools::copy($fakeUrl, $tmpFile);
+                        if (!Tools::copy($fakeUrl, $tmpFile)) {
+                            Tools::copy(_PS_MODULE_DIR_ . 'everblock/logo.png', $tmpFile);
+                        }
                         $path = (defined('_PS_PRODUCT_IMG_DIR_') ? _PS_PRODUCT_IMG_DIR_ : _PS_PROD_IMG_DIR_) . $image->getExistingImgPath() . '.jpg';
                         ImageManager::resize($tmpFile, $path);
                         $types = ImageType::getImagesTypes('products');
