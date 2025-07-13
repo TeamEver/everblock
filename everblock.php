@@ -572,6 +572,7 @@ class Everblock extends Module
             'shortcode_admin_link' => $shortcodeAdminLink,
             'cron_links' => $cronLinks,
             'modules_list_link' => $this->context->link->getAdminLink('AdminModules'),
+            'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
         ]);
         $this->html .= $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'

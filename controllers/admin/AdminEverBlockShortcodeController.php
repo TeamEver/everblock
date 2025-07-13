@@ -43,6 +43,7 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
             $m->name . '_version' => $m->version,
             'module_link' => $module_link,
             'everblock_dir' => _MODULE_DIR_ . '/everblock/',
+            'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
         ]);
 
         $this->bulk_actions = [

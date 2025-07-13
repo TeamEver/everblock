@@ -42,6 +42,7 @@ class AdminEverBlockController extends ModuleAdminController
             $m->name . '_version' => $m->version,
             'module_link' => $module_link,
             'everblock_dir' => _MODULE_DIR_ . '/everblock/',
+            'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
         ]);
 
         $this->_select = 'a.*, h.title AS hname, CONCAT(h.title, LPAD(a.position, 10, "0")) as sort_key';
