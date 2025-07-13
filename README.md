@@ -5,7 +5,6 @@ Ever Block lets PrestaShop 1.7, 8 and 9 users add unlimited custom HTML blocks a
 
 Works seamlessly with PrestaShop hooks and is fully compatible with PrestaShop 1.7, 8 and 9.
 
-[Learn more on Team Ever](https://www.team-ever.com/prestashop-module-bloc-editeur-html-illimite-shortcode/)
 ## Key Features
 - Unlimited HTML blocks in any PrestaShop hook
 - Shortcodes for products, forms, categories and more
@@ -227,7 +226,6 @@ Ever Block permet aux utilisateurs de PrestaShop 1.7, 8 et 9 d'ajouter un nombre
 
 Il fonctionne parfaitement avec les hooks PrestaShop et est totalement compatible avec PrestaShop 1.7, 8 et 9.
 
-[En savoir plus sur Team Ever](https://www.team-ever.com/prestashop-module-bloc-editeur-html-illimite-shortcode/)
 
 ## Fonctionnalités clés
 - Blocs HTML illimités sur n'importe quel hook PrestaShop
@@ -412,7 +410,6 @@ Ever Block permite a los usuarios de PrestaShop 1.7, 8 y 9 añadir bloques HTML 
 
 Funciona sin problemas con los hooks de PrestaShop y es totalmente compatible con PrestaShop 1.7, 8 y 9.
 
-[Más información en Team Ever](https://www.team-ever.com/prestashop-module-bloc-editeur-html-illimite-shortcode/)
 
 ## Funcionalidades clave
 - Bloques HTML ilimitados en cualquier hook de PrestaShop
@@ -597,7 +594,6 @@ Ever Block consente agli utenti di PrestaShop 1.7, 8 e 9 di aggiungere blocchi H
 
 Funziona perfettamente con gli hook di PrestaShop ed è completamente compatibile con PrestaShop 1.7, 8 e 9.
 
-[Per saperne di più su Team Ever](https://www.team-ever.com/prestashop-module-bloc-editeur-html-illimite-shortcode/)
 
 ## Funzionalità principali
 - Blocchi HTML illimitati in qualsiasi hook di PrestaShop
