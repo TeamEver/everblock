@@ -29,6 +29,11 @@
         <a href="#everlogotop" class="btn btn-default">
             <i class="process-icon-arrow-up" aria-hidden="true"></i> {l s='Back to top' mod='everblock'}
         </a>
+        {if isset($donation_link)}
+            <a href="{$donation_link|escape:'htmlall':'UTF-8'}" class="btn btn-warning" target="_blank">
+                <i class="icon-money"></i> {l s='Make a donation' mod='everblock'}
+            </a>
+        {/if}
     </p>
     {if isset($cron_links) && $cron_links}
     <div class="panel">

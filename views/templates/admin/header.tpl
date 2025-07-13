@@ -52,5 +52,10 @@
                 {l s='Manage shortcodes' mod='everblock'}
             </a>
         {/if}
+        {if isset($donation_link)}
+            <a href="{$donation_link|escape:'htmlall':'UTF-8'}" class="btn btn-warning" target="_blank">
+                <i class="icon-money"></i> {l s='Make a donation' mod='everblock'}
+            </a>
+        {/if}
     </div>
 </div>
