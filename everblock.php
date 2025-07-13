@@ -3160,12 +3160,10 @@ class Everblock extends Module
             foreach (Language::getLanguages(false, $id_shop) as $lang) {
                 $titleKey = 'title_' . $lang['iso_code'];
                 $contentKey = 'content_' . $lang['iso_code'];
-
                 // Vérifier et assigner le titre s'il existe et n'est pas vide
                 if (isset($line[$titleKey]) && !empty($line[$titleKey])) {
                     $tab->title[(int) $lang['id_lang']] = $line[$titleKey];
                 }
-
                 // Vérifier et assigner le contenu s'il existe et n'est pas vide
                 if (isset($line[$contentKey]) && !empty($line[$contentKey])) {
                     $tab->content[(int) $lang['id_lang']] = $line[$contentKey];
