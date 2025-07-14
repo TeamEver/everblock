@@ -1,0 +1,17 @@
+name: Release Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create module archive
+        run: git archive --format=zip --prefix=everblock/ -o everblock.zip HEAD
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: everblock.zip
