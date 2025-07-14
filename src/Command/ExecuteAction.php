@@ -61,6 +61,7 @@ class ExecuteAction extends Command
         'webpprettyblock',
         'removehn',
         'duplicateblockslang',
+        'fetchwordpressposts',
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -392,6 +393,11 @@ class ExecuteAction extends Command
             }
 
             $output->writeln('<success>All Hn tags replaced by <p class="hN"> in product, category, and manufacturer descriptions.</success>');
+            return self::SUCCESS;
+        }
+        if ($action === 'fetchwordpressposts') {
+            EverblockTools::fetchWordpressPosts();
+            $output->writeln('<comment>WordPress posts fetched</comment>');
             return self::SUCCESS;
         }
         return self::ABORTED;

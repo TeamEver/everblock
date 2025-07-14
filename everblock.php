@@ -52,6 +52,7 @@ class Everblock extends Module
         'droplogs',
         'refreshtokens',
         'securewithapache',
+        'fetchwordpressposts',
     ];
     private $bypassedControllers = [
         'hookDisplayInvoiceLegalFreeText',
@@ -101,6 +102,10 @@ class Everblock extends Module
         Configuration::updateValue('EVERPSCSS_S_LLOREM_NUMBER', 5);
         Configuration::updateValue('EVERPS_TAB_NB', 5);
         Configuration::updateValue('EVERPS_FLAG_NB', 5);
+        Configuration::updateValue('EVERWP_API_URL', '');
+        Configuration::updateValue('EVERWP_API_USER', '');
+        Configuration::updateValue('EVERWP_API_PWD', '');
+        Configuration::updateValue('EVERWP_POST_NBR', 3);
         Configuration::updateValue(
             'EVERPS_FEATURES_AS_FLAGS',
             json_encode([1]),
@@ -179,6 +184,10 @@ class Everblock extends Module
         Configuration::deleteByName('EVERPSCSS_P_LLOREM_NUMBER');
         Configuration::deleteByName('EVERPSCSS_S_LLOREM_NUMBER');
         Configuration::deleteByName('EVERBLOCK_TINYMCE');
+        Configuration::deleteByName('EVERWP_API_URL');
+        Configuration::deleteByName('EVERWP_API_USER');
+        Configuration::deleteByName('EVERWP_API_PWD');
+        Configuration::deleteByName('EVERWP_POST_NBR');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlock')
@@ -734,6 +743,28 @@ class Everblock extends Module
                         'name' => 'EVERINSTA_LINK',
                     ],
                     [
+                        'type' => 'text',
+                        'label' => $this->l('WordPress API URL'),
+                        'desc' => $this->l('Full REST API endpoint for posts'),
+                        'hint' => $this->l('Example: https://example.com/wp-json/wp/v2/posts'),
+                        'name' => 'EVERWP_API_URL',
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('WordPress API user'),
+                        'name' => 'EVERWP_API_USER',
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('WordPress API password'),
+                        'name' => 'EVERWP_API_PWD',
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Number of blog posts to display'),
+                        'name' => 'EVERWP_POST_NBR',
+                    ],
+                    [
                         'type' => 'switch',
                         'label' => $this->l('Use Google Map for store locator instead of OSM'),
                         'desc' => $this->l('Will use Google Map API for store locator (CMS page only)'),
@@ -1206,6 +1237,10 @@ class Everblock extends Module
             'EVERBLOCK_MAINTENANCE_PSSWD' => Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD'),
             'EVERINSTA_ACCESS_TOKEN' => Configuration::get('EVERINSTA_ACCESS_TOKEN'),
             'EVERINSTA_LINK' => Configuration::get('EVERINSTA_LINK'),
+            'EVERWP_API_URL' => Configuration::get('EVERWP_API_URL'),
+            'EVERWP_API_USER' => Configuration::get('EVERWP_API_USER'),
+            'EVERWP_API_PWD' => Configuration::get('EVERWP_API_PWD'),
+            'EVERWP_POST_NBR' => Configuration::get('EVERWP_POST_NBR'),
             'EVERBLOCK_USE_GMAP' => Configuration::get('EVERBLOCK_USE_GMAP'),
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERBLOCK_HOLIDAY_HOURS' => Configuration::get('EVERBLOCK_HOLIDAY_HOURS'),
@@ -1268,6 +1303,13 @@ class Everblock extends Module
             ) {
                 $this->postErrors[] = $this->l(
                     'Error : The field "Extends TinyMCE" is not valid'
+                );
+            }
+            if (Tools::getValue('EVERWP_POST_NBR')
+                && !Validate::isUnsignedInt(Tools::getValue('EVERWP_POST_NBR'))
+            ) {
+                $this->postErrors[] = $this->l(
+                    'Error : The field "Number of blog posts" is not valid'
                 );
             }
             if (Tools::getValue('EVERPS_FEATURES_AS_FLAGS')
@@ -1438,6 +1480,22 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERINSTA_LINK',
             Tools::getValue('EVERINSTA_LINK')
+        );
+        Configuration::updateValue(
+            'EVERWP_API_URL',
+            Tools::getValue('EVERWP_API_URL')
+        );
+        Configuration::updateValue(
+            'EVERWP_API_USER',
+            Tools::getValue('EVERWP_API_USER')
+        );
+        Configuration::updateValue(
+            'EVERWP_API_PWD',
+            Tools::getValue('EVERWP_API_PWD')
+        );
+        Configuration::updateValue(
+            'EVERWP_POST_NBR',
+            Tools::getValue('EVERWP_POST_NBR')
         );
         Configuration::updateValue(
             'EVERBLOCK_USE_GMAP',

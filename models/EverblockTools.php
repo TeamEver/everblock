@@ -89,6 +89,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[everimg') !== false) {
             $txt = static::getEverImgShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[wordpress-posts]') !== false) {
+            $txt = static::getWordpressPostsShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[best-sales') !== false) {
             $txt = static::getBestSalesShortcode($txt, $context, $module);
         }
@@ -474,6 +477,26 @@ class EverblockTools extends ObjectModel
             $renderedContent = $context->smarty->fetch($templatePath);
             
             // Remplacer chaque occurrence du shortcode par le contenu rendu du template
+            $txt = str_replace($match[0], $renderedContent, $txt);
+        }
+
+        return $txt;
+    }
+
+    public static function getWordpressPostsShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        preg_match_all('/\[wordpress-posts\]/i', $txt, $matches, PREG_SET_ORDER);
+        $templatePath = static::getTemplatePath('hook/generated_wp_posts.tpl', $module);
+
+        if (!file_exists(_PS_MODULE_DIR_ . 'everblock/views/templates/hook/generated_wp_posts.tpl')) {
+            foreach ($matches as $match) {
+                $txt = str_replace($match[0], '', $txt);
+            }
+            return $txt;
+        }
+
+        foreach ($matches as $match) {
+            $renderedContent = $context->smarty->fetch($templatePath);
             $txt = str_replace($match[0], $renderedContent, $txt);
         }
 
@@ -4223,6 +4246,61 @@ class EverblockTools extends ObjectModel
             return $json['access_token'];
         }
         return null;
+    }
+
+    public static function fetchWordpressPosts(): bool
+    {
+        $apiUrl = trim(Configuration::get('EVERWP_API_URL'));
+        if (!$apiUrl) {
+            return false;
+        }
+        $limit = (int) Configuration::get('EVERWP_POST_NBR');
+        if ($limit < 1) {
+            $limit = 3;
+        }
+        $requestUrl = rtrim($apiUrl, '/') . '?per_page=' . $limit . '&_embed';
+        $user = Configuration::get('EVERWP_API_USER');
+        $pwd = Configuration::get('EVERWP_API_PWD');
+        $contextOptions = [];
+        if ($user && $pwd) {
+            $contextOptions['http'] = [
+                'header' => 'Authorization: Basic ' . base64_encode($user . ':' . $pwd),
+            ];
+        }
+        $response = Tools::file_get_contents($requestUrl, false, empty($contextOptions) ? null : stream_context_create($contextOptions));
+        $posts = json_decode($response, true);
+        if (!$posts || !is_array($posts)) {
+            return false;
+        }
+        $filePath = _PS_MODULE_DIR_ . 'everblock/views/templates/hook/generated_wp_posts.tpl';
+        $html = '<div class="row row-cols-1 row-cols-md-3 g-4">';
+        foreach ($posts as $post) {
+            $title = strip_tags($post['title']['rendered'] ?? '');
+            $link = $post['link'] ?? '#';
+            $excerpt = strip_tags($post['excerpt']['rendered'] ?? '');
+            $imgUrl = '';
+            if (isset($post['_embedded']['wp:featuredmedia'][0]['source_url'])) {
+                $imgUrl = $post['_embedded']['wp:featuredmedia'][0]['source_url'];
+            }
+            $imgTag = '';
+            if ($imgUrl) {
+                $localPath = self::downloadImage($imgUrl);
+                if ($localPath) {
+                    $webpUrl = self::convertToWebP($localPath, 800, 450);
+                    $originalUrl = self::filePathToUrl($localPath);
+                    $size = file_exists($localPath) ? getimagesize($localPath) : [0,0];
+                    $width = $size[0] ?? '';
+                    $height = $size[1] ?? '';
+                    if ($webpUrl) {
+                        $imgTag = '<a href="' . htmlspecialchars($link, ENT_QUOTES) . '" class="obfme" target="_blank" title="' . htmlspecialchars($title, ENT_QUOTES) . '"><picture><source srcset="' . htmlspecialchars($webpUrl, ENT_QUOTES) . '" type="image/webp"><source srcset="' . htmlspecialchars($originalUrl, ENT_QUOTES) . '" type="image/jpeg"><img src="' . htmlspecialchars($originalUrl, ENT_QUOTES) . '" width="' . $width . '" height="' . $height . '" loading="lazy" alt="' . htmlspecialchars($title, ENT_QUOTES) . '" class="card-img-top img-fluid"></picture></a>';
+                    }
+                }
+            }
+            $html .= '<div class="col"><div class="card h-100">' . $imgTag . '<div class="card-body"><h5 class="card-title">' . htmlspecialchars($title, ENT_QUOTES) . '</h5><p class="card-text">' . $excerpt . '</p></div></div></div>';
+        }
+        $html .= '</div>';
+        file_put_contents($filePath, $html);
+        return true;
     }
 
     public static function isBot()

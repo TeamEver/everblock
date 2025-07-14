@@ -41,6 +41,7 @@ class EverblockcronModuleFrontController extends ModuleFrontController
         'droplogs',
         'refreshtokens',
         'securewithapache',
+        'fetchwordpressposts',
     ];
 
     public function initContent()
