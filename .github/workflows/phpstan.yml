@@ -1,0 +1,30 @@
+name: PHPStan
+
+on:
+  push:
+    paths:
+      - '**/*.php'
+    paths-ignore:
+      - 'vendor/**'
+  pull_request:
+    paths:
+      - '**/*.php'
+    paths-ignore:
+      - 'vendor/**'
+
+jobs:
+  phpstan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      - name: Download PHPStan
+        run: |
+          curl -LsS https://github.com/phpstan/phpstan/releases/latest/download/phpstan.phar -o phpstan.phar
+          php phpstan.phar --version
+      - name: Run PHPStan
+        run: |
+          php phpstan.phar analyse --no-progress --configuration=phpstan.neon
