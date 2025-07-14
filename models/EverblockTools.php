@@ -2922,12 +2922,16 @@ class EverblockTools extends ObjectModel
             $currentTime = $now->format('H:i');
             $todayDate = $now->format('Y-m-d');
             $frenchHolidays = self::getFrenchHolidays((int) $now->format('Y'));
+            $holidayHours = self::getHolidayHoursConfig();
+            $todayHolidaySlot = $holidayHours[$todayDate] ?? null;
             $isHoliday = in_array($todayDate, $frenchHolidays);
 
             foreach ($stores as &$store) {
                 $id_store = (int) $store['id_store'];
                 $cms_id = (int) Configuration::get('QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $id_store, null, null, $id_shop);
                 $cms_link = null;
+                $storeHolidayHours = self::getStoreHolidayHoursConfig($id_store);
+                $todayStoreHolidaySlot = $storeHolidayHours[$todayDate] ?? $todayHolidaySlot;
 
                 if ($cms_id > 0) {
                     $cms = new CMS($cms_id, $id_lang, $id_shop);
@@ -2948,6 +2952,9 @@ class EverblockTools extends ObjectModel
 
                 foreach ($days as $i => $day) {
                     $slots = isset($decodedHours[$i]) ? $decodedHours[$i] : [];
+                    if ($i === $todayIndex && $isHoliday && $todayStoreHolidaySlot) {
+                        $slots = [$todayStoreHolidaySlot];
+                    }
                     $hoursFormatted = [];
 
                     foreach ($slots as $slot) {
@@ -2960,7 +2967,7 @@ class EverblockTools extends ObjectModel
                         foreach ($subSlots as $subSlot) {
                             $hoursFormatted[] = trim($subSlot);
 
-                            if (!$isHoliday && $i === $todayIndex && strpos($subSlot, '-') !== false) {
+                            if (($i === $todayIndex) && (!$isHoliday || $todayStoreHolidaySlot) && strpos($subSlot, '-') !== false) {
                                 [$startRaw, $endRaw] = explode(' - ', $subSlot);
                                 $start = self::normalizeTime($startRaw);
                                 $end = self::normalizeTime($endRaw);
@@ -2980,7 +2987,11 @@ class EverblockTools extends ObjectModel
 
                     $label = count($hoursFormatted) > 0 ? implode(' / ', $hoursFormatted) : 'Fermé';
                     if ($isHoliday && $i === $todayIndex) {
-                        $label = 'Fermé (jour férié)';
+                        if ($todayStoreHolidaySlot) {
+                            $label .= ' (jour férié)';
+                        } else {
+                            $label = 'Fermé (jour férié)';
+                        }
                     }
 
                     $store['hours_display'][] = [
@@ -2989,7 +3000,7 @@ class EverblockTools extends ObjectModel
                     ];
                 }
 
-                if ($isHoliday) {
+                if ($isHoliday && !$todayStoreHolidaySlot) {
                     $store['is_open'] = false;
                     $store['open_until'] = null;
                     $store['opens_at'] = null;
@@ -3049,6 +3060,44 @@ class EverblockTools extends ObjectModel
         ];
 
         return $holidays;
+    }
+
+    protected static function getHolidayHoursConfig(): array
+    {
+        $config = Configuration::get('EVERBLOCK_HOLIDAY_HOURS');
+        $result = [];
+        if ($config) {
+            $lines = preg_split('/[\r\n]+/', $config);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (!$line) {
+                    continue;
+                }
+                if (strpos($line, '=') !== false) {
+                    [$date, $hours] = array_map('trim', explode('=', $line, 2));
+                    if (Validate::isDate($date) && $hours !== '') {
+                        $result[$date] = $hours;
+                    }
+                }
+            }
+        }
+        return $result;
+    }
+
+    protected static function getStoreHolidayHoursConfig(int $storeId): array
+    {
+        $result = [];
+        $holidays = self::getFrenchHolidays((int) date('Y'));
+        foreach ($holidays as $date) {
+            $openKey = 'EVERBLOCK_OPEN_' . (int) $storeId . '_' . $date;
+            $closeKey = 'EVERBLOCK_CLOSE_' . (int) $storeId . '_' . $date;
+            $open = Configuration::get($openKey);
+            $close = Configuration::get($closeKey);
+            if ($open && $close) {
+                $result[$date] = trim($open) . ' - ' . trim($close);
+            }
+        }
+        return $result;
     }
 
     public static function getStoreCoordinates(int $storeId): array
