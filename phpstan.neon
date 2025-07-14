@@ -1,0 +1,10 @@
+parameters:
+    level: 5
+    paths:
+        - src
+        - controllers
+        - models
+        - everblock.php
+        - index.php
+    autoload_files:
+        - vendor/autoload.php
