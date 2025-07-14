@@ -761,6 +761,13 @@ class Everblock extends Module
                         'name' => 'EVERBLOCK_GMAP_KEY',
                     ],
                     [
+                        'type' => 'textarea',
+                        'label' => $this->l('Holiday opening hours'),
+                        'desc' => $this->l('One date and hours per line (YYYY-MM-DD=09h00-12h00)'),
+                        'hint' => $this->l('Will override default hours on French holidays'),
+                        'name' => 'EVERBLOCK_HOLIDAY_HOURS',
+                    ],
+                    [
                         'type' => 'switch',
                         'label' => $this->l('Empty cache on saving ?'),
                         'desc' => $this->l('Set yes to empty cache on saving'),
@@ -1030,6 +1037,26 @@ class Everblock extends Module
                 ],
             ],
         ];
+        if (Configuration::get('EVERBLOCK_GMAP_KEY')) {
+            $stores = Store::getStores((int) $this->context->language->id);
+            if (!empty($stores)) {
+                $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
+                foreach ($stores as $store) {
+                    foreach ($holidays as $date) {
+                        $formFields[count($formFields) - 1]['form']['input'][] = [
+                            'type' => 'text',
+                            'label' => sprintf($this->l('Opening hour for %s on %s'), $store['name'], $date),
+                            'name' => 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date,
+                        ];
+                        $formFields[count($formFields) - 1]['form']['input'][] = [
+                            'type' => 'text',
+                            'label' => sprintf($this->l('Closing hour for %s on %s'), $store['name'], $date),
+                            'name' => 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date,
+                        ];
+                    }
+                }
+            }
+        }
         $formFields[] = [
             'form' => [
                 'legend' => [
@@ -1181,6 +1208,7 @@ class Everblock extends Module
             'EVERINSTA_LINK' => Configuration::get('EVERINSTA_LINK'),
             'EVERBLOCK_USE_GMAP' => Configuration::get('EVERBLOCK_USE_GMAP'),
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
+            'EVERBLOCK_HOLIDAY_HOURS' => Configuration::get('EVERBLOCK_HOLIDAY_HOURS'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
@@ -1418,6 +1446,10 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_GMAP_KEY',
             Tools::getValue('EVERBLOCK_GMAP_KEY')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_HOLIDAY_HOURS',
+            Tools::getValue('EVERBLOCK_HOLIDAY_HOURS')
         );
         Configuration::updateValue(
             'EVERPSCSS_LINKS',

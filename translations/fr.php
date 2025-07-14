@@ -635,3 +635,7 @@ $_MODULE['<{everblock}prestashop>prettyblock_shopping_cart_59fc69e031ecb0f82efe4
 $_MODULE['<{everblock}prestashop>prettyblock_silo_78f6f209024537ab3369e54b172c94b6'] = 'Retrouvez ce produit dans nos univers';
 $_MODULE['<{everblock}prestashop>prettyblock_silo_5becdb6da34b0a9ce1de8b8e1066baae'] = 'Retrouvez cette catégorie dans nos univers';
 $_MODULE['<{everblock}prestashop>ever_presented_products_124117dd22bc1dce2b0687b65f35f091'] = 'Vous pourriez aussi aimer';
+$_MODULE['<{everblock}prestashop>everblock_2c0923ac78b194c2e9946bd32a650d0b'] = 'Horaires jours fériés';
+$_MODULE['<{everblock}prestashop>everblock_21f59a9a3e796f0e797ad7736028089c'] = 'Une date et une plage horaire par ligne (YYYY-MM-DD=09h00-12h00)';
+$_MODULE['<{everblock}prestashop>everblock_a97e8578c3942df9fc98bb501d385883'] = 'Heure d\'ouverture de %s le %s';
+$_MODULE['<{everblock}prestashop>everblock_5ce749b4b55e9ed91bda1aba920e1ffd'] = 'Heure de fermeture de %s le %s';
