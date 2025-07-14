@@ -1,4 +1,7 @@
 <?php
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 /**
  * 2019-2025 Team Ever
  *
