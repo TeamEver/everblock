@@ -39,7 +39,6 @@ return [
     'controllers/front/everlogin.php',
     'controllers/front/index.php',
     'controllers/front/modal.php',
-    'controllers/front/shortcode.php',
     'controllers/index.php',
     'everblock.php',
     'index.php',
