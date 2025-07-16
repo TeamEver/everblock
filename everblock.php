@@ -2979,16 +2979,9 @@ class Everblock extends Module
                 'modal'
             )
         );
-        $shortcodeLink = base64_encode(
-            $this->context->link->getModuleLink(
-                $this->name,
-                'shortcode'
-            )
-        );
         Media::addJsDef([
             'evercontact_link' => $contactLink,
             'evermodal_link' => $modalLink,
-            'evershortcode_link' => $shortcodeLink,
             'everblock_token' => Tools::getToken(),
         ]);
         $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
