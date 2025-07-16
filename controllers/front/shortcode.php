@@ -37,7 +37,7 @@ class EverblockshortcodeModuleFrontController extends ModuleFrontController
             die('');
         }
 
-        $html = Tools::getValue('html', '', true);
+        $html = Tools::getValue('html');
         if (!$html) {
             die('');
         }
