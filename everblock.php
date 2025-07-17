@@ -111,6 +111,7 @@ class Everblock extends Module
             json_encode([1]),
             true
         );
+        Configuration::updateValue('EVERBLOCK_SOLDOUT_FLAG', 0);
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -188,6 +189,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERWP_API_USER');
         Configuration::deleteByName('EVERWP_API_PWD');
         Configuration::deleteByName('EVERWP_POST_NBR');
+        Configuration::deleteByName('EVERBLOCK_SOLDOUT_FLAG');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlock')
@@ -919,6 +921,26 @@ class Everblock extends Module
                         ],
                     ],
                     [
+                        'type' => 'switch',
+                        'label' => $this->l('Show Sold out flag'),
+                        'desc' => $this->l('Display a Sold out flag when product stock is empty and orders are not allowed'),
+                        'hint' => $this->l('Combinations and stock settings will be checked'),
+                        'name' => 'EVERBLOCK_SOLDOUT_FLAG',
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled'),
+                            ],
+                        ],
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->l('Custom CSS'),
                         'desc' => $this->l('Add here your custom CSS rules'),
@@ -1248,6 +1270,7 @@ class Everblock extends Module
             'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
             'EVERBLOCK_USE_SLICK' => Configuration::get('EVERBLOCK_USE_SLICK'),
+            'EVERBLOCK_SOLDOUT_FLAG' => Configuration::get('EVERBLOCK_SOLDOUT_FLAG'),
             'EVERPSCSS' => $custom_css,
             'EVERPSSASS' => $custom_sass,
             'EVERPSJS' => $custom_js,
@@ -1303,6 +1326,13 @@ class Everblock extends Module
             ) {
                 $this->postErrors[] = $this->l(
                     'Error : The field "Extends TinyMCE" is not valid'
+                );
+            }
+            if (Tools::getValue('EVERBLOCK_SOLDOUT_FLAG')
+                && !Validate::isBool(Tools::getValue('EVERBLOCK_SOLDOUT_FLAG'))
+            ) {
+                $this->postErrors[] = $this->l(
+                    'Error : The field "Show Sold out flag" is not valid'
                 );
             }
             if (Tools::getValue('EVERWP_POST_NBR')
@@ -1536,7 +1566,11 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_DISABLE_WEBP',
             Tools::getValue('EVERBLOCK_DISABLE_WEBP')
-        );        
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_SOLDOUT_FLAG',
+            Tools::getValue('EVERBLOCK_SOLDOUT_FLAG')
+        );
         Configuration::updateValue(
             'EVERPS_TAB_NB',
             Tools::getValue('EVERPS_TAB_NB')
@@ -2409,6 +2443,20 @@ class Everblock extends Module
                             'style' => 'style="background-color:' . Configuration::get('EVERPS_FEATURE_COLOR_' . $feature['id_feature']) . ';color:#fff;"'
                         );
                     }
+                }
+            }
+            if (Configuration::get('EVERBLOCK_SOLDOUT_FLAG')) {
+                $qty = StockAvailable::getQuantityAvailableByProduct($productId, 0, $shopId);
+                $allowOos = StockAvailable::outOfStock($productId, $shopId);
+                if ($allowOos == 2) {
+                    $allowOos = (int) Configuration::get('PS_ORDER_OUT_OF_STOCK');
+                }
+                if ($qty <= 0 && !$allowOos) {
+                    $params['flags']['everblock_soldout'] = [
+                        'type' => 'out_of_stock',
+                        'label' => $this->l('Sold out'),
+                        'module' => $this->name,
+                    ];
                 }
             }
         } catch (Exception $e) {
