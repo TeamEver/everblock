@@ -55,6 +55,9 @@
                 </a>
             </p>
             <br>
+            <h4>{l s='How to manually trigger a modal?' mod='everblock'}</h4>
+            <p>{l s='Add a button with the class' mod='everblock'} <code>everblock-modal-button</code> {l s='and set the block ID in the' mod='everblock'} <code>data-everclickmodal</code> {l s='attribute.' mod='everblock'}</p>
+            <br>
             <h4>{l s='How to create FAQs ?' mod='everblock'}</h3>
             <p>{l s='The "FAQ" tab of the module allows you to create as many FAQs as desired' mod='everblock'}</p>
             <p>{l s='Each FAQ is grouped by a "tag". All FAQs will thus be linked by this “tag” invisible to Internet users.' mod='everblock'}</p>
