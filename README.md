@@ -187,11 +187,11 @@ Each block can be converted to a modal and can have shortcodes in its content (e
 
 ## Triggering modals from a button
 You can trigger an Everblock modal manually from any hook. Add a button with the
-class `everblock-modal-button` and provide the block ID in a `data-evermodal`
+class `everblock-modal-button` and provide the block ID in a `data-everclickmodal`
 attribute:
 
 ```html
-<button class="everblock-modal-button" data-evermodal="12">Open modal</button>
+<button class="everblock-modal-button" data-everclickmodal="12">Open modal</button>
 ```
 
 To display the content of a CMS page in a modal, use the same class with a
@@ -378,9 +378,9 @@ Assurez-vous que le hook utilisé dans le bloc corresponde aux critères du bloc
 Chaque bloc peut être converti en modal et peut contenir des shortcodes (à l'exception des hooks et du store locator). Vous pouvez donc créer des formulaires de contact dans une modal.
 
 ## Déclenchement des modales depuis un bouton
-Vous pouvez déclencher manuellement une modal Everblock depuis n'importe quel hook. Ajoutez un bouton avec la classe `everblock-modal-button` et indiquez l'ID du bloc dans l'attribut `data-evermodal` :
+Vous pouvez déclencher manuellement une modal Everblock depuis n'importe quel hook. Ajoutez un bouton avec la classe `everblock-modal-button` et indiquez l'ID du bloc dans l'attribut `data-everclickmodal` :
 ```html
-<button class="everblock-modal-button" data-evermodal="12">Ouvrir la modal</button>
+<button class="everblock-modal-button" data-everclickmodal="12">Ouvrir la modal</button>
 ```
 Vous pouvez également afficher le contenu d'une page CMS en utilisant l'attribut `data-evercms` avec l'identifiant de la page :
 
@@ -562,9 +562,9 @@ Asegúrate de que el hook del bloque coincida con los criterios de configuració
 Cada bloque puede convertirse en modal y puede contener shortcodes (excepto hooks y store locator). Puedes crear formularios de contacto en una modal.
 
 ## Disparar modales desde un botón
-Puedes lanzar una modal de Everblock manualmente desde cualquier hook. Añade un botón con la clase `everblock-modal-button` e indica el ID del bloque en el atributo `data-evermodal`:
+Puedes lanzar una modal de Everblock manualmente desde cualquier hook. Añade un botón con la clase `everblock-modal-button` e indica el ID del bloque en el atributo `data-everclickmodal`:
 ```html
-<button class="everblock-modal-button" data-evermodal="12">Abrir modal</button>
+<button class="everblock-modal-button" data-everclickmodal="12">Abrir modal</button>
 ```
 Tambien puedes mostrar el contenido de una página CMS usando el atributo `data-evercms` con el ID de la página:
 
@@ -746,9 +746,9 @@ Assicurati che l'hook utilizzato nel blocco corrisponda ai criteri di configuraz
 Ogni blocco può essere convertito in modale e può contenere shortcode (tranne hook e store locator). Puoi quindi creare moduli di contatto in una modale.
 
 ## Attivare modali da un pulsante
-Puoi attivare manualmente una modale Everblock da qualsiasi hook. Aggiungi un pulsante con la classe `everblock-modal-button` e indica l'ID del blocco nell'attributo `data-evermodal`:
+Puoi attivare manualmente una modale Everblock da qualsiasi hook. Aggiungi un pulsante con la classe `everblock-modal-button` e indica l'ID del blocco nell'attributo `data-everclickmodal`:
 ```html
-<button class="everblock-modal-button" data-evermodal="12">Apri modale</button>
+<button class="everblock-modal-button" data-everclickmodal="12">Apri modale</button>
 ```
 Puoi anche mostrare il contenuto di una pagina CMS usando l'attributo `data-evercms` con l'ID della pagina:
 
