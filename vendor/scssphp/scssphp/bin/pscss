@@ -122,14 +122,14 @@ EOT;
         continue;
     }
 
-    $value = parseArgument($i, ['-t', '-s', '--style']);
+    $value = parseArgument($i, array('-t', '-s', '--style'));
 
     if (isset($value)) {
         $style = $value;
         continue;
     }
 
-    $value = parseArgument($i, ['-I', '--load-path']);
+    $value = parseArgument($i, array('-I', '--load-path'));
 
     if (isset($value)) {
         $loadPaths = $value;
@@ -137,7 +137,7 @@ EOT;
     }
 
     // Keep parsing --precision to avoid BC breaks for scripts using it
-    $value = parseArgument($i, ['-p', '--precision']);
+    $value = parseArgument($i, array('-p', '--precision'));
 
     if (isset($value)) {
         // TODO report it as a warning ?
