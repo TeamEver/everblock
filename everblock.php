@@ -106,6 +106,8 @@ class Everblock extends Module
         Configuration::updateValue('EVERWP_API_USER', '');
         Configuration::updateValue('EVERWP_API_PWD', '');
         Configuration::updateValue('EVERWP_POST_NBR', 3);
+        Configuration::updateValue('EVER_SOLDOUT_COLOR', '#ff0000');
+        Configuration::updateValue('EVER_SOLDOUT_TEXTCOLOR', '#ffffff');
         Configuration::updateValue(
             'EVERPS_FEATURES_AS_FLAGS',
             json_encode([1]),
@@ -189,6 +191,8 @@ class Everblock extends Module
         Configuration::deleteByName('EVERWP_API_USER');
         Configuration::deleteByName('EVERWP_API_PWD');
         Configuration::deleteByName('EVERWP_POST_NBR');
+        Configuration::deleteByName('EVER_SOLDOUT_COLOR');
+        Configuration::deleteByName('EVER_SOLDOUT_TEXTCOLOR');
         Configuration::deleteByName('EVERBLOCK_SOLDOUT_FLAG');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
@@ -1217,6 +1221,34 @@ class Everblock extends Module
                 'required' => false,
             ];
         }
+
+        $formFields[] = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('Sold out flag Colors'),
+                    'icon' => 'icon-palette',
+                ],
+                'input' => [
+                    [
+                        'type' => 'color',
+                        'label' => $this->l('Background color for Sold out flag'),
+                        'name' => 'EVER_SOLDOUT_COLOR',
+                        'size' => 20,
+                        'required' => false,
+                    ],
+                    [
+                        'type' => 'color',
+                        'label' => $this->l('Text color for Sold out flag'),
+                        'name' => 'EVER_SOLDOUT_TEXTCOLOR',
+                        'size' => 20,
+                        'required' => false,
+                    ],
+                ],
+                'submit' => [
+                    'title' => $this->l('Save'),
+                ],
+            ],
+        ];
         return $formFields;
     }
 
@@ -1271,6 +1303,8 @@ class Everblock extends Module
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
             'EVERBLOCK_USE_SLICK' => Configuration::get('EVERBLOCK_USE_SLICK'),
             'EVERBLOCK_SOLDOUT_FLAG' => Configuration::get('EVERBLOCK_SOLDOUT_FLAG'),
+            'EVER_SOLDOUT_COLOR' => Configuration::get('EVER_SOLDOUT_COLOR'),
+            'EVER_SOLDOUT_TEXTCOLOR' => Configuration::get('EVER_SOLDOUT_TEXTCOLOR'),
             'EVERPSCSS' => $custom_css,
             'EVERPSSASS' => $custom_sass,
             'EVERPSJS' => $custom_js,
@@ -1572,6 +1606,14 @@ class Everblock extends Module
             Tools::getValue('EVERBLOCK_SOLDOUT_FLAG')
         );
         Configuration::updateValue(
+            'EVER_SOLDOUT_COLOR',
+            Tools::getValue('EVER_SOLDOUT_COLOR')
+        );
+        Configuration::updateValue(
+            'EVER_SOLDOUT_TEXTCOLOR',
+            Tools::getValue('EVER_SOLDOUT_TEXTCOLOR')
+        );
+        Configuration::updateValue(
             'EVERPS_TAB_NB',
             Tools::getValue('EVERPS_TAB_NB')
         );
@@ -1619,6 +1661,7 @@ class Everblock extends Module
             }
         }
         $this->generateFeatureFlagsCssFile();
+        $this->generateSoldOutFlagCssFile();
         $this->postSuccess[] = $this->l('All settings have been saved');
     }
 
@@ -1664,6 +1707,33 @@ class Everblock extends Module
         if (trim($css) !== '') {
             file_put_contents($filePath, $css);
         }
+    }
+
+    protected function generateSoldOutFlagCssFile()
+    {
+        $idShop = (int) Context::getContext()->shop->id;
+        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/css/outofstock-flag-' . $idShop . '.css';
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+        $bgColor = Configuration::get('EVER_SOLDOUT_COLOR');
+        $textColor = Configuration::get('EVER_SOLDOUT_TEXTCOLOR');
+
+        if (empty($bgColor) && empty($textColor)) {
+            return;
+        }
+
+        $css = "/* Auto-generated sold out flag CSS */\n";
+        $css .= ".product-flags .out_of_stock {\n";
+        if ($bgColor) {
+            $css .= "  background-color: {$bgColor}!important;\n";
+        }
+        if ($textColor) {
+            $css .= "  color: {$textColor}!important;\n";
+        }
+        $css .= "}\n";
+
+        file_put_contents($filePath, $css);
     }
 
     protected function emptyAllCache()
@@ -2925,6 +2995,14 @@ class Everblock extends Module
             $this->context->controller->registerStylesheet(
                 'module-' . $this->name . '-feature-flags-css',
                 'modules/' . $this->name . '/views/css/feature-flags-' . $idShop . '.css',
+                ['media' => 'all', 'priority' => 200]
+            );
+        }
+        $soldoutCssFile = _PS_MODULE_DIR_ . $this->name . '/views/css/outofstock-flag-' . $idShop . '.css';
+        if (file_exists($soldoutCssFile) && filesize($soldoutCssFile) > 0) {
+            $this->context->controller->registerStylesheet(
+                'module-' . $this->name . '-soldout-flag-css',
+                'modules/' . $this->name . '/views/css/outofstock-flag-' . $idShop . '.css',
                 ['media' => 'all', 'priority' => 200]
             );
         }
