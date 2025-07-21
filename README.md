@@ -110,7 +110,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Displays accessories of the current product in a Bootstrap carousel.
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]`: If the cart is empty, shows best-selling products. Otherwise displays accessories of cart products. If there are none or not enough, it adds best sellers from the same categories and finally completes with overall best sellers.
 - `{hook h='displayHome'}`: Displays the `displayHome` hook (hooks are not allowed on modals)
-- `[everinstagram]`: Display your latest Instagram photos.
+- `[everinstagram]`: Display your latest Instagram photos. Images are stored in `/img/cms/instagram`.
 - `[nativecontact]`: Embed the native PrestaShop contact form.
 - `[everimg name="image.jpg" class="img-fluid" carousel=true]`: Display one or more CMS images. When `carousel=true` and multiple images are provided, a Bootstrap slideshow is rendered.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]`: Display a QCD SVG icon. Module available at [410 Gone](https://www.410-gone.fr/).
@@ -309,7 +309,7 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[accessories nb="8" orderby="date_add" orderway="DESC"]` : Affiche les accessoires du produit courant en carousel Bootstrap.
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]` : Si le panier est vide, affiche les meilleures ventes. Sinon, affiche les accessoires des produits du panier. S'il n'y en a pas ou si le nombre est insuffisant, complète avec les meilleures ventes des mêmes catégories puis avec les meilleures ventes globales.
 - `{hook h='displayHome'}` : Affiche le hook `displayHome` (les hooks ne sont pas autorisés dans les modales)
-- `[everinstagram]` : Affiche vos dernières photos Instagram.
+- `[everinstagram]` : Affiche vos dernières photos Instagram. Les images sont enregistrées dans `/img/cms/instagram`.
 - `[nativecontact]` : Intègre le formulaire de contact natif PrestaShop.
 - `[everimg name="image.jpg" class="img-fluid"]` : Affiche une ou plusieurs images CMS.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]` : Affiche une icône SVG QCD. Module disponible chez [410 Gone](https://www.410-gone.fr/).
@@ -493,7 +493,7 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 - `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Muestra los accesorios del producto actual en un carrusel Bootstrap.
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Si el carrito está vacío, se muestran los productos más vendidos. De lo contrario, muestra los accesorios de los productos del carrito. Si no hay suficientes, se añaden los más vendidos de las mismas categorías y, en último lugar, los más vendidos globales.
 - `{hook h='displayHome'}`: Muestra el hook `displayHome` (los hooks no están permitidos en modales)
-- `[everinstagram]`: Muestra tus últimas fotos de Instagram.
+- `[everinstagram]`: Muestra tus últimas fotos de Instagram. Las imágenes se guardan en `/img/cms/instagram`.
 - `[nativecontact]`: Inserta el formulario de contacto nativo de PrestaShop.
 - `[everimg name="image.jpg" class="img-fluid"]`: Muestra una o más imágenes CMS.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]`: Muestra un icono SVG de QCD. Módulo disponible en [410 Gone](https://www.410-gone.fr/).
@@ -677,7 +677,7 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 - `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Mostra gli accessori del prodotto corrente in un carosello Bootstrap.
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Se il carrello è vuoto vengono mostrati i prodotti più venduti. Altrimenti mostra gli accessori dei prodotti in carrello; se mancano articoli o non si raggiunge il limite, aggiunge i più venduti delle stesse categorie e infine i best seller globali.
 - `{hook h='displayHome'}`: Mostra l'hook `displayHome` (gli hook non sono consentiti nelle modali)
-- `[everinstagram]`: Mostra le ultime foto di Instagram.
+- `[everinstagram]`: Mostra le ultime foto di Instagram. Le immagini vengono salvate in `/img/cms/instagram`.
 - `[nativecontact]`: Inserisce il modulo di contatto nativo di PrestaShop.
 - `[everimg name="image.jpg" class="img-fluid"]`: Mostra una o più immagini CMS.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]`: Mostra un'icona SVG QCD. Modulo disponibile presso [410 Gone](https://www.410-gone.fr/).

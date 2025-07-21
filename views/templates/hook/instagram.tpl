@@ -25,11 +25,9 @@
         <div class="instagram_item_img col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
           <a href="{$img.permalink}" class="d-block obfme" target="_blank" title="{$img.caption|escape:'html':'UTF-8'}">
             <picture>
-              <source srcset="{$img.thumbnail|escape:'quotes':'UTF-8'}" type="image/webp">
-              <source srcset="{$img.thumbnail|replace:'.webp':'.jpg'|escape:'quotes':'UTF-8'}" type="image/jpeg">
-              <img 
-                class="img-fluid" 
-                src="{$img.thumbnail|replace:'.webp':'.jpg'|escape:'quotes':'UTF-8'}"
+              <img
+                class="img-fluid"
+                src="{$img.thumbnail|escape:'quotes':'UTF-8'}"
                 alt="{$img.caption|escape:'html':'UTF-8'}"
                 loading="lazy"
               />

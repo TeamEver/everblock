@@ -4207,16 +4207,36 @@ class EverblockTools extends ObjectModel
             // $request = Tools::file_get_contents('https://graph.instagram.com/me/media?access_token=IGQWRNTDdaUnFyaFNway14eTJ0NFpiSDlSZAlNNemV0U3hwNmlma3laMC01WUVxdVlucnJOM2JReF9Oblg2SmdHRlVwLXdPWXRPNVNLb1RZASjMtN0JHMW4zemNnYzZA6MVpYSGEwcHEtOG5MQQZDZD&fields=id,caption,media_type,media_url,permalink,thumbnail_url,username,timestamp');
             $result = json_decode($request, true);
             $imgs = [];
+            $baseDir = _PS_IMG_DIR_ . 'cms/instagram/';
+            if (!is_dir($baseDir)) {
+                @mkdir($baseDir, 0755, true);
+            }
             if ($result && isset($result['data']) && $result['data']) {
                 foreach ($result['data'] as $post) {
+                    $mediaUrl = isset($post['thumbnail_url']) ? $post['thumbnail_url'] : $post['media_url'];
+                    $extension = pathinfo(parse_url($mediaUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
+                    if (!$extension) {
+                        $extension = 'jpg';
+                    }
+                    $fileName = $post['id'] . '.' . $extension;
+                    $filePath = $baseDir . $fileName;
+                    $webPath = _PS_BASE_URL_ . __PS_BASE_URI__ . 'img/cms/instagram/' . $fileName;
+
+                    if (!file_exists($filePath)) {
+                        $content = Tools::file_get_contents($mediaUrl);
+                        if ($content !== false) {
+                            file_put_contents($filePath, $content);
+                        }
+                    }
+
                     $imgs[] = [
                         'id' => isset($post['id']) ? $post['id'] : $post['id'],
-                        'permalink' => isset($post['permalink']) ? $post['permalink'] : $post['permalink'],
-                        'low_resolution' => isset($post['thumbnail_url']) ? $post['thumbnail_url'] : $post['media_url'],
-                        'thumbnail' => isset($post['thumbnail_url']) ? $post['thumbnail_url'] : $post['media_url'],
-                        'standard_resolution' => isset($post['media_url']) ? $post['media_url'] : '',
+                        'permalink' => isset($post['permalink']) ? $post['permalink'] : '',
+                        'low_resolution' => $webPath,
+                        'thumbnail' => $webPath,
+                        'standard_resolution' => $webPath,
                         'caption' => isset($post['caption']) ? $post['caption'] : '',
-                        'is_video' => strpos($post['media_url'], '.mp4?') !== false ? true : false,
+                        'is_video' => strpos($mediaUrl, '.mp4') !== false,
                     ];
                 }
             }
