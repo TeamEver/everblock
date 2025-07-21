@@ -17,49 +17,27 @@
 *}
 {if $insta_imgs}
 <div class="ever_instagram block_instagram insta-idshop-{$everinsta_shopid} d-none d-md-block">
-    <div class="everblock-slider-container">
-        <ul class="instagram_list_img home-insta-idshop-{$everinsta_shopid}">
-            {assign var='ik' value=0}
-            {foreach $insta_imgs as $key => $img}
-                {assign var='ik' value=$ik+1}
-                {if $ik <= $everinsta_nbr}
-                    <li class="instagram_item_img col-xs-4 col-sm-4 col-md-3 col-lg-2 col-insta-{$img.id} li-insta-idshop-{$everinsta_shopid}">
-                        <span class="ever_instagram obfme"
-                           data-obf="{$img.permalink}"
-                           data-target="_blank" 
-                           data-media-type="{if $img.is_video}video{else}image{/if}"
-                           title="{if $img.is_video}{l s='Click to view full video' mod='everblock'}{else}{l s='Click to view full image' mod='everblock'}{/if}"
-                        >
-                            <picture>
-                              <source srcset="{$img.thumbnail|escape:'quotes':'UTF-8'}" type="image/webp">
-                              <source srcset="{$img.thumbnail|replace:'.webp':'.jpg'|escape:'quotes':'UTF-8'}" type="image/jpeg">
-                              <img {if $img.caption}alt="{$img.caption|escape:'html':'UTF-8'}"{/if} src="{$img.thumbnail|replace:'.webp':'.jpg'|escape:'quotes':'UTF-8'}" loading="lazy" />
-                            </picture>
-                        </span>
-                        {if $img.is_video}
-                            <video controls style="display: none; padding: 0; width: auto;" id="ever_insta_video_{$key+1|escape:'quotes':'UTF-8'}">
-                                <source src="{$img.standard_resolution|escape:'quotes':'UTF-8'}" type="video/mp4">
-                                Your browser doesn't support HTML5 video tag.
-                            </video>
-                        {/if}
-                    </li>
-                {/if}
-            {/foreach}
-        </ul>
-    </div>
-</div>
-<div class="modal fade" id="everImageModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <img src="" id="everModalImage" class="img-fluid" alt="Responsive image">
-            </div>
+  <div class="ever-slick-carousel row">
+    {assign var='ik' value=0}
+    {foreach $insta_imgs as $key => $img}
+      {assign var='ik' value=$ik+1}
+      {if $ik <= $everinsta_nbr}
+        <div class="instagram_item_img col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+          <a href="{$img.permalink}" class="d-block obfme" target="_blank" title="{$img.caption|escape:'html':'UTF-8'}">
+            <picture>
+              <source srcset="{$img.thumbnail|escape:'quotes':'UTF-8'}" type="image/webp">
+              <source srcset="{$img.thumbnail|replace:'.webp':'.jpg'|escape:'quotes':'UTF-8'}" type="image/jpeg">
+              <img 
+                class="img-fluid" 
+                src="{$img.thumbnail|replace:'.webp':'.jpg'|escape:'quotes':'UTF-8'}"
+                alt="{$img.caption|escape:'html':'UTF-8'}"
+                loading="lazy"
+              />
+            </picture>
+          </a>
         </div>
-    </div>
+      {/if}
+    {/foreach}
+  </div>
 </div>
 {/if}
