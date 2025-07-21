@@ -466,6 +466,7 @@ class EverblockTools extends ObjectModel
             'EVERINSTA_ACCESS_TOKEN' => Configuration::get('EVERINSTA_ACCESS_TOKEN'),
             'everinsta_nbr' => 12,
             'everinsta_link' => Configuration::get('EVERINSTA_LINK'),
+            'everinsta_show_caption' => Configuration::get('EVERINSTA_SHOW_CAPTION'),
             'insta_imgs' => $imgs,
         ]);
 

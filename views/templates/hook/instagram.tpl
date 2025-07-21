@@ -33,6 +33,9 @@
               />
             </picture>
           </a>
+          {if $everinsta_show_caption}
+            <p class="insta-caption">{$img.caption|escape:'html':'UTF-8'}</p>
+          {/if}
         </div>
       {/if}
     {/foreach}
