@@ -3053,6 +3053,11 @@ class Everblock extends Module
                 'modules/' . $this->name . '/views/css/slick-min.css',
                 ['media' => 'all', 'priority' => 200]
             );
+            $this->context->controller->registerStylesheet(
+                'module-slick-theme-min-css',
+                'modules/' . $this->name . '/views/css/slick-theme-min.css',
+                ['media' => 'all', 'priority' => 200]
+            );
             $this->context->controller->registerJavascript(
                 'module-slick-min-js',
                 'modules/' . $this->name . '/views/js/slick-min.js',
