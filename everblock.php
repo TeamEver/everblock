@@ -108,6 +108,7 @@ class Everblock extends Module
         Configuration::updateValue('EVERWP_POST_NBR', 3);
         Configuration::updateValue('EVER_SOLDOUT_COLOR', '#ff0000');
         Configuration::updateValue('EVER_SOLDOUT_TEXTCOLOR', '#ffffff');
+        Configuration::updateValue('EVERINSTA_SHOW_CAPTION', 0);
         Configuration::updateValue(
             'EVERPS_FEATURES_AS_FLAGS',
             json_encode([1]),
@@ -194,6 +195,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVER_SOLDOUT_COLOR');
         Configuration::deleteByName('EVER_SOLDOUT_TEXTCOLOR');
         Configuration::deleteByName('EVERBLOCK_SOLDOUT_FLAG');
+        Configuration::deleteByName('EVERINSTA_SHOW_CAPTION');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlock')
@@ -743,13 +745,6 @@ class Everblock extends Module
                     ],
                     [
                         'type' => 'text',
-                        'label' => $this->l('Instagram profile link'),
-                        'desc' => $this->l('Add here your Instagram profile URL'),
-                        'hint' => $this->l('This will set a custom link to your Instagram profile'),
-                        'name' => 'EVERINSTA_LINK',
-                    ],
-                    [
-                        'type' => 'text',
                         'label' => $this->l('WordPress API URL'),
                         'desc' => $this->l('Full REST API endpoint for posts'),
                         'hint' => $this->l('Example: https://example.com/wp-json/wp/v2/posts'),
@@ -1094,6 +1089,47 @@ class Everblock extends Module
                 ],
             ],
         ];
+        if (Configuration::get('EVERINSTA_ACCESS_TOKEN')) {
+            $formFields[] = [
+                'form' => [
+                    'legend' => [
+                        'title' => $this->l('Instagram'),
+                        'icon' => 'icon-smile',
+                    ],
+                    'input' => [
+                        [
+                            'type' => 'text',
+                            'label' => $this->l('Instagram profile link'),
+                            'desc' => $this->l('Add here your Instagram profile URL'),
+                            'hint' => $this->l('This will set a custom link to your Instagram profile'),
+                            'name' => 'EVERINSTA_LINK',
+                        ],
+                        [
+                            'type' => 'switch',
+                            'label' => $this->l('Display Instagram post text'),
+                            'desc' => $this->l('Show caption text below images'),
+                            'name' => 'EVERINSTA_SHOW_CAPTION',
+                            'is_bool' => true,
+                            'values' => [
+                                [
+                                    'id' => 'active_on',
+                                    'value' => 1,
+                                    'label' => $this->l('Enabled'),
+                                ],
+                                [
+                                    'id' => 'active_off',
+                                    'value' => 0,
+                                    'label' => $this->l('Disabled'),
+                                ],
+                            ],
+                        ],
+                    ],
+                    'submit' => [
+                        'title' => $this->l('Save'),
+                    ],
+                ],
+            ];
+        }
         if (Configuration::get('EVERBLOCK_GMAP_KEY')) {
             $stores = Store::getStores((int) $this->context->language->id);
             if (!empty($stores)) {
@@ -1291,6 +1327,7 @@ class Everblock extends Module
             'EVERBLOCK_MAINTENANCE_PSSWD' => Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD'),
             'EVERINSTA_ACCESS_TOKEN' => Configuration::get('EVERINSTA_ACCESS_TOKEN'),
             'EVERINSTA_LINK' => Configuration::get('EVERINSTA_LINK'),
+            'EVERINSTA_SHOW_CAPTION' => Configuration::get('EVERINSTA_SHOW_CAPTION'),
             'EVERWP_API_URL' => Configuration::get('EVERWP_API_URL'),
             'EVERWP_API_USER' => Configuration::get('EVERWP_API_USER'),
             'EVERWP_API_PWD' => Configuration::get('EVERWP_API_PWD'),
@@ -1544,6 +1581,10 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERINSTA_LINK',
             Tools::getValue('EVERINSTA_LINK')
+        );
+        Configuration::updateValue(
+            'EVERINSTA_SHOW_CAPTION',
+            Tools::getValue('EVERINSTA_SHOW_CAPTION')
         );
         Configuration::updateValue(
             'EVERWP_API_URL',
