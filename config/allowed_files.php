@@ -168,6 +168,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl',
     'views/templates/hook/prettyblocks/prettyblock_progressbar.tpl',
     'views/templates/hook/prettyblocks/prettyblock_reassurance.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_scroll_video.tpl',
     'views/templates/hook/prettyblocks/prettyblock_sharer.tpl',
     'views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl',
     'views/templates/hook/prettyblocks/prettyblock_shortcode.tpl',

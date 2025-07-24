@@ -43,6 +43,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $gmapTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gmap.tpl';
             $shortcodeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shortcode.tpl';
             $iframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_iframe.tpl';
+            $scrollVideoTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_scroll_video.tpl';
             $loginTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_login.tpl';
             $contactTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_contact.tpl';
             $shoppingCartTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl';
@@ -851,6 +852,91 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Iframe width (like 250px or 50%)'),
                             'default' => '100%',
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Scroll video'),
+                'description' => $module->l('Autoplay video when block is visible'),
+                'code' => 'everblock_scroll_video',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $scrollVideoTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Video',
+                    'nameFrom' => 'video_url',
+                    'groups' => [
+                        'video_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Video URL'),
+                            'default' => '',
+                        ],
+                        'thumbnail' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Thumbnail image'),
+                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'width' => [
+                            'type' => 'text',
+                            'label' => $module->l('Video width (e.g., 100% or 400px)'),
+                            'default' => '100%',
+                        ],
+                        'height' => [
+                            'type' => 'text',
+                            'label' => $module->l('Video height (e.g., 360px)'),
+                            'default' => '360px',
                         ],
                         'css_class' => [
                             'type' => 'text',
