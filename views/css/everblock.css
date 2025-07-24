@@ -284,3 +284,11 @@
     height: 1.5rem;
     margin-bottom: 0.25rem;
 }
+
+/* Scroll video block */
+.everblock-scroll-video img,
+.everblock-scroll-video video {
+    width: 100%;
+    height: auto;
+    display: block;
+}

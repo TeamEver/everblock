@@ -224,4 +224,28 @@ $(document).ready(function(){
         });
     });
 
+    // Play video on scroll
+    const everVideos = document.querySelectorAll('.everblock-scroll-video');
+    if (everVideos.length) {
+        const options = { threshold: 0.5 };
+        const observer = new IntersectionObserver(function(entries, obs) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    const container = entry.target;
+                    const img = container.querySelector('.everblock-video-thumb');
+                    const video = container.querySelector('video');
+                    if (video && img) {
+                        img.classList.add('d-none');
+                        video.classList.remove('d-none');
+                        video.play();
+                    }
+                    obs.unobserve(container);
+                }
+            });
+        }, options);
+        everVideos.forEach(function(el) {
+            observer.observe(el);
+        });
+    }
+
 });
