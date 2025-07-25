@@ -155,7 +155,8 @@ class ExecuteAction extends Command
         }
         if ($action === 'saveblocks') {
             $backuped = EverblockTools::exportModuleTablesSQL();
-            if ((bool) $backuped === true) {
+            $configBackuped = EverblockTools::exportConfigurationSQL();
+            if ((bool) $backuped === true && (bool) $configBackuped === true) {
                 try {
                     $modulePath = _PS_MODULE_DIR_ . 'everblock/';
                     $this->copyDirectory($modulePath . 'views/css', $modulePath . 'views/backup/css');

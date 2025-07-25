@@ -3302,6 +3302,55 @@ class EverblockTools extends ObjectModel
     }
 
     /**
+     * Exporte la table de configuration dans un fichier SQL.
+     *
+     * @return bool True en cas de succès, sinon False.
+     */
+    public static function exportConfigurationSQL(): bool
+    {
+        $tableName = _DB_PREFIX_ . 'configuration';
+        if (!static::ifTableExists($tableName)) {
+            return false;
+        }
+        $db = Db::getInstance();
+        $sqlData = '';
+        $tableName = bqSQL(trim($tableName));
+        $createTableSql = static::getTableStructure($tableName);
+        $sqlData .= "DROP TABLE IF EXISTS `$tableName`;\n";
+        $sqlData .= "$createTableSql;\n";
+        $sql = 'SELECT * FROM `' . $tableName . '`';
+        $result = $db->executeS($sql);
+        if ($result) {
+            foreach ($result as $row) {
+                $sqlData .= "INSERT INTO `$tableName` (";
+                $escapedKeys = array_map([Db::getInstance(), 'escape'], array_keys($row));
+                $escapedKeys = array_map(function ($key) {
+                    return "`$key`";
+                }, $escapedKeys);
+                $sqlData .= implode(',', $escapedKeys);
+                $sqlData .= ") VALUES (";
+                $escapedValues = [];
+                foreach ($row as $value) {
+                    if (is_null($value)) {
+                        $escapedValues[] = 'NULL';
+                    } elseif (is_numeric($value)) {
+                        $escapedValues[] = (int) $value;
+                    } else {
+                        $escapedValues[] = "'" . pSQL($value) . "'";
+                    }
+                }
+                $sqlData .= implode(',', $escapedValues);
+                $sqlData .= ");\n";
+            }
+        }
+        $filePath = _PS_MODULE_DIR_ . 'everblock/configuration.sql';
+        if (file_put_contents($filePath, $sqlData)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Récupère la structure d'une table dans la base de données.
      * @param string $tableName Nom de la table.
      * @return string|null Structure de la table en SQL, ou null en cas d'erreur.
