@@ -33,3 +33,9 @@ services:
         tags:
             - { name: 'console.command' }
 
+    everblock.tools.search_replace:
+        class: Everblock\Tools\Command\SearchReplaceCommand
+        public: true
+        tags:
+            - { name: 'console.command' }
+
