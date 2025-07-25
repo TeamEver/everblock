@@ -491,7 +491,8 @@ class Everblock extends Module
 
         if ((bool) Tools::isSubmit('submitBackupBlocks') === true) {
             $backuped = EverblockTools::exportModuleTablesSQL();
-            if ((bool) $backuped === true) {
+            $configBackuped = EverblockTools::exportConfigurationSQL();
+            if ((bool) $backuped === true && (bool) $configBackuped === true) {
                 $this->postSuccess[] = $this->l('Backup done');
             } else {
                 $this->postErrors[] = $this->l('Backup failed');
