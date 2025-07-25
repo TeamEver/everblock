@@ -101,6 +101,12 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[brandbestsales') !== false) {
             $txt = static::getBrandBestSalesShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[featurebestsales') !== false) {
+            $txt = static::getFeatureBestSalesShortcode($txt, $context, $module);
+        }
+        if (strpos($txt, '[featurevaluebestsales') !== false) {
+            $txt = static::getFeatureValueBestSalesShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[last-products') !== false) {
             $txt = static::getLastProductsShortcode($txt, $context, $module);
         }
@@ -1009,6 +1015,88 @@ class EverblockTools extends ObjectModel
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
+    protected static function getBestSellingProductIdsByFeature(int $featureId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
+    {
+        $context = Context::getContext();
+        $cacheId = 'everblock_bestSellingProductIds_feature_'
+            . (int) $context->shop->id . '_'
+            . $featureId . '_'
+            . $limit . '_'
+            . ($days ?? 'all') . '_'
+            . $orderBy . '_'
+            . $orderWay;
+
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $shopId = (int) $context->shop->id;
+            $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
+                . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
+                . ' JOIN ' . _DB_PREFIX_ . 'orders o ON od.id_order = o.id_order'
+                . ' JOIN ' . _DB_PREFIX_ . 'product_shop ps ON od.product_id = ps.id_product'
+                . ' JOIN ' . _DB_PREFIX_ . 'feature_product fp ON od.product_id = fp.id_product'
+                . ' WHERE ps.active = 1'
+                . ' AND ps.id_shop = ' . $shopId
+                . ' AND o.id_shop = ' . $shopId
+                . ' AND fp.id_feature = ' . (int) $featureId;
+
+            if ($days !== null) {
+                $dateFrom = date('Y-m-d H:i:s', strtotime("-$days days"));
+                $sql .= ' AND o.date_add >= "' . pSQL($dateFrom) . '"';
+            }
+
+            $sql .= ' GROUP BY od.product_id'
+                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
+                . ' LIMIT ' . (int) $limit;
+
+            $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            $ids = array_map(fn($row) => (int) $row['product_id'], $rows);
+            EverblockCache::cacheStore($cacheId, $ids);
+            return $ids;
+        }
+
+        return EverblockCache::cacheRetrieve($cacheId);
+    }
+
+    protected static function getBestSellingProductIdsByFeatureValue(int $featureValueId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
+    {
+        $context = Context::getContext();
+        $cacheId = 'everblock_bestSellingProductIds_feature_value_'
+            . (int) $context->shop->id . '_'
+            . $featureValueId . '_'
+            . $limit . '_'
+            . ($days ?? 'all') . '_'
+            . $orderBy . '_'
+            . $orderWay;
+
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $shopId = (int) $context->shop->id;
+            $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
+                . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
+                . ' JOIN ' . _DB_PREFIX_ . 'orders o ON od.id_order = o.id_order'
+                . ' JOIN ' . _DB_PREFIX_ . 'product_shop ps ON od.product_id = ps.id_product'
+                . ' JOIN ' . _DB_PREFIX_ . 'feature_product fp ON od.product_id = fp.id_product'
+                . ' WHERE ps.active = 1'
+                . ' AND ps.id_shop = ' . $shopId
+                . ' AND o.id_shop = ' . $shopId
+                . ' AND fp.id_feature_value = ' . (int) $featureValueId;
+
+            if ($days !== null) {
+                $dateFrom = date('Y-m-d H:i:s', strtotime("-$days days"));
+                $sql .= ' AND o.date_add >= "' . pSQL($dateFrom) . '"';
+            }
+
+            $sql .= ' GROUP BY od.product_id'
+                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
+                . ' LIMIT ' . (int) $limit;
+
+            $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            $ids = array_map(fn($row) => (int) $row['product_id'], $rows);
+            EverblockCache::cacheStore($cacheId, $ids);
+            return $ids;
+        }
+
+        return EverblockCache::cacheRetrieve($cacheId);
+    }
+
     public static function getWidgetShortcode($txt)
     {
         $txt = preg_replace_callback('/\[widget moduleName="(.+?)" hookName="(.+?)"\]/', function ($matches) {
@@ -1565,6 +1653,122 @@ class EverblockTools extends ObjectModel
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[brandbestsales', 'id=' . $brandId];
+                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
+                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
+                    if (isset($match[4])) { $shortcodeParts[] = 'days=' . $match[4]; }
+                    if (isset($match[5])) { $shortcodeParts[] = 'carousel=' . $match[5]; }
+                    if (isset($match[6])) { $shortcodeParts[] = 'orderby=' . $match[6]; }
+                    if (isset($match[7])) { $shortcodeParts[] = 'orderway=' . $match[7]; }
+                    $shortcode = implode(' ', $shortcodeParts) . ']';
+
+                    $txt = str_replace($shortcode, $replacement, $txt);
+                }
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getFeatureBestSalesShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        preg_match_all(
+            '/\[featurebestsales\s+id="?(\d+)"?(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?(?:\s+days=(\d+))?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
+            $txt,
+            $matches,
+            PREG_SET_ORDER
+        );
+
+        foreach ($matches as $match) {
+            $featureId = (int)$match[1];
+            $limit = isset($match[2]) && $match[2] !== '' ? (int)$match[2] : (isset($match[3]) ? (int)$match[3] : 10);
+            $days = isset($match[4]) ? (int)$match[4] : null;
+            $carousel = isset($match[5]) && $match[5] === 'true';
+            $orderBy = isset($match[6]) ? strtolower($match[6]) : 'total_quantity';
+            $orderWay = isset($match[7]) ? strtoupper($match[7]) : 'DESC';
+
+            $allowedOrderBy = ['total_quantity', 'product_id'];
+            $allowedOrderWay = ['ASC', 'DESC'];
+            if (!in_array($orderBy, $allowedOrderBy)) {
+                $orderBy = 'total_quantity';
+            }
+            if (!in_array($orderWay, $allowedOrderWay)) {
+                $orderWay = 'DESC';
+            }
+
+            $productIds = static::getBestSellingProductIdsByFeature($featureId, $limit, $orderBy, $orderWay, $days);
+
+            if (!empty($productIds)) {
+                $everPresentProducts = static::everPresentProducts($productIds, $context);
+
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel' => $carousel,
+                        'shortcodeClass' => 'featurebestsales'
+                    ]);
+
+                    $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
+                    $replacement = $context->smarty->fetch($templatePath);
+
+                    $shortcodeParts = ['[featurebestsales', 'id=' . $featureId];
+                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
+                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
+                    if (isset($match[4])) { $shortcodeParts[] = 'days=' . $match[4]; }
+                    if (isset($match[5])) { $shortcodeParts[] = 'carousel=' . $match[5]; }
+                    if (isset($match[6])) { $shortcodeParts[] = 'orderby=' . $match[6]; }
+                    if (isset($match[7])) { $shortcodeParts[] = 'orderway=' . $match[7]; }
+                    $shortcode = implode(' ', $shortcodeParts) . ']';
+
+                    $txt = str_replace($shortcode, $replacement, $txt);
+                }
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getFeatureValueBestSalesShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        preg_match_all(
+            '/\[featurevaluebestsales\s+id="?(\d+)"?(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?(?:\s+days=(\d+))?(?:\s+carousel=(true|false))?(?:\s+orderby="?(\w+)"?)?(?:\s+orderway="?(\w+)"?)?\]/i',
+            $txt,
+            $matches,
+            PREG_SET_ORDER
+        );
+
+        foreach ($matches as $match) {
+            $featureValueId = (int)$match[1];
+            $limit = isset($match[2]) && $match[2] !== '' ? (int)$match[2] : (isset($match[3]) ? (int)$match[3] : 10);
+            $days = isset($match[4]) ? (int)$match[4] : null;
+            $carousel = isset($match[5]) && $match[5] === 'true';
+            $orderBy = isset($match[6]) ? strtolower($match[6]) : 'total_quantity';
+            $orderWay = isset($match[7]) ? strtoupper($match[7]) : 'DESC';
+
+            $allowedOrderBy = ['total_quantity', 'product_id'];
+            $allowedOrderWay = ['ASC', 'DESC'];
+            if (!in_array($orderBy, $allowedOrderBy)) {
+                $orderBy = 'total_quantity';
+            }
+            if (!in_array($orderWay, $allowedOrderWay)) {
+                $orderWay = 'DESC';
+            }
+
+            $productIds = static::getBestSellingProductIdsByFeatureValue($featureValueId, $limit, $orderBy, $orderWay, $days);
+
+            if (!empty($productIds)) {
+                $everPresentProducts = static::everPresentProducts($productIds, $context);
+
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel' => $carousel,
+                        'shortcodeClass' => 'featurevaluebestsales'
+                    ]);
+
+                    $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
+                    $replacement = $context->smarty->fetch($templatePath);
+
+                    $shortcodeParts = ['[featurevaluebestsales', 'id=' . $featureValueId];
                     if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
                     elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
                     if (isset($match[4])) { $shortcodeParts[] = 'days=' . $match[4]; }
