@@ -210,6 +210,7 @@ class AdminEverBlockController extends ModuleAdminController
         $this->addRowAction('edit');
         $this->addRowAction('delete');
         $this->addRowAction('duplicate');
+        $this->addRowAction('export');
         $this->toolbar_title = $this->l('HTML blocks Configuration');
         $this->bulk_actions = [
             'duplicateall' => [
@@ -1095,6 +1096,11 @@ class AdminEverBlockController extends ModuleAdminController
                 (int)Tools::getValue($this->identifier)
             );
         }
+        if (Tools::getIsset('export' . $this->table)) {
+            $this->exportBlock(
+                (int) Tools::getValue($this->identifier)
+            );
+        }
         if (Tools::isSubmit('deleteeverblock')) {
             $everblock_obj = new $this->className(
                 (int) Tools::getValue($this->identifier)
@@ -1376,6 +1382,30 @@ class AdminEverBlockController extends ModuleAdminController
         if (!$newBlock->save()) {
             $this->errors[] = $this->l('An error has occurred: Can\'t duplicate the current object');
         }
+    }
+
+    protected function exportBlock($id)
+    {
+        $sql = EverblockTools::exportBlockSQL((int) $id);
+        if ($sql) {
+            $filename = 'everblock_' . (int) $id . '.sql';
+            header('Content-Type: application/sql');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            echo $sql;
+            exit;
+        } else {
+            $this->errors[] = $this->l('An error has occurred during export.');
+        }
+    }
+
+    public function displayExportLink($token, $id)
+    {
+        $href = self::$currentIndex . '&export' . $this->table . '&' . $this->identifier . '=' . (int) $id . '&token=' . $token;
+        $this->context->smarty->assign([
+            'href' => $href,
+            'action' => $this->l('Export SQL'),
+        ]);
+        return $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'everblock/views/templates/admin/list_action_export.tpl');
     }
 
 
