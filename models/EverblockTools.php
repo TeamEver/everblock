@@ -3360,6 +3360,65 @@ class EverblockTools extends ObjectModel
     }
 
     /**
+     * Export a single HTML block as a SQL string.
+     * Generates DELETE and INSERT statements for the block
+     * in everblock and everblock_lang tables.
+     *
+     * @param int $idBlock Block identifier
+     * @return string SQL content or empty string on failure
+     */
+    public static function exportBlockSQL(int $idBlock): string
+    {
+        $db = Db::getInstance();
+
+        $block = $db->getRow(
+            'SELECT * FROM `' . _DB_PREFIX_ . 'everblock` WHERE id_everblock = ' . (int) $idBlock
+        );
+        if (!$block) {
+            return '';
+        }
+
+        $sqlData = 'DELETE FROM `' . _DB_PREFIX_ . 'everblock` WHERE `id_everblock` = ' . (int) $idBlock . ';' . PHP_EOL;
+        $columns = array_keys($block);
+        $escapedCols = array_map(function ($col) { return '`' . bqSQL($col) . '`'; }, $columns);
+        $values = [];
+        foreach ($block as $value) {
+            if (is_null($value)) {
+                $values[] = 'NULL';
+            } elseif (is_numeric($value)) {
+                $values[] = (int) $value;
+            } else {
+                $values[] = "'" . pSQL($value) . "'";
+            }
+        }
+        $sqlData .= 'INSERT INTO `' . _DB_PREFIX_ . 'everblock` (' . implode(',', $escapedCols) . ') VALUES (' . implode(',', $values) . ');' . PHP_EOL;
+
+        $rows = $db->executeS(
+            'SELECT * FROM `' . _DB_PREFIX_ . 'everblock_lang` WHERE id_everblock = ' . (int) $idBlock
+        );
+        if ($rows) {
+            $sqlData .= 'DELETE FROM `' . _DB_PREFIX_ . 'everblock_lang` WHERE `id_everblock` = ' . (int) $idBlock . ';' . PHP_EOL;
+            foreach ($rows as $row) {
+                $cols = array_keys($row);
+                $cols = array_map(function ($c) { return '`' . bqSQL($c) . '`'; }, $cols);
+                $vals = [];
+                foreach ($row as $val) {
+                    if (is_null($val)) {
+                        $vals[] = 'NULL';
+                    } elseif (is_numeric($val)) {
+                        $vals[] = (int) $val;
+                    } else {
+                        $vals[] = "'" . pSQL($val) . "'";
+                    }
+                }
+                $sqlData .= 'INSERT INTO `' . _DB_PREFIX_ . 'everblock_lang` (' . implode(',', $cols) . ') VALUES (' . implode(',', $vals) . ');' . PHP_EOL;
+            }
+        }
+
+        return $sqlData;
+    }
+
+    /**
      * Create fake products
      * @param shop id
      * @return bool
