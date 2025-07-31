@@ -1670,10 +1670,17 @@ class Everblock extends Module
             if (Tools::getValue('EVERBLOCK_GMAP_KEY')) {
                 $markers = [];
                 foreach ($stores as $store) {
+                    $address = $store['address1'];
+                    if (!empty($store['address2'])) {
+                        $address .= ' ' . $store['address2'];
+                    }
+                    $address .= ', ' . $store['postcode'] . ' ' . $store['city'];
                     $marker = [
                         'lat' => $store['latitude'],
                         'lng' => $store['longitude'],
                         'title' => $store['name'],
+                        'address' => $address,
+                        'phone' => $store['phone'],
                     ];
                     $markers[] = $marker;
                 }
@@ -1686,10 +1693,17 @@ class Everblock extends Module
             } else {
                 $markers = [];
                 foreach ($stores as $store) {
+                    $address = $store['address1'];
+                    if (!empty($store['address2'])) {
+                        $address .= ' ' . $store['address2'];
+                    }
+                    $address .= ', ' . $store['postcode'] . ' ' . $store['city'];
                     $marker = [
                         'lat' => $store['latitude'],
                         'lng' => $store['longitude'],
                         'title' => $store['name'],
+                        'address' => $address,
+                        'phone' => $store['phone'],
                     ];
                     $markers[] = $marker;
                 }
