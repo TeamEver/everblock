@@ -2595,6 +2595,7 @@ class EverblockTools extends ObjectModel
         $googleMapCode = '
             (function() {
                 var map;
+                var infoWindow;
                 var markers = ' . json_encode($markers) . '; // Initialisez la variable markers avec vos données JSON
 
                 // Fonction pour trouver le marqueur le plus proche
@@ -2620,12 +2621,25 @@ class EverblockTools extends ObjectModel
                         center: { lat: ' . $markers[0]['lat'] . ', lng: ' . $markers[0]['lng'] . ' },
                         zoom: 13
                     });
+                    infoWindow = new google.maps.InfoWindow();
 
                     markers.forEach(function(marker) {
-                        new google.maps.Marker({
+                        var markerObj = new google.maps.Marker({
                             position: { lat: marker.lat, lng: marker.lng },
                             map: map,
                             title: marker.title
+                        });
+
+                        markerObj.addListener("click", function() {
+                            var link = `https://www.google.com/maps?q=${marker.lat},${marker.lng}`;
+                            var content = `
+                                <strong>${marker.title}</strong><br>
+                                ${marker.address}<br>
+                                ${marker.phone ? "Tel: " + marker.phone + "<br>" : ""}
+                                <a href="${link}" target="_blank">Ouvrir dans Google Maps</a>
+                            `;
+                            infoWindow.setContent(content);
+                            infoWindow.open(map, markerObj);
                         });
                     });
 
