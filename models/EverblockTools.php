@@ -1170,6 +1170,7 @@ class EverblockTools extends ObjectModel
             'value' => $attributes['value'] ?? null,
             'values' => isset($attributes['values']) ? explode(',', $attributes['values']) : [],
             'required' => isset($attributes['required']) && strtolower($attributes['required']) === 'true',
+            'class' => isset($attributes['class']) ? htmlspecialchars($attributes['class'], ENT_QUOTES) : '',
             'unique' => $uid,
             'id' => 'everfield_' . $uid,
         ];
