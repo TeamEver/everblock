@@ -7,10 +7,6 @@ namespace Composer\Autoload;
 class ComposerStaticInitc44e5ac729cb9f81a689ee15bff0603d
 {
     public static $prefixLengthsPsr4 = array (
-        'S' => 
-        array (
-            'ScssPhp\\ScssPhp\\' => 16,
-        ),
         'E' => 
         array (
             'Everblock\\Tools\\' => 16,
@@ -18,10 +14,6 @@ class ComposerStaticInitc44e5ac729cb9f81a689ee15bff0603d
     );
 
     public static $prefixDirsPsr4 = array (
-        'ScssPhp\\ScssPhp\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/scssphp/scssphp/src',
-        ),
         'Everblock\\Tools\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',

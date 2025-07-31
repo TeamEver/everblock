@@ -948,13 +948,6 @@ class Everblock extends Module
                     ],
                     [
                         'type' => 'textarea',
-                        'label' => $this->l('Custom SASS'),
-                        'desc' => $this->l('Add here your custom SASS rules that will be added after CSS rules'),
-                        'hint' => $this->l('Webdesigners here can manage SASS rules'),
-                        'name' => 'EVERPSSASS',
-                    ],
-                    [
-                        'type' => 'textarea',
                         'label' => $this->l('Custom Javascript'),
                         'desc' => $this->l('Add here your custom Javascript rules'),
                         'hint' => $this->l('Webdesigners here can manage Javascript rules'),
@@ -1294,9 +1287,6 @@ class Everblock extends Module
         $custom_css = Tools::file_get_contents(
             _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom' . $idShop . '.css'
         );
-        $custom_sass = Tools::file_get_contents(
-            _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom' . $idShop . '.scss'
-        );
         $custom_js = Tools::file_get_contents(
             _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js'
         );
@@ -1343,7 +1333,6 @@ class Everblock extends Module
             'EVER_SOLDOUT_COLOR' => Configuration::get('EVER_SOLDOUT_COLOR'),
             'EVER_SOLDOUT_TEXTCOLOR' => Configuration::get('EVER_SOLDOUT_TEXTCOLOR'),
             'EVERPSCSS' => $custom_css,
-            'EVERPSSASS' => $custom_sass,
             'EVERPSJS' => $custom_js,
             'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
             'EVERPSJS_LINKS' => Configuration::get('EVERPSJS_LINKS'),
@@ -1429,13 +1418,7 @@ class Everblock extends Module
         // Compressed
         $compressedCss = _PS_MODULE_DIR_ . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
         $cssCode = Tools::getValue('EVERPSCSS');
-        $scssCode = Tools::getValue('EVERPSSASS');
         $jsCode = Tools::getValue('EVERPSJS');
-        // Compile SASS code
-        $compiledCss = $this->compileSass(
-            $scssCode
-        );
-        $cssCode .= $compiledCss;
         // Compress CSS code
         $compressedCssCode = $this->compressCSSCode(
             $cssCode
@@ -3226,24 +3209,6 @@ class Everblock extends Module
         // Supprime les espaces inutiles entre les propriétés et les valeurs
         $css = preg_replace('/[\s]*:[\s]*(.*?)[\s]*;/', ':$1;', $css);
         return $css;
-    }
-
-    protected function compileSass($sassCode)
-    {
-        // Create a new instance of the ScssPhp Compiler
-        $compiler = new \ScssPhp\ScssPhp\Compiler();
-        try {
-            // Compile the SASS code
-            $compiledCss = $compiler->compile($sassCode);
-            $this->postSuccess[] = $this->l('SASS compilation successful!');
-            return $compiledCss;
-        } catch (\Exception $e) {
-            PrestaShopLogger::addLog('SASS Compilation Error: ' . $e->getMessage());
-            EverblockTools::setLog(
-                $this->name . date('y-m-d'),
-                $e->getMessage()
-            );
-        }
     }
 
     public function getConfigInMultipleLangs($key, $idShopGroup = null, $idShop = null): array
