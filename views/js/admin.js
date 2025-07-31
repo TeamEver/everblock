@@ -17,12 +17,6 @@
  */
 
 $(document).ready(function() {
-  let scssTextarea = document.getElementById("EVERPSSASS");
-  let scssEditor = CodeMirror.fromTextArea(scssTextarea, {
-    mode: "text/css",
-    theme: "dracula",
-    lineNumbers: true
-  });
   let cssTextarea = document.getElementById("EVERPSCSS");
   let cssEditor = CodeMirror.fromTextArea(cssTextarea, {
     mode: "text/css",
