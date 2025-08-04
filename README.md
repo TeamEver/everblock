@@ -93,6 +93,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[evercart]`: Display dropdown cart.
 - `[cart_total]`: Display the total value of the current cart.
 - `[cart_quantity]`: Display the number of products currently in the cart.
+- `[shop_logo]`: Display the shop logo.
 - `[newsletter_form]`: Display the PrestaShop newsletter subscription form.
 - `[nativecontact]`: Embed the native PrestaShop contact form (this replaces the obsolete `[evercontact]` shortcode).
 - `[everstore 4]`: Display store information for store ID 4 (several IDs can be separated with commas).
