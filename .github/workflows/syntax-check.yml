@@ -5,14 +5,12 @@ on:
     paths:
       - '**/*.php'
       - '**/*.tpl'
-    paths-ignore:
-      - 'vendor/**'
+      - '!vendor/**'
   pull_request:
     paths:
       - '**/*.php'
       - '**/*.tpl'
-    paths-ignore:
-      - 'vendor/**'
+      - '!vendor/**'
 
 jobs:
   lint:
