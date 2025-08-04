@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 2019-2025 Team Ever
  *
@@ -22,7 +23,6 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockPrettyBlocks extends ObjectModel
 {
-
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
     {
         return PrettyBlocksModel::registerBlockToZone($zone_name, $code, $id_lang, $id_shop);
@@ -839,7 +839,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Iframe source'),
                             'default' => 'youtube',
                             'choices' => [
-                                'youtube' =>'youtube',
+                                 'youtube' => 'youtube',
                                 'vimeo' => 'vimeo',
                                 'dailymotion' => 'dailymotion',
                                 'vidyard' => 'vidyard',
@@ -1274,7 +1274,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Auto trigger modal'),
                             'default' => 'No',
                             'choices' => [
-                                '1' =>'No',
+                                '1' => 'No',
                                 '2' => 'Auto',
                             ]
                         ],
@@ -1437,7 +1437,7 @@ class EverblockPrettyBlocks extends ObjectModel
                         'alt' => [
                             'type' => 'text',
                             'label' =>  $module->l('alt attribute'),
-                            'default' => $module->l( 'My alt attribute')
+                            'default' => $module->l('My alt attribute')
                         ],
                         'url' => [
                             'type' => 'text',
@@ -1885,7 +1885,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Alert type'),
                             'default' => 'primary',
                             'choices' => [
-                                'primary' =>'primary',
+                                'primary' => 'primary',
                                 'secondary' => 'secondary',
                                 'success' => 'success',
                                 'danger' => 'danger',
@@ -2117,7 +2117,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Button type'), // label to display
                             'default' => 'primary', // default value (String)
                             'choices' => [
-                                'primary' =>'primary',
+                                'primary' => 'primary',
                                 'secondary' => 'secondary',
                                 'success' => 'success',
                                 'danger' => 'danger',
