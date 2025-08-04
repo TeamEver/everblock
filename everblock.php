@@ -2881,19 +2881,16 @@ class Everblock extends Module
                     }
                 }
                 // Only products pages with specific category
-                if (Tools::getValue('id_product')
+                if (
+                    Tools::getValue('id_product')
                     && Tools::getValue('controller') === 'product'
-                    && (bool) $block['only_category'] === true
                     && (bool) $block['only_category_product'] === true
                 ) {
-                    $product = new Product(
-                        (int) Tools::getValue('id_product')
-                    );
+                    $product = new Product((int) Tools::getValue('id_product'));
                     $categories = json_decode($block['categories']);
-                    $productCategories = $product->getCategories();
+                    $defaultCategory = (int) $product->id_category_default;
                     if ($categories && is_array($categories)) {
-                        $allowedCategory = array_intersect($categories, $productCategories);
-                        $continue = empty($allowedCategory);
+                        $continue = !in_array($defaultCategory, $categories);
                     }
                 }
                 if ((bool) $continue === true) {
