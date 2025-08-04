@@ -67,6 +67,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $productHighlightTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl';
             $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
             $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
+            $coverTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cover.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -2740,6 +2741,91 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Cover block'),
+                'description' => $module->l('Background image with title, text and two buttons'),
+                'code' => 'everblock_cover',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $coverTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Cover',
+                    'nameFrom' => 'title',
+                    'groups' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title'),
+                            'default' => '',
+                        ],
+                        'content' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Content'),
+                            'default' => '',
+                        ],
+                        'background_image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Background image'),
+                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'btn1_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button 1 text'),
+                            'default' => '',
+                        ],
+                        'btn1_link' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button 1 link'),
+                            'default' => '',
+                        ],
+                        'btn1_type' => [
+                            'type' => 'radio_group',
+                            'label' => $module->l('Button 1 type'),
+                            'default' => 'primary',
+                            'choices' => [
+                                'primary' => 'primary',
+                                'secondary' => 'secondary',
+                                'success' => 'success',
+                                'danger' => 'danger',
+                                'warning' => 'warning',
+                                'info' => 'info',
+                                'light' => 'light',
+                                'dark' => 'dark',
+                            ],
+                        ],
+                        'btn2_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button 2 text'),
+                            'default' => '',
+                        ],
+                        'btn2_link' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button 2 link'),
+                            'default' => '',
+                        ],
+                        'btn2_type' => [
+                            'type' => 'radio_group',
+                            'label' => $module->l('Button 2 type'),
+                            'default' => 'primary',
+                            'choices' => [
+                                'primary' => 'primary',
+                                'secondary' => 'secondary',
+                                'success' => 'success',
+                                'danger' => 'danger',
+                                'warning' => 'warning',
+                                'info' => 'info',
+                                'light' => 'light',
+                                'dark' => 'dark',
+                            ],
                         ],
                     ],
                 ],
