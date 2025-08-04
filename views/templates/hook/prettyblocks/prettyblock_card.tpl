@@ -23,22 +23,25 @@
           <div class="carousel-item{if $key == 0} active{/if}{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
             <div class="card h-100 mb-3">
               {if isset($state.image.url) && $state.image.url}
-                <picture>
-                  <source srcset="{$state.image.url}" type="image/webp">
-                  <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-                  <img src="{$state.image.url|replace:'.webp':'.jpg'}" class="card-img-top img img-fluid lazyload"
-                       loading="lazy"{if $state.image_width} width="{$state.image_width|escape:'htmlall'}"{/if}{if $state.image_height} height="{$state.image_height|escape:'htmlall'}"{/if}
-                       alt="{if $state.alt}{$state.alt|escape:'htmlall'}{else}{$state.title|escape:'htmlall'}{/if}" title="{$state.title|escape:'htmlall'}">
-                </picture>
+                {assign var="imgExt" value=$state.image.url|lower|substr:-4}
+                {if $imgExt == '.svg'}
+                  <img src="{$state.image.url}" class="card-img-top img img-fluid" loading="lazy"{if $state.image_width} width="{$state.image_width|escape:'htmlall'}"{/if}{if $state.image_height} height="{$state.image_height|escape:'htmlall'}"{/if} alt="{if $state.alt}{$state.alt|escape:'htmlall'}{else}{$state.title|escape:'htmlall'}{/if}" title="{$state.title|escape:'htmlall'}">
+                {else}
+                  <picture>
+                    <source srcset="{$state.image.url}" type="image/webp">
+                    <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                    <img src="{$state.image.url|replace:'.webp':'.jpg'}" class="card-img-top img img-fluid lazyload" loading="lazy"{if $state.image_width} width="{$state.image_width|escape:'htmlall'}"{/if}{if $state.image_height} height="{$state.image_height|escape:'htmlall'}"{/if} alt="{if $state.alt}{$state.alt|escape:'htmlall'}{else}{$state.title|escape:'htmlall'}{/if}" title="{$state.title|escape:'htmlall'}">
+                  </picture>
+                {/if}
               {/if}
               <div class="card-body">
                 {if $state.title}<span class="card-title h5">{$state.title|escape:'htmlall'}</span>{/if}
                 {if $state.content}<div class="card-text">{$state.content nofilter}</div>{/if}
               </div>
-              {if $state.button_link && $state.button_text}
+              {if $state.button_link}
                 <div class="card-footer bg-transparent border-0">
-                  <a href="{$state.button_link|escape:'htmlall'}" class="btn btn-primary" title="{$state.title|escape:'htmlall'}">
-                    {$state.button_text|escape:'htmlall'}
+                  <a href="{$state.button_link|escape:'htmlall'}" class="card-link d-inline-flex align-items-center" title="{$state.title|escape:'htmlall'}">
+                    En savoir plus <span class="ms-1">&rarr;</span>
                   </a>
                 </div>
               {/if}
