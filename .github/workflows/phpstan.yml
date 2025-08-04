@@ -2,15 +2,7 @@ name: PHPStan
 
 on:
   push:
-    paths:
-      - '**/*.php'
-    paths-ignore:
-      - 'vendor/**'
   pull_request:
-    paths:
-      - '**/*.php'
-    paths-ignore:
-      - 'vendor/**'
 
 jobs:
   phpstan:
