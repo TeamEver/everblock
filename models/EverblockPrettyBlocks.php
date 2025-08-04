@@ -2789,7 +2789,7 @@ class EverblockPrettyBlocks extends ObjectModel
                         'button_text' => [
                             'type' => 'text',
                             'label' => $module->l('Button text'),
-                            'default' => $module->l('Read more'),
+                            'default' => $module->l('En savoir plus'),
                         ],
                         'button_link' => [
                             'type' => 'text',
@@ -2800,6 +2800,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'fileupload',
                             'label' => 'Image',
                             'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
+                            'accept' => 'image/svg+xml,image/webp,image/png,image/jpeg,image/gif',
                             'default' => [
                                 'url' => '',
                             ],
