@@ -123,6 +123,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[cart_quantity]') !== false) {
             $txt = static::getCartQuantityShortcode($txt, $context);
         }
+        if (strpos($txt, '[shop_logo]') !== false) {
+            $txt = static::getShopLogoShortcode($txt, $context);
+        }
         if (strpos($txt, '[newsletter_form]') !== false) {
             $txt = static::getNewsletterFormShortcode($txt, $context, $module);
         }
@@ -1274,6 +1277,29 @@ class EverblockTools extends ObjectModel
         }
         $txt = str_replace('[cart_quantity]', (string) $quantity, $txt);
         return $txt;
+    }
+
+    public static function getShopLogoShortcode(string $txt, Context $context): string
+    {
+        $logoName = Configuration::get('PS_LOGO', null, null, (int) $context->shop->id);
+        $filePath = _PS_IMG_DIR_ . $logoName;
+        if (!$logoName || !file_exists($filePath)) {
+            return str_replace('[shop_logo]', '', $txt);
+        }
+
+        [$width, $height] = getimagesize($filePath);
+        $url = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/' . $logoName;
+        $alt = htmlspecialchars($context->shop->name, ENT_QUOTES);
+
+        $imgTag = sprintf(
+            '<img src="%s" alt="%s" width="%d" height="%d" />',
+            htmlspecialchars($url, ENT_QUOTES),
+            $alt,
+            (int) $width,
+            (int) $height
+        );
+
+        return str_replace('[shop_logo]', $imgTag, $txt);
     }
 
     public static function getNewsletterFormShortcode(string $txt, Context $context, Everblock $module): string
