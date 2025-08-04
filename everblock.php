@@ -2813,6 +2813,7 @@ class Everblock extends Module
                 // Only category management
                 if ((bool) $block['only_category'] === true
                     && Tools::getValue('controller') != 'category'
+                    && (bool) $block['only_category_product'] === false
                 ) {
                     continue;
                 }
@@ -2883,7 +2884,6 @@ class Everblock extends Module
                 // Only products pages with specific category
                 if (Tools::getValue('id_product')
                     && Tools::getValue('controller') === 'product'
-                    && (bool) $block['only_category'] === true
                     && (bool) $block['only_category_product'] === true
                 ) {
                     $product = new Product(
