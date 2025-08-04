@@ -170,6 +170,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_button.tpl',
     'views/templates/hook/prettyblocks/prettyblock_card.tpl',
     'views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_category_tabs.tpl',
     'views/templates/hook/prettyblocks/prettyblock_contact.tpl',
     'views/templates/hook/prettyblocks/prettyblock_cta.tpl',
     'views/templates/hook/prettyblocks/prettyblock_divider.tpl',
