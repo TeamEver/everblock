@@ -21,6 +21,9 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
+  {if isset($block.settings.title) && $block.settings.title}
+    <span class="h2 pb-link-list-title">{$block.settings.title|escape:'htmlall'}</span>
+  {/if}
   {if isset($block.states) && $block.states}
     <ul class="list-unstyled">
       {foreach from=$block.states item=state key=key}

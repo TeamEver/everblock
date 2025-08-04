@@ -2340,6 +2340,15 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $linkListTemplate,
                 ],
+                'config' => [
+                    'fields' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Block title'),
+                            'default' => $module->l('Links'),
+                        ],
+                    ],
+                ],
                 'repeater' => [
                     'name' => 'Link',
                     'nameFrom' => 'name',
