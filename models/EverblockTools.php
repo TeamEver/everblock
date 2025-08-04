@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 2019-2025 Team Ever
  *
@@ -19,7 +20,7 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
@@ -193,7 +194,7 @@ class EverblockTools extends ObjectModel
 
             $cartIds = [];
             if ($context->cart && $context->cart->id) {
-                $cartIds = array_map(fn($p) => (int) $p['id_product'], $context->cart->getProducts());
+                $cartIds = array_map(fn ($p) => (int) $p['id_product'], $context->cart->getProducts());
             }
 
             if (empty($cartIds)) {
@@ -925,7 +926,7 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -966,7 +967,7 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -1007,7 +1008,7 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -1048,7 +1049,7 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -1089,7 +1090,7 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -1129,7 +1130,7 @@ class EverblockTools extends ObjectModel
             $pattern = '/\[prettyblocks name="([^"]+)"\]/';
             
             // Fonction de remplacement pour traiter chaque shortcode trouvé
-            $replacementFunction = function($matches) use ($context, $templatePath) {
+            $replacementFunction = function ($matches) use ($context, $templatePath) {
                 // Extraire le nom de la zone depuis le shortcode
                 $zoneName = $matches[1];
                 // Assigner le nom de la zone à Smarty
@@ -1150,8 +1151,7 @@ class EverblockTools extends ObjectModel
         string $shortcode,
         Context $context,
         Everblock $module
-    )
-    {
+    ) {
         preg_match_all('/(\w+)\s*=\s*"([^"]+)"|(\w+)\s*=\s*([^"\s,]+)/', $shortcode, $matches, PREG_SET_ORDER);
         $attributes = [];
         static $uniqueIdentifier = 0;
@@ -1333,7 +1333,7 @@ class EverblockTools extends ObjectModel
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(function($row) {
+                $productIdsArray = array_map(function ($row) {
                     return (int) $row['id_product'];
                 }, $productIds);
 
@@ -1385,7 +1385,7 @@ class EverblockTools extends ObjectModel
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(function($row) {
+                $productIdsArray = array_map(function ($row) {
                     return (int) $row['id_product'];
                 }, $productIds);
 
@@ -1439,7 +1439,7 @@ class EverblockTools extends ObjectModel
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(function($row) {
+                $productIdsArray = array_map(function ($row) {
                     return (int) $row['id_product'];
                 }, $productIds);
 
@@ -1523,7 +1523,7 @@ class EverblockTools extends ObjectModel
             }
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(fn($row) => (int)$row['product_id'], $productIds);
+                $productIdsArray = array_map(fn ($row) => (int)$row['product_id'], $productIds);
                 $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
 
                 if (!empty($everPresentProducts)) {
@@ -1835,7 +1835,7 @@ class EverblockTools extends ObjectModel
             }
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(fn($row) => (int) $row['id_product'], $productIds);
+                $productIdsArray = array_map(fn ($row) => (int) $row['id_product'], $productIds);
                 $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
 
                 if (!empty($everPresentProducts)) {
@@ -1914,7 +1914,7 @@ class EverblockTools extends ObjectModel
             }
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(fn($row) => (int) $row['id_product'], $productIds);
+                $productIdsArray = array_map(fn ($row) => (int) $row['id_product'], $productIds);
                 $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
 
                 if (!empty($everPresentProducts)) {
@@ -2571,7 +2571,7 @@ class EverblockTools extends ObjectModel
             
             var markers = ' . json_encode($markers) . ';
             
-            markers.forEach(function(marker) {
+            markers.forEach(function (marker) {
                 L.marker([marker.lat, marker.lng]).addTo(map)
                     .bindPopup(marker.title);
             });
@@ -2593,7 +2593,7 @@ class EverblockTools extends ObjectModel
             $marker['lng'] = (float) $marker['lng'];
         }
         $googleMapCode = '
-            (function() {
+            (function () {
                 var map;
                 var infoWindow;
                 var markers = ' . json_encode($markers) . '; // Initialisez la variable markers avec vos données JSON
@@ -2603,7 +2603,7 @@ class EverblockTools extends ObjectModel
                     var closestMarker = null;
                     var closestDistance = Number.MAX_VALUE;
 
-                    markers.forEach(function(marker) {
+                    markers.forEach(function (marker) {
                         var markerLocation = new google.maps.LatLng(marker.lat, marker.lng);
                         var distance = google.maps.geometry.spherical.computeDistanceBetween(userLocation, markerLocation);
 
@@ -2623,14 +2623,14 @@ class EverblockTools extends ObjectModel
                     });
                     infoWindow = new google.maps.InfoWindow();
 
-                    markers.forEach(function(marker) {
+                    markers.forEach(function (marker) {
                         var markerObj = new google.maps.Marker({
                             position: { lat: marker.lat, lng: marker.lng },
                             map: map,
                             title: marker.title
                         });
 
-                        markerObj.addListener("click", function() {
+                        markerObj.addListener("click", function () {
                             var link = `https://www.google.com/maps?q=${marker.lat},${marker.lng}`;
                             var content = `
                                 <strong>${marker.title}</strong><br>
@@ -2649,7 +2649,7 @@ class EverblockTools extends ObjectModel
                 function initAutocomplete() {
                     var autocomplete = new google.maps.places.Autocomplete(document.getElementById("store_search"));
 
-                    autocomplete.addListener("place_changed", function() {
+                    autocomplete.addListener("place_changed", function () {
                         var place = autocomplete.getPlace();
                         // Vous pouvez accéder aux informations sur le lieu sélectionné ici
                         console.log(place);
@@ -3288,7 +3288,7 @@ class EverblockTools extends ObjectModel
                 foreach ($result as $row) {
                     $sqlData .= "INSERT INTO `$tableName` (";
                     $escapedKeys = array_map([Db::getInstance(), 'escape'], array_keys($row));
-                    $escapedKeys = array_map(function($key) {
+                    $escapedKeys = array_map(function ($key) {
                         return "`$key`";
                     }, $escapedKeys); // Ajout des backticks aux noms de colonnes
                     $sqlData .= implode(',', $escapedKeys);
@@ -3613,7 +3613,8 @@ class EverblockTools extends ObjectModel
 
     public static function purgeNativePrestashopLogsTable()
     {
-        return Db::getInstance()->execute('TRUNCATE TABLE ' . _DB_PREFIX_ . 'log');;
+        return Db::getInstance()->execute('TRUNCATE TABLE ' . _DB_PREFIX_ . 'log');
+        ;
     }
 
     /**
@@ -3913,7 +3914,7 @@ class EverblockTools extends ObjectModel
         $pattern = '/<img\s+([^>]*src="([^"]+)"[^>]*)>/i';
         $shopName = Configuration::get('PS_SHOP_NAME');
 
-        $htmlContent = preg_replace_callback($pattern, function($matches) use ($shopName) {
+        $htmlContent = preg_replace_callback($pattern, function ($matches) use ($shopName) {
             $imgTag = $matches[0];
             $imgAttributes = $matches[1];
             $src = $matches[2];

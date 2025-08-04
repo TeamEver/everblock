@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 2019-2025 Team Ever
  *
@@ -34,10 +35,10 @@ use Validate;
 
 class ImportTabCommand extends Command
 {
-    const SUCCESS = 0;
-    const FAILURE = 1;
-    const INVALID = 2;
-    const ABORTED = 3;
+    public const SUCCESS = 0;
+    public const FAILURE = 1;
+    public const INVALID = 2;
+    public const ABORTED = 3;
     
     protected $filename;
 
@@ -93,7 +94,7 @@ class ImportTabCommand extends Command
             || !Validate::isInt($line['id_product'])
         ) {
             $output->writeln(
-               '<error>Missing or non valid id_product column</error>'
+                '<error>Missing or non valid id_product column</error>'
             );
             return;
         }
@@ -101,7 +102,7 @@ class ImportTabCommand extends Command
             || !Validate::isInt($line['id_lang'])
         ) {
             $output->writeln(
-               '<error>Missing or non valid id_lang column</error>'
+                '<error>Missing or non valid id_lang column</error>'
             );
             return;
         }
@@ -109,7 +110,7 @@ class ImportTabCommand extends Command
             || !Validate::isInt($line['id_shop'])
         ) {
             $output->writeln(
-               '<error>Missing or non valid id_shop column</error>'
+                '<error>Missing or non valid id_shop column</error>'
             );
             return;
         }
@@ -117,7 +118,7 @@ class ImportTabCommand extends Command
             || !Validate::isCleanHtml($line['title'])
         ) {
             $output->writeln(
-               '<error>Missing or non valid title column</error>'
+                '<error>Missing or non valid title column</error>'
             );
             return;
         }
@@ -125,7 +126,7 @@ class ImportTabCommand extends Command
             || !Validate::isCleanHtml($line['content'])
         ) {
             $output->writeln(
-               '<error>Missing or non valid content column</error>'
+                '<error>Missing or non valid content column</error>'
             );
             return;
         }
@@ -143,7 +144,7 @@ class ImportTabCommand extends Command
             $tab->save();
         } catch (Exception $e) {
             $output->writeln(
-               '<error>Error on saving obj : ' . $e->getMessage() . '</error>'
+                '<error>Error on saving obj : ' . $e->getMessage() . '</error>'
             );
         }
     }

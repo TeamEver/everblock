@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 2019-2025 Team Ever
  *
@@ -38,10 +39,10 @@ use Validate;
 
 class ExportFileCommand extends Command
 {
-    const SUCCESS = 0;
-    const FAILURE = 1;
-    const INVALID = 2;
-    const ABORTED = 3;
+    public const SUCCESS = 0;
+    public const FAILURE = 1;
+    public const INVALID = 2;
+    public const ABORTED = 3;
     
     protected $filename;
 

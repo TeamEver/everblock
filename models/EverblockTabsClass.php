@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 2019-2025 Team Ever
  *
@@ -110,7 +111,7 @@ class EverblockTabsClass extends ObjectModel
      * @param int shopId
      * @return array
     */
-    public static function getByIdProduct(int $productId, int $shopId, int $langId):array
+    public static function getByIdProduct(int $productId, int $shopId, int $langId): array
     {
         $sql = new DbQuery();
         $sql->select(self::$definition['primary']);
