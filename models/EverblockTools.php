@@ -3678,7 +3678,7 @@ class EverblockTools extends ObjectModel
         }
         $allowed = array_flip(array_map('trim', $allowedFiles));
 
-        $ignorePatterns = ['views/img/*'];
+        $ignorePatterns = ['views/img/*', 'vendor/*'];
         $gitignore = $moduleDir . '.gitignore';
         if (file_exists($gitignore)) {
             $lines = file($gitignore, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
