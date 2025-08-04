@@ -2,15 +2,7 @@ name: PHP CS Fixer
 
 on:
   push:
-    paths:
-      - '**/*.php'
-    paths-ignore:
-      - 'vendor/**'
   pull_request:
-    paths:
-      - '**/*.php'
-    paths-ignore:
-      - 'vendor/**'
 
 jobs:
   php-cs-fixer:
