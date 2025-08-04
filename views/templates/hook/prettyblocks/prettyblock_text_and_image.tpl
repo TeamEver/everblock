@@ -51,6 +51,9 @@
 
             {if $state.order == 'First image, then text'}
                 {if $state.image.url}
+                    {if $state.parallax}
+                        <div class="rounded mx-auto d-block mb-3" role="img" aria-label="{$state.name|escape:'htmlall'}" title="{$state.name|escape:'htmlall'}" style="background-image:url('{$state.image.url|replace:'.webp':'.jpg'}');background-size:cover;background-position:center;background-attachment:fixed;width:100%;{if $state.image.width > 0}max-width:{$state.image.width}px;{/if}{if $state.image.height > 0}height:{$state.image.height}px;{/if}"></div>
+                    {else}
                     <picture>
                       <source srcset="{$state.image.url}" type="image/webp">
                       <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
@@ -58,12 +61,16 @@
                           {if $state.image.width > 0} width="{$state.image.width}"{/if}
                           {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
                     </picture>
+                    {/if}
                 {/if}
                 <div class="state-content">{$state.content nofilter}</div>
 
             {else}
                 <div class="state-content mb-3">{$state.content nofilter}</div>
                 {if $state.image.url}
+                    {if $state.parallax}
+                        <div class="rounded mx-auto d-block" role="img" aria-label="{$state.name|escape:'htmlall'}" title="{$state.name|escape:'htmlall'}" style="background-image:url('{$state.image.url|replace:'.webp':'.jpg'}');background-size:cover;background-position:center;background-attachment:fixed;width:100%;{if $state.image.width > 0}max-width:{$state.image.width}px;{/if}{if $state.image.height > 0}height:{$state.image.height}px;{/if}"></div>
+                    {else}
                     <picture>
                       <source srcset="{$state.image.url}" type="image/webp">
                       <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
@@ -71,6 +78,7 @@
                           {if $state.image.width > 0} width="{$state.image.width}"{/if}
                           {if $state.image.height > 0} height="{$state.image.height}"{/if} loading="lazy">
                     </picture>
+                    {/if}
                 {/if}
             {/if}
 
