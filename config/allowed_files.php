@@ -79,6 +79,7 @@ return [
     'src/Command/ImportFileCommand.php',
     'src/Command/ImportTabCommand.php',
     'src/Command/PrettyBlocksCommand.php',
+    'src/Command/SearchReplaceCommand.php',
     'src/Command/index.php',
     'src/Service/ImportFile.php',
     'src/Service/index.php',
