@@ -2878,6 +2878,15 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $coverTemplate,
                 ],
+                'config' => [
+                    'fields' => [
+                        'slider' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Enable slider'),
+                            'default' => 0,
+                        ],
+                    ],
+                ],
                 'repeater' => [
                     'name' => 'Cover',
                     'nameFrom' => 'title',

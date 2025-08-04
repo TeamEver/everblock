@@ -638,3 +638,4 @@ $_MODULE['<{everblock}prestashop>everblock_2c0923ac78b194c2e9946bd32a650d0b'] = 
 $_MODULE['<{everblock}prestashop>everblock_21f59a9a3e796f0e797ad7736028089c'] = 'Une date et une plage horaire par ligne (YYYY-MM-DD=09h00-12h00)';
 $_MODULE['<{everblock}prestashop>everblock_a97e8578c3942df9fc98bb501d385883'] = 'Heure d\'ouverture de %s le %s';
 $_MODULE['<{everblock}prestashop>everblock_5ce749b4b55e9ed91bda1aba920e1ffd'] = 'Heure de fermeture de %s le %s';
+$_MODULE['<{everblock}prestashop>everblock_78d5da4bd57ce3e990efd714138339bb'] = 'Activer le slider';

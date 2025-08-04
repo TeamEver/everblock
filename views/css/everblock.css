@@ -292,3 +292,29 @@
     height: auto;
     display: block;
 }
+
+/* Cover block slider */
+.ever-cover-carousel .slick-slide {
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+.ever-cover-carousel .slick-center {
+    opacity: 1;
+    position: relative;
+}
+.ever-cover-carousel .slick-prev,
+.ever-cover-carousel .slick-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    color: #fff;
+    font-size: 2rem;
+}
+.ever-cover-carousel .slick-prev {
+    left: 10px;
+}
+.ever-cover-carousel .slick-next {
+    right: 10px;
+}
