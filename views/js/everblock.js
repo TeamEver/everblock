@@ -50,6 +50,32 @@ $(document).ready(function(){
         $('.ever-slick-carousel').on('setPosition', function(event, slick) {
             $(slick.$slider).find('.slick-track').addClass('row');
         });
+        $('.ever-cover-carousel:not(.slick-initialised)').each(function(){
+            var $carousel = $(this);
+            $carousel.on('init', function(event, slick){
+                var $center = $(slick.$slides[slick.currentSlide]);
+                $(slick.$prevArrow).appendTo($center);
+                $(slick.$nextArrow).appendTo($center);
+            });
+            $carousel.on('afterChange', function(event, slick, currentSlide){
+                var $center = $(slick.$slides[currentSlide]);
+                $(slick.$prevArrow).appendTo($center);
+                $(slick.$nextArrow).appendTo($center);
+            });
+            $carousel.slick({
+                slidesToShow: 3,
+                centerMode: true,
+                arrows: true,
+                dots: false,
+                autoplay: false,
+                responsive: [{
+                    breakpoint: 768,
+                    settings: {
+                        slidesToShow: 1
+                    }
+                }]
+            });
+        });
     }
     $('.ever_instagram img').on('click', function() {
         // Mettre à jour le src de l'image dans la modal
