@@ -745,7 +745,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'background_image' => [
                             'type' => 'fileupload',
                             'label' => $module->l('Background image'),
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -925,7 +924,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'thumbnail' => [
                             'type' => 'fileupload',
                             'label' => $module->l('Thumbnail image'),
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -1022,7 +1020,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Layout image',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -1157,7 +1154,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Featured category image',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -1447,7 +1443,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'banner' => [
                             'type' => 'fileupload',
                             'label' => 'Images',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -1608,7 +1603,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Layout image',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -1713,7 +1707,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Image',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -1788,7 +1781,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Image',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -1965,7 +1957,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Image',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -2040,7 +2031,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Image',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -2269,7 +2259,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Layout image',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
@@ -2799,7 +2788,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Image',
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'accept' => 'image/svg+xml,image/webp,image/png,image/jpeg,image/gif',
                             'default' => [
                                 'url' => '',
@@ -2904,7 +2892,6 @@ class EverblockPrettyBlocks extends ObjectModel
                         'background_image' => [
                             'type' => 'fileupload',
                             'label' => $module->l('Background image'),
-                            'path' => '$/modules/' . $module->name . '/views/img/prettyblocks/',
                             'default' => [
                                 'url' => '',
                             ],
