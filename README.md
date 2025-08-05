@@ -87,6 +87,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[manufacturer id="2" nb="8"]`: Display 8 products from manufacturer with ID 2.
 - `[brands nb="8"]`: Display 8 brand names with their associated logos. Optional `carousel=true`.
 - `[storelocator]`: Show a store locator on any CMS page.
+- `[evermap]`: Display a Google Map centered on the shop address when a Google Maps API key is configured.
 - `[subcategories id="2" nb="8"]`: Display 8 subcategories (name, image and link) of category 2.
 - `[last-products 4]`: Display the last 4 products listed in the store. Supports `carousel=true`.
 - `[best-sales 4]`: Display the 4 best-selling products in your store. Supports `carousel=true`.
@@ -318,6 +319,7 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[nativecontact]` : Intègre le formulaire de contact natif PrestaShop.
 - `[everimg name="image.jpg" class="img-fluid"]` : Affiche une ou plusieurs images CMS.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]` : Affiche une icône SVG QCD. Module disponible chez [410 Gone](https://www.410-gone.fr/).
+- `[evermap]` : Affiche une carte Google centrée sur l'adresse de la boutique si la clé Google Maps est renseignée.
 - `[qcdacf field objectType objectId]` : Affiche une valeur provenant des champs QCD ACF. Module disponible chez [410 Gone](https://www.410-gone.fr/).
 - `[widget moduleName="mymodule" hookName="displayHome"]` : Affiche le widget d'un autre module.
 - `[prettyblocks name="myzone"]` : Affiche une zone PrettyBlocks si le module est installé.

@@ -63,6 +63,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[storelocator]') !== false) {
             $txt = static::generateGoogleMap($txt, $context, $module);
         }
+        if (strpos($txt, '[evermap]') !== false) {
+            $txt = static::getEverMapShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '{hook h=') !== false) {
             $txt = static::replaceHook($txt);
         }
@@ -2701,6 +2704,55 @@ class EverblockTools extends ObjectModel
             })();
         ';
         return $googleMapCode;
+    }
+
+    public static function getEverMapShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        $apiKey = Configuration::get('EVERBLOCK_GMAP_KEY');
+        if (!$apiKey) {
+            $message = $module->l('Please set a Google Maps API key in the module configuration.', 'EverblockTools');
+            return str_replace('[evermap]', $message, $txt);
+        }
+
+        $address1 = Configuration::get('PS_SHOP_ADDR1');
+        $postcode = Configuration::get('PS_SHOP_CODE');
+        $city = Configuration::get('PS_SHOP_CITY');
+        $idCountry = (int) Configuration::get('PS_SHOP_COUNTRY_ID');
+        $country = $idCountry ? new Country($idCountry, (int) $context->language->id) : null;
+        $countryName = $country ? $country->name : '';
+
+        if (!$address1 || !$postcode || !$city || !$countryName) {
+            $message = $module->l('Please fill the postal address of the shop.', 'EverblockTools');
+            return str_replace('[evermap]', $message, $txt);
+        }
+
+        $address2 = Configuration::get('PS_SHOP_ADDR2');
+        $fullAddress = trim($address1 . ' ' . $address2 . ' ' . $postcode . ' ' . $city . ' ' . $countryName);
+
+        $coords = static::getCoordinatesFromAddress($fullAddress, $apiKey);
+        if (!$coords) {
+            $message = $module->l('Unable to geocode the store address.', 'EverblockTools');
+            return str_replace('[evermap]', $message, $txt);
+        }
+
+        $mapHtml = '<div id="everblock-gmap" style="width:100%;height:300px;"></div>';
+        $mapHtml .= '<script>function initEverblockGmap(){var c={lat:' . $coords['lat'] . ',lng:' . $coords['lng'] . '};var m=new google.maps.Map(document.getElementById("everblock-gmap"),{zoom:15,center:c});new google.maps.Marker({position:c,map:m});}</script>';
+        $mapHtml .= '<script src="https://maps.googleapis.com/maps/api/js?key=' . $apiKey . '&callback=initEverblockGmap" async defer></script>';
+
+        return str_replace('[evermap]', $mapHtml, $txt);
+    }
+
+    public static function getCoordinatesFromAddress(string $address, string $apiKey)
+    {
+        $url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode($address) . '&key=' . $apiKey;
+        $response = Tools::file_get_contents($url);
+        if ($response) {
+            $data = json_decode($response, true);
+            if (isset($data['results'][0]['geometry']['location'])) {
+                return $data['results'][0]['geometry']['location'];
+            }
+        }
+        return false;
     }
 
     public static function getAllProducts(int $shopId, int $langId, $start = null, $limit = null, $orderBy = null, $orderWay = null): array
