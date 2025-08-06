@@ -80,6 +80,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 -### Basic shortcodes
 - `[product 1]`: Display product with ID 1. Supports `carousel=true`.
 - `[product 1,2,3]`: Display products with IDs 1, 2, and 3. Supports `carousel=true`.
+- `[product_image 1 1]`: Displays the first image of the product with ID 1. By default, the first image is displayed if nothing is specified after the image ID.
 - `[entity_lastname]`: Display customer's last name.
 - `[entity_firstname]`: Display customer's first name.
 - `[entity_gender]`: Display customer's gender.
@@ -303,6 +304,7 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 ### Shortcodes basiques
 - `[product 1]` : Affiche le produit ayant l'ID 1. Supporte `carousel=true`.
 - `[product 1,2,3]` : Affiche les produits 1, 2 et 3. Supporte `carousel=true`.
+- `[product_image 1 1]` : affiche la première image du produit dont l'ID est 1. Par défaut, la première image est affichée si rien n'est spécifié après l'ID de l'image.
 - `[entity_lastname]` : Affiche le nom du client connecté.
 - `[promo-products 10 carousel=true]` : Affiche dix produits en promotion en carousel.
 - `[best-sales 10 carousel=true]` : Affiche les dix meilleures ventes. Paramètres optionnels : `days`, `orderby`, `orderway`.
@@ -490,6 +492,7 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 ### Shortcodes básicos
 - `[product 1]`: Muestra el producto con ID 1. Soporta `carousel=true`.
 - `[product 1,2,3]`: Muestra los productos 1, 2 y 3. Soporta `carousel=true`.
+- `[product_image 1 1]`: Muestra la primera imagen del producto con ID 1. Por defecto, la primera imagen es mostrada si no se especifica nada después del ID de la imagen.
 - `[entity_lastname]`: Muestra el apellido del cliente conectado.
 - `[promo-products 10 carousel=true]`: Muestra diez productos en promoción en un carrusel.
 - `[best-sales 10 carousel=true]`: Muestra los diez productos más vendidos. Parámetros opcionales: `days`, `orderby`, `orderway`.
@@ -676,6 +679,7 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 ### Shortcode di base
 - `[product 1]`: Mostra il prodotto con ID 1. Supporta `carousel=true`.
 - `[product 1,2,3]`: Mostra i prodotti 1, 2 e 3. Supporta `carousel=true`.
+- `[product_image 1 1]`: Mostra la prima immagine del prodotto con ID 1. Per default, la prima immagine è mostrata se non si specifica nulla dopo l'ID dell'immagine.
 - `[entity_lastname]`: Mostra il cognome del cliente loggato.
 - `[promo-products 10 carousel=true]`: Mostra dieci prodotti in promozione in un carosello.
 - `[best-sales 10 carousel=true]`: Mostra i dieci prodotti più venduti. Parametri opzionali: `days`, `orderby`, `orderway`.
