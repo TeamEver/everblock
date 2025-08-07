@@ -768,26 +768,6 @@ class Everblock extends Module
                         'name' => 'EVERWP_POST_NBR',
                     ],
                     [
-                        'type' => 'switch',
-                        'label' => $this->l('Use Google Map for store locator instead of OSM'),
-                        'desc' => $this->l('Will use Google Map API for store locator (CMS page only)'),
-                        'hint' => $this->l('Else Open Street Map will be used'),
-                        'name' => 'EVERBLOCK_USE_GMAP',
-                        'is_bool' => true,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => 1,
-                                'label' => $this->l('Enabled'),
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => 0,
-                                'label' => $this->l('Disabled'),
-                            ],
-                        ],
-                    ],
-                    [
                         'type' => 'text',
                         'label' => $this->l('Google Map API key (CMS page only)'),
                         'desc' => $this->l('Add here your Google Map API key'),
@@ -1324,7 +1304,6 @@ class Everblock extends Module
             'EVERWP_API_USER' => Configuration::get('EVERWP_API_USER'),
             'EVERWP_API_PWD' => Configuration::get('EVERWP_API_PWD'),
             'EVERWP_POST_NBR' => Configuration::get('EVERWP_POST_NBR'),
-            'EVERBLOCK_USE_GMAP' => Configuration::get('EVERBLOCK_USE_GMAP'),
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERBLOCK_HOLIDAY_HOURS' => Configuration::get('EVERBLOCK_HOLIDAY_HOURS'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
@@ -1588,10 +1567,6 @@ class Everblock extends Module
             Tools::getValue('EVERWP_POST_NBR')
         );
         Configuration::updateValue(
-            'EVERBLOCK_USE_GMAP',
-            Tools::getValue('EVERBLOCK_USE_GMAP')
-        );
-        Configuration::updateValue(
             'EVERBLOCK_GMAP_KEY',
             Tools::getValue('EVERBLOCK_GMAP_KEY')
         );
@@ -1651,55 +1626,30 @@ class Everblock extends Module
             $this->emptyAllCache();
         }
         $stores = Store::getStores((int) Context::getContext()->language->id);
-        if (!empty($stores)) {
-            if (Tools::getValue('EVERBLOCK_GMAP_KEY')) {
-                $markers = [];
-                foreach ($stores as $store) {
-                    $address = $store['address1'];
-                    if (!empty($store['address2'])) {
-                        $address .= ' ' . $store['address2'];
-                    }
-                    $address .= ', ' . $store['postcode'] . ' ' . $store['city'];
-                    $marker = [
-                        'lat' => $store['latitude'],
-                        'lng' => $store['longitude'],
-                        'title' => $store['name'],
-                        'address' => $address,
-                        'phone' => $store['phone'],
-                    ];
-                    $markers[] = $marker;
+        if (!empty($stores) && Tools::getValue('EVERBLOCK_GMAP_KEY')) {
+            $markers = [];
+            foreach ($stores as $store) {
+                $address = $store['address1'];
+                if (!empty($store['address2'])) {
+                $address .= ' ' . $store['address2'];
                 }
-                $gmapScript = EverblockTools::generateGoogleMapScript($markers);
-                if ($gmapScript) {
-                    $filename = 'store-locator-' . $idShop . '.js';
-                    $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
-                    file_put_contents($filePath, $gmapScript);
-                }
-            } else {
-                $markers = [];
-                foreach ($stores as $store) {
-                    $address = $store['address1'];
-                    if (!empty($store['address2'])) {
-                        $address .= ' ' . $store['address2'];
-                    }
-                    $address .= ', ' . $store['postcode'] . ' ' . $store['city'];
-                    $marker = [
-                        'lat' => $store['latitude'],
-                        'lng' => $store['longitude'],
-                        'title' => $store['name'],
-                        'address' => $address,
-                        'phone' => $store['phone'],
-                    ];
-                    $markers[] = $marker;
-                }
-                $osmScript = EverblockTools::generateOsmScript($markers);
-                if ($osmScript) {
-                    $filename = 'store-locator-' . $idShop . '.js';
-                    $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
-                    file_put_contents($filePath, $osmScript);
-                }
+                $address .= ', ' . $store['postcode'] . ' ' . $store['city'];
+                $marker = [
+                'lat' => $store['latitude'],
+                'lng' => $store['longitude'],
+                'title' => $store['name'],
+                'address' => $address,
+                'phone' => $store['phone'],
+                ];
+                $markers[] = $marker;
             }
-        }
+            $gmapScript = EverblockTools::generateGoogleMapScript($markers);
+            if ($gmapScript) {
+                $filename = 'store-locator-' . $idShop . '.js';
+                $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
+                file_put_contents($filePath, $gmapScript);
+            }
+            }
         $this->generateFeatureFlagsCssFile();
         $this->generateSoldOutFlagCssFile();
         $this->postSuccess[] = $this->l('All settings have been saved');

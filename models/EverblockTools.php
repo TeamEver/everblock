@@ -2579,37 +2579,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function generateOsmScript($markers)
-    {
-        if (!$markers || !is_array($markers)) {
-            return;
-        }
-        $mapCode = '
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-        <script>
-            var mapContainer = document.getElementById("everblock-storelocator");
-
-            // Extraire les coordonnées du premier marqueur
-            var firstMarker = ' . json_encode($markers[0]) . ';
-            var initialLat = firstMarker.lat;
-            var initialLng = firstMarker.lng;
-
-            var map = L.map(mapContainer).setView([initialLat, initialLng], 13);
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
-            
-            var markers = ' . json_encode($markers) . ';
-            
-            markers.forEach(function (marker) {
-                L.marker([marker.lat, marker.lng]).addTo(map)
-                    .bindPopup(marker.title);
-            });
-            
-            // Ajustez la hauteur du conteneur de la carte ici
-            mapContainer.style.height = "500px"; // Par exemple, réglez la hauteur à 500 pixels
-        </script>';
-        return $mapCode;
-    }
 
     public static function generateGoogleMapScript($markers)
     {
