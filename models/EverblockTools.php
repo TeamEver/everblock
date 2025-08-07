@@ -816,7 +816,7 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    protected static function getProductsByCategoryId(int $categoryId, int $limit, string $orderBy = 'id_product', string $orderWay = 'ASC'): array
+    public static function getProductsByCategoryId(int $categoryId, int $limit, string $orderBy = 'id_product', string $orderWay = 'ASC'): array
     {
         $cacheId = 'everblock_getProductsByCategoryId_' . $categoryId . '_' . $limit . '_' . $orderBy . '_' . $orderWay;
 
