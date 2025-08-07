@@ -2588,7 +2588,7 @@ class EverblockTools extends ObjectModel
     }
 
 
-    protected static function getFrenchHolidays($year)
+    public static function getFrenchHolidays($year)
     {
         $easterDate = easter_date($year);
         $holidays = [
