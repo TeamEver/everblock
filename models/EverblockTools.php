@@ -45,6 +45,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[product') !== false) {
             $txt = static::getProductShortcodes($txt, $context, $module);
         }
+        if (strpos($txt, '[product_image') !== false) {
+            $txt = static::getProductImageShortcodes($txt, $context, $module);
+        }
         if (strpos($txt, '[productfeature') !== false) {
             $txt = static::getFeatureProductShortcodes($txt, $context, $module);
         }
@@ -538,6 +541,101 @@ class EverblockTools extends ObjectModel
                 $renderedContent = $context->smarty->fetch($templatePath);
                 
                 $txt = str_replace($match[0], $renderedContent, $txt);
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getProductImageShortcodes(string $txt, Context $context, Everblock $module): string
+    {
+        // Debug: vérifier si le shortcode est détecté
+        if (strpos($txt, '[product_image') === false) {
+            return $txt; // Pas de shortcode à traiter
+        }
+        
+        $templatePath = static::getTemplatePath('hook/product_image.tpl', $module);
+        // Regex pour capturer [product_image id_product] ou [product_image id_product image_number]
+        preg_match_all('/\[product_image\s+(\d+)(?:\s+(\d+))?\]/i', $txt, $matches, PREG_SET_ORDER);
+        
+        // Debug: vérifier si des matches sont trouvés
+        if (empty($matches)) {
+            // Aucun match trouvé, retourner le texte original avec un debug
+            return str_replace('[product_image', '<!-- DEBUG: product_image shortcode detected but no valid matches -->[product_image', $txt);
+        }
+
+        foreach ($matches as $match) {
+            $productId = (int) $match[1];
+            $imageNumber = isset($match[2]) ? (int) $match[2] : 1; // Par défaut, première image
+            
+
+            try {
+                // Vérifier que le produit existe et est actif
+                $product = new Product($productId, true, $context->language->id, $context->shop->id);
+                if (!Validate::isLoadedObject($product) || !(bool) $product->active) {
+                    // Remplacer par une chaîne vide si le produit n'existe pas
+                    $txt = str_replace($match[0], '', $txt);
+                    continue;
+                }
+                
+                // Récupérer les images du produit
+                $images = Image::getImages($context->language->id, $productId);
+                if (empty($images)) {
+                    // Pas d'images disponibles
+                    $txt = str_replace($match[0], '', $txt);
+                    continue;
+                }
+                
+                // Sélectionner l'image demandée (ou la première si le numéro dépasse)
+                $imageIndex = min($imageNumber - 1, count($images) - 1); // Index basé sur 0
+                $imageIndex = max(0, $imageIndex); // S'assurer que l'index n'est pas négatif
+                $selectedImage = $images[$imageIndex];
+                
+                // Vérifier que nous avons les données nécessaires
+                if (!isset($selectedImage['id_image'])) {
+                    $txt = str_replace($match[0], '', $txt);
+                    continue;
+                }
+                
+                // Construire l'URL de l'image
+                $imageType = 'large_default'; // Type d'image par défaut
+                $linkRewrite = isset($product->link_rewrite[$context->language->id]) 
+                    ? $product->link_rewrite[$context->language->id] 
+                    : $product->link_rewrite[Configuration::get('PS_LANG_DEFAULT')];
+                    
+                $imageUrl = $context->link->getImageLink(
+                    $linkRewrite,
+                    $selectedImage['id_image'],
+                    $imageType
+                );
+                
+                // Préparer le nom du produit
+                $productName = isset($product->name[$context->language->id]) 
+                    ? $product->name[$context->language->id] 
+                    : $product->name[Configuration::get('PS_LANG_DEFAULT')];
+                
+                // Préparer les données pour le template
+                $imageData = [
+                    'id_product' => $productId,
+                    'product_name' => $productName,
+                    'image_url' => $imageUrl,
+                    'image_alt' => $productName,
+                    'image_number' => $imageNumber,
+                    'total_images' => count($images)
+                ];
+                
+                // Assigner les données au template
+                $context->smarty->assign([
+                    'productImage' => $imageData
+                ]);
+                
+                $renderedContent = $context->smarty->fetch($templatePath);
+                $txt = str_replace($match[0], $renderedContent, $txt);
+                
+            } catch (Exception $e) {
+                // En cas d'erreur, remplacer par une chaîne vide
+                $txt = str_replace($match[0], '', $txt);
+                continue;
             }
         }
 
