@@ -2472,7 +2472,7 @@ class EverblockTools extends ObjectModel
             $currentTime = $now->format('H:i');
             $todayDate = $now->format('Y-m-d');
             $frenchHolidays = self::getFrenchHolidays((int) $now->format('Y'));
-            $holidayHours = self::getHolidayHoursConfig();
+            $holidayHours = self::getHolidayHoursConfig($id_shop);
             $todayHolidaySlot = $holidayHours[$todayDate] ?? null;
             $isHoliday = in_array($todayDate, $frenchHolidays);
 
@@ -2612,9 +2612,12 @@ class EverblockTools extends ObjectModel
         return $holidays;
     }
 
-    protected static function getHolidayHoursConfig(): array
+    protected static function getHolidayHoursConfig(?int $idShop = null): array
     {
-        $config = Configuration::get('EVERBLOCK_HOLIDAY_HOURS');
+        if (!$idShop) {
+            $idShop = (int) Context::getContext()->shop->id;
+        }
+        $config = Configuration::get('EVERBLOCK_HOLIDAY_HOURS', null, null, (int) $idShop);
         $result = [];
         if ($config) {
             $lines = preg_split('/[\r\n]+/', $config);
