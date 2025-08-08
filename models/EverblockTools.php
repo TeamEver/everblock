@@ -2472,8 +2472,6 @@ class EverblockTools extends ObjectModel
             $currentTime = $now->format('H:i');
             $todayDate = $now->format('Y-m-d');
             $frenchHolidays = self::getFrenchHolidays((int) $now->format('Y'));
-            $holidayHours = self::getHolidayHoursConfig($id_shop);
-            $todayHolidaySlot = $holidayHours[$todayDate] ?? null;
             $isHoliday = in_array($todayDate, $frenchHolidays);
 
             foreach ($stores as &$store) {
@@ -2481,7 +2479,7 @@ class EverblockTools extends ObjectModel
                 $cms_id = (int) Configuration::get('QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $id_store, null, null, $id_shop);
                 $cms_link = null;
                 $storeHolidayHours = self::getStoreHolidayHoursConfig($id_store);
-                $todayStoreHolidaySlot = $storeHolidayHours[$todayDate] ?? $todayHolidaySlot;
+                $todayStoreHolidaySlot = $storeHolidayHours[$todayDate] ?? null;
 
                 if ($cms_id > 0) {
                     $cms = new CMS($cms_id, $id_lang, $id_shop);
@@ -2610,31 +2608,6 @@ class EverblockTools extends ObjectModel
         ];
 
         return $holidays;
-    }
-
-    protected static function getHolidayHoursConfig(?int $idShop = null): array
-    {
-        if (!$idShop) {
-            $idShop = (int) Context::getContext()->shop->id;
-        }
-        $config = Configuration::get('EVERBLOCK_HOLIDAY_HOURS', null, null, (int) $idShop);
-        $result = [];
-        if ($config) {
-            $lines = preg_split('/[\r\n]+/', $config);
-            foreach ($lines as $line) {
-                $line = trim($line);
-                if (!$line) {
-                    continue;
-                }
-                if (strpos($line, '=') !== false) {
-                    [$date, $hours] = array_map('trim', explode('=', $line, 2));
-                    if (Validate::isDate($date) && $hours !== '') {
-                        $result[$date] = $hours;
-                    }
-                }
-            }
-        }
-        return $result;
     }
 
     protected static function getStoreHolidayHoursConfig(int $storeId): array

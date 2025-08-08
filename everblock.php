@@ -1058,29 +1058,39 @@ class Everblock extends Module
             ],
         ];
 
-        $shops = Shop::getShops(false);
+        $stores = Store::getStores((int) $this->context->language->id);
         $holidayInputs = [];
-        foreach ($shops as $shop) {
-            $holidayInputs[] = [
-                'type' => 'textarea',
-                'label' => $shop['name'],
-                'desc' => $this->l('One date and hours per line (YYYY-MM-DD=09h00-12h00)'),
-                'hint' => $this->l('Will override default hours on French holidays'),
-                'name' => 'EVERBLOCK_HOLIDAY_HOURS_' . (int) $shop['id_shop'],
+        if (!empty($stores)) {
+            $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
+            foreach ($stores as $store) {
+                foreach ($holidays as $date) {
+                    $holidayInputs[] = [
+                        'type' => 'text',
+                        'label' => sprintf($this->l('Opening hour for %s on %s'), $store['name'], $date),
+                        'name' => 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date,
+                    ];
+                    $holidayInputs[] = [
+                        'type' => 'text',
+                        'label' => sprintf($this->l('Closing hour for %s on %s'), $store['name'], $date),
+                        'name' => 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date,
+                    ];
+                }
+            }
+        }
+        if (!empty($holidayInputs)) {
+            $formFields[] = [
+                'form' => [
+                    'legend' => [
+                        'title' => $this->l('Holiday opening hours by store'),
+                        'icon' => 'icon-calendar',
+                    ],
+                    'input' => $holidayInputs,
+                    'submit' => [
+                        'title' => $this->l('Save'),
+                    ],
+                ],
             ];
         }
-        $formFields[] = [
-            'form' => [
-                'legend' => [
-                    'title' => $this->l('Holiday opening hours by shop'),
-                    'icon' => 'icon-calendar',
-                ],
-                'input' => $holidayInputs,
-                'submit' => [
-                    'title' => $this->l('Save'),
-                ],
-            ],
-        ];
 
         if (Configuration::get('EVERINSTA_ACCESS_TOKEN')) {
             $formFields[] = [
@@ -1122,26 +1132,6 @@ class Everblock extends Module
                     ],
                 ],
             ];
-        }
-        if (Configuration::get('EVERBLOCK_GMAP_KEY')) {
-            $stores = Store::getStores((int) $this->context->language->id);
-            if (!empty($stores)) {
-                $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
-                foreach ($stores as $store) {
-                    foreach ($holidays as $date) {
-                        $formFields[count($formFields) - 1]['form']['input'][] = [
-                            'type' => 'text',
-                            'label' => sprintf($this->l('Opening hour for %s on %s'), $store['name'], $date),
-                            'name' => 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date,
-                        ];
-                        $formFields[count($formFields) - 1]['form']['input'][] = [
-                            'type' => 'text',
-                            'label' => sprintf($this->l('Closing hour for %s on %s'), $store['name'], $date),
-                            'name' => 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date,
-                        ];
-                    }
-                }
-            }
         }
         $formFields[] = [
             'form' => [
@@ -1350,14 +1340,15 @@ class Everblock extends Module
             'TABS_FILE' => '',
             'BLOCKS_FILE' => '',
         ];
-        $shops = Shop::getShops(false);
-        foreach ($shops as $shop) {
-            $configData['EVERBLOCK_HOLIDAY_HOURS_' . (int) $shop['id_shop']] = Configuration::get(
-                'EVERBLOCK_HOLIDAY_HOURS',
-                null,
-                null,
-                (int) $shop['id_shop']
-            );
+        $stores = Store::getStores((int) $this->context->language->id);
+        $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
+        foreach ($stores as $store) {
+            foreach ($holidays as $date) {
+                $openKey = 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date;
+                $closeKey = 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date;
+                $configData[$openKey] = Configuration::get($openKey);
+                $configData[$closeKey] = Configuration::get($closeKey);
+            }
         }
         $configData = array_merge($configData, $bannedFeaturesColors);
         return $configData;
@@ -1596,15 +1587,15 @@ class Everblock extends Module
             'EVERBLOCK_GMAP_KEY',
             Tools::getValue('EVERBLOCK_GMAP_KEY')
         );
-        $shops = Shop::getShops(false);
-        foreach ($shops as $shop) {
-            Configuration::updateValue(
-                'EVERBLOCK_HOLIDAY_HOURS',
-                Tools::getValue('EVERBLOCK_HOLIDAY_HOURS_' . (int) $shop['id_shop']),
-                false,
-                null,
-                (int) $shop['id_shop']
-            );
+        $stores = Store::getStores((int) $this->context->language->id);
+        $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
+        foreach ($stores as $store) {
+            foreach ($holidays as $date) {
+                $openKey = 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date;
+                $closeKey = 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date;
+                Configuration::updateValue($openKey, Tools::getValue($openKey));
+                Configuration::updateValue($closeKey, Tools::getValue($closeKey));
+            }
         }
         Configuration::updateValue(
             'EVERPSCSS_LINKS',
