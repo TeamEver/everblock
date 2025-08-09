@@ -19,15 +19,15 @@
   <div id="{$carousel_id}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel">
     <div class="carousel-inner">
       {assign var="numProductsPerSlide" value=4}
-      {foreach from=$everPresentProducts item=product key=key}
-        {if $key % $numProductsPerSlide == 0}
-          <div class="carousel-item{if $key == 0} active{/if}">
+      {foreach from=$everPresentProducts item=product name=products}
+        {if $product@index % $numProductsPerSlide == 0}
+          <div class="carousel-item{if $product@first} active{/if}">
             <div class="row">
         {/if}
         <div class="col-md-3">
           {include file="catalog/_partials/miniatures/product.tpl" product=$product}
         </div>
-        {if ($key + 1) % $numProductsPerSlide == 0 || $key == count($everPresentProducts) - 1}
+        {if ($product@index + 1) % $numProductsPerSlide == 0 || $product@last}
             </div>
           </div>
         {/if}

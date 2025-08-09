@@ -19,8 +19,8 @@
   {if isset($block.states) && $block.states}
     <div id="cardCarousel-{$block.id_prettyblocks}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel">
       <div class="carousel-inner">
-        {foreach from=$block.states item=state key=key}
-          <div class="carousel-item{if $key == 0} active{/if}{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
+        {foreach from=$block.states item=state}
+          <div class="carousel-item{if $state@first} active{/if}{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
             <div class="card h-100 mb-3">
               {if isset($state.image.url) && $state.image.url}
                 {assign var="imgExt" value=$state.image.url|lower|substr:-4}

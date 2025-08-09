@@ -18,8 +18,8 @@
 {if isset($images) && $images}
   <div id="{$carousel_id}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel">
     <div class="carousel-inner">
-      {foreach from=$images item=image key=key}
-        <div class="carousel-item{if $key == 0} active{/if}">
+      {foreach from=$images item=image}
+        <div class="carousel-item{if $image@first} active{/if}">
           <picture>
             <source srcset="{$image.src}" type="image/webp">
             <source srcset="{$image.src|replace:'.webp':'.jpg'}" type="image/jpeg">
