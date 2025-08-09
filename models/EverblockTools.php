@@ -36,6 +36,9 @@ class EverblockTools extends ObjectModel
             'modulefront',
         ];
         $txt = static::getEverShortcodes($txt, $context);
+        if (strpos($txt, '[alert') !== false) {
+            $txt = static::getAlertShortcode($txt);
+        }
         if (strpos($txt, '[everfaq') !== false) {
             $txt = static::getFaqShortcodes($txt, $context, $module);
         }
@@ -1603,6 +1606,27 @@ class EverblockTools extends ObjectModel
         );
 
         return str_replace('[shop_logo]', $imgTag, $txt);
+    }
+
+    public static function getAlertShortcode(string $txt): string
+    {
+        $allowedTypes = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
+
+        return (string) preg_replace_callback(
+            '/\[alert(?:\s+([^\]]+))?\](.*?)\[\/alert\]/is',
+            function ($matches) use ($allowedTypes) {
+                $attrs = static::parseShortcodeAttrs($matches[1] ?? '');
+                $type = strtolower($attrs['type'] ?? 'info');
+
+                if (!in_array($type, $allowedTypes, true)) {
+                    $type = 'info';
+                }
+
+                $content = $matches[2];
+                return '<div class="alert alert-' . $type . '" role="alert">' . $content . '</div>';
+            },
+            $txt
+        );
     }
 
     public static function getNewsletterFormShortcode(string $txt, Context $context, Everblock $module): string

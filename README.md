@@ -97,6 +97,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[cart_quantity]`: Display the number of products currently in the cart.
 - `[shop_logo]`: Display the shop logo.
 - `[newsletter_form]`: Display the PrestaShop newsletter subscription form.
+- `[alert type="success"]Content[/alert]`: Display a Bootstrap alert box. Supports `primary`, `secondary`, `success`, `danger`, `warning`, `info`, `light`, and `dark`.
 - `[nativecontact]`: Embed the native PrestaShop contact form (this replaces the obsolete `[evercontact]` shortcode).
 - `[everstore 4]`: Display store information for store ID 4 (several IDs can be separated with commas).
 - `[video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj]`: Display a YouTube iframe of the video whose sharing URL is in the parameter (may also works with Vimeo, Dailymotion, and Vidyard).
