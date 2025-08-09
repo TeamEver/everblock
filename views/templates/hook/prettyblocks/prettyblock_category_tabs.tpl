@@ -22,7 +22,7 @@
     {if isset($block.states) && $block.states}
     <div class="mt-2 col-12 d-flex justify-content-center text-center">
         <div class="tab-container">
-            <ul class="nav nav-tabs" role="tablist">
+            <ul class="nav nav-tabs justify-content-center" role="tablist">
                 {foreach from=$block.states item=state key=key}
                     <li class="nav-item">
                         <a class="nav-link {if $key == 0}active{/if}" data-toggle="tab" data-bs-toggle="tab" href="#tab-{$block.id_prettyblocks}-{$key}" role="tab" aria-controls="tab-{$block.id_prettyblocks}-{$key}" aria-selected="{if $key == 0}true{else}false{/if}">
@@ -33,7 +33,7 @@
             </ul>
             <div class="tab-content">
                 {foreach from=$block.states item=state key=key}
-                    <div class="tab-pane {if $key == 0}active{/if}" id="tab-{$block.id_prettyblocks}-{$key}" role="tabpanel" aria-labelledby="tab-{$block.id_prettyblocks}-{$key}-tab">
+                    <div class="tab-pane {if $key == 0}show active{/if}" id="tab-{$block.id_prettyblocks}-{$key}" role="tabpanel" aria-labelledby="tab-{$block.id_prettyblocks}-{$key}-tab">
                         {if isset($block.extra.products[$key]) && $block.extra.products[$key]}
                         <section class="ever-featured-products featured-products clearfix mt-3 category_tabs">
                             <div class="products row">
