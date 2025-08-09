@@ -676,10 +676,16 @@ class Everblock extends Module
         $formFields = [];
         $formFields[] = [
             'form' => [
-                'id_form' => 'everblock_tools',
                 'legend' => [
                     'title' => $this->l('Tools'),
                     'icon' => 'icon-smile',
+                ],
+                'input' => [
+                    [
+                        'type' => 'html',
+                        'name' => 'anchor_everblock_tools',
+                        'html_content' => '<span id="everblock_tools"></span>',
+                    ],
                 ],
                 'buttons' => [
                     'emptyCache' => [
@@ -729,12 +735,16 @@ class Everblock extends Module
         ];
         $formFields[] = [
             'form' => [
-                'id_form' => 'everblock_settings',
                 'legend' => [
                     'title' => $this->l('Settings'),
                     'icon' => 'icon-smile',
                 ],
                 'input' => [
+                    [
+                        'type' => 'html',
+                        'name' => 'anchor_everblock_settings',
+                        'html_content' => '<span id="everblock_settings"></span>',
+                    ],
                     [
                         'type' => 'text',
                         'lang' => true,
@@ -1086,12 +1096,16 @@ class Everblock extends Module
         if (Configuration::get('EVERINSTA_ACCESS_TOKEN')) {
             $formFields[] = [
                 'form' => [
-                    'id_form' => 'everblock_instagram',
                     'legend' => [
                         'title' => $this->l('Instagram'),
                         'icon' => 'icon-smile',
                     ],
                     'input' => [
+                        [
+                            'type' => 'html',
+                            'name' => 'anchor_everblock_instagram',
+                            'html_content' => '<span id="everblock_instagram"></span>',
+                        ],
                         [
                             'type' => 'text',
                             'label' => $this->l('Instagram profile link'),
@@ -1127,12 +1141,16 @@ class Everblock extends Module
         }
         $formFields[] = [
             'form' => [
-                'id_form' => 'everblock_file_management',
                 'legend' => [
                     'title' => $this->l('File management'),
                     'icon' => 'icon-smile',
                 ],
                 'input' => [
+                    [
+                        'type' => 'html',
+                        'name' => 'anchor_everblock_file_management',
+                        'html_content' => '<span id="everblock_file_management"></span>',
+                    ],
                     [
                         'type' => 'file',
                         'label' => $this->l('Upload Excel tabs file'),
@@ -1156,12 +1174,16 @@ class Everblock extends Module
         ];
         $formFields[] = [
             'form' => [
-                'id_form' => 'everblock_import_html',
                 'legend' => [
                     'title' => $this->l('Import HTML blocks'),
                     'icon' => 'icon-smile',
                 ],
                 'input' => [
+                    [
+                        'type' => 'html',
+                        'name' => 'anchor_everblock_import_html',
+                        'html_content' => '<span id="everblock_import_html"></span>',
+                    ],
                     [
                         'type' => 'file',
                         'label' => $this->l('Upload Excel blocks file'),
@@ -1198,12 +1220,17 @@ class Everblock extends Module
         // Ajouter les couleurs au formulaire
         $formFields[] = [
             'form' => [
-                'id_form' => 'everblock_feature_colors',
                 'legend' => [
                     'title' => $this->l('Features as flags Colors'),
                     'icon' => 'icon-palette',
                 ],
-                'input' => [],
+                'input' => [
+                    [
+                        'type' => 'html',
+                        'name' => 'anchor_everblock_feature_colors',
+                        'html_content' => '<span id="everblock_feature_colors"></span>',
+                    ],
+                ],
                 'submit' => [
                     'title' => $this->l('Save'),
                 ],
@@ -1238,12 +1265,16 @@ class Everblock extends Module
 
         $formFields[] = [
             'form' => [
-                'id_form' => 'everblock_soldout_colors',
                 'legend' => [
                     'title' => $this->l('Sold out flag Colors'),
                     'icon' => 'icon-palette',
                 ],
                 'input' => [
+                    [
+                        'type' => 'html',
+                        'name' => 'anchor_everblock_soldout_colors',
+                        'html_content' => '<span id="everblock_soldout_colors"></span>',
+                    ],
                     [
                         'type' => 'color',
                         'label' => $this->l('Background color for Sold out flag'),
@@ -1284,9 +1315,13 @@ class Everblock extends Module
             }
         }
         if (!empty($holidayInputs)) {
+            array_unshift($holidayInputs, [
+                'type' => 'html',
+                'name' => 'anchor_everblock_holiday',
+                'html_content' => '<span id="everblock_holiday"></span>',
+            ]);
             $formFields[] = [
                 'form' => [
-                    'id_form' => 'everblock_holiday',
                     'legend' => [
                         'title' => $this->l('Holiday opening hours by store'),
                         'icon' => 'icon-calendar',
