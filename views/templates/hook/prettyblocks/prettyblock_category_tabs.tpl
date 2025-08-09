@@ -34,17 +34,17 @@
             <div class="tab-content">
                 {foreach from=$block.states item=state key=key}
                     <div class="tab-pane {if $key == 0}active{/if}" id="tab-{$block.id_prettyblocks}-{$key}" role="tabpanel" aria-labelledby="tab-{$block.id_prettyblocks}-{$key}-tab">
-                        {assign var=rawProducts value=EverblockTools::getProductsByCategoryId($state.id_category, 0)}
-                        {assign var=everPresentProducts value=EverblockTools::everPresentProducts(array_column($rawProducts, 'id_product'), Context::getContext())}
+                        {if isset($block.extra.products[$key]) && $block.extra.products[$key]}
                         <section class="ever-featured-products featured-products clearfix mt-3 category_tabs">
                             <div class="products row">
-                                {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin='category_tabs' page_name=$page.page_name}
-                                {foreach from=$everPresentProducts item=product}
+                                {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                {foreach from=$block.extra.products[$key] item=product}
                                     {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
                                 {/foreach}
-                                {hook h='displayAfterProductMiniature' products=$everPresentProducts origin='category_tabs' page_name=$page.page_name}
+                                {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                             </div>
                         </section>
+                        {/if}
                     </div>
                 {/foreach}
             </div>
