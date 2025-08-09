@@ -105,6 +105,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[productfeature id="2" nb="12" carousel="true"]`: Displays 12 products with the ID 2 feature, in the form of a carousel (the carousel is optional, you must have slick slider by activating it in the module configuration)
 - `[productfeaturevalue id="2" nb="12" carousel="true"]`: Same as before, but this time concerns products that have the characteristic value id 2
 - `[promo-products 10 carousel=true]`: Displays ten products on sale in a carousel format.
+- `[products_by_tag tag="summer|sale" match="all" limit="8" order="price" way="asc" cols="4"]`: Display products filtered by PrestaShop tags. Supports `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols` and `visibility`.
 - `[best-sales 10 carousel=true]`: Displays the top ten best-selling products. Optional parameters: `days`, `orderby`, `orderway`.
 - `[categorybestsales id="8" nb="10"]`: Displays the best-selling products from category ID 8. Optional parameters: `orderby`, `orderway`.
 - `[brandbestsales id="3" nb="10"]`: Displays the best-selling products from brand ID 3. Optional parameters: `orderby`, `orderway`.
@@ -307,6 +308,7 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[product_image 1 1]` : affiche la première image du produit dont l'ID est 1. Par défaut, la première image est affichée si rien n'est spécifié après l'ID de l'image.
 - `[entity_lastname]` : Affiche le nom du client connecté.
 - `[promo-products 10 carousel=true]` : Affiche dix produits en promotion en carousel.
+- `[products_by_tag tag="été|soldes" match="all" limit="8" order="price" way="asc" cols="4"]` : Affiche les produits filtrés par tags PrestaShop. Attributs : `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
 - `[best-sales 10 carousel=true]` : Affiche les dix meilleures ventes. Paramètres optionnels : `days`, `orderby`, `orderway`.
 - `[categorybestsales id="8" nb="10"]` : Affiche les meilleures ventes de la catégorie 8. Paramètres optionnels : `orderby`, `orderway`.
 - `[brandbestsales id="3" nb="10"]` : Affiche les meilleures ventes de la marque 3. Paramètres optionnels : `orderby`, `orderway`.
@@ -495,6 +497,7 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 - `[product_image 1 1]`: Muestra la primera imagen del producto con ID 1. Por defecto, la primera imagen es mostrada si no se especifica nada después del ID de la imagen.
 - `[entity_lastname]`: Muestra el apellido del cliente conectado.
 - `[promo-products 10 carousel=true]`: Muestra diez productos en promoción en un carrusel.
+- `[products_by_tag tag="verano|rebajas" match="all" limit="8" order="price" way="asc" cols="4"]`: Muestra productos filtrados por etiquetas nativas de PrestaShop. Atributos: `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
 - `[best-sales 10 carousel=true]`: Muestra los diez productos más vendidos. Parámetros opcionales: `days`, `orderby`, `orderway`.
 - `[categorybestsales id="8" nb="10"]`: Muestra los productos más vendidos de la categoría 8. Parámetros opcionales: `orderby`, `orderway`.
 - `[brandbestsales id="3" nb="10"]`: Muestra los productos más vendidos de la marca 3. Parámetros opcionales: `orderby`, `orderway`.
@@ -682,6 +685,7 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 - `[product_image 1 1]`: Mostra la prima immagine del prodotto con ID 1. Per default, la prima immagine è mostrata se non si specifica nulla dopo l'ID dell'immagine.
 - `[entity_lastname]`: Mostra il cognome del cliente loggato.
 - `[promo-products 10 carousel=true]`: Mostra dieci prodotti in promozione in un carosello.
+- `[products_by_tag tag="estate|sconti" match="all" limit="8" order="price" way="asc" cols="4"]`: Mostra prodotti filtrati per tag nativi PrestaShop. Attributi: `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
 - `[best-sales 10 carousel=true]`: Mostra i dieci prodotti più venduti. Parametri opzionali: `days`, `orderby`, `orderway`.
 - `[categorybestsales id="8" nb="10"]`: Mostra i prodotti più venduti della categoria 8. Parametri opzionali: `orderby`, `orderway`.
 - `[brandbestsales id="3" nb="10"]`: Mostra i prodotti più venduti del marchio 3. Parametri opzionali: `orderby`, `orderway`.
