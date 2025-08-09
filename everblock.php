@@ -79,7 +79,6 @@ class Everblock extends Module
 
     public function __call($method, $args)
     {
-        $this->registerHook('beforeRenderingEverblockProductHighlight');
         if (php_sapi_name() == 'cli') {
             return;
         }
@@ -313,6 +312,30 @@ class Everblock extends Module
             $hook->title = 'display after product miniature';
             $hook->description = 'This hook triggers after product miniature is rendered';
             $hook->save();
+        }
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            if (!Hook::getIdByName('beforeRenderingEverblockProductHighlight')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockProductHighlight';
+                $hook->title = 'Before rendering product highlight block';
+                $hook->description = 'This hook triggers before product highlight block is rendered';
+                $hook->save();
+            }
+            if (!Hook::getIdByName('beforeRenderingEverblockCategoryTabs')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockCategoryTabs';
+                $hook->title = 'Before rendering category tabs block';
+                $hook->description = 'This hook triggers before category tabs block is rendered';
+                $hook->save();
+            }
+            $this->registerHook('beforeRenderingEverblockProductHighlight');
+            $this->registerHook('beforeRenderingEverblockCategoryTabs');
+        } else {
+            $this->unregisterHook('beforeRenderingEverblockProductHighlight');
+            $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
@@ -2947,7 +2970,6 @@ class Everblock extends Module
 
     public function hookDisplayHeader()
     {
-        $this->registerHook('beforeRenderingEverblockProductHighlight');
         if (Tools::getValue('eac')
             && Validate::isInt(Tools::getValue('eac'))
         ) {
@@ -3510,6 +3532,29 @@ class Everblock extends Module
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
         }
+    }
+
+    public function hookBeforeRenderingEverblockCategoryTabs($params)
+    {
+        $products = [];
+        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
+            foreach ($params['block']['states'] as $key => $state) {
+                if (empty($state['id_category'])) {
+                    continue;
+                }
+                $rawProducts = EverblockTools::getProductsByCategoryId(
+                    (int) $state['id_category'],
+                    0
+                );
+                $presented = EverblockTools::everPresentProducts(
+                    array_column($rawProducts, 'id_product'),
+                    $this->context
+                );
+                $products[$key] = $presented;
+            }
+        }
+
+        return ['products' => $products];
     }
 
     public function hookBeforeRenderingEverblockProductHighlight($params)
