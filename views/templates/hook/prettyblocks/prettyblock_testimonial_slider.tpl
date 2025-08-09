@@ -32,8 +32,8 @@
     {if isset($block.states) && $block.states}
     <div id="testimonialCarousel-{$block.id_prettyblocks}" class="carousel slide everblock-testimonial" data-ride="carousel" data-bs-ride="carousel">
         <div class="carousel-inner">
-            {foreach from=$block.states item=state key=key}
-                <div class="carousel-item {if $key == 0}active{/if}" style="
+            {foreach from=$block.states item=state}
+                <div class="carousel-item{if $state@first} active{/if}" style="
                     {if isset($state.padding_left) && $state.padding_left}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}
                     {if isset($state.padding_right) && $state.padding_right}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}
                     {if isset($state.padding_top) && $state.padding_top}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}
