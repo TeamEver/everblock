@@ -36,7 +36,15 @@
                     <div class="tab-pane {if $key == 0}active{/if}" id="tab-{$block.id_prettyblocks}-{$key}" role="tabpanel" aria-labelledby="tab-{$block.id_prettyblocks}-{$key}-tab">
                         {assign var=rawProducts value=EverblockTools::getProductsByCategoryId($state.id_category, 0)}
                         {assign var=everPresentProducts value=EverblockTools::everPresentProducts(array_column($rawProducts, 'id_product'), Context::getContext())}
-                        {include file='module:everblock/views/templates/hook/ever_presented_products.tpl' everPresentProducts=$everPresentProducts carousel=false shortcodeClass='category_tabs'}
+                        <section class="ever-featured-products featured-products clearfix mt-3 category_tabs">
+                            <div class="products row">
+                                {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin='category_tabs' page_name=$page.page_name}
+                                {foreach from=$everPresentProducts item=product}
+                                    {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
+                                {/foreach}
+                                {hook h='displayAfterProductMiniature' products=$everPresentProducts origin='category_tabs' page_name=$page.page_name}
+                            </div>
+                        </section>
                     </div>
                 {/foreach}
             </div>
