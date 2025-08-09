@@ -120,6 +120,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[promo-products') !== false) {
             $txt = static::getPromoProductsShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[products_by_tag') !== false) {
+            $txt = static::getProductsByTagShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[evercart]') !== false) {
             $txt = static::getCartShortcode($txt, $context, $module);
         }
@@ -175,6 +178,199 @@ class EverblockTools extends ObjectModel
         $txt = static::renderSmartyVars($txt, $context);
         Hook::exec('displayAfterRenderingShortcodes', ['html' => &$txt]);
         return $txt;
+    }
+
+    /**
+     * Parse attributes from a shortcode string.
+     *
+     * @param string $attrStr
+     *
+     * @return array<string, string>
+     */
+    protected static function parseShortcodeAttrs(string $attrStr): array
+    {
+        $attrs = [];
+        preg_match_all('/(\w+)\s*=\s*"([^"]*)"/', $attrStr, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $attrs[strtolower($match[1])] = trim($match[2]);
+        }
+
+        return $attrs;
+    }
+
+    /**
+     * Replace products_by_tag shortcode with rendered product list.
+     *
+     * @param string $txt
+     * @param Context $context
+     * @param Everblock $module
+     *
+     * @return string
+     */
+    protected static function getProductsByTagShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        return (string) preg_replace_callback('/\[products_by_tag\s+([^\]]+)\]/i', function ($matches) use ($context, $module) {
+            $attrs = static::parseShortcodeAttrs($matches[1]);
+
+            $tagNames = [];
+            if (!empty($attrs['tag'])) {
+                $tagNames = array_filter(array_map('trim', explode('|', $attrs['tag'])));
+            }
+
+            $tagIds = [];
+            if (!empty($attrs['tag_id'])) {
+                $tagIds = array_filter(array_map('intval', explode('|', $attrs['tag_id'])));
+            }
+
+            if (empty($tagNames) && empty($tagIds)) {
+                return '';
+            }
+
+            $match = isset($attrs['match']) && strtolower($attrs['match']) === 'all' ? 'all' : 'any';
+            $limit = isset($attrs['limit']) ? max(1, (int) $attrs['limit']) : 12;
+            $offset = isset($attrs['offset']) ? max(0, (int) $attrs['offset']) : 0;
+            $order = isset($attrs['order']) ? strtolower($attrs['order']) : 'position';
+            $way = isset($attrs['way']) ? strtolower($attrs['way']) : 'asc';
+            $cols = isset($attrs['cols']) ? (int) $attrs['cols'] : null;
+            $visibilityAttr = isset($attrs['visibility']) ? $attrs['visibility'] : 'both|catalog';
+            $visibilities = array_filter(array_map('trim', explode('|', $visibilityAttr)));
+            if (empty($visibilities)) {
+                $visibilities = ['both', 'catalog'];
+            }
+
+            $allowedOrders = ['position', 'name', 'price', 'date_add', 'rand'];
+            if (!in_array($order, $allowedOrders, true)) {
+                $order = 'position';
+            }
+
+            $allowedWays = ['asc', 'desc'];
+            if (!in_array($way, $allowedWays, true)) {
+                $way = 'asc';
+            }
+
+            $cacheKey = md5(json_encode([
+                $tagNames,
+                $tagIds,
+                $match,
+                $limit,
+                $offset,
+                $order,
+                $way,
+                $visibilities,
+                (int) $context->shop->id,
+                (int) $context->language->id,
+            ]));
+
+            static $cache = [];
+
+            if (!isset($cache[$cacheKey])) {
+                $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
+                $params = [
+                    'id_shop' => (int) $context->shop->id,
+                    'id_lang' => (int) $context->language->id,
+                ];
+
+                $visPlaceholders = [];
+                foreach ($visibilities as $i => $vis) {
+                    $ph = ':vis' . $i;
+                    $visPlaceholders[] = $ph;
+                    $params['vis' . $i] = $vis;
+                }
+
+                $sql = 'SELECT pt.id_product'
+                    . ' FROM ' . _DB_PREFIX_ . 'product_tag pt'
+                    . ' INNER JOIN ' . _DB_PREFIX_ . 'product_shop ps ON (ps.id_product = pt.id_product'
+                    . ' AND ps.id_shop = :id_shop AND ps.active = 1'
+                    . ' AND ps.visibility IN (' . implode(',', $visPlaceholders) . '))'
+                    . ' INNER JOIN ' . _DB_PREFIX_ . 'product_lang pl ON (pl.id_product = pt.id_product'
+                    . ' AND pl.id_lang = :id_lang AND pl.id_shop = :id_shop)'
+                    . ' INNER JOIN ' . _DB_PREFIX_ . 'product p ON (p.id_product = pt.id_product)';
+
+                $tagNamePlaceholders = [];
+                if (!empty($tagNames)) {
+                    $sql .= ' INNER JOIN ' . _DB_PREFIX_ . 'tag t ON (t.id_tag = pt.id_tag AND t.id_lang = :id_lang)';
+                    foreach ($tagNames as $i => $tagName) {
+                        $ph = ':tagname' . $i;
+                        $tagNamePlaceholders[] = $ph;
+                        $params['tagname' . $i] = $tagName;
+                    }
+                }
+
+                $tagIdPlaceholders = [];
+                foreach ($tagIds as $i => $tagId) {
+                    $ph = ':tagid' . $i;
+                    $tagIdPlaceholders[] = $ph;
+                    $params['tagid' . $i] = (int) $tagId;
+                }
+
+                $conditions = [];
+                if ($tagIdPlaceholders) {
+                    $conditions[] = 'pt.id_tag IN (' . implode(',', $tagIdPlaceholders) . ')';
+                }
+                if ($tagNamePlaceholders) {
+                    $conditions[] = 't.name IN (' . implode(',', $tagNamePlaceholders) . ')';
+                }
+
+                if ($conditions) {
+                    if (count($conditions) > 1) {
+                        $sql .= ' WHERE (' . implode(' OR ', $conditions) . ')';
+                    } else {
+                        $sql .= ' WHERE ' . $conditions[0];
+                    }
+                }
+
+                $sql .= ' GROUP BY pt.id_product';
+                $tagCount = count(array_unique(array_merge($tagIds, $tagNames)));
+                if ($match === 'all' && $tagCount > 1) {
+                    $sql .= ' HAVING COUNT(DISTINCT pt.id_tag) = ' . (int) $tagCount;
+                }
+
+                if ($order === 'rand') {
+                    $sql .= ' ORDER BY RAND()';
+                } else {
+                    switch ($order) {
+                        case 'name':
+                            $orderBy = 'pl.name';
+                            break;
+                        case 'price':
+                            $orderBy = 'ps.price';
+                            break;
+                        case 'date_add':
+                            $orderBy = 'p.date_add';
+                            break;
+                        case 'position':
+                        default:
+                            $orderBy = 'ps.position';
+                    }
+                    $sql .= ' ORDER BY ' . $orderBy . ' ' . strtoupper($way);
+                }
+
+                $sql .= ' LIMIT ' . (int) $offset . ', ' . (int) $limit;
+
+                $rows = $db->executeS($sql, $params);
+                $productIds = [];
+                if (is_array($rows)) {
+                    foreach ($rows as $row) {
+                        $productIds[] = (int) $row['id_product'];
+                    }
+                }
+
+                $cache[$cacheKey] = static::everPresentProducts($productIds, $context);
+            }
+
+            $products = $cache[$cacheKey];
+
+            $context->smarty->assign([
+                'products' => $products,
+                'cols' => $cols,
+                'total' => count($products),
+                'params' => $attrs,
+            ]);
+
+            $templatePath = static::getTemplatePath('hook/products_by_tag.tpl', $module);
+
+            return $context->smarty->fetch($templatePath);
+        }, $txt);
     }
 
     public static function getCrossSellingShortcode(string $txt, Context $context, Everblock $module): string
