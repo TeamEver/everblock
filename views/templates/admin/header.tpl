@@ -25,6 +25,18 @@
             <img id="everlogotop" class="img-fluid" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" alt="{l s='Ever Block logo' mod='everblock'}" style="max-width: 120px;" />
         </a>
         <p class="mt-2">{l s='Thanks for using Team Ever\'s modules' mod='everblock'}<br /></p>
+        {if isset($modules_list_link)}
+            <div class="everblock-anchor-links mt-2">
+                <a href="#everblock_tools" class="btn btn-default btn-sm">{l s='Tools' mod='everblock'}</a>
+                <a href="#everblock_settings" class="btn btn-default btn-sm">{l s='Settings' mod='everblock'}</a>
+                <a href="#everblock_instagram" class="btn btn-default btn-sm">{l s='Instagram' mod='everblock'}</a>
+                <a href="#everblock_file_management" class="btn btn-default btn-sm">{l s='File management' mod='everblock'}</a>
+                <a href="#everblock_import_html" class="btn btn-default btn-sm">{l s='Import HTML blocks' mod='everblock'}</a>
+                <a href="#everblock_feature_colors" class="btn btn-default btn-sm">{l s='Features colors' mod='everblock'}</a>
+                <a href="#everblock_soldout_colors" class="btn btn-default btn-sm">{l s='Sold out colors' mod='everblock'}</a>
+                <a href="#everblock_holiday" class="btn btn-default btn-sm">{l s='Holiday hours' mod='everblock'}</a>
+            </div>
+        {/if}
     </div>
     <div class="col-md-4 text-right mt-3">
         {if isset($modules_list_link)}

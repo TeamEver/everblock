@@ -676,6 +676,7 @@ class Everblock extends Module
         $formFields = [];
         $formFields[] = [
             'form' => [
+                'id_form' => 'everblock_tools',
                 'legend' => [
                     'title' => $this->l('Tools'),
                     'icon' => 'icon-smile',
@@ -728,6 +729,7 @@ class Everblock extends Module
         ];
         $formFields[] = [
             'form' => [
+                'id_form' => 'everblock_settings',
                 'legend' => [
                     'title' => $this->l('Settings'),
                     'icon' => 'icon-smile',
@@ -1081,43 +1083,10 @@ class Everblock extends Module
             ],
         ];
 
-        $stores = Store::getStores((int) $this->context->language->id);
-        $holidayInputs = [];
-        if (!empty($stores)) {
-            $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
-            foreach ($stores as $store) {
-                foreach ($holidays as $date) {
-                    $holidayInputs[] = [
-                        'type' => 'text',
-                        'label' => sprintf($this->l('Opening hour for %s on %s'), $store['name'], $date),
-                        'name' => 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date,
-                    ];
-                    $holidayInputs[] = [
-                        'type' => 'text',
-                        'label' => sprintf($this->l('Closing hour for %s on %s'), $store['name'], $date),
-                        'name' => 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date,
-                    ];
-                }
-            }
-        }
-        if (!empty($holidayInputs)) {
-            $formFields[] = [
-                'form' => [
-                    'legend' => [
-                        'title' => $this->l('Holiday opening hours by store'),
-                        'icon' => 'icon-calendar',
-                    ],
-                    'input' => $holidayInputs,
-                    'submit' => [
-                        'title' => $this->l('Save'),
-                    ],
-                ],
-            ];
-        }
-
         if (Configuration::get('EVERINSTA_ACCESS_TOKEN')) {
             $formFields[] = [
                 'form' => [
+                    'id_form' => 'everblock_instagram',
                     'legend' => [
                         'title' => $this->l('Instagram'),
                         'icon' => 'icon-smile',
@@ -1158,6 +1127,7 @@ class Everblock extends Module
         }
         $formFields[] = [
             'form' => [
+                'id_form' => 'everblock_file_management',
                 'legend' => [
                     'title' => $this->l('File management'),
                     'icon' => 'icon-smile',
@@ -1186,6 +1156,7 @@ class Everblock extends Module
         ];
         $formFields[] = [
             'form' => [
+                'id_form' => 'everblock_import_html',
                 'legend' => [
                     'title' => $this->l('Import HTML blocks'),
                     'icon' => 'icon-smile',
@@ -1227,6 +1198,7 @@ class Everblock extends Module
         // Ajouter les couleurs au formulaire
         $formFields[] = [
             'form' => [
+                'id_form' => 'everblock_feature_colors',
                 'legend' => [
                     'title' => $this->l('Features as flags Colors'),
                     'icon' => 'icon-palette',
@@ -1266,6 +1238,7 @@ class Everblock extends Module
 
         $formFields[] = [
             'form' => [
+                'id_form' => 'everblock_soldout_colors',
                 'legend' => [
                     'title' => $this->l('Sold out flag Colors'),
                     'icon' => 'icon-palette',
@@ -1291,6 +1264,40 @@ class Everblock extends Module
                 ],
             ],
         ];
+        $stores = Store::getStores((int) $this->context->language->id);
+        $holidayInputs = [];
+        if (!empty($stores)) {
+            $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
+            foreach ($stores as $store) {
+                foreach ($holidays as $date) {
+                    $holidayInputs[] = [
+                        'type' => 'text',
+                        'label' => sprintf($this->l('Opening hour for %s on %s'), $store['name'], $date),
+                        'name' => 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date,
+                    ];
+                    $holidayInputs[] = [
+                        'type' => 'text',
+                        'label' => sprintf($this->l('Closing hour for %s on %s'), $store['name'], $date),
+                        'name' => 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date,
+                    ];
+                }
+            }
+        }
+        if (!empty($holidayInputs)) {
+            $formFields[] = [
+                'form' => [
+                    'id_form' => 'everblock_holiday',
+                    'legend' => [
+                        'title' => $this->l('Holiday opening hours by store'),
+                        'icon' => 'icon-calendar',
+                    ],
+                    'input' => $holidayInputs,
+                    'submit' => [
+                        'title' => $this->l('Save'),
+                    ],
+                ],
+            ];
+        }
         return $formFields;
     }
 
