@@ -3542,9 +3542,13 @@ class Everblock extends Module
                 if (empty($state['id_category'])) {
                     continue;
                 }
+                $limit = isset($state['nb_products']) ? (int) $state['nb_products'] : 0;
+                if ($limit <= 0) {
+                    $limit = (int) Configuration::get('PS_PRODUCTS_PER_PAGE');
+                }
                 $rawProducts = EverblockTools::getProductsByCategoryId(
                     (int) $state['id_category'],
-                    0
+                    $limit
                 );
                 $presented = EverblockTools::everPresentProducts(
                     array_column($rawProducts, 'id_product'),

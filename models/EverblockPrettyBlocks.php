@@ -2616,6 +2616,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Category ID'),
                             'default' => '',
                         ],
+                        'nb_products' => [
+                            'type' => 'text',
+                            'label' => $module->l('Number of products to display (0 for default)'),
+                            'default' => 0,
+                        ],
                         'css_class' => [
                             'type' => 'text',
                             'label' => $module->l('Custom CSS class'),
