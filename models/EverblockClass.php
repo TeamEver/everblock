@@ -228,13 +228,13 @@ class EverBlockClass extends ObjectModel
             'content' => [
                 'type' => self::TYPE_HTML,
                 'lang' => true,
-                'validate' => 'isAnything',
+                'validate' => 'isCleanHtml',
                 'required' => false,
             ],
             'custom_code' => [
                 'type' => self::TYPE_NOTHING,
                 'lang' => true,
-                'validate' => 'isAnything',
+                'validate' => 'isCleanHtml',
                 'required' => false,
             ],
         ],
