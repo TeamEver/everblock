@@ -115,6 +115,7 @@ class Everblock extends Module
             true
         );
         Configuration::updateValue('EVERBLOCK_SOLDOUT_FLAG', 0);
+        Configuration::updateValue('EVERBLOCK_LOW_STOCK_THRESHOLD', 5);
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -196,6 +197,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVER_SOLDOUT_TEXTCOLOR');
         Configuration::deleteByName('EVERBLOCK_SOLDOUT_FLAG');
         Configuration::deleteByName('EVERINSTA_SHOW_CAPTION');
+        Configuration::deleteByName('EVERBLOCK_LOW_STOCK_THRESHOLD');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlock')

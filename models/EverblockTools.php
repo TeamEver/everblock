@@ -126,6 +126,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[products_by_tag') !== false) {
             $txt = static::getProductsByTagShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[low_stock') !== false) {
+            $txt = static::getLowStockShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[evercart]') !== false) {
             $txt = static::getCartShortcode($txt, $context, $module);
         }
@@ -188,14 +191,19 @@ class EverblockTools extends ObjectModel
      *
      * @param string $attrStr
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     protected static function parseShortcodeAttrs(string $attrStr): array
     {
         $attrs = [];
         preg_match_all('/(\w+)\s*=\s*"([^"]*)"/', $attrStr, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
-            $attrs[strtolower($match[1])] = trim($match[2]);
+            $key = strtolower($match[1]);
+            $value = trim($match[2]);
+            if (strpos($value, '|') !== false) {
+                $value = array_filter(array_map('trim', explode('|', $value)));
+            }
+            $attrs[$key] = $value;
         }
 
         return $attrs;
@@ -216,13 +224,13 @@ class EverblockTools extends ObjectModel
             $attrs = static::parseShortcodeAttrs($matches[1]);
 
             $tagNames = [];
-            if (!empty($attrs['tag'])) {
-                $tagNames = array_filter(array_map('trim', explode('|', $attrs['tag'])));
+            if (isset($attrs['tag'])) {
+                $tagNames = array_filter(array_map('trim', (array) $attrs['tag']));
             }
 
             $tagIds = [];
-            if (!empty($attrs['tag_id'])) {
-                $tagIds = array_filter(array_map('intval', explode('|', $attrs['tag_id'])));
+            if (isset($attrs['tag_id'])) {
+                $tagIds = array_filter(array_map('intval', (array) $attrs['tag_id']));
             }
 
             if (empty($tagNames) && empty($tagIds)) {
@@ -371,6 +379,288 @@ class EverblockTools extends ObjectModel
             ]);
 
             $templatePath = static::getTemplatePath('hook/products_by_tag.tpl', $module);
+
+            return $context->smarty->fetch($templatePath);
+        }, $txt);
+    }
+
+    /**
+     * Replace low_stock shortcode with rendered low stock product list.
+     *
+     * Examples:
+     * [low_stock]
+     * [low_stock limit="8" threshold="3" order="qty" way="asc"]
+     * [low_stock id_category="12|34" days="30" order="date_add" way="desc"]
+     *
+     * @param string  $txt
+     * @param Context $context
+     * @param Everblock $module
+     *
+     * @return string
+     */
+    protected static function getLowStockShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        return (string) preg_replace_callback('/\[low_stock(?:\s+([^\]]+))?\]/i', function ($matches) use ($context, $module) {
+            $attrs = static::parseShortcodeAttrs($matches[1] ?? '');
+
+            $idShop = (int) $context->shop->id;
+            $idShopGroup = (int) $context->shop->id_shop_group;
+            $idLang = (int) $context->language->id;
+
+            $limit = isset($attrs['limit']) ? max(1, (int) $attrs['limit']) : 10;
+            $offset = isset($attrs['offset']) ? max(0, (int) $attrs['offset']) : 0;
+            $threshold = isset($attrs['threshold'])
+                ? (int) $attrs['threshold']
+                : (int) (Configuration::get('EVERBLOCK_LOW_STOCK_THRESHOLD') ?: 5);
+
+            $match = strtolower($attrs['match'] ?? 'lte');
+            $allowedMatch = ['lt', 'lte', 'eq', 'gt', 'gte'];
+            if (!in_array($match, $allowedMatch, true)) {
+                $match = 'lte';
+            }
+            $operatorMap = [
+                'lt' => '<',
+                'lte' => '<=',
+                'eq' => '=',
+                'gt' => '>',
+                'gte' => '>=',
+            ];
+            $operator = $operatorMap[$match];
+
+            $order = strtolower($attrs['order'] ?? 'qty');
+            $allowedOrders = ['qty', 'date_add', 'name', 'price', 'sales', 'rand'];
+            if (!in_array($order, $allowedOrders, true)) {
+                $order = 'qty';
+            }
+
+            $way = strtolower($attrs['way'] ?? 'asc');
+            $allowedWays = ['asc', 'desc'];
+            if (!in_array($way, $allowedWays, true)) {
+                $way = 'asc';
+            }
+            if ($order === 'rand') {
+                $way = 'asc';
+            }
+
+            $days = isset($attrs['days']) ? max(0, (int) $attrs['days']) : 0;
+
+            $idCategories = isset($attrs['id_category']) ? array_filter(array_map('intval', (array) $attrs['id_category'])) : [];
+            $idManufacturers = isset($attrs['id_manufacturer']) ? array_filter(array_map('intval', (array) $attrs['id_manufacturer'])) : [];
+
+            $visibilityAttr = $attrs['visibility'] ?? 'both,catalog';
+            $visibilityList = array_map('trim', explode(',', $visibilityAttr));
+            $allowedVis = ['both', 'catalog', 'search', 'none'];
+            $visibilities = array_values(array_intersect($visibilityList, $allowedVis));
+            if (empty($visibilities)) {
+                $visibilities = ['both', 'catalog'];
+            }
+
+            $availableOnly = isset($attrs['available_only']) ? (int) $attrs['available_only'] : 1;
+            $cols = isset($attrs['cols']) ? (int) $attrs['cols'] : 4;
+            $by = strtolower($attrs['by'] ?? 'product');
+            if (!in_array($by, ['product', 'combination'], true)) {
+                $by = 'product';
+            }
+
+            $cacheKey = md5(json_encode([
+                $attrs,
+                $idShop,
+                $idLang,
+            ]));
+
+            static $cache = [];
+
+            if (!isset($cache[$cacheKey])) {
+                $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
+                $params = [
+                    'id_shop' => $idShop,
+                    'id_shop_group' => $idShopGroup,
+                    'id_lang' => $idLang,
+                    'threshold' => $threshold,
+                    'offset' => $offset,
+                    'limit' => $limit,
+                ];
+
+                $visPlaceholders = [];
+                foreach ($visibilities as $i => $vis) {
+                    $ph = ':vis' . $i;
+                    $visPlaceholders[] = $ph;
+                    $params['vis' . $i] = $vis;
+                }
+
+                $sql = 'SELECT p.id_product';
+                if ($by === 'combination') {
+                    $sql .= ', sa.id_product_attribute';
+                }
+                if ($order === 'sales') {
+                    $sql .= ', COALESCE(s.sold_qty,0) AS sold_qty';
+                }
+                $sql .= ' FROM ' . _DB_PREFIX_ . 'product p'
+                    . ' INNER JOIN ' . _DB_PREFIX_ . 'product_shop ps ON (ps.id_product = p.id_product AND ps.id_shop = :id_shop)'
+                    . ' INNER JOIN ' . _DB_PREFIX_ . 'product_lang pl ON (pl.id_product = p.id_product AND pl.id_shop = :id_shop AND pl.id_lang = :id_lang)'
+                    . ' INNER JOIN ' . _DB_PREFIX_ . 'stock_available sa ON (sa.id_product = p.id_product';
+                if ($by === 'product') {
+                    $sql .= ' AND sa.id_product_attribute = 0';
+                } else {
+                    $sql .= ' AND sa.id_product_attribute > 0';
+                }
+                $sql .= ' AND (sa.id_shop = :id_shop OR (sa.id_shop IS NULL AND sa.id_shop_group = :id_shop_group)))';
+
+                if (!empty($idCategories)) {
+                    $sql .= ' LEFT JOIN ' . _DB_PREFIX_ . 'category_product cp ON (cp.id_product = p.id_product)';
+                }
+                if ($order === 'sales') {
+                    if ($by === 'combination') {
+                        $sql .= ' LEFT JOIN (SELECT od.product_id, od.product_attribute_id, SUM(od.product_quantity) AS sold_qty'
+                            . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
+                            . ' INNER JOIN ' . _DB_PREFIX_ . 'orders o ON o.id_order = od.id_order'
+                            . ' WHERE o.valid = 1'
+                            . ' GROUP BY od.product_id, od.product_attribute_id) s'
+                            . ' ON (s.product_id = p.id_product AND s.product_attribute_id = sa.id_product_attribute)';
+                    } else {
+                        $sql .= ' LEFT JOIN (SELECT od.product_id, SUM(od.product_quantity) AS sold_qty'
+                            . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
+                            . ' INNER JOIN ' . _DB_PREFIX_ . 'orders o ON o.id_order = od.id_order'
+                            . ' WHERE o.valid = 1'
+                            . ' GROUP BY od.product_id) s'
+                            . ' ON (s.product_id = p.id_product)';
+                    }
+                }
+
+                $sql .= ' WHERE ps.active = 1'
+                    . ' AND ps.visibility IN (' . implode(',', $visPlaceholders) . ')'
+                    . ' AND sa.quantity ' . $operator . ' :threshold';
+
+                if ($availableOnly === 1) {
+                    $sql .= ' AND ps.available_for_order = 1';
+                }
+                if ($days > 0) {
+                    $sql .= ' AND p.date_add >= :date_limit';
+                    $params['date_limit'] = date('Y-m-d H:i:s', strtotime('-' . $days . ' days'));
+                }
+                if (!empty($idCategories)) {
+                    $catPlaceholders = [];
+                    foreach ($idCategories as $i => $idCat) {
+                        $ph = ':cat' . $i;
+                        $catPlaceholders[] = $ph;
+                        $params['cat' . $i] = $idCat;
+                    }
+                    $sql .= ' AND cp.id_category IN (' . implode(',', $catPlaceholders) . ')';
+                }
+                if (!empty($idManufacturers)) {
+                    $manPlaceholders = [];
+                    foreach ($idManufacturers as $i => $idMan) {
+                        $ph = ':man' . $i;
+                        $manPlaceholders[] = $ph;
+                        $params['man' . $i] = $idMan;
+                    }
+                    $sql .= ' AND p.id_manufacturer IN (' . implode(',', $manPlaceholders) . ')';
+                }
+
+                $sql .= ' GROUP BY p.id_product';
+                if ($by === 'combination') {
+                    $sql .= ', sa.id_product_attribute';
+                }
+
+                if ($order === 'rand') {
+                    $sql .= ' ORDER BY RAND()';
+                } else {
+                    $fieldMap = [
+                        'qty' => 'sa.quantity',
+                        'date_add' => 'p.date_add',
+                        'name' => 'pl.name',
+                        'price' => 'ps.price',
+                        'sales' => 'sold_qty',
+                    ];
+                    $sql .= ' ORDER BY ' . $fieldMap[$order] . ' ' . strtoupper($way);
+                }
+
+                $sql .= ' LIMIT :offset, :limit';
+
+                $rows = $db->executeS($sql, $params);
+
+                $products = [];
+                $variants = [];
+
+                if (!empty($rows)) {
+                    if ($by === 'product') {
+                        $ids = array_map(static fn($row) => (int) $row['id_product'], $rows);
+                        $products = static::everPresentProducts($ids, $context);
+                    } else {
+                        $assembler = new ProductAssembler($context);
+                        $presenterFactory = new ProductPresenterFactory($context);
+                        $presentationSettings = $presenterFactory->getPresentationSettings();
+                        $presenter = new ProductListingPresenter(
+                            new ImageRetriever($context->link),
+                            $context->link,
+                            new PriceFormatter(),
+                            new ProductColorsRetriever(),
+                            $context->getTranslator()
+                        );
+                        $presentationSettings->showPrices = true;
+
+                        foreach ($rows as $row) {
+                            $raw = [
+                                'id_product' => (int) $row['id_product'],
+                                'id_product_attribute' => (int) $row['id_product_attribute'],
+                                'id_lang' => $idLang,
+                                'id_shop' => $idShop,
+                            ];
+                            $assembled = $assembler->assembleProduct($raw);
+                            $presented = $presenter->present($presentationSettings, $assembled, $context->language);
+                            $products[] = $presented;
+
+                            $combination = new Combination((int) $row['id_product_attribute']);
+                            $attrNames = [];
+                            if (Validate::isLoadedObject($combination)) {
+                                $combAttrs = $combination->getAttributesName($idLang);
+                                foreach ($combAttrs as $attr) {
+                                    $attrNames[] = $attr['name'];
+                                }
+                            }
+                            $imageId = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                                'SELECT id_image FROM ' . _DB_PREFIX_ . 'product_attribute_image WHERE id_product_attribute = ' . (int) $row['id_product_attribute'] . ' ORDER BY id_image ASC'
+                            );
+                            $imageUrl = '';
+                            if ($imageId && !empty($presented['link_rewrite'])) {
+                                $imageUrl = $context->link->getImageLink($presented['link_rewrite'], $imageId);
+                            }
+
+                            $variants[] = [
+                                'id_product' => (int) $row['id_product'],
+                                'id_product_attribute' => (int) $row['id_product_attribute'],
+                                'attributes' => $attrNames,
+                                'url' => $context->link->getProductLink(
+                                    (int) $row['id_product'],
+                                    null,
+                                    null,
+                                    null,
+                                    $idLang,
+                                    $idShop,
+                                    (int) $row['id_product_attribute']
+                                ),
+                                'image' => $imageUrl,
+                            ];
+                        }
+                    }
+                }
+
+                $cache[$cacheKey] = [
+                    'products' => $products,
+                    'variants' => $variants,
+                ];
+            }
+
+            $data = $cache[$cacheKey];
+
+            $context->smarty->assign([
+                'products' => $data['products'],
+                'variants' => $data['variants'],
+                'cols' => $cols,
+                'params' => $attrs,
+            ]);
+
+            $templatePath = static::getTemplatePath('hook/low_stock.tpl', $module);
 
             return $context->smarty->fetch($templatePath);
         }, $txt);
