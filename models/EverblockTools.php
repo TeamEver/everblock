@@ -3156,6 +3156,10 @@ class EverblockTools extends ObjectModel
 
     public static function generateGoogleMap(string $txt, Context $context, Everblock $module): string
     {
+        $apiKey = Configuration::get('EVERBLOCK_GMAP_KEY');
+        if (!$apiKey) {
+            return str_replace('[storelocator]', '', $txt);
+        }
         $stores = static::getStoreLocatorData();
         if (!empty($stores)) {
             $smarty = $context->smarty;

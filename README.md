@@ -87,7 +87,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[category id="8" nb="8"]`: Display 8 products from category with ID 8.
 - `[manufacturer id="2" nb="8"]`: Display 8 products from manufacturer with ID 2.
 - `[brands nb="8"]`: Display 8 brand names with their associated logos. Optional `carousel=true`.
-- `[storelocator]`: Show a store locator on any CMS page.
+- `[storelocator]`: Show a store locator on any CMS page when a Google Maps API key is configured.
 - `[evermap]`: Display a Google Map centered on the shop address when a Google Maps API key is configured.
 - `[subcategories id="2" nb="8"]`: Display 8 subcategories (name, image and link) of category 2.
 - `[last-products 4]`: Display the last 4 products listed in the store. Supports `carousel=true`.
