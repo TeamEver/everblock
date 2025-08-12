@@ -34,7 +34,7 @@
   </ul>
   <div class="tab-content row">
     <div class="tab-pane fade show active col-12 col-md-8 d-md-block order-md-2" id="pane-map" role="tabpanel" aria-labelledby="tab-map">
-      <div id="everblock-storelocator" class="everblock-storelocator w-100 h-100"></div>
+      <div id="everblock-storelocator" class="everblock-storelocator w-100"></div>
     </div>
     <div class="tab-pane fade col-12 col-md-4 d-md-block order-md-1" id="pane-list" role="tabpanel" aria-labelledby="tab-list">
       <div id="everblock-storelist" class="row" style="max-height:500px; overflow-y:auto;">
