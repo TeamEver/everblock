@@ -15,8 +15,8 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<div id="store-search-block" class="mb-3 text-center">
-  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-center">
+<div id="store-search-block" class="mb-3 text-center mx-auto" style="max-width:600px;">
+  <div class="d-flex flex-column flex-md-row align-items-center justify-content-center">
     <label for="store_search" class="me-md-2 mb-2 mb-md-0 fw-bold">{l s='Find a store' mod='everblock'}</label>
     <div class="input-group mb-2 mb-md-0 w-100">
       <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
