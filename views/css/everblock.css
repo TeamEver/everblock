@@ -318,3 +318,10 @@
 .ever-cover-carousel .slick-next {
     right: 10px;
 }
+
+/* Store locator adjustments */
+@media (min-width: 768px) {
+  #everblock-storelocator-wrapper #pane-list {
+    opacity: 1;
+  }
+}
