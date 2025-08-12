@@ -344,7 +344,14 @@
   margin-bottom: 1rem;
 }
 
+#everblock-storelocator {
+  width: 100%;
+}
+
 @media (min-width: 768px) {
+  #everblock-storelocator {
+    width: 50%;
+  }
   #everblock-storelocator-wrapper #pane-list {
     opacity: 1;
   }
