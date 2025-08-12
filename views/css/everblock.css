@@ -320,6 +320,20 @@
 }
 
 /* Store locator adjustments */
+#store_search {
+  max-width: 400px;
+  background-color: #fff;
+}
+
+.gm-style .gm-style-iw-c {
+  padding-top: 0 !important;
+}
+
+.gm-style-iw button.gm-ui-hover-effect {
+  top: 0 !important;
+  right: 0 !important;
+}
+
 @media (min-width: 768px) {
   #everblock-storelocator-wrapper #pane-list {
     opacity: 1;
@@ -335,8 +349,10 @@
     text-align: center;
   }
   #store_search {
-    max-width: 400px;
     margin-left: auto;
     margin-right: auto;
+  }
+  #pane-map {
+    position: static;
   }
 }

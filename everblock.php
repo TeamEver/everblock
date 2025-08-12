@@ -1722,11 +1722,6 @@ class Everblock extends Module
             $markers = [];
             $context = Context::getContext();
             foreach ($stores as $store) {
-                $address = $store['address1'];
-                if (!empty($store['address2'])) {
-                    $address .= ' ' . $store['address2'];
-                }
-                $address .= ', ' . $store['postcode'] . ' ' . $store['city'];
                 $storeId = isset($store['id']) ? (int) $store['id'] : (int) $store['id_store'];
                 if (!empty($store['is_open'])) {
                     $status = sprintf($this->l('Open today until %s'), $store['open_until']);
@@ -1740,7 +1735,10 @@ class Everblock extends Module
                     'lat' => $store['latitude'],
                     'lng' => $store['longitude'],
                     'title' => $store['name'],
-                    'address' => $address,
+                    'address1' => $store['address1'],
+                    'address2' => $store['address2'],
+                    'postcode' => $store['postcode'],
+                    'city' => $store['city'],
                     'phone' => $store['phone'],
                     'img' => $context->link->getBaseLink(null, null) . 'img/st/' . $storeId . '.jpg',
                     'status' => $status,

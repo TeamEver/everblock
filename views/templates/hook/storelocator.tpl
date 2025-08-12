@@ -48,7 +48,7 @@
                    style="width: 80px; height: 80px; object-fit: cover;">
             </div>
             <div class="flex-grow-1">
-              <h6 class="fw-bold mb-1">
+              <h6 class="fw-bold mb-1 mt-0">
                 {if $item.cms_link}
                   <a href="{$item.cms_link|escape:'htmlall':'UTF-8'}" class="text-dark text-decoration-none">
                     {$item.name|escape:'htmlall':'UTF-8'}
@@ -86,8 +86,7 @@
               {* Voir les horaires (ouvre une modal Bootstrap) *}
               <p class="mb-0 small">
                 <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#storeHoursModal{$item.id}">
-                  <u>{l s='See hours' mod='everblock'}</u>
-                  <i class="ms-1 bi bi-chevron-right" style="font-size: 0.75rem;"></i>
+                  <u>{l s='See hours' mod='everblock'}</u> &gt;
                 </a>
               </p>
             </div>
