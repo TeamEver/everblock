@@ -37,7 +37,7 @@
       <div id="everblock-storelocator" class="everblock-storelocator w-100 h-100"></div>
     </div>
     <div class="tab-pane fade col-12 col-md-4 d-md-block order-md-1" id="pane-list" role="tabpanel" aria-labelledby="tab-list">
-      <div id="everblock-storelist" class="row g-4" style="max-height:500px; overflow-y:auto;">
+      <div id="everblock-storelist" class="row" style="max-height:500px; overflow-y:auto;">
         {foreach from=$everblock_stores item=item name=store_loop}
         {assign var="hasCoordinates" value=(isset($item.latitude) && isset($item.longitude) && $item.latitude != '' && $item.longitude != '')}
         <div class="col-12 everblock-store-item" data-lat="{$item.latitude}" data-lng="{$item.longitude}">
