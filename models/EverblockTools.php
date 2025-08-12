@@ -3200,7 +3200,7 @@ class EverblockTools extends ObjectModel
 
                 function renderContent(marker) {
                     var phone = marker.phone ? `<div>${marker.phone}</div>` : "";
-                    var directions = `<a href="https://www.google.com/maps/dir/?api=1&destination=${marker.lat},${marker.lng}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm mt-2">${marker.directions_label}</a>`;
+                    var directions = `<a href="https://www.google.com/maps/dir/?api=1&destination=${marker.lat},${marker.lng}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">${marker.directions_label}</a>`;
                     return `
                         <div class="everblock-marker-info">
                             <img src="${marker.img}" alt="${marker.title}" style="width:80px;height:80px;object-fit:cover;margin-bottom:8px;"><br>
@@ -3208,8 +3208,8 @@ class EverblockTools extends ObjectModel
                             ${marker.address}<br>
                             ${phone}
                             <div>${marker.status}</div>
-                            ${directions}
                             <a href="#" data-bs-toggle="modal" data-bs-target="#storeHoursModal${marker.id}">${marker.hours_label}</a>
+                            <div class="mt-2">${directions}</div>
                         </div>
                     `;
                 }
@@ -3331,6 +3331,44 @@ class EverblockTools extends ObjectModel
                         }
                     });
                 }
+
+                document.addEventListener("DOMContentLoaded", function () {
+                    var mapTabBtn = document.getElementById("tab-map");
+                    var listTabBtn = document.getElementById("tab-list");
+                    var mapPane = document.getElementById("pane-map");
+                    var listPane = document.getElementById("pane-list");
+
+                    if (mapTabBtn && listTabBtn && mapPane && listPane) {
+                        function showMapPane() {
+                            mapPane.classList.add("show", "active");
+                            listPane.classList.remove("show", "active");
+                            mapTabBtn.classList.add("active");
+                            listTabBtn.classList.remove("active");
+                            if (typeof google !== "undefined" && map) {
+                                google.maps.event.trigger(map, "resize");
+                            }
+                        }
+
+                        function showListPane() {
+                            listPane.classList.add("show", "active");
+                            mapPane.classList.remove("show", "active");
+                            listTabBtn.classList.add("active");
+                            mapTabBtn.classList.remove("active");
+                        }
+
+                        mapTabBtn.addEventListener("click", function (e) {
+                            e.preventDefault();
+                            showMapPane();
+                        });
+
+                        listTabBtn.addEventListener("click", function (e) {
+                            e.preventDefault();
+                            showListPane();
+                        });
+
+                        showMapPane();
+                    }
+                });
 
                 google.maps.event.addDomListener(window, "load", initAutocomplete);
                 google.maps.event.addDomListener(window, "load", initMap);
