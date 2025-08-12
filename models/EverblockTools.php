@@ -3302,6 +3302,7 @@ class EverblockTools extends ObjectModel
                     });
 
                     document.getElementById("everblock-storelocator").style.height = "500px";
+                    document.getElementById("everblock-storelocator").style.position = "absolute";
                 }
 
                 function initAutocomplete() {
