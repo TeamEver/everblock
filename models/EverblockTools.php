@@ -3200,16 +3200,23 @@ class EverblockTools extends ObjectModel
 
                 function renderContent(marker) {
                     var phone = marker.phone ? `<div>${marker.phone}</div>` : "";
+                    var address2 = marker.address2 ? marker.address2 + "<br>" : "";
                     var directions = `<a href="https://www.google.com/maps/dir/?api=1&destination=${marker.lat},${marker.lng}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">${marker.directions_label}</a>`;
                     return `
-                        <div class="everblock-marker-info">
-                            <img src="${marker.img}" alt="${marker.title}" style="width:80px;height:80px;object-fit:cover;margin-bottom:8px;"><br>
-                            <strong>${marker.title}</strong><br>
-                            ${marker.address}<br>
-                            ${phone}
-                            <div>${marker.status}</div>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#storeHoursModal${marker.id}">${marker.hours_label}</a>
-                            <div class="mt-2">${directions}</div>
+                        <div class="everblock-marker-info row g-2">
+                            <div class="col-4">
+                                <img src="${marker.img}" alt="${marker.title}" style="width:80px;height:80px;object-fit:cover;" class="rounded w-100">
+                            </div>
+                            <div class="col-8">
+                                <strong>${marker.title}</strong><br>
+                                ${marker.address1}<br>
+                                ${address2}
+                                ${marker.postcode} ${marker.city}<br>
+                                ${phone}
+                                <div>${marker.status}</div>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#storeHoursModal${marker.id}"><u>${marker.hours_label}</u> &gt;</a>
+                                <div class="mt-2">${directions}</div>
+                            </div>
                         </div>
                     `;
                 }
@@ -3334,39 +3341,12 @@ class EverblockTools extends ObjectModel
 
                 document.addEventListener("DOMContentLoaded", function () {
                     var mapTabBtn = document.getElementById("tab-map");
-                    var listTabBtn = document.getElementById("tab-list");
-                    var mapPane = document.getElementById("pane-map");
-                    var listPane = document.getElementById("pane-list");
-
-                    if (mapTabBtn && listTabBtn && mapPane && listPane) {
-                        function showMapPane() {
-                            mapPane.classList.add("show", "active");
-                            listPane.classList.remove("show", "active");
-                            mapTabBtn.classList.add("active");
-                            listTabBtn.classList.remove("active");
+                    if (mapTabBtn) {
+                        mapTabBtn.addEventListener("shown.bs.tab", function () {
                             if (typeof google !== "undefined" && map) {
                                 google.maps.event.trigger(map, "resize");
                             }
-                        }
-
-                        function showListPane() {
-                            listPane.classList.add("show", "active");
-                            mapPane.classList.remove("show", "active");
-                            listTabBtn.classList.add("active");
-                            mapTabBtn.classList.remove("active");
-                        }
-
-                        mapTabBtn.addEventListener("click", function (e) {
-                            e.preventDefault();
-                            showMapPane();
                         });
-
-                        listTabBtn.addEventListener("click", function (e) {
-                            e.preventDefault();
-                            showListPane();
-                        });
-
-                        showMapPane();
                     }
                 });
 
