@@ -3160,8 +3160,12 @@ class EverblockTools extends ObjectModel
         if (!empty($stores)) {
             $smarty = $context->smarty;
             $templatePath = static::getTemplatePath('hook/storelocator.tpl', $module);
+            $hasPrettyblocks = Module::isInstalled('prettyblocks')
+                && Module::isEnabled('prettyblocks')
+                && static::moduleDirectoryExists('prettyblocks');
             $smarty->assign([
                 'everblock_stores' => $stores,
+                'has_prettyblocks' => $hasPrettyblocks,
             ]);
             $storeLocatorContent = $smarty->fetch($templatePath);
             $txt = str_replace('[storelocator]', $storeLocatorContent, $txt);
@@ -3184,9 +3188,23 @@ class EverblockTools extends ObjectModel
             (function () {
                 var map;
                 var infoWindow;
-                var markers = ' . json_encode($markers) . '; // Initialisez la variable markers avec vos données JSON
+                var markers = ' . json_encode($markers) . ';
+                var markerMap = {};
 
-                // Fonction pour trouver le marqueur le plus proche
+                function renderContent(marker) {
+                    var phone = marker.phone ? `<div>${marker.phone}</div>` : "";
+                    return `
+                        <div class="everblock-marker-info">
+                            <img src="${marker.img}" alt="${marker.title}" style="width:80px;height:80px;object-fit:cover;margin-bottom:8px;"><br>
+                            <strong>${marker.title}</strong><br>
+                            ${marker.address}<br>
+                            ${phone}
+                            <div>${marker.status}</div>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#storeHoursModal${marker.id}">See hours</a>
+                        </div>
+                    `;
+                }
+
                 function findClosestMarker(userLocation) {
                     var closestMarker = null;
                     var closestDistance = Number.MAX_VALUE;
@@ -3204,6 +3222,25 @@ class EverblockTools extends ObjectModel
                     return closestMarker;
                 }
 
+                function filterStores(userLocation) {
+                    var items = document.querySelectorAll("#everblock-storelist .everblock-store-item");
+                    var distances = [];
+                    items.forEach(function (el) {
+                        var lat = parseFloat(el.getAttribute("data-lat"));
+                        var lng = parseFloat(el.getAttribute("data-lng"));
+                        var distance = google.maps.geometry.spherical.computeDistanceBetween(userLocation, new google.maps.LatLng(lat, lng));
+                        distances.push({el: el, distance: distance});
+                    });
+                    distances.sort(function (a, b) { return a.distance - b.distance; });
+                    items.forEach(function (el) { el.style.display = "none"; });
+                    distances.forEach(function (item, index) {
+                        if (index < 5) {
+                            item.el.style.display = "";
+                            item.el.parentNode.appendChild(item.el);
+                        }
+                    });
+                }
+
                 function initMap() {
                     map = new google.maps.Map(document.getElementById("everblock-storelocator"), {
                         center: { lat: ' . $markers[0]['lat'] . ', lng: ' . $markers[0]['lng'] . ' },
@@ -3217,16 +3254,9 @@ class EverblockTools extends ObjectModel
                             map: map,
                             title: marker.title
                         });
-
+                        markerMap[marker.id] = markerObj;
                         markerObj.addListener("click", function () {
-                            var link = `https://www.google.com/maps?q=${marker.lat},${marker.lng}`;
-                            var content = `
-                                <strong>${marker.title}</strong><br>
-                                ${marker.address}<br>
-                                ${marker.phone ? "Tel: " + marker.phone + "<br>" : ""}
-                                <a href="${link}" target="_blank">Ouvrir dans Google Maps</a>
-                            `;
-                            infoWindow.setContent(content);
+                            infoWindow.setContent(renderContent(marker));
                             infoWindow.open(map, markerObj);
                         });
                     });
@@ -3239,19 +3269,16 @@ class EverblockTools extends ObjectModel
 
                     autocomplete.addListener("place_changed", function () {
                         var place = autocomplete.getPlace();
-                        // Vous pouvez accéder aux informations sur le lieu sélectionné ici
-                        console.log(place);
-
                         if (place.geometry && place.geometry.location) {
                             var userLocation = place.geometry.location;
-
-                            // Maintenant, recherchez le marqueur le plus proche
                             var closestMarker = findClosestMarker(userLocation);
-
+                            filterStores(userLocation);
                             if (closestMarker) {
-                                // Définir la vue de la carte pour zoomer sur le marqueur le plus proche
+                                var markerObj = markerMap[closestMarker.id];
                                 map.panTo({ lat: closestMarker.lat, lng: closestMarker.lng });
-                                map.setZoom(15); // Réglez le niveau de zoom souhaité
+                                map.setZoom(15);
+                                infoWindow.setContent(renderContent(closestMarker));
+                                infoWindow.open(map, markerObj);
                             }
                         }
                     });
