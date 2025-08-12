@@ -55,6 +55,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $tabTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_tab.tpl';
             $categoryTabsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_tabs.tpl';
             $dividerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
+            $spacerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_spacer.tpl';
             $galleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gallery.tpl';
             $masonryGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl';
             $testimonialTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial.tpl';
@@ -312,6 +313,31 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => '',
                         ],
                     ]
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Spacer'),
+                'description' => $module->l('Add a vertical space'),
+                'code' => 'everblock_spacer',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $spacerTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'space_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Space top (rem)'),
+                            'default' => '0',
+                        ],
+                        'space_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Space bottom (rem)'),
+                            'default' => '0',
+                        ],
+                    ],
                 ],
             ];
             $blocks[] = [

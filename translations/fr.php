@@ -395,6 +395,10 @@ $_MODULE['<{everblock}prestashop>everblockprettyblocks_1a9a27b18e9e9e83c622eba7b
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_8bcdde407b7ee5eb8dd0f1e944b6528a'] = 'Ajouter un formulaire de connexion (le module de contact par défaut doit être installé)';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_2908050e771fb91a3afbb7809972e90c'] = 'Séparateur';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_d6b2b9598417e42e08fa242def1caa81'] = 'Affiche un séparateur';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_6ab9a295c00f945cf4881fd7667a0334'] = 'Espaceur';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_95adcb014171c2b9f75fb10c8fa98c86'] = 'Ajoute un espace vertical';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_ec4e9244319c2b02e369430b91363264'] = 'Espace haut (rem)';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_450054db166bd415e164f0804efb2ec5'] = 'Espace bas (rem)';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_7015777bcc86cd0c5e4819310d62b040'] = 'Onglets';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_9c18ae405b0392cb1b891f61704d6834'] = 'Affiche des onglets personnalisés';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_ca50c06475296d0be9139f99c4d7619b'] = 'Classes CSS personnalisées';
