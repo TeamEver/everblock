@@ -332,6 +332,7 @@
 
 .gm-style-iw button.gm-ui-hover-effect {
   /* Position close cross flush with image and store name */
+  position: absolute;
   top: 0 !important;
   right: 0 !important;
   transform: translate(0, 0) !important;
