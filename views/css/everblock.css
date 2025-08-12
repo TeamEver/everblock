@@ -326,12 +326,16 @@
 }
 
 .gm-style .gm-style-iw-c {
-  padding-top: 0 !important;
+  /* Remove default padding so the close button aligns with the popup content */
+  padding: 0 !important;
 }
 
 .gm-style-iw button.gm-ui-hover-effect {
+  /* Position close cross flush with image and store name */
   top: 0 !important;
   right: 0 !important;
+  transform: translate(0, 0) !important;
+  margin: 0 !important;
 }
 
 @media (min-width: 768px) {
