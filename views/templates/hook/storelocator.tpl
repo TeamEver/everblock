@@ -40,7 +40,7 @@
       <div id="everblock-storelist" class="row" style="max-height:500px; overflow-y:auto;">
         {foreach from=$everblock_stores item=item name=store_loop}
         {assign var="hasCoordinates" value=(isset($item.latitude) && isset($item.longitude) && $item.latitude != '' && $item.longitude != '')}
-        <div class="col-12 everblock-store-item" data-lat="{$item.latitude}" data-lng="{$item.longitude}">
+        <div class="col-12 everblock-store-item mt-4" data-lat="{$item.latitude}" data-lng="{$item.longitude}">
           <div class="d-flex align-items-start">
             <div class="flex-shrink-0 me-3">
               <img src="{$urls.img_store_url|escape:'htmlall':'UTF-8'}{$item.id|escape:'htmlall':'UTF-8'}.jpg"
