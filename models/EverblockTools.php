@@ -3270,12 +3270,12 @@ class EverblockTools extends ObjectModel
                 }
 
                 function applySearch(userLocation) {
+                    map.panTo(userLocation);
+                    map.setZoom(15);
                     var closestMarker = findClosestMarker(userLocation);
                     filterStores(userLocation);
                     if (closestMarker) {
                         var markerObj = markerMap[closestMarker.id];
-                        map.panTo({ lat: closestMarker.lat, lng: closestMarker.lng });
-                        map.setZoom(15);
                         infoWindow.setContent(renderContent(closestMarker));
                         infoWindow.open(map, markerObj);
                     }
