@@ -1716,6 +1716,8 @@ class Everblock extends Module
             $this->emptyAllCache();
         }
         $stores = EverblockTools::getStoreLocatorData();
+        $filename = 'store-locator-' . $idShop . '.js';
+        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
         if (!empty($stores) && Tools::getValue('EVERBLOCK_GMAP_KEY')) {
             $markers = [];
             $context = Context::getContext();
@@ -1749,10 +1751,10 @@ class Everblock extends Module
             }
             $gmapScript = EverblockTools::generateGoogleMapScript($markers);
             if ($gmapScript) {
-                $filename = 'store-locator-' . $idShop . '.js';
-                $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
                 file_put_contents($filePath, $gmapScript);
             }
+        } elseif (file_exists($filePath)) {
+            unlink($filePath);
         }
         $this->generateFeatureFlagsCssFile();
         $this->generateSoldOutFlagCssFile();
@@ -3170,17 +3172,15 @@ class Everblock extends Module
         }
         // Do not show GMAP api KEY on Everblock cache
         $apiKey = Configuration::get('EVERBLOCK_GMAP_KEY');
-        if (Tools::getValue('controller') == 'cms') {
+        if ($apiKey && Tools::getValue('controller') == 'cms') {
             $filename = 'store-locator-' . $idShop . '.js';
             $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
             if (file_exists($filePath) && filesize($filePath) > 0) {
-                if ($apiKey) {
-                    $this->context->controller->registerJavascript(
-                        'module-' . $this->name . '-custom-gmap-js',
-                        'https://maps.googleapis.com/maps/api/js?key=' . $apiKey . '&libraries=places,geometry',
-                        ['server' => 'remote', 'position' => 'bottom', 'priority' => 300, 'attributes' => 'defer']
-                    );
-                }
+                $this->context->controller->registerJavascript(
+                    'module-' . $this->name . '-custom-gmap-js',
+                    'https://maps.googleapis.com/maps/api/js?key=' . $apiKey . '&libraries=places,geometry',
+                    ['server' => 'remote', 'position' => 'bottom', 'priority' => 300, 'attributes' => 'defer']
+                );
                 $this->context->controller->registerJavascript(
                     'module-' . $this->name . '-shop-map-js',
                     'modules/' . $this->name . '/views/js/' . $filename,
