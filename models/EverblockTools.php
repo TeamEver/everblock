@@ -3349,6 +3349,26 @@ class EverblockTools extends ObjectModel
                             }
                         });
                     }
+
+                    var storeListEl = document.getElementById("everblock-storelist");
+                    if (storeListEl) {
+                        storeListEl.addEventListener("click", function (e) {
+                            var nameEl = e.target.closest("h6");
+                            if (nameEl && window.innerWidth >= 768) {
+                                e.preventDefault();
+                                var itemEl = nameEl.closest(".everblock-store-item");
+                                var id = parseInt(itemEl.getAttribute("data-id"));
+                                var marker = markers.find(function (m) { return m.id === id; });
+                                var markerObj = markerMap[id];
+                                if (marker && markerObj) {
+                                    map.panTo({ lat: marker.lat, lng: marker.lng });
+                                    map.setZoom(15);
+                                    infoWindow.setContent(renderContent(marker));
+                                    infoWindow.open(map, markerObj);
+                                }
+                            }
+                        });
+                    }
                 });
 
                 google.maps.event.addDomListener(window, "load", initAutocomplete);

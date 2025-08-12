@@ -38,8 +38,7 @@
     <div class="tab-pane fade col-12 col-md-4 d-md-block order-md-1" id="pane-list" role="tabpanel" aria-labelledby="tab-list">
       <div id="everblock-storelist" class="row" style="max-height:500px; overflow-y:auto;">
         {foreach from=$everblock_stores item=item name=store_loop}
-        {assign var="hasCoordinates" value=(isset($item.latitude) && isset($item.longitude) && $item.latitude != '' && $item.longitude != '')}
-        <div class="col-12 everblock-store-item mt-4" data-lat="{$item.latitude}" data-lng="{$item.longitude}">
+        <div class="col-12 everblock-store-item mt-4" data-id="{$item.id|escape:'htmlall':'UTF-8'}" data-lat="{$item.latitude}" data-lng="{$item.longitude}">
           <div class="d-flex align-items-start">
             <div class="flex-shrink-0 me-3">
               <img src="{$urls.img_store_url|escape:'htmlall':'UTF-8'}{$item.id|escape:'htmlall':'UTF-8'}.jpg"
@@ -94,43 +93,45 @@
           {if $has_prettyblocks}
             {prettyblocks_zone zone_name="displayPrettyBlocksStoreLocator{$item.id}"}
           {/if}
-
-          {* Modal horaires *}
-          <div class="modal fade" id="storeHoursModal{$item.id}" tabindex="-1" aria-labelledby="storeHoursModalLabel{$item.id}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content border-0 shadow">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="storeHoursModalLabel{$item.id}">
-                    {l s='Hours from %s' sprintf=[$item.name|escape:'htmlall':'UTF-8'] mod='everblock'}
-                  </h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{l s='Close' mod='everblock'}"></button>
-                </div>
-                <div class="modal-body">
-                  <ul class="list-unstyled mb-3">
-                    {foreach from=$item.hours_display item=hour}
-                      <li>
-                        <strong>{$hour.day|escape:'htmlall':'UTF-8'} :</strong>
-                        {$hour.hours|escape:'htmlall':'UTF-8'}
-                      </li>
-                    {/foreach}
-                  </ul>
-
-                  {if $hasCoordinates}
-                    <div class="text-center">
-                      <a href="https://www.google.com/maps/search/?api=1&query={$item.latitude},{$item.longitude}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary d-inline-flex align-items-center">
-                        <i class="material-icons me-2">location_on</i>
-                        {l s='Get directions' mod='everblock'}
-                      </a>
-                    </div>
-                  {/if}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       {/foreach}
       </div>
     </div>
   </div>
 </div>
+
+{foreach from=$everblock_stores item=item}
+  {assign var="hasCoordinates" value=(isset($item.latitude) && isset($item.longitude) && $item.latitude != '' && $item.longitude != '')}
+  <div class="modal fade" id="storeHoursModal{$item.id}" tabindex="-1" aria-labelledby="storeHoursModalLabel{$item.id}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title" id="storeHoursModalLabel{$item.id}">
+            {l s='Hours from %s' sprintf=[$item.name|escape:'htmlall':'UTF-8'] mod='everblock'}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{l s='Close' mod='everblock'}"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="list-unstyled mb-3">
+            {foreach from=$item.hours_display item=hour}
+              <li>
+                <strong>{$hour.day|escape:'htmlall':'UTF-8'} :</strong>
+                {$hour.hours|escape:'htmlall':'UTF-8'}
+              </li>
+            {/foreach}
+          </ul>
+
+          {if $hasCoordinates}
+            <div class="text-center">
+              <a href="https://www.google.com/maps/search/?api=1&query={$item.latitude},{$item.longitude}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary d-inline-flex align-items-center">
+                <i class="material-icons me-2">location_on</i>
+                {l s='Get directions' mod='everblock'}
+              </a>
+            </div>
+          {/if}
+        </div>
+      </div>
+    </div>
+  </div>
+{/foreach}
 {hook h='displayAfterStoreLocator'}
