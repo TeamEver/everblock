@@ -56,7 +56,7 @@ class EverblockShortcode extends ObjectModel
             'content' => [
                 'type' => self::TYPE_HTML,
                 'lang' => true,
-                'validate' => 'isAnything',
+                'validate' => 'isCleanHtml',
                 'required' => false,
             ],
         ],
