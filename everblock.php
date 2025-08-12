@@ -1715,21 +1715,33 @@ class Everblock extends Module
         if ((bool) Tools::getValue('EVERPSCSS_CACHE') === true) {
             $this->emptyAllCache();
         }
-        $stores = Store::getStores((int) Context::getContext()->language->id);
+        $stores = EverblockTools::getStoreLocatorData();
         if (!empty($stores) && Tools::getValue('EVERBLOCK_GMAP_KEY')) {
             $markers = [];
+            $context = Context::getContext();
             foreach ($stores as $store) {
                 $address = $store['address1'];
                 if (!empty($store['address2'])) {
-                $address .= ' ' . $store['address2'];
+                    $address .= ' ' . $store['address2'];
                 }
                 $address .= ', ' . $store['postcode'] . ' ' . $store['city'];
+                $storeId = isset($store['id']) ? (int) $store['id'] : (int) $store['id_store'];
+                if (!empty($store['is_open'])) {
+                    $status = sprintf($this->l('Open today until %s'), $store['open_until']);
+                } elseif (!empty($store['opens_at'])) {
+                    $status = sprintf($this->l('Open today at %s'), $store['opens_at']);
+                } else {
+                    $status = $this->l('Closed');
+                }
                 $marker = [
-                'lat' => $store['latitude'],
-                'lng' => $store['longitude'],
-                'title' => $store['name'],
-                'address' => $address,
-                'phone' => $store['phone'],
+                    'id' => $storeId,
+                    'lat' => $store['latitude'],
+                    'lng' => $store['longitude'],
+                    'title' => $store['name'],
+                    'address' => $address,
+                    'phone' => $store['phone'],
+                    'img' => $context->link->getMediaLink('img/st/' . $storeId . '.jpg'),
+                    'status' => $status,
                 ];
                 $markers[] = $marker;
             }
@@ -1739,7 +1751,7 @@ class Everblock extends Module
                 $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
                 file_put_contents($filePath, $gmapScript);
             }
-            }
+        }
         $this->generateFeatureFlagsCssFile();
         $this->generateSoldOutFlagCssFile();
         $this->postSuccess[] = $this->l('All settings have been saved');
