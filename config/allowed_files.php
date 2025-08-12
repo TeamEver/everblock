@@ -194,6 +194,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_sharer.tpl',
     'views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl',
     'views/templates/hook/prettyblocks/prettyblock_shortcode.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_spacer.tpl',
     'views/templates/hook/prettyblocks/prettyblock_tab.tpl',
     'views/templates/hook/prettyblocks/prettyblock_testimonial.tpl',
     'views/templates/hook/prettyblocks/prettyblock_testimonial_slider.tpl',
