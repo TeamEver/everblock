@@ -332,7 +332,7 @@
 
 .gm-style-iw button.gm-ui-hover-effect {
   /* Position close cross flush with image and store name */
-  position: absolute;
+  position: absolute!important;
   top: 0 !important;
   right: 0 !important;
   transform: translate(0, 0) !important;
@@ -340,7 +340,7 @@
 }
 
 .gm-style .gm-style-iw-d {
-  overflow: hidden;
+  overflow: hidden!important;
   margin-bottom: 1rem;
 }
 
@@ -350,7 +350,7 @@
 
 @media (min-width: 768px) {
   #everblock-storelocator {
-    width: 50%;
+    width: 50%!important;
   }
   #everblock-storelocator-wrapper #pane-list {
     opacity: 1;
