@@ -18,13 +18,13 @@
 <div id="store-search-block" class="mb-3">
   <div class="d-flex flex-column flex-md-row align-items-md-center">
     <label for="store_search" class="me-md-2 mb-2 mb-md-0">{l s='Find a store' mod='everblock'}</label>
-    <input type="text" class="form-control mb-2 mb-md-0 me-md-2" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
+    <input type="text" class="form-control mb-2 mb-md-0 me-md-2 w-100" style="max-width:375px;" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
     <button type="button" id="store_search_btn" class="btn btn-primary">{l s='Search' mod='everblock'}</button>
   </div>
 </div>
 {hook h='displayBeforeStoreLocator'}
 <div id="everblock-storelocator-wrapper" class="mb-3">
-  <ul class="nav nav-tabs" id="storeLocatorTabs" role="tablist">
+  <ul class="nav nav-tabs d-md-none" id="storeLocatorTabs" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" id="tab-map" data-bs-toggle="tab" data-bs-target="#pane-map" type="button" role="tab" aria-controls="pane-map" aria-selected="true">{l s='Map' mod='everblock'}</button>
     </li>
@@ -32,12 +32,12 @@
       <button class="nav-link" id="tab-list" data-bs-toggle="tab" data-bs-target="#pane-list" type="button" role="tab" aria-controls="pane-list" aria-selected="false">{l s='Stores' mod='everblock'}</button>
     </li>
   </ul>
-  <div class="tab-content">
-    <div class="tab-pane fade show active" id="pane-map" role="tabpanel" aria-labelledby="tab-map">
+  <div class="tab-content row">
+    <div class="tab-pane fade show active col-12 col-md-8 d-md-block" id="pane-map" role="tabpanel" aria-labelledby="tab-map">
       <div id="everblock-storelocator" class="everblock-storelocator w-100 h-100"></div>
     </div>
-    <div class="tab-pane fade" id="pane-list" role="tabpanel" aria-labelledby="tab-list">
-      <div id="everblock-storelist" class="row g-4">
+    <div class="tab-pane fade col-12 col-md-4 d-md-block" id="pane-list" role="tabpanel" aria-labelledby="tab-list">
+      <div id="everblock-storelist" class="row g-4" style="max-height:500px; overflow-y:auto;">
         {foreach from=$everblock_stores item=item name=store_loop}
         {assign var="hasCoordinates" value=(isset($item.latitude) && isset($item.longitude) && $item.latitude != '' && $item.longitude != '')}
         <div class="col-12 everblock-store-item" data-lat="{$item.latitude}" data-lng="{$item.longitude}">
