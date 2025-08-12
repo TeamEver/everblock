@@ -80,7 +80,7 @@
           </div>
           {hook h='displayAfterLocatorStore' store=$item}
           {if $has_prettyblocks}
-            {hook h='displayPrettyBlocksStoreLocator' store=$item}
+            {widget name="displayPrettyBlocksStoreLocator" zone_name="displayPrettyBlocksStoreLocator{$item.id}"}
           {/if}
 
           {* Modal horaires *}
