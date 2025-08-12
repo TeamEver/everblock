@@ -339,6 +339,11 @@
   margin: 0 !important;
 }
 
+.gm-style .gm-style-iw-d {
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
 @media (min-width: 768px) {
   #everblock-storelocator-wrapper #pane-list {
     opacity: 1;
