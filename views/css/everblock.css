@@ -350,7 +350,7 @@
 
 @media (min-width: 768px) {
   #everblock-storelocator {
-    width: 50%!important;
+/*    width: 50%!important;*/
   }
   #everblock-storelocator-wrapper #pane-list {
     opacity: 1;
