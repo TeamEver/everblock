@@ -16,15 +16,29 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 <div id="store-search-block" class="mb-3">
-  <div class="input-group">
-    <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
+  <div class="d-flex flex-column flex-md-row align-items-md-center">
+    <label for="store_search" class="me-md-2 mb-2 mb-md-0">{l s='Find a store' mod='everblock'}</label>
+    <input type="text" class="form-control mb-2 mb-md-0 me-md-2" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
+    <button type="button" id="store_search_btn" class="btn btn-primary">{l s='Search' mod='everblock'}</button>
   </div>
 </div>
 {hook h='displayBeforeStoreLocator'}
-<div id="everblock-storelocator-wrapper" class="row">
-  <div class="col-12 col-md-4">
-    <div id="everblock-storelist" class="row g-4">
-      {foreach from=$everblock_stores item=item name=store_loop}
+<div id="everblock-storelocator-wrapper" class="mb-3">
+  <ul class="nav nav-tabs" id="storeLocatorTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-map" data-bs-toggle="tab" data-bs-target="#pane-map" type="button" role="tab" aria-controls="pane-map" aria-selected="true">{l s='Map' mod='everblock'}</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-list" data-bs-toggle="tab" data-bs-target="#pane-list" type="button" role="tab" aria-controls="pane-list" aria-selected="false">{l s='Stores' mod='everblock'}</button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="pane-map" role="tabpanel" aria-labelledby="tab-map">
+      <div id="everblock-storelocator" class="everblock-storelocator w-100 h-100"></div>
+    </div>
+    <div class="tab-pane fade" id="pane-list" role="tabpanel" aria-labelledby="tab-list">
+      <div id="everblock-storelist" class="row g-4">
+        {foreach from=$everblock_stores item=item name=store_loop}
         {assign var="hasCoordinates" value=(isset($item.latitude) && isset($item.longitude) && $item.latitude != '' && $item.longitude != '')}
         <div class="col-12 everblock-store-item" data-lat="{$item.latitude}" data-lng="{$item.longitude}">
           <div class="d-flex align-items-start">
@@ -43,14 +57,14 @@
                   {$item.name|escape:'htmlall':'UTF-8'}
                 {/if}
               </h6>
-              <p class="mb-0 small text-muted">
+              <p class="mb-0 small">
                 {$item.address1|escape:'htmlall':'UTF-8'}<br>
                 {if $item.address2}{$item.address2|escape:'htmlall':'UTF-8'}<br>{/if}
                 {$item.postcode} {$item.city}
               </p>
               {if $item.phone}
                 <p class="mb-1 small">
-                  <span class="text-muted">{l s='Tel:' mod='everblock'}</span>
+                  <span>{l s='Tel:' mod='everblock'}</span>
                   <a href="tel:{$item.phone|replace:' ':''|escape:'htmlall':'UTF-8'}" class="text-dark text-decoration-none">+{$item.phone|escape:'htmlall':'UTF-8'}</a>
                 </p>
               {/if}
@@ -80,7 +94,7 @@
           </div>
           {hook h='displayAfterLocatorStore' store=$item}
           {if $has_prettyblocks}
-            {widget name="displayPrettyBlocksStoreLocator" zone_name="displayPrettyBlocksStoreLocator{$item.id}"}
+            {prettyblocks_zone zone_name="displayPrettyBlocksStoreLocator{$item.id}"}
           {/if}
 
           {* Modal horaires *}
@@ -117,10 +131,8 @@
           </div>
         </div>
       {/foreach}
+      </div>
     </div>
-  </div>
-  <div class="col-12 col-md-8">
-    <div id="everblock-storelocator" class="everblock-storelocator w-100 h-100"></div>
   </div>
 </div>
 {hook h='displayAfterStoreLocator'}

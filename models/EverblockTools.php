@@ -3190,9 +3190,13 @@ class EverblockTools extends ObjectModel
                 var infoWindow;
                 var markers = ' . json_encode($markers) . ';
                 var markerMap = {};
+                var storeList = document.getElementById("everblock-storelist");
+                var originalItems = Array.from(storeList.children);
+                var defaultCenter = { lat: markers[0].lat, lng: markers[0].lng };
 
                 function renderContent(marker) {
                     var phone = marker.phone ? `<div>${marker.phone}</div>` : "";
+                    var directions = `<a href="https://www.google.com/maps/dir/?api=1&destination=${marker.lat},${marker.lng}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm mt-2">${marker.directions_label}</a>`;
                     return `
                         <div class="everblock-marker-info">
                             <img src="${marker.img}" alt="${marker.title}" style="width:80px;height:80px;object-fit:cover;margin-bottom:8px;"><br>
@@ -3200,7 +3204,8 @@ class EverblockTools extends ObjectModel
                             ${marker.address}<br>
                             ${phone}
                             <div>${marker.status}</div>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#storeHoursModal${marker.id}">See hours</a>
+                            ${directions}
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#storeHoursModal${marker.id}">${marker.hours_label}</a>
                         </div>
                     `;
                 }
@@ -3241,9 +3246,33 @@ class EverblockTools extends ObjectModel
                     });
                 }
 
+                function resetDisplay() {
+                    map.panTo(defaultCenter);
+                    map.setZoom(13);
+                    if (infoWindow) {
+                        infoWindow.close();
+                    }
+                    originalItems.forEach(function (el) {
+                        storeList.appendChild(el);
+                        el.style.display = "";
+                    });
+                }
+
+                function applySearch(userLocation) {
+                    var closestMarker = findClosestMarker(userLocation);
+                    filterStores(userLocation);
+                    if (closestMarker) {
+                        var markerObj = markerMap[closestMarker.id];
+                        map.panTo({ lat: closestMarker.lat, lng: closestMarker.lng });
+                        map.setZoom(15);
+                        infoWindow.setContent(renderContent(closestMarker));
+                        infoWindow.open(map, markerObj);
+                    }
+                }
+
                 function initMap() {
                     map = new google.maps.Map(document.getElementById("everblock-storelocator"), {
-                        center: { lat: ' . $markers[0]['lat'] . ', lng: ' . $markers[0]['lng'] . ' },
+                        center: defaultCenter,
                         zoom: 13
                     });
                     infoWindow = new google.maps.InfoWindow();
@@ -3266,23 +3295,37 @@ class EverblockTools extends ObjectModel
 
                 function initAutocomplete() {
                     var autocomplete = new google.maps.places.Autocomplete(document.getElementById("store_search"));
+                    var geocoder = new google.maps.Geocoder();
+                    var searchBtn = document.getElementById("store_search_btn");
+                    var searchInput = document.getElementById("store_search");
 
                     autocomplete.addListener("place_changed", function () {
                         var place = autocomplete.getPlace();
                         if (place.geometry && place.geometry.location) {
-                            var userLocation = place.geometry.location;
-                            var closestMarker = findClosestMarker(userLocation);
-                            filterStores(userLocation);
-                            if (closestMarker) {
-                                var markerObj = markerMap[closestMarker.id];
-                                map.panTo({ lat: closestMarker.lat, lng: closestMarker.lng });
-                                map.setZoom(15);
-                                infoWindow.setContent(renderContent(closestMarker));
-                                infoWindow.open(map, markerObj);
-                            }
+                            applySearch(place.geometry.location);
                         }
                     });
 
+                    if (searchBtn) {
+                        searchBtn.addEventListener("click", function () {
+                            var address = searchInput.value;
+                            if (!address.trim()) {
+                                resetDisplay();
+                                return;
+                            }
+                            geocoder.geocode({ address: address }, function (results, status) {
+                                if (status === "OK" && results[0].geometry && results[0].geometry.location) {
+                                    applySearch(results[0].geometry.location);
+                                }
+                            });
+                        });
+                    }
+
+                    searchInput.addEventListener("input", function () {
+                        if (!this.value) {
+                            resetDisplay();
+                        }
+                    });
                 }
 
                 google.maps.event.addDomListener(window, "load", initAutocomplete);

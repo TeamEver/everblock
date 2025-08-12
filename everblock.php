@@ -1740,8 +1740,10 @@ class Everblock extends Module
                     'title' => $store['name'],
                     'address' => $address,
                     'phone' => $store['phone'],
-                    'img' => $context->link->getMediaLink('img/st/' . $storeId . '.jpg'),
+                    'img' => $context->link->getBaseLink(null, null) . 'img/st/' . $storeId . '.jpg',
                     'status' => $status,
+                    'directions_label' => $this->l('Get directions'),
+                    'hours_label' => $this->l('See hours'),
                 ];
                 $markers[] = $marker;
             }
