@@ -179,6 +179,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_everblock.tpl',
     'views/templates/hook/prettyblocks/prettyblock_gallery.tpl',
     'views/templates/hook/prettyblocks/prettyblock_gmap.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_heading.tpl',
     'views/templates/hook/prettyblocks/prettyblock_iframe.tpl',
     'views/templates/hook/prettyblocks/prettyblock_img.tpl',
     'views/templates/hook/prettyblocks/prettyblock_img_slider.tpl',
