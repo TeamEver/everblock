@@ -3318,20 +3318,29 @@ class EverblockTools extends ObjectModel
                         }
                     });
 
-                    if (searchBtn) {
-                        searchBtn.addEventListener("click", function () {
-                            var address = searchInput.value;
-                            if (!address.trim()) {
-                                resetDisplay();
-                                return;
+                    function performSearch() {
+                        var address = searchInput.value;
+                        if (!address.trim()) {
+                            resetDisplay();
+                            return;
+                        }
+                        geocoder.geocode({ address: address }, function (results, status) {
+                            if (status === "OK" && results[0].geometry && results[0].geometry.location) {
+                                applySearch(results[0].geometry.location);
                             }
-                            geocoder.geocode({ address: address }, function (results, status) {
-                                if (status === "OK" && results[0].geometry && results[0].geometry.location) {
-                                    applySearch(results[0].geometry.location);
-                                }
-                            });
                         });
                     }
+
+                    if (searchBtn) {
+                        searchBtn.addEventListener("click", performSearch);
+                    }
+
+                    searchInput.addEventListener("keydown", function (e) {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            performSearch();
+                        }
+                    });
 
                     searchInput.addEventListener("input", function () {
                         if (!this.value) {
