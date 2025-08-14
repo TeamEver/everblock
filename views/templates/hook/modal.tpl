@@ -15,18 +15,9 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
 *}
-<button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#everblock-modal">
+{if isset($everblock_modal_id) && $everblock_modal_id}
+<button type="button" class="btn btn-secondary everblock-modal-button" data-evermodal="{$everblock_modal_id|escape:'htmlall':'UTF-8'}">
     {l s='Show modal' mod='everblock'}
 </button>
-<div class="modal fade" id="everblock-modal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                {$modal_content nofilter}
-                {if $modal_file}
-                    <p><a href="{$modal_file|escape:'htmlall':'UTF-8'}" target="_blank">{l s='Download file' mod='everblock'}</a></p>
-                {/if}
-            </div>
-        </div>
-    </div>
-</div>
+{/if}
+

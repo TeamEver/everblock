@@ -44,8 +44,9 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
         }
         $blockId = (int) Tools::getValue('id_everblock');
         $cmsId = (int) Tools::getValue('id_cms');
+        $productModalId = (int) Tools::getValue('id_everblock_modal');
 
-        if ($cmsId && !$blockId) {
+        if ($cmsId && !$blockId && !$productModalId) {
             $cms = new CMS($cmsId, $this->context->language->id, $this->context->shop->id);
             if (!Validate::isLoadedObject($cms) || !(bool) $cms->active) {
                 die();
@@ -57,6 +58,35 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             );
             $this->context->smarty->assign([
                 'everblock_modal' => (object) ['content' => $cmsContent],
+            ]);
+            $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
+            die($response);
+        }
+        if ($productModalId && !$blockId && !$cmsId) {
+            $modal = new EverblockModal(
+                $productModalId,
+                $this->context->language->id,
+                $this->context->shop->id
+            );
+            if (!Validate::isLoadedObject($modal)) {
+                die();
+            }
+            $content = isset($modal->content[$this->context->language->id])
+                ? $modal->content[$this->context->language->id]
+                : '';
+            $fileUrl = '';
+            if (!empty($modal->file)) {
+                $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
+            }
+            $this->context->smarty->assign([
+                'everblock_modal' => (object) [
+                    'content' => EverblockTools::renderShortcodes(
+                        $content,
+                        $this->context,
+                        $this->module
+                    ),
+                    'file' => $fileUrl,
+                ],
             ]);
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
             die($response);

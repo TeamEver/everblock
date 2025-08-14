@@ -152,7 +152,8 @@ $(document).ready(function(){
         e.preventDefault();
         let blockId = $(this).data('everclickmodal');
         let cmsId = $(this).data('evercms');
-        if (!blockId && !cmsId) {
+        let productModalId = $(this).data('evermodal');
+        if (!blockId && !cmsId && !productModalId) {
             return;
         }
         let data = { token: everblock_token, force: 1 };
@@ -161,6 +162,9 @@ $(document).ready(function(){
         }
         if (cmsId) {
             data.id_cms = cmsId;
+        }
+        if (productModalId) {
+            data.id_everblock_modal = productModalId;
         }
         $.ajax({
             url: atob(evermodal_link),
