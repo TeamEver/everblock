@@ -4786,6 +4786,78 @@ class EverblockTools extends ObjectModel
         return $repeaterData;
     }
 
+    public static function moveAllPrettyblocksMediasToCms(): int
+    {
+        $db = Db::getInstance();
+        $destinationDir = _PS_IMG_DIR_ . 'cms/prettyblocks/';
+        if (!is_dir($destinationDir)) {
+            @mkdir($destinationDir, 0755, true);
+        }
+        $results = $db->executeS('SELECT id_prettyblocks, state FROM ' . _DB_PREFIX_ . 'prettyblocks WHERE state IS NOT NULL');
+
+        $updatedCount = 0;
+
+        foreach ($results as $row) {
+            $id = (int) $row['id_prettyblocks'];
+            $state = json_decode($row['state'], true);
+
+            if (!is_array($state)) {
+                continue;
+            }
+
+            $migrated = self::moveMediasRecursive($state, $destinationDir);
+
+            if (json_encode($state) !== json_encode($migrated)) {
+                $db->update(
+                    'prettyblocks',
+                    ['state' => pSQL(json_encode($migrated))],
+                    'id_prettyblocks = ' . $id
+                );
+                $updatedCount++;
+            }
+        }
+
+        return $updatedCount;
+    }
+
+    private static function moveMediasRecursive(array $data, string $destinationDir): array
+    {
+        foreach ($data as &$item) {
+            if (is_array($item)) {
+                if (($item['type'] ?? null) === 'fileupload' && isset($item['value']['url'])) {
+                    $item = self::moveSingleMediaField($item, $destinationDir);
+                } else {
+                    $item = self::moveMediasRecursive($item, $destinationDir);
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    private static function moveSingleMediaField(array $field, string $destinationDir): array
+    {
+        $url = $field['value']['url'] ?? '';
+        if ($url) {
+            $sourcePath = self::urlToFilePath($url);
+            $filename = $field['value']['filename'] ?? basename($sourcePath);
+            if (file_exists($sourcePath)) {
+                if (!is_dir($destinationDir)) {
+                    @mkdir($destinationDir, 0755, true);
+                }
+                $destinationPath = $destinationDir . $filename;
+                if ($sourcePath !== $destinationPath) {
+                    @rename($sourcePath, $destinationPath);
+                }
+                $field['value']['url'] = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/cms/prettyblocks/' . $filename;
+                $field['value']['filename'] = $filename;
+            }
+        }
+        $field['path'] = '$/img/cms/prettyblocks/';
+
+        return $field;
+    }
+
     public static function convertToWebP($imagePath, int $maxWidth = 1920, int $maxHeight = 600)
     {
         // Si déjà en webp, on ne fait rien

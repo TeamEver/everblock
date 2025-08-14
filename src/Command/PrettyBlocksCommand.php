@@ -32,6 +32,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Module;
 use Validate;
 use Db;
+use EverblockTools;
 
 class PrettyBlocksCommand extends Command
 {
@@ -42,6 +43,7 @@ class PrettyBlocksCommand extends Command
 
     private $allowedActions = [
         'duplicate',
+        'migrate-media',
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -81,6 +83,12 @@ class PrettyBlocksCommand extends Command
                 return self::INVALID;
             }
             $this->duplicatePrettyblocks($fromLang, $toLang, $output);
+            return self::SUCCESS;
+        }
+
+        if ($action === 'migrate-media') {
+            $count = EverblockTools::moveAllPrettyblocksMediasToCms();
+            $output->writeln('<success>' . $count . ' block(s) updated</success>');
             return self::SUCCESS;
         }
 

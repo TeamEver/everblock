@@ -23,6 +23,8 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockPrettyBlocks extends ObjectModel
 {
+    private const MEDIA_PATH = '$/img/cms/prettyblocks/';
+
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
     {
         return PrettyBlocksModel::registerBlockToZone($zone_name, $code, $id_lang, $id_shop);
@@ -3059,9 +3061,39 @@ class EverblockPrettyBlocks extends ObjectModel
                     ],
                 ],
             ];
+            $blocks = self::applyFileUploadPath($blocks);
             EverblockCache::cacheStore($cacheId, $blocks);
             return $blocks;
         }
         return EverblockCache::cacheRetrieve($cacheId);
+    }
+
+    private static function applyFileUploadPath(array $blocks): array
+    {
+        foreach ($blocks as &$block) {
+            if (isset($block['config']['fields'])) {
+                $block['config']['fields'] = self::setPathRecursive($block['config']['fields']);
+            }
+            if (isset($block['repeater']['groups'])) {
+                $block['repeater']['groups'] = self::setPathRecursive($block['repeater']['groups']);
+            }
+        }
+
+        return $blocks;
+    }
+
+    private static function setPathRecursive(array $fields): array
+    {
+        foreach ($fields as &$field) {
+            if (is_array($field)) {
+                if (($field['type'] ?? null) === 'fileupload') {
+                    $field['path'] = self::MEDIA_PATH;
+                } else {
+                    $field = self::setPathRecursive($field);
+                }
+            }
+        }
+
+        return $fields;
     }
 }
