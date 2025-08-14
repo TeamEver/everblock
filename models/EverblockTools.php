@@ -3718,6 +3718,8 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_faq_lang',
             _DB_PREFIX_ . 'everblock_tabs',
             _DB_PREFIX_ . 'everblock_flags',
+            _DB_PREFIX_ . 'everblock_modal',
+            _DB_PREFIX_ . 'everblock_modal_lang',
         ];
         $tableExists = false;
         foreach ($tableNames as $tableName) {
@@ -3891,6 +3893,40 @@ class EverblockTools extends ObjectModel
                     $db->execute($query);
                 } catch (Exception $e) {
                     PrestaShopLogger::addLog('Unable to update Ever Block tabs lang database');
+                }
+            }
+        }
+        // Ajoute les colonnes manquantes à la table everblock_modal
+        $columnsToAdd = [
+            'id_product' => 'int(10) unsigned NOT NULL',
+            'id_shop' => 'int(10) unsigned NOT NULL',
+            'file' => 'varchar(255) DEFAULT NULL',
+        ];
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_modal` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_modal` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block modal database');
+                }
+            }
+        }
+        // Ajoute les colonnes manquantes à la table everblock_modal_lang
+        $columnsToAdd = [
+            'id_everblock_modal' => 'int(10) unsigned NOT NULL',
+            'id_lang' => 'int(10) unsigned NOT NULL',
+            'content' => 'text DEFAULT NULL',
+        ];
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_modal_lang` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_modal_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block modal lang database');
                 }
             }
         }
