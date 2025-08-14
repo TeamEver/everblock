@@ -73,6 +73,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
             $coverTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cover.tpl';
             $headingTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_heading.tpl';
+            $tocTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_toc.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -3057,6 +3058,47 @@ class EverblockPrettyBlocks extends ObjectModel
                                 'light' => 'light',
                                 'dark' => 'dark',
                             ],
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Table of contents'),
+                'description' => $module->l('Display a summary with anchored sections'),
+                'code' => 'everblock_toc',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $tocTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Summary title'),
+                            'default' => $module->l('Summary'),
+                        ],
+                    ],
+                ],
+                'repeater' => [
+                    'name' => 'Section',
+                    'nameFrom' => 'title',
+                    'groups' => [
+                        'anchor' => [
+                            'type' => 'text',
+                            'label' => $module->l('Anchor ID'),
+                            'default' => 'section-1',
+                        ],
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title'),
+                            'default' => $module->l('Section 1'),
+                        ],
+                        'content' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Content'),
+                            'default' => '[llorem]',
                         ],
                     ],
                 ],
