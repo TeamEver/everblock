@@ -203,6 +203,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_testimonial.tpl',
     'views/templates/hook/prettyblocks/prettyblock_testimonial_slider.tpl',
     'views/templates/hook/prettyblocks/prettyblock_text_and_image.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_toc.tpl',
     'views/templates/hook/prettyblocks/prettyblocks.tpl',
     'views/templates/hook/prettyblocks/row.tpl',
     'views/templates/hook/store.tpl',
