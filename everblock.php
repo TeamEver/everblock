@@ -31,6 +31,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPrettyBlocks.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCache.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCheckoutStep.php';
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Service\ImportFile;
@@ -419,6 +420,9 @@ class Everblock extends Module
         $this->registerHook('displayAdminCustomers');
         $this->registerHook('actionCustomerLogoutBefore');
         $this->registerHook('displayAdminProductsExtra');
+        $this->registerHook('displayAdminProductsMainStepLeftColumnBottom');
+        $this->registerHook('actionObjectProductAddAfter');
+        $this->registerHook('displayReassurance');
         $this->registerHook('actionObjectProductUpdateAfter');
         $this->registerHook('actionObjectProductDeleteAfter');
         $this->registerHook('displayProductExtraContent');
@@ -2388,6 +2392,30 @@ class Everblock extends Module
         return $this->display(__FILE__, 'views/templates/admin/productTab.tpl');
     }
 
+    public function hookDisplayAdminProductsMainStepLeftColumnBottom($params)
+    {
+        if (empty($params['id_product'])) {
+            return;
+        }
+        $modal = EverblockModal::getByProductId(
+            (int) $params['id_product'],
+            (int) $this->context->shop->id
+        );
+        $fileUrl = '';
+        $fileName = '';
+        if (!empty($modal->file)) {
+            $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
+            $fileName = basename($modal->file);
+        }
+        $this->smarty->assign([
+            'modal' => $modal,
+            'modal_file_url' => $fileUrl,
+            'modal_file_name' => $fileName,
+            'ever_languages' => Language::getLanguages(false),
+        ]);
+        return $this->display(__FILE__, 'views/templates/admin/productModal.tpl');
+    }
+
     public function hookActionObjectEverBlockClassDeleteAfter($params)
     {
         $cachePattern = $this->name . '-id_hook-';
@@ -2531,12 +2559,57 @@ class Everblock extends Module
                     } else {
                         $everpsflags->content[$language['id_lang']] = $flagContent;
                     }
-                }
-                $everpsflags->id_flag = (int) $flag;
-                $everpsflags->id_product = (int) $params['object']->id;
-                $everpsflags->id_shop = (int) $context->shop->id;
-                $everpsflags->save();
             }
+            $everpsflags->id_flag = (int) $flag;
+            $everpsflags->id_product = (int) $params['object']->id;
+            $everpsflags->id_shop = (int) $context->shop->id;
+            $everpsflags->save();
+        }
+
+            // Modal management
+            $modal = EverblockModal::getByProductId(
+                (int) $params['object']->id,
+                (int) $context->shop->id
+            );
+            foreach (Language::getLanguages(true) as $language) {
+                $content = Tools::getValue('everblock_modal_content_' . $language['id_lang']);
+                if ($content && !Validate::isCleanHtml($content)) {
+                    die(json_encode([
+                        'return' => false,
+                        'error' => $this->l('Content is not valid'),
+                    ]));
+                }
+                $modal->content[$language['id_lang']] = $content;
+            }
+            if (Tools::getValue('everblock_modal_file_delete')) {
+                if (!empty($modal->file)) {
+                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+                    if (file_exists($oldFile)) {
+                        @unlink($oldFile);
+                    }
+                    $modal->file = '';
+                }
+            }
+            if (isset($_FILES['everblock_modal_file']) && is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
+                $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
+                if (!is_dir($dir)) {
+                    @mkdir($dir, 0755, true);
+                }
+                if (!empty($modal->file)) {
+                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+                    if (file_exists($oldFile)) {
+                        @unlink($oldFile);
+                    }
+                }
+                $ext = pathinfo($_FILES['everblock_modal_file']['name'], PATHINFO_EXTENSION);
+                $name = uniqid('everblock_modal_') . '.' . $ext;
+                if (move_uploaded_file($_FILES['everblock_modal_file']['tmp_name'], $dir . $name)) {
+                    $modal->file = 'everblockmodal/' . $name;
+                }
+            }
+            $modal->id_product = (int) $params['object']->id;
+            $modal->id_shop = (int) $context->shop->id;
+            $modal->save();
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
             EverblockTools::setLog(
@@ -2544,6 +2617,11 @@ class Everblock extends Module
                 $e->getMessage()
             );
         }
+    }
+
+    public function hookActionObjectProductAddAfter($params)
+    {
+        $this->hookActionObjectProductUpdateAfter($params);
     }
 
     public function hookActionObjectProductDeleteAfter($params)
@@ -3631,6 +3709,32 @@ class Everblock extends Module
         }
 
         return ['product' => $product];
+    }
+
+    public function hookDisplayReassurance($params)
+    {
+        if (empty($params['product']['id_product'])) {
+            return;
+        }
+        $modal = EverblockModal::getByProductId(
+            (int) $params['product']['id_product'],
+            (int) $this->context->shop->id
+        );
+        if (!Validate::isLoadedObject($modal)) {
+            return;
+        }
+        $content = isset($modal->content[$this->context->language->id])
+            ? $modal->content[$this->context->language->id]
+            : '';
+        $fileUrl = '';
+        if (!empty($modal->file)) {
+            $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
+        }
+        $this->smarty->assign([
+            'modal_content' => $content,
+            'modal_file' => $fileUrl,
+        ]);
+        return $this->fetch('module:everblock/views/templates/hook/modal.tpl');
     }
 
     public function encrypt($data)
