@@ -34,6 +34,9 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
                 {$everblock_modal->content nofilter}
+                {if isset($everblock_modal->file) && $everblock_modal->file}
+                    <p><a href="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" target="_blank">{l s='Download file' mod='everblock'}</a></p>
+                {/if}
             </div>
         </div>
     </div>

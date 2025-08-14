@@ -3720,19 +3720,14 @@ class Everblock extends Module
             (int) $params['product']['id_product'],
             (int) $this->context->shop->id
         );
-        if (!Validate::isLoadedObject($modal)) {
+        if (
+            !Validate::isLoadedObject($modal)
+            || empty($modal->content[$this->context->language->id])
+        ) {
             return;
         }
-        $content = isset($modal->content[$this->context->language->id])
-            ? $modal->content[$this->context->language->id]
-            : '';
-        $fileUrl = '';
-        if (!empty($modal->file)) {
-            $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
-        }
         $this->smarty->assign([
-            'modal_content' => $content,
-            'modal_file' => $fileUrl,
+            'everblock_modal_id' => (int) $modal->id_everblock_modal,
         ]);
         return $this->fetch('module:everblock/views/templates/hook/modal.tpl');
     }
