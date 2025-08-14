@@ -2535,6 +2535,13 @@ class EverblockTools extends ObjectModel
                 $orderWay = 'ASC';
             }
 
+            $shortcodeParts = ['[accessories'];
+            if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
+            elseif (isset($match[2])) { $shortcodeParts[] = 'limit="' . $match[2] . '"'; }
+            if (isset($match[3])) { $shortcodeParts[] = 'orderby="' . $match[3] . '"'; }
+            if (isset($match[4])) { $shortcodeParts[] = 'orderway="' . $match[4] . '"'; }
+            $shortcode = implode(' ', $shortcodeParts) . ']';
+
             $productId = (int) Tools::getValue('id_product');
             $cacheId = 'getAccessoriesShortcode_'
                 . (int) $context->shop->id . '_' . $productId . '_' . $limit
@@ -2569,15 +2576,12 @@ class EverblockTools extends ObjectModel
                     $templatePath = static::getTemplatePath('hook/linkedproducts_carousel.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
-                    $shortcodeParts = ['[accessories'];
-                    if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
-                    elseif (isset($match[2])) { $shortcodeParts[] = 'limit="' . $match[2] . '"'; }
-                    if (isset($match[3])) { $shortcodeParts[] = 'orderby="' . $match[3] . '"'; }
-                    if (isset($match[4])) { $shortcodeParts[] = 'orderway="' . $match[4] . '"'; }
-                    $shortcode = implode(' ', $shortcodeParts) . ']';
-
                     $txt = str_replace($shortcode, $replacement, $txt);
+                } else {
+                    $txt = str_replace($shortcode, '', $txt);
                 }
+            } else {
+                $txt = str_replace($shortcode, '', $txt);
             }
         }
 
