@@ -17,10 +17,10 @@
 *}
 <div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}w-100 px-0 mx-0{elseif $block.settings.default.container}container{/if}">
   {if isset($block.states) && $block.states}
-    <div id="cardCarousel-{$block.id_prettyblocks}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel">
-      <div class="carousel-inner">
+    <div class="overflow-auto px-2 px-md-0 pb-2">
+      <div class="d-flex flex-nowrap gap-3 pe-1">
         {foreach from=$block.states item=state}
-          <div class="carousel-item{if $state@first} active{/if}{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
+          <div class="flex-shrink-0 prettyblocks-card-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="width:90%;max-width:90%;">
             <div class="card h-100 mb-3">
               {if isset($state.image.url) && $state.image.url}
                 {assign var="imgExt" value=$state.image.url|lower|substr:-4}
@@ -49,14 +49,14 @@
           </div>
         {/foreach}
       </div>
-      <a class="carousel-control-prev" href="#cardCarousel-{$block.id_prettyblocks}" role="button" data-slide="prev" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="sr-only visually-hidden">Previous</span>
-      </a>
-      <a class="carousel-control-next" href="#cardCarousel-{$block.id_prettyblocks}" role="button" data-slide="next" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="sr-only visually-hidden">Next</span>
-      </a>
     </div>
+    <style>
+      @media (min-width: 768px) {
+        #block-{$block.id_prettyblocks} .prettyblocks-card-item {
+          width: 25% !important;
+          max-width: 25% !important;
+        }
+      }
+    </style>
   {/if}
 </div>
