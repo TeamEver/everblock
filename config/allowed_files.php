@@ -185,6 +185,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_gmap.tpl',
     'views/templates/hook/prettyblocks/prettyblock_heading.tpl',
     'views/templates/hook/prettyblocks/prettyblock_iframe.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_image_map.tpl',
     'views/templates/hook/prettyblocks/prettyblock_img.tpl',
     'views/templates/hook/prettyblocks/prettyblock_img_slider.tpl',
     'views/templates/hook/prettyblocks/prettyblock_layout.tpl',
