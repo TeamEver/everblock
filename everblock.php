@@ -3167,6 +3167,11 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/css/' . $this->name . '.css',
             ['media' => 'all', 'priority' => 200]
         );
+        $this->context->controller->registerStylesheet(
+            'module-' . $this->name . '-quill-css',
+            'modules/' . $this->name . '/views/css/quill.css',
+            ['media' => 'all', 'priority' => 200]
+        );
         $flagsCssFile = _PS_MODULE_DIR_ . $this->name . '/views/css/feature-flags-' . $idShop . '.css';
         if (file_exists($flagsCssFile) && filesize($flagsCssFile) > 0) {
             $this->context->controller->registerStylesheet(
