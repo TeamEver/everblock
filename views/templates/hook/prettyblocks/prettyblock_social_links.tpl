@@ -23,16 +23,26 @@
     <div class="row">
   {/if}
     <div class="everblock-social-links d-flex">
-      {foreach from=$block.states item=state}
-        {if isset($state.url) && $state.url}
-          <a href="{$state.url|escape:'htmlall'}" class="obfme" title="{$state.url|escape:'htmlall'}" target="_blank">
-            {if isset($state.icon.url) && $state.icon.url}
-              <img src="{$state.icon.url|escape:'htmlall'}" alt="{$state.url|escape:'htmlall'}" />
-            {/if}
-          </a>
-        {/if}
-      {/foreach}
-    </div>
+        {foreach from=$block.states item=state}
+          {if isset($state.url) && $state.url}
+            <a href="{$state.url|escape:'htmlall'}" class="obfme" title="{$state.url|escape:'htmlall'}" target="_blank">
+              {assign var="icon_url" value=false}
+              {if isset($state.icon.url) && $state.icon.url}
+                {assign var="icon_url" value=$state.icon.url}
+              {elseif isset($state.icon) && is_string($state.icon)}
+                {if $state.icon|substr:-4 == '.svg'}
+                  {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon}
+                {else}
+                  {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
+                {/if}
+              {/if}
+              {if $icon_url}
+                <img src="{$icon_url|escape:'htmlall'}" alt="{$state.url|escape:'htmlall'}" />
+              {/if}
+            </a>
+          {/if}
+        {/foreach}
+      </div>
   {if $block.settings.default.force_full_width || $block.settings.default.container}
     </div>
   {/if}
