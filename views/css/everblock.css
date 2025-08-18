@@ -293,6 +293,31 @@
     display: block;
 }
 
+/* Cover block */
+.prettyblock-cover-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.prettyblock-cover-item img.prettyblock-cover-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.prettyblock-cover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
 /* Cover block slider */
 .ever-cover-carousel .slick-slide {
     opacity: 0.5;
