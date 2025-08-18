@@ -19,21 +19,28 @@
   <section class="ever-featured-products featured-products clearfix mt-3{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     {if isset($carousel) && $carousel}
       {$carouselId = 'ever-presented-carousel-'|cat:rand(1000, 9999)}
-      <div id="{$carouselId}" class="carousel slide" data-ride="carousel">
+      <div id="{$carouselId}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel">
         <div class="carousel-inner products">
+          {assign var="numProductsPerSlide" value=4}
           {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
-          {foreach $everPresentProducts item=product name=evercarousel}
-            <div class="carousel-item{if $smarty.foreach.evercarousel.first} active{/if}">
-              {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="d-block w-100"}
-            </div>
+          {foreach from=$everPresentProducts item=product name=products}
+            {if $product@index % $numProductsPerSlide == 0}
+              <div class="carousel-item{if $product@first} active{/if}">
+                <div class="row">
+            {/if}
+            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
+            {if ($product@index + 1) % $numProductsPerSlide == 0 || $product@last}
+                </div>
+              </div>
+            {/if}
           {/foreach}
           {hook h='displayAfterProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
         </div>
-        <a class="carousel-control-prev" href="#{$carouselId}" role="button" data-slide="prev">
+        <a class="carousel-control-prev" href="#{$carouselId}" role="button" data-slide="prev" data-bs-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
           <span class="sr-only">{l s='Previous' mod='everblock'}</span>
         </a>
-        <a class="carousel-control-next" href="#{$carouselId}" role="button" data-slide="next">
+        <a class="carousel-control-next" href="#{$carouselId}" role="button" data-slide="next" data-bs-slide="next">
           <span class="carousel-control-next-icon" aria-hidden="true"></span>
           <span class="sr-only">{l s='Next' mod='everblock'}</span>
         </a>
