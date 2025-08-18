@@ -25,10 +25,12 @@
              class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if} text-center"
              style="{if isset($state.background_image.url) && $state.background_image.url}background-image: url('{$state.background_image.url|escape:'htmlall'}'); background-size: cover; background-position: center;{/if}">
           {if $state.title}
-            <h2>{$state.title|escape:'htmlall'}</h2>
+            <{$state.title_tag|default:'h2'}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
           {/if}
           {if $state.content}
-            {$state.content nofilter}
+            <div class="prettyblock-cover-content">
+              {$state.content nofilter}
+            </div>
           {/if}
           {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
             <div class="mt-3 d-flex justify-content-center gap-2">
@@ -49,10 +51,12 @@
            class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if} text-center"
            style="{if isset($state.background_image.url) && $state.background_image.url}background-image: url('{$state.background_image.url|escape:'htmlall'}'); background-size: cover; background-position: center;{/if}">
         {if $state.title}
-          <h2>{$state.title|escape:'htmlall'}</h2>
+          <{$state.title_tag|default:'h2'}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
         {/if}
         {if $state.content}
-          {$state.content nofilter}
+          <div class="prettyblock-cover-content">
+            {$state.content nofilter}
+          </div>
         {/if}
         {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
           <div class="mt-3 d-flex justify-content-center gap-2">

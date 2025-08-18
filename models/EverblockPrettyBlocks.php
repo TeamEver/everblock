@@ -2997,6 +2997,19 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Title'),
                             'default' => '',
                         ],
+                        'title_tag' => [
+                            'type' => 'select',
+                            'label' => $module->l('Heading level'),
+                            'choices' => [
+                                'h1' => 'H1',
+                                'h2' => 'H2',
+                                'h3' => 'H3',
+                                'h4' => 'H4',
+                                'h5' => 'H5',
+                                'h6' => 'H6',
+                            ],
+                            'default' => 'h2',
+                        ],
                         'content' => [
                             'type' => 'editor',
                             'label' => $module->l('Content'),
@@ -3058,6 +3071,11 @@ class EverblockPrettyBlocks extends ObjectModel
                                 'light' => 'light',
                                 'dark' => 'dark',
                             ],
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
                         ],
                     ],
                 ],
