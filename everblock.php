@@ -334,11 +334,20 @@ class Everblock extends Module
                 $hook->description = 'This hook triggers before category tabs block is rendered';
                 $hook->save();
             }
+            if (!Hook::getIdByName('beforeRenderingEverblockCategoryPrice')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockCategoryPrice';
+                $hook->title = 'Before rendering category price block';
+                $hook->description = 'This hook triggers before category price block is rendered';
+                $hook->save();
+            }
             $this->registerHook('beforeRenderingEverblockProductHighlight');
             $this->registerHook('beforeRenderingEverblockCategoryTabs');
+            $this->registerHook('beforeRenderingEverblockCategoryPrice');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
             $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
+            $this->unregisterHook('beforeRenderingEverblockCategoryPrice');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
@@ -3693,6 +3702,58 @@ class Everblock extends Module
         }
 
         return ['products' => $products];
+    }
+
+    public function hookBeforeRenderingEverblockCategoryPrice($params)
+    {
+        $states = [];
+        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
+            foreach ($params['block']['states'] as $key => $state) {
+                $info = [
+                    'category_link' => '#',
+                    'image_url' => '',
+                    'title' => '',
+                    'min_price' => false,
+                ];
+                if (!empty($state['category']['id'])) {
+                    $idCategory = (int) $state['category']['id'];
+                    $info['category_link'] = $this->context->link->getCategoryLink($idCategory);
+                    if (!empty($state['image']['url'])) {
+                        $info['image_url'] = $state['image']['url'];
+                    } else {
+                        $info['image_url'] = $this->context->link->getCatImageLink(
+                            ImageType::getFormattedName('category'),
+                            $idCategory
+                        );
+                    }
+                    $category = new Category(
+                        $idCategory,
+                        (int) $this->context->language->id
+                    );
+                    $info['title'] = !empty($state['name']) ? $state['name'] : $category->name;
+                    $products = Product::getProducts(
+                        (int) $this->context->language->id,
+                        0,
+                        1,
+                        'price',
+                        'asc',
+                        $idCategory,
+                        true
+                    );
+                    if (!empty($products)) {
+                        $info['min_price'] = $products[0]['price'];
+                    }
+                } else {
+                    $info['title'] = !empty($state['name']) ? $state['name'] : '';
+                    if (!empty($state['image']['url'])) {
+                        $info['image_url'] = $state['image']['url'];
+                    }
+                }
+                $states[$key] = $info;
+            }
+        }
+
+        return ['state_data' => $states];
     }
 
     public function hookBeforeRenderingEverblockProductHighlight($params)
