@@ -402,6 +402,11 @@ $_MODULE['<{everblock}prestashop>everblockprettyblocks_450054db166bd415e164f0804
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_7015777bcc86cd0c5e4819310d62b040'] = 'Onglets';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_9c18ae405b0392cb1b891f61704d6834'] = 'Affiche des onglets personnalisés';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_ca50c06475296d0be9139f99c4d7619b'] = 'Classes CSS personnalisées';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_0d833ed39f0a07e4fe6859b06bea8056'] = 'Liste de catégories avec prix';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_d78ab4d601183262f8c05c7764ceb35d'] = 'Affiche les catégories avec prix à partir de';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_52a50957d1ee14019892f73e90365d97'] = 'Titre personnalisé';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_2961f0afba69c259ed850360b31300db'] = 'Image personnalisée';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_3adbdb3ac060038aa0e6e6c138ef9873'] = 'Catégorie';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_b26dc9fae955d0b01b1b891924323b73'] = 'Accordéons';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_4cd56f41414ba3543d0cb1acdd83e1ec'] = 'Ajoute des accordéons horizontaux';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_7db42eaafb8768893b008c792d42054c'] = 'Couleur du titre de l\'accordéon';
@@ -635,6 +640,7 @@ $_MODULE['<{everblock}prestashop>prettyblock_login_0afbbf2f70d39364971ef07f8fa07
 $_MODULE['<{everblock}prestashop>prettyblock_shopping_cart_a85eba4c6c699122b2bb1387ea4813ad'] = 'Panier';
 $_MODULE['<{everblock}prestashop>prettyblock_shopping_cart_96b0141273eabab320119c467cdcaf17'] = 'Total';
 $_MODULE['<{everblock}prestashop>prettyblock_shopping_cart_59fc69e031ecb0f82efe467fd6692383'] = 'Voir le panier';
+$_MODULE['<{everblock}prestashop>prettyblock_category_price_5da618e8e4b89c66fe86e32cdafde142'] = 'À partir de';
 $_MODULE['<{everblock}prestashop>prettyblock_silo_78f6f209024537ab3369e54b172c94b6'] = 'Retrouvez ce produit dans nos univers';
 $_MODULE['<{everblock}prestashop>prettyblock_silo_5becdb6da34b0a9ce1de8b8e1066baae'] = 'Retrouvez cette catégorie dans nos univers';
 $_MODULE['<{everblock}prestashop>ever_presented_products_124117dd22bc1dce2b0687b65f35f091'] = 'Vous pourriez aussi aimer';
