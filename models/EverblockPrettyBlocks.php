@@ -68,6 +68,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $ctaTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cta.tpl';
             $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
             $linkListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_link_list.tpl';
+            $socialLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_social_links.tpl';
             $productHighlightTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl';
             $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
             $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
@@ -2661,6 +2662,35 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Social links'),
+                'description' => $module->l('Display custom links to social networks'),
+                'code' => 'everblock_social_links',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $socialLinksTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Social link',
+                    'nameFrom' => 'url',
+                    'groups' => [
+                        'url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Link URL'),
+                            'default' => '#',
+                        ],
+                        'icon' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('SVG icon'),
+                            'default' => [
+                                'url' => '',
+                            ],
                         ],
                     ],
                 ],
