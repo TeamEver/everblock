@@ -174,6 +174,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_button.tpl',
     'views/templates/hook/prettyblocks/prettyblock_card.tpl',
     'views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_category_price.tpl',
     'views/templates/hook/prettyblocks/prettyblock_category_tabs.tpl',
     'views/templates/hook/prettyblocks/prettyblock_contact.tpl',
     'views/templates/hook/prettyblocks/prettyblock_cover.tpl',
