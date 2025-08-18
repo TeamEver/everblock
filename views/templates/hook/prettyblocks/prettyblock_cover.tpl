@@ -24,7 +24,11 @@
         <div id="block-{$block.id_prettyblocks}-{$key}"
              class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
           {if isset($state.background_image.url) && $state.background_image.url}
-            <img src="{$state.background_image.url|escape:'htmlall'}" alt="" class="prettyblock-cover-image">
+            <img src="{$state.background_image.url|escape:'htmlall'}"
+                 alt="{$state.title|escape:'htmlall'}"
+                 {if isset($state.background_image.width)} width="{$state.background_image.width|escape:'htmlall'}"{/if}
+                 {if isset($state.background_image.height)} height="{$state.background_image.height|escape:'htmlall'}"{/if}
+                 class="prettyblock-cover-image">
           {/if}
           <div class="prettyblock-cover-overlay">
             {if $state.title}
@@ -54,7 +58,11 @@
       <div id="block-{$block.id_prettyblocks}-{$key}"
            class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
         {if isset($state.background_image.url) && $state.background_image.url}
-          <img src="{$state.background_image.url|escape:'htmlall'}" alt="" class="prettyblock-cover-image">
+          <img src="{$state.background_image.url|escape:'htmlall'}"
+               alt="{$state.title|escape:'htmlall'}"
+               {if isset($state.background_image.width)} width="{$state.background_image.width|escape:'htmlall'}"{/if}
+               {if isset($state.background_image.height)} height="{$state.background_image.height|escape:'htmlall'}"{/if}
+               class="prettyblock-cover-image">
         {/if}
         <div class="prettyblock-cover-overlay">
           {if $state.title}
