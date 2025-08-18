@@ -3712,6 +3712,8 @@ class Everblock extends Module
                 $info = [
                     'category_link' => '#',
                     'image_url' => '',
+                    'image_width' => 0,
+                    'image_height' => 0,
                     'title' => '',
                     'min_price' => false,
                 ];
@@ -3749,6 +3751,25 @@ class Everblock extends Module
                         $info['image_url'] = $state['image']['url'];
                     }
                 }
+
+                if (!empty($info['image_url'])) {
+                    $size = false;
+                    $path = parse_url($info['image_url'], PHP_URL_PATH);
+                    if ($path) {
+                        $absolute = _PS_ROOT_DIR_ . (strpos($path, '/') === 0 ? $path : '/' . $path);
+                        if (Tools::file_exists_no_cache($absolute)) {
+                            $size = @getimagesize($absolute);
+                        }
+                    }
+                    if (!$size) {
+                        $size = @getimagesize($info['image_url']);
+                    }
+                    if ($size) {
+                        $info['image_width'] = (int) $size[0];
+                        $info['image_height'] = (int) $size[1];
+                    }
+                }
+
                 $states[$key] = $info;
             }
         }
