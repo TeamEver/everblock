@@ -33,24 +33,15 @@
                 {* IMAGE *}
                 <div class="col-md-6 mb-3 mb-md-0 text-center">
                     {if $state.image.url}
-                        {if $state.parallax}
-                            <div class="rounded mx-auto d-block" role="img" aria-label="{$state.name|escape:'htmlall'}" title="{$state.name|escape:'htmlall'}"
-                                 style="background-image:url('{$state.image.url|replace:'.webp':'.jpg'}');
-                                        background-size:cover;background-position:center;background-attachment:fixed;width:100%;
-                                        {if $state.image.width > 0}max-width:{$state.image.width}px;{/if}
-                                        {if $state.image.height > 0}height:{$state.image.height}px;{/if}">
-                            </div>
-                        {else}
-                            <picture>
-                                <source srcset="{$state.image.url}" type="image/webp">
-                                <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-                                <img src="{$state.image.url|replace:'.webp':'.jpg'}" alt="{$state.name}" title="{$state.name}"
-                                     class="img img-fluid rounded mx-auto d-block lazyload"
-                                     {if $state.image.width > 0} width="{$state.image.width}"{/if}
-                                     {if $state.image.height > 0} height="{$state.image.height}"{/if}
-                                     loading="lazy">
-                            </picture>
-                        {/if}
+                        <picture>
+                            <source srcset="{$state.image.url}" type="image/webp">
+                            <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                            <img src="{$state.image.url|replace:'.webp':'.jpg'}" alt="{$state.name}" title="{$state.name}"
+                                 class="img img-fluid rounded mx-auto d-block lazyload"
+                                 {if $state.image.width > 0} width="{$state.image.width}"{/if}
+                                 {if $state.image.height > 0} height="{$state.image.height}"{/if}
+                                 loading="lazy">
+                        </picture>
                     {/if}
                 </div>
 
