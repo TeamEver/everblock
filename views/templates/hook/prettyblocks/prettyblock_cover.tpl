@@ -22,8 +22,41 @@
     <div class="ever-cover-carousel">
       {foreach from=$block.states item=state key=key}
         <div id="block-{$block.id_prettyblocks}-{$key}"
-             class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if} text-center"
-             style="{if isset($state.background_image.url) && $state.background_image.url}background-image: url('{$state.background_image.url|escape:'htmlall'}'); background-size: cover; background-position: center;{/if}">
+             class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
+          {if isset($state.background_image.url) && $state.background_image.url}
+            <img src="{$state.background_image.url|escape:'htmlall'}" alt="" class="prettyblock-cover-image">
+          {/if}
+          <div class="prettyblock-cover-overlay">
+            {if $state.title}
+              <{$state.title_tag|default:'h2'}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
+            {/if}
+            {if $state.content}
+              <div class="prettyblock-cover-content">
+                {$state.content nofilter}
+              </div>
+            {/if}
+            {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
+              <div class="mt-3 d-flex justify-content-center gap-2">
+                {if $state.btn1_text && $state.btn1_link}
+                  <a href="{$state.btn1_link|escape:'htmlall'}" class="btn btn-{$state.btn1_type|escape:'htmlall'}">{$state.btn1_text|escape:'htmlall'}</a>
+                {/if}
+                {if $state.btn2_text && $state.btn2_link}
+                  <a href="{$state.btn2_link|escape:'htmlall'}" class="btn btn-{$state.btn2_type|escape:'htmlall'}">{$state.btn2_text|escape:'htmlall'}</a>
+                {/if}
+              </div>
+            {/if}
+          </div>
+        </div>
+      {/foreach}
+    </div>
+  {else}
+    {foreach from=$block.states item=state key=key}
+      <div id="block-{$block.id_prettyblocks}-{$key}"
+           class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
+        {if isset($state.background_image.url) && $state.background_image.url}
+          <img src="{$state.background_image.url|escape:'htmlall'}" alt="" class="prettyblock-cover-image">
+        {/if}
+        <div class="prettyblock-cover-overlay">
           {if $state.title}
             <{$state.title_tag|default:'h2'}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
           {/if}
@@ -43,31 +76,6 @@
             </div>
           {/if}
         </div>
-      {/foreach}
-    </div>
-  {else}
-    {foreach from=$block.states item=state key=key}
-      <div id="block-{$block.id_prettyblocks}-{$key}"
-           class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if} text-center"
-           style="{if isset($state.background_image.url) && $state.background_image.url}background-image: url('{$state.background_image.url|escape:'htmlall'}'); background-size: cover; background-position: center;{/if}">
-        {if $state.title}
-          <{$state.title_tag|default:'h2'}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
-        {/if}
-        {if $state.content}
-          <div class="prettyblock-cover-content">
-            {$state.content nofilter}
-          </div>
-        {/if}
-        {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
-          <div class="mt-3 d-flex justify-content-center gap-2">
-            {if $state.btn1_text && $state.btn1_link}
-              <a href="{$state.btn1_link|escape:'htmlall'}" class="btn btn-{$state.btn1_type|escape:'htmlall'}">{$state.btn1_text|escape:'htmlall'}</a>
-            {/if}
-            {if $state.btn2_text && $state.btn2_link}
-              <a href="{$state.btn2_link|escape:'htmlall'}" class="btn btn-{$state.btn2_type|escape:'htmlall'}">{$state.btn2_text|escape:'htmlall'}</a>
-            {/if}
-          </div>
-        {/if}
       </div>
     {/foreach}
   {/if}
