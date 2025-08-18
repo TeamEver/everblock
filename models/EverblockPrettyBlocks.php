@@ -2686,11 +2686,10 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => '#',
                         ],
                         'icon' => [
-                            'type' => 'fileupload',
-                            'label' => $module->l('SVG icon'),
-                            'default' => [
-                                'url' => '',
-                            ],
+                            'type' => 'select',
+                            'label' => $module->l('Select an icon'),
+                            'choices' => EverblockTools::getAvailableSvgIcons(),
+                            'default' => 'facebook.svg',
                         ],
                     ],
                 ],
