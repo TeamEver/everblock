@@ -670,7 +670,7 @@ class EverblockTools extends ObjectModel
     {
 
         preg_match_all(
-            '/\[crosselling(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?(?:\s+orderby=(\w+))?(?:\s+orderway=(ASC|DESC))?\]/i',
+            '/\[crosselling(?:\s+nb=(\d+))?(?:\s+limit=(\d+))?(?:\s+orderby=(\w+))?(?:\s+orderway=(ASC|DESC))?(?:\s+carousel=(true|false))?\]/i',
             $txt,
             $matches,
             PREG_SET_ORDER
@@ -680,6 +680,7 @@ class EverblockTools extends ObjectModel
             $limit = isset($match[1]) && $match[1] !== '' ? (int) $match[1] : (isset($match[2]) ? (int) $match[2] : 4);
             $orderBy = isset($match[3]) ? strtolower($match[3]) : 'id_product';
             $orderWay = isset($match[4]) ? strtoupper($match[4]) : 'ASC';
+            $carousel = isset($match[5]) && strtolower($match[5]) === 'true';
 
             $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
             $allowedOrderWay = ['ASC', 'DESC'];
@@ -702,7 +703,7 @@ class EverblockTools extends ObjectModel
                 if (!empty($everPresentProducts)) {
                     $context->smarty->assign([
                         'everPresentProducts' => $everPresentProducts,
-                        'carousel' => false,
+                        'carousel' => $carousel,
                         'shortcodeClass' => 'crosselling',
                     ]);
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -785,7 +786,7 @@ class EverblockTools extends ObjectModel
                 if (!empty($everPresentProducts)) {
                     $context->smarty->assign([
                         'everPresentProducts' => $everPresentProducts,
-                        'carousel' => false,
+                        'carousel' => $carousel,
                         'shortcodeClass' => 'crosselling',
                     ]);
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -803,7 +804,7 @@ class EverblockTools extends ObjectModel
             if (!empty($everPresentProducts)) {
                 $context->smarty->assign([
                     'everPresentProducts' => $everPresentProducts,
-                    'carousel' => false,
+                    'carousel' => $carousel,
                     'shortcodeClass' => 'crosselling',
                 ]);
                 $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);

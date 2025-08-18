@@ -17,12 +17,35 @@
 *}
 {if isset($everPresentProducts) && $everPresentProducts}
   <section class="ever-featured-products featured-products clearfix mt-3{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
-    <div class="products row {if isset($carousel) && $carousel}ever-slick-carousel{/if}">
-      {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
-      {foreach $everPresentProducts item=product}
-        {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
-      {/foreach}
-      {hook h='displayAfterProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
-    </div>
+    {if isset($carousel) && $carousel}
+      {$carouselId = 'ever-presented-carousel-'|cat:rand(1000, 9999)}
+      <div id="{$carouselId}" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner products">
+          {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
+          {foreach $everPresentProducts item=product name=evercarousel}
+            <div class="carousel-item{if $smarty.foreach.evercarousel.first} active{/if}">
+              {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="d-block w-100"}
+            </div>
+          {/foreach}
+          {hook h='displayAfterProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
+        </div>
+        <a class="carousel-control-prev" href="#{$carouselId}" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">{l s='Previous' mod='everblock'}</span>
+        </a>
+        <a class="carousel-control-next" href="#{$carouselId}" role="button" data-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="sr-only">{l s='Next' mod='everblock'}</span>
+        </a>
+      </div>
+    {else}
+      <div class="products row">
+        {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
+        {foreach $everPresentProducts item=product}
+          {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
+        {/foreach}
+        {hook h='displayAfterProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
+      </div>
+    {/if}
   </section>
 {/if}
