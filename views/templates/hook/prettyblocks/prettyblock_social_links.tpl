@@ -30,9 +30,9 @@
               {assign var="icon_url" value=$state.icon.url}
             {elseif isset($state.icon) && is_string($state.icon)}
               {if $state.icon|substr:-4 == '.svg'}
-                {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon}
+                {assign var="icon_url" value=$smarty.const._PS_MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon}
               {else}
-                {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
+                {assign var="icon_url" value=$smarty.const._PS_MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
               {/if}
             {/if}
             {if $icon_url}
