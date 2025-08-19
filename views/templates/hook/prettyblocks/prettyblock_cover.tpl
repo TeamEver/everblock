@@ -21,7 +21,6 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-<div id="block-{$block.id_prettyblocks}" class="prettyblock-cover">
 {if isset($block.states) && $block.states}
   {assign var='use_slider' value=(isset($block.settings.slider) && $block.settings.slider && $block.states|@count > 1)}
   {if $use_slider}
@@ -58,7 +57,6 @@
           </div>
         </div>
       {/foreach}
-    </div>
   {else}
     {foreach from=$block.states item=state key=key}
       <div id="block-{$block.id_prettyblocks}-{$key}"
