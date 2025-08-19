@@ -13,7 +13,7 @@
  *
  *  @author    Team Ever <https://www.team-ever.com/>
  *  @copyright 2019-2025 Team Ever
- *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 <div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}w-100 px-0 mx-0{elseif $block.settings.default.container}container{/if}">
   {if $block.settings.default.force_full_width}
@@ -26,10 +26,42 @@
       {if isset($block.settings.title) && $block.settings.title}
         <span class="h2 pb-toc-title">{$block.settings.title|escape:'htmlall'}</span>
       {/if}
-      <ul class="list-unstyled">
+      <ul class="list-unstyled pb-toc-menu">
+        {assign var='currentCategory' value=''}
+        {assign var='currentSub' value=''}
+        {assign var='catIndex' value=0}
+        {assign var='subIndex' value=0}
         {foreach from=$block.states item=state}
+          {if $state.category != $currentCategory}
+            {if $currentSub != ''}</ul></li>{/if}
+            {if $currentCategory != ''}</ul></li>{/if}
+            {assign var='catIndex' value=$catIndex+1}
+            <li class="pb-toc-category">
+              <button class="pb-toc-toggle btn btn-link p-0" type="button" data-toggle="collapse" data-target="#pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" data-bs-toggle="collapse" data-bs-target="#pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" aria-expanded="false" aria-controls="pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}">
+                {$state.category|escape:'htmlall'}
+              </button>
+              <ul id="pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" class="list-unstyled collapse">
+            {assign var='currentCategory' value=$state.category}
+            {assign var='currentSub' value=''}
+          {/if}
+          {if $state.subcategory != $currentSub}
+            {if $currentSub != ''}</ul></li>{/if}
+            {if $state.subcategory != ''}
+              {assign var='subIndex' value=$subIndex+1}
+              <li class="pb-toc-subcategory">
+                <button class="pb-toc-toggle btn btn-link p-0" type="button" data-toggle="collapse" data-target="#pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" data-bs-toggle="collapse" data-bs-target="#pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" aria-expanded="false" aria-controls="pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}">
+                  {$state.subcategory|escape:'htmlall'}
+                </button>
+                <ul id="pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" class="list-unstyled collapse">
+              {assign var='currentSub' value=$state.subcategory}
+            {else}
+              {assign var='currentSub' value=''}
+            {/if}
+          {/if}
           <li><a href="#{$state.anchor|escape:'htmlall'}">{$state.title|escape:'htmlall'}</a></li>
         {/foreach}
+        {if $currentSub != ''}</ul></li>{/if}
+        {if $currentCategory != ''}</ul></li>{/if}
       </ul>
     </div>
     <div class="col-12 col-lg-8 pb-toc-content">
