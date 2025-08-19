@@ -25,21 +25,25 @@
     <div class="everblock-social-links d-flex">
         {foreach from=$block.states item=state}
           {if isset($state.url) && $state.url}
-            <a href="{$state.url|escape:'htmlall'}" class="obfme" title="{$state.url|escape:'htmlall'}" target="_blank">
-              {assign var="icon_url" value=false}
-              {if isset($state.icon.url) && $state.icon.url}
-                {assign var="icon_url" value=$state.icon.url}
-              {elseif isset($state.icon) && is_string($state.icon)}
-                {if $state.icon|substr:-4 == '.svg'}
-                  {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon}
-                {else}
-                  {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
-                {/if}
+            {assign var="icon_url" value=false}
+            {if isset($state.icon.url) && $state.icon.url}
+              {assign var="icon_url" value=$state.icon.url}
+            {elseif isset($state.icon) && is_string($state.icon)}
+              {if $state.icon|substr:-4 == '.svg'}
+                {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon}
+              {else}
+                {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
               {/if}
-              {if $icon_url}
-                <img src="{$icon_url|escape:'htmlall'}" alt="{$state.url|escape:'htmlall'}" />
+            {/if}
+            {if $icon_url}
+              {assign var="svg_content" value=$icon_url|@file_get_contents}
+              {if isset($block.settings.icon_color) && $block.settings.icon_color}
+                {assign var="svg_content" value=$svg_content|regex_replace:'/fill="[^"]+"/':'fill="currentColor"'}
               {/if}
-            </a>
+              <a href="{$state.url|escape:'htmlall'}" class="obfme" title="{$state.url|escape:'htmlall'}" target="_blank" style="{if isset($block.settings.icon_color) && $block.settings.icon_color}color:{$block.settings.icon_color|escape:'htmlall'};{/if}">
+                {$svg_content nofilter}
+              </a>
+            {/if}
           {/if}
         {/foreach}
       </div>

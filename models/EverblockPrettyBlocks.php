@@ -2676,6 +2676,15 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $socialLinksTemplate,
                 ],
+                'config' => [
+                    'fields' => [
+                        'icon_color' => [
+                            'type' => 'color',
+                            'label' => $module->l('Icon color'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
                 'repeater' => [
                     'name' => 'Social link',
                     'nameFrom' => 'url',
