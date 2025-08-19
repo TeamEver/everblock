@@ -15,5 +15,16 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}w-100 px-0 mx-0{elseif $block.settings.default.container}container{/if}">
+  {if $block.settings.default.force_full_width}
+    <div class="row gx-0 no-gutters">
+  {elseif $block.settings.default.container}
+    <div class="row">
+  {/if}
 
 <div id="block-{$block.id_prettyblocks}" class="everblock-spacer" style="{if isset($block.settings.space_top) && $block.settings.space_top}margin-top:{$block.settings.space_top|escape:'htmlall':'UTF-8'}rem;{/if}{if isset($block.settings.space_bottom) && $block.settings.space_bottom}margin-bottom:{$block.settings.space_bottom|escape:'htmlall':'UTF-8'}rem;{/if}height:0;"></div>
+
+  {if $block.settings.default.force_full_width || $block.settings.default.container}
+    </div>
+  {/if}
+</div>

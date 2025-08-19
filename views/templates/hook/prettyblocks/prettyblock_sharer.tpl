@@ -15,6 +15,12 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}w-100 px-0 mx-0{elseif $block.settings.default.container}container{/if}">
+  {if $block.settings.default.force_full_width}
+    <div class="row gx-0 no-gutters">
+  {elseif $block.settings.default.container}
+    <div class="row">
+  {/if}
 <!-- Module Ever Block -->
 <div class="{if $block.settings.default.container}container{/if}">
     {if $block.settings.default.container}
@@ -53,3 +59,8 @@
     {/if}
 </div>
 <!-- /Module Ever Block -->
+
+  {if $block.settings.default.force_full_width || $block.settings.default.container}
+    </div>
+  {/if}
+</div>
