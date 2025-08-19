@@ -3221,6 +3221,16 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Anchor ID'),
                             'default' => 'section-1',
                         ],
+                        'category' => [
+                            'type' => 'text',
+                            'label' => $module->l('Category'),
+                            'default' => '',
+                        ],
+                        'subcategory' => [
+                            'type' => 'text',
+                            'label' => $module->l('Sub-category'),
+                            'default' => '',
+                        ],
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Title'),
