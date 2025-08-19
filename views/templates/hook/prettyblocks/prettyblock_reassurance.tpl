@@ -26,7 +26,7 @@
     {foreach from=$block.states item=state key=key}
       {* Génère l'URL de l'icône depuis le nom brut *}
       {assign var="icon_url" value=false}
-      {if isset($state.icon.url) && $state.icon.url}
+      {if (is_array($state.icon) || is_object($state.icon)) && isset($state.icon.url) && $state.icon.url}
         {assign var="icon_url" value=$state.icon.url}
       {elseif isset($state.icon) && is_string($state.icon)}
         {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
