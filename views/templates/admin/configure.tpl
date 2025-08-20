@@ -139,7 +139,7 @@
                 <li><p>[linkedproducts nb="8" orderby="date_add" orderway="DESC"] {l s='displays products linked to the current product' mod='everblock'}</p></li>
                 <li><p>[accessories nb="8" orderby="date_add" orderway="DESC"] {l s='displays accessories of the current product' mod='everblock'}</p></li>
                 <li><p>[crosselling nb=4 orderby="id_product" orderway="asc"] {l s='shows cross-selling products when the cart is empty' mod='everblock'}</p></li>
-                <li><p>{hook h='displayHome'} {l s='displays the displayHome hook' mod='everblock'}</p></li>
+                <li><p>{literal}{hook h='displayHome'}{/literal} {l s='displays the displayHome hook' mod='everblock'}</p></li>
                 <li><p>[everinstagram] {l s='display your latest Instagram photos. Images are cached for 24h in /img/cms/instagram and refreshed automatically or via the everblock:tools:execute refreshtokens command' mod='everblock'}</p></li>
                 <li><p>[everimg name="image.jpg" class="img-fluid" carousel=true] {l s='display one or more CMS images (carousel optional)' mod='everblock'}</p></li>
                 <li><p>[displayQcdSvg name="icon" class="myclass" inline=true] {l s='display a QCD SVG icon' mod='everblock'}</p></li>
