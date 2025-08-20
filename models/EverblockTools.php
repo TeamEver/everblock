@@ -1335,7 +1335,8 @@ class EverblockTools extends ObjectModel
             return $return;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        $cachedProducts = EverblockCache::cacheRetrieve($cacheId);
+        return is_array($cachedProducts) ? $cachedProducts : [];
     }
 
     public static function getManufacturerShortcodes($message, $context, Everblock $module)
