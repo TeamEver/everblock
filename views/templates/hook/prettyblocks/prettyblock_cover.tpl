@@ -37,7 +37,7 @@
           {/if}
           <div class="prettyblock-cover-overlay">
             {if $state.title}
-              <{$state.title_tag|default:'h2'}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
+              <{$state.title_tag|default:'h2'}{if isset($state.title_color) && $state.title_color} style="color:{$state.title_color|escape:'htmlall'}"{/if}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
             {/if}
             {if $state.content}
               <div class="prettyblock-cover-content">
@@ -70,7 +70,7 @@
         {/if}
         <div class="prettyblock-cover-overlay">
           {if $state.title}
-            <{$state.title_tag|default:'h2'}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
+            <{$state.title_tag|default:'h2'}{if isset($state.title_color) && $state.title_color} style="color:{$state.title_color|escape:'htmlall'}"{/if}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
           {/if}
           {if $state.content}
             <div class="prettyblock-cover-content">
