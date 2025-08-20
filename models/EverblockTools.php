@@ -1332,7 +1332,7 @@ class EverblockTools extends ObjectModel
             }
 
             EverblockCache::cacheStore($cacheId, $return);
-            return $return;
+            return is_array($return) ? $return : [];
         }
 
         $cachedProducts = EverblockCache::cacheRetrieve($cacheId);
