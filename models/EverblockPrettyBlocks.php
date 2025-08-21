@@ -3132,6 +3132,12 @@ class EverblockPrettyBlocks extends ObjectModel
                             ],
                             'default' => 'h2',
                         ],
+                        'title_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'label' => $module->l('Title color'),
+                            'default' => '#000000',
+                        ],
                         'content' => [
                             'type' => 'editor',
                             'label' => $module->l('Content'),
