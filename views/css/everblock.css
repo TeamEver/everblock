@@ -325,9 +325,14 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-/*    justify-content: center;*/
+    justify-content: center;
     align-items: center;
     text-align: center;
+    padding: 1rem;
+}
+
+.prettyblock-cover-overlay .d-flex {
+    flex-wrap: wrap;
 }
 
 /* Cover block slider */
