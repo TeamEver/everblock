@@ -344,10 +344,12 @@ class Everblock extends Module
             $this->registerHook('beforeRenderingEverblockProductHighlight');
             $this->registerHook('beforeRenderingEverblockCategoryTabs');
             $this->registerHook('beforeRenderingEverblockCategoryPrice');
+            $this->registerHook('beforeRenderingEverblockEverblock');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
             $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
             $this->unregisterHook('beforeRenderingEverblockCategoryPrice');
+            $this->unregisterHook('beforeRenderingEverblockEverblock');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
@@ -3682,7 +3684,7 @@ class Everblock extends Module
         }
     }
 
-    public function hookRenderEverblockEverblock($params)
+    public function hookBeforeRenderingEverblockEverblock($params)
     {
         if (empty($params['block']['states']) || !is_array($params['block']['states'])) {
             return ['block' => $params['block']];
