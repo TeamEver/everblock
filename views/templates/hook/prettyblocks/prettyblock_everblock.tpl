@@ -21,6 +21,11 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
+    {if isset($block.extra.states) && $block.extra.states}
+    {foreach $block.extra.states as $state}
+      {$state.content nofilter}
+    {/foreach}
+    {/if}
     {if isset($block.states) && $block.states}
     {foreach from=$block.states item=state key=key}
     <div id="block-{$block.id_prettyblocks}-{$key}" class="{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="

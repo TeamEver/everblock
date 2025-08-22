@@ -3686,30 +3686,27 @@ class Everblock extends Module
 
     public function hookBeforeRenderingEverblockEverblock($params)
     {
-        if (empty($params['block']['states']) || !is_array($params['block']['states'])) {
-            return ['block' => $params['block']];
-        }
-        foreach ($params['block']['states'] as &$state) {
+        $states = $params['block']['states'] ?? [];
+
+        foreach ($states as &$state) {
             if (empty($state['id_everblock'])) {
                 $state['content'] = '';
                 continue;
             }
-            $everblock = new EverBlockClass(
-                (int) $state['id_everblock'],
+
+            $idEverblock = (int) trim(explode('-', $state['id_everblock'], 2)[0]);
+            $everblock   = new EverBlockClass(
+                $idEverblock,
                 (int) $this->context->language->id,
                 (int) $this->context->shop->id
             );
-            if (Validate::isLoadedObject($everblock)
-                && !empty($everblock->content[$this->context->language->id])
-            ) {
-                $state['content'] = $everblock->content[$this->context->language->id];
-            } else {
-                $state['content'] = '';
-            }
+
+            $state['content'] = Validate::isLoadedObject($everblock) ? $everblock->content : '';
         }
         unset($state);
 
-        return ['block' => $params['block']];
+        // Les données retournées sont disponibles dans $block.extra
+        return ['states' => $states];
     }
 
     public function hookBeforeRenderingEverblockCategoryTabs($params)
