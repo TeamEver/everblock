@@ -3239,6 +3239,13 @@ class EverblockPrettyBlocks extends ObjectModel
                                 'url' => '',
                             ],
                         ],
+                        'background_image_mobile' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Mobile background image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
                         'btn1_text' => [
                             'type' => 'text',
                             'label' => $module->l('Button 1 text'),
