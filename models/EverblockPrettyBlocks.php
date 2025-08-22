@@ -1889,6 +1889,13 @@ class EverblockPrettyBlocks extends ObjectModel
                                 'url' => '',
                             ],
                         ],
+                        'image_mobile' => [
+                            'type' => 'fileupload',
+                            'label' => 'Mobile layout image',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
                         'image_width' => [
                             'type' => 'text',
                             'label' => 'Image width (e.g., 100px or 50%)',
