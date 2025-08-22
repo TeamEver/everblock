@@ -3682,6 +3682,34 @@ class Everblock extends Module
         }
     }
 
+    public function hookRenderEverblockEverblock($params)
+    {
+        if (empty($params['block']['states']) || !is_array($params['block']['states'])) {
+            return ['block' => $params['block']];
+        }
+        foreach ($params['block']['states'] as &$state) {
+            if (empty($state['id_everblock'])) {
+                $state['content'] = '';
+                continue;
+            }
+            $everblock = new EverBlockClass(
+                (int) $state['id_everblock'],
+                (int) $this->context->language->id,
+                (int) $this->context->shop->id
+            );
+            if (Validate::isLoadedObject($everblock)
+                && !empty($everblock->content[$this->context->language->id])
+            ) {
+                $state['content'] = $everblock->content[$this->context->language->id];
+            } else {
+                $state['content'] = '';
+            }
+        }
+        unset($state);
+
+        return ['block' => $params['block']];
+    }
+
     public function hookBeforeRenderingEverblockCategoryTabs($params)
     {
         $products = [];

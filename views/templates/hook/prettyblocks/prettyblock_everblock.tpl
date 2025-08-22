@@ -39,9 +39,6 @@
     </div>
     {/foreach}
     {/if}
-    {if $block.settings.default.container}
-        </div>
-    {/if}
   {if $block.settings.default.force_full_width || $block.settings.default.container}
     </div>
   {/if}
