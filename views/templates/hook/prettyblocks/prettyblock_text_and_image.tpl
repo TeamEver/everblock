@@ -38,12 +38,21 @@
                 
                 {* IMAGE *}
                 <div class="col-md-6 mb-3 mb-md-0 text-center">
+                    {if $state.image_mobile.url}
+                        <picture class="d-block d-md-none">
+                            <source srcset="{$state.image_mobile.url}" type="image/webp">
+                            <source srcset="{$state.image_mobile.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                            <img src="{$state.image_mobile.url|replace:'.webp':'.jpg'}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"
+                                 {if $state.image_mobile.width > 0} width="{$state.image_mobile.width}"{/if}
+                                 {if $state.image_mobile.height > 0} height="{$state.image_mobile.height}"{/if}
+                                 loading="lazy">
+                        </picture>
+                    {/if}
                     {if $state.image.url}
-                        <picture>
+                        <picture class="{if $state.image_mobile.url}d-none d-md-block{/if}">
                             <source srcset="{$state.image.url}" type="image/webp">
                             <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-                            <img src="{$state.image.url|replace:'.webp':'.jpg'}" alt="{$state.name}" title="{$state.name}"
-                                 class="img img-fluid rounded mx-auto d-block lazyload"
+                            <img src="{$state.image.url|replace:'.webp':'.jpg'}" alt="{$state.name}" title="{$state.name}" class="img img-fluid rounded mx-auto d-block lazyload"
                                  {if $state.image.width > 0} width="{$state.image.width}"{/if}
                                  {if $state.image.height > 0} height="{$state.image.height}"{/if}
                                  loading="lazy">
