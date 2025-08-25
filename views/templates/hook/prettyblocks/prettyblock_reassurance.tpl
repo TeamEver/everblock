@@ -26,10 +26,12 @@
     {foreach from=$block.states item=state key=key}
       {* Génère l'URL de l'icône depuis le nom brut *}
       {assign var="icon_url" value=false}
-      {if (is_array($state.icon) || is_object($state.icon)) && isset($state.icon.url) && $state.icon.url}
+      {if (is_array($state.image) || is_object($state.image)) && isset($state.image.url) && $state.image.url}
+        {assign var="icon_url" value=$state.image.url}
+      {elseif (is_array($state.icon) || is_object($state.icon)) && isset($state.icon.url) && $state.icon.url}
         {assign var="icon_url" value=$state.icon.url}
       {elseif isset($state.icon) && is_string($state.icon)}
-        {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
+        {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon}
       {/if}
 
       <div id="block-{$block.id_prettyblocks}-{$key}" class="text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
@@ -46,11 +48,15 @@
       ">
         {if $icon_url}
             <div class="mb-2">
-              <picture>
-                <source srcset="{$icon_url|escape:'htmlall'}" type="image/webp">
-                <source srcset="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" type="image/jpeg">
-                <img src="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
-              </picture>
+              {if $icon_url|substr:-4 == '.svg'}
+                <img src="{$icon_url|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
+              {else}
+                <picture>
+                  <source srcset="{$icon_url|escape:'htmlall'}" type="image/webp">
+                  <source srcset="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" type="image/jpeg">
+                  <img src="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
+                </picture>
+              {/if}
             </div>
         {/if}
 

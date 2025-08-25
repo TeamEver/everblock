@@ -812,6 +812,13 @@ class EverblockPrettyBlocks extends ObjectModel
                     'name' => 'Reassurances',
                     'nameFrom' => 'title',
                     'groups' => [
+                        'image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Upload image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
                         'icon' => [
                             'type' => 'select',
                             'label' => $module->l('Select an icon'),
