@@ -1906,6 +1906,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => 'Image height (e.g., 100px)',
                             'default' => 'auto',
                         ],
+                        'parallax' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Parallax mode'),
+                            'default' => false,
+                        ],
                         'content' => [
                             'type' => 'editor',
                             'label' => 'Layout content',
