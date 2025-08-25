@@ -40,7 +40,7 @@
                      class="prettyblock-cover-image">
               </picture>
             {/if}
-          <div class="prettyblock-cover-overlay">
+          <div class="prettyblock-cover-overlay position-desktop-{$state.content_position_desktop|default:'center'|escape:'htmlall'} position-mobile-{$state.content_position_mobile|default:'center'|escape:'htmlall'}">
             {if $state.title}
               <{$state.title_tag|default:'h2'}{if isset($state.title_color) && $state.title_color} style="color: {$state.title_color|escape:'htmlall'}"{/if}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
             {/if}
@@ -78,7 +78,7 @@
                  class="prettyblock-cover-image">
           </picture>
         {/if}
-        <div class="prettyblock-cover-overlay">
+        <div class="prettyblock-cover-overlay position-desktop-{$state.content_position_desktop|default:'center'|escape:'htmlall'} position-mobile-{$state.content_position_mobile|default:'center'|escape:'htmlall'}">
           {if $state.title}
             <{$state.title_tag|default:'h2'}{if isset($state.title_color) && $state.title_color} style="color: {$state.title_color|escape:'htmlall'}"{/if}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
           {/if}

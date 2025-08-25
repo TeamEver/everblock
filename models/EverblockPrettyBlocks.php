@@ -3308,6 +3308,30 @@ class EverblockPrettyBlocks extends ObjectModel
                                 'dark' => 'dark',
                             ],
                         ],
+                        'content_position_desktop' => [
+                            'type' => 'select',
+                            'label' => $module->l('Content position (desktop)'),
+                            'choices' => [
+                                'center' => $module->l('Center'),
+                                'top' => $module->l('Top'),
+                                'bottom' => $module->l('Bottom'),
+                                'left' => $module->l('Left'),
+                                'right' => $module->l('Right'),
+                            ],
+                            'default' => 'center',
+                        ],
+                        'content_position_mobile' => [
+                            'type' => 'select',
+                            'label' => $module->l('Content position (mobile)'),
+                            'choices' => [
+                                'center' => $module->l('Center'),
+                                'top' => $module->l('Top'),
+                                'bottom' => $module->l('Bottom'),
+                                'left' => $module->l('Left'),
+                                'right' => $module->l('Right'),
+                            ],
+                            'default' => 'center',
+                        ],
                         'css_class' => [
                             'type' => 'text',
                             'label' => $module->l('Custom CSS class'),

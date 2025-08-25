@@ -330,6 +330,68 @@
     padding: 1rem;
 }
 
+.prettyblock-cover-overlay.position-desktop-top {
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+}
+
+.prettyblock-cover-overlay.position-desktop-bottom {
+    justify-content: flex-end;
+    align-items: center;
+    text-align: center;
+}
+
+.prettyblock-cover-overlay.position-desktop-left {
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.prettyblock-cover-overlay.position-desktop-right {
+    justify-content: center;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.prettyblock-cover-overlay.position-desktop-center {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+@media (max-width: 767px) {
+    .prettyblock-cover-overlay.position-mobile-top {
+        justify-content: flex-start;
+        align-items: center;
+        text-align: center;
+    }
+
+    .prettyblock-cover-overlay.position-mobile-bottom {
+        justify-content: flex-end;
+        align-items: center;
+        text-align: center;
+    }
+
+    .prettyblock-cover-overlay.position-mobile-left {
+        justify-content: center;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .prettyblock-cover-overlay.position-mobile-right {
+        justify-content: center;
+        align-items: flex-end;
+        text-align: right;
+    }
+
+    .prettyblock-cover-overlay.position-mobile-center {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+}
+
 .prettyblock-cover-overlay .d-flex {
     flex-wrap: wrap;
 }
