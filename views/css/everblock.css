@@ -85,7 +85,13 @@
 
 .everblock-social-links {
   display: flex;
+  flex-direction: row;
   gap: 10px;
+  align-items: center;
+}
+
+.everblock-social-links a {
+  display: inline-flex;
   align-items: center;
 }
 

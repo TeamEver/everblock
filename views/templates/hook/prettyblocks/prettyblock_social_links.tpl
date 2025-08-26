@@ -22,7 +22,7 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-    <div class="everblock-social-links d-flex">
+    <div class="everblock-social-links d-flex flex-row">
         {foreach from=$block.states item=state}
           {if isset($state.url) && $state.url}
             {assign var="icon_url" value=false}
