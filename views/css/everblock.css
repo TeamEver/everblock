@@ -90,7 +90,8 @@
   align-items: center;
 }
 
-.everblock-social-links a {
+.everblock-social-links a,
+.everblock-social-links span {
   display: inline-flex;
   align-items: center;
 }

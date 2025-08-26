@@ -22,7 +22,7 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-    <div class="everblock-social-links d-flex flex-row">
+    <div class="everblock-social-links d-flex flex-row flex-wrap">
         {foreach from=$block.states item=state}
           {if isset($state.url) && $state.url}
             {assign var="icon_url" value=false}
@@ -40,9 +40,17 @@
               {if isset($block.settings.icon_color) && $block.settings.icon_color}
                 {assign var="svg_content" value=$svg_content|regex_replace:'/fill="[^"]+"/':'fill="currentColor"'}
               {/if}
-              <a href="{$state.url|escape:'htmlall'}" class="obfme" title="{$state.url|escape:'htmlall'}" target="_blank" style="{if isset($block.settings.icon_color) && $block.settings.icon_color}color:{$block.settings.icon_color|escape:'htmlall'};{/if}">
-                {$svg_content nofilter}
-              </a>
+
+              {* ✅ Chaque icône dans un wrapper séparé *}
+              <span class="everblock-social-link">
+                <a href="{$state.url|escape:'htmlall'}"
+                   title="{$state.url|escape:'htmlall'}"
+                   target="_blank"
+                   style="{if isset($block.settings.icon_color) && $block.settings.icon_color}color:{$block.settings.icon_color|escape:'htmlall'};{/if}">
+                  {$svg_content nofilter}
+                </a>
+              </span>
+
             {/if}
           {/if}
         {/foreach}
