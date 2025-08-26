@@ -3237,7 +3237,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'config' => [
                     'fields' => [
                         'slider' => [
-                            'type' => 'switch',
+                            'type' => 'checkbox',
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
                         ],
@@ -3528,7 +3528,7 @@ class EverblockPrettyBlocks extends ObjectModel
             ];
             $blocks[] = [
                 'name' => $module->l('Selected products'),
-                'description' => $module->l('Display selected products with optional slider'),
+                'description' => $module->l('Display selected products and optionally enable a Bootstrap slider'),
                 'code' => 'everblock_product_selector',
                 'tab' => 'general',
                 'icon_path' => $defaultLogo,
@@ -3539,7 +3539,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'config' => [
                     'fields' => [
                         'slider' => [
-                            'type' => 'switch',
+                            'type' => 'checkbox',
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
                         ],
