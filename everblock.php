@@ -455,6 +455,7 @@ class Everblock extends Module
             && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
         ) {
             $this->registerHook('actionRegisterBlock');
+            $this->registerHook('beforeRenderingEverblockProductSelector');
         } else {
             $this->unregisterHook('actionRegisterBlock');
         }
@@ -3833,7 +3834,7 @@ class Everblock extends Module
                 if (empty($state['product'])) {
                     continue;
                 }
-                $idProduct = (int) trim(explode('-', $state['product'], 2)[0]);
+                $idProduct = $state['product']['id'];
                 if ($idProduct <= 0) {
                     continue;
                 }
