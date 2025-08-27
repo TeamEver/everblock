@@ -24,8 +24,8 @@
 
   <section class="ever-featured-products featured-products clearfix mt-3{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     {if isset($carousel) && $carousel}
-      {assign var="carouselId" value="ever-presented-carousel-"|cat:$carouselCounter}
-      <div id="{$carouselId}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel">
+      {assign var="carouselId" value="ever-presented-carousel-"|cat:mt_rand(1000,999999)}
+      <div id="{$carouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true">
         <div class="carousel-inner products">
           {assign var="numProductsPerSlide" value=4}
           {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
