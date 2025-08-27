@@ -809,6 +809,15 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $reassuranceTemplate,
                 ],
+                'settings' => [
+                    'default' => [
+                        'display_inline' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Display reassurances side by side'),
+                            'default' => false,
+                        ],
+                    ],
+                ],
                 'repeater' => [
                     'name' => 'Reassurances',
                     'nameFrom' => 'title',
