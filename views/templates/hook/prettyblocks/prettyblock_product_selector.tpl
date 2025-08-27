@@ -24,25 +24,38 @@
 <div class="mt-2{if $block.settings.default.container} container{/if}"  style="{if isset($block.settings.padding_left) && $block.settings.padding_left}padding-left:{$block.settings.padding_left|escape:'htmlall':'UTF-8'};{/if}{if isset($block.settings.padding_right) && $block.settings.padding_right}padding-right:{$block.settings.padding_right|escape:'htmlall':'UTF-8'};{/if}{if isset($block.settings.padding_top) && $block.settings.padding_top}padding-top:{$block.settings.padding_top|escape:'htmlall':'UTF-8'};{/if}{if isset($block.settings.padding_bottom) && $block.settings.padding_bottom}padding-bottom:{$block.settings.padding_bottom|escape:'htmlall':'UTF-8'};{/if}{if isset($block.settings.margin_left) && $block.settings.margin_left}margin-left:{$block.settings.margin_left|escape:'htmlall':'UTF-8'};{/if}{if isset($block.settings.margin_right) && $block.settings.margin_right}margin-right:{$block.settings.margin_right|escape:'htmlall':'UTF-8'};{/if}{if isset($block.settings.margin_top) && $block.settings.margin_top}margin-top:{$block.settings.margin_top|escape:'htmlall':'UTF-8'};{/if}{if isset($block.settings.margin_bottom) && $block.settings.margin_bottom}margin-bottom:{$block.settings.margin_bottom|escape:'htmlall':'UTF-8'};{/if}{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
   {if $block.settings.slider}
     {if $block.extra.products}
-    <section class="prettyblocks-slider container-fluid px-0 {if $block.settings.default.container}container{/if}">
-      <div class="ever-wrapper overflow-auto px-2 px-md-0 pb-2">
-        <div class="d-flex flex-nowrap gap-3 pe-1">
-          {foreach from=$block.extra.products item=product}
-            <div class="flex-shrink-0 prettyblocks-slider-item" style="width: 90%; max-width: 90%;">
-              {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="w-100"}
-            </div>
-          {/foreach}
+      {assign var='carouselId' value="productSelectorCarousel-`$block.id_prettyblocks`"}
+      {assign var='chunks' value=$block.extra.products|@array_chunk:4}
+      <section class="ever-featured-products featured-products clearfix mt-3 product_selector">
+        <div id="{$carouselId}" class="carousel slide" data-bs-ride="carousel" data-ride="carousel">
+          <div class="carousel-indicators">
+            {foreach from=$chunks item=chunk name=indicators}
+              <button type="button" data-bs-target="#{$carouselId}" data-bs-slide-to="{$smarty.foreach.indicators.index}" class="{if $smarty.foreach.indicators.first}active{/if}" {if $smarty.foreach.indicators.first}aria-current="true"{/if} aria-label="Slide {$smarty.foreach.indicators.iteration}"></button>
+            {/foreach}
+          </div>
+          <div class="carousel-inner">
+            {foreach from=$chunks item=chunk name=slides}
+              <div class="carousel-item{if $smarty.foreach.slides.first} active{/if}">
+                <div class="row">
+                  {foreach from=$chunk item=product}
+                    <div class="col-6 col-lg-3">
+                      {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="w-100"}
+                    </div>
+                  {/foreach}
+                </div>
+              </div>
+            {/foreach}
+          </div>
+          <a class="carousel-control-prev" href="#{$carouselId}" role="button" data-slide="prev" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only visually-hidden">{l s='Previous' d='Shop.Theme.Actions'}</span>
+          </a>
+          <a class="carousel-control-next" href="#{$carouselId}" role="button" data-slide="next" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only visually-hidden">{l s='Next' d='Shop.Theme.Actions'}</span>
+          </a>
         </div>
-      </div>
-    </section>
-    <style>
-      @media (min-width: 768px) {
-        .prettyblocks-slider-item {
-          width: 25% !important;
-          max-width: 25% !important;
-        }
-      }
-    </style>
+      </section>
     {/if}
   {else}
     {if $block.extra.products}
