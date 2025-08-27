@@ -15,10 +15,16 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+
 {if isset($everPresentProducts) && $everPresentProducts}
+  {if !isset($carouselCounter)}
+    {assign var='carouselCounter' value=0}
+  {/if}
+  {assign var='carouselCounter' value=$carouselCounter+1}
+
   <section class="ever-featured-products featured-products clearfix mt-3{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     {if isset($carousel) && $carousel}
-      {$carouselId = 'ever-presented-carousel-'|cat:rand(1000, 9999)}
+      {assign var="carouselId" value="ever-presented-carousel-"|cat:$carouselCounter}
       <div id="{$carouselId}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel">
         <div class="carousel-inner products">
           {assign var="numProductsPerSlide" value=4}
@@ -36,14 +42,17 @@
           {/foreach}
           {hook h='displayAfterProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
         </div>
-        <a class="carousel-control-prev" href="#{$carouselId}" role="button" data-slide="prev" data-bs-slide="prev">
+
+        <!-- Controls -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#{$carouselId}" data-bs-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="sr-only">{l s='Previous' mod='everblock'}</span>
-        </a>
-        <a class="carousel-control-next" href="#{$carouselId}" role="button" data-slide="next" data-bs-slide="next">
+          <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+        </button>
+
+        <button class="carousel-control-next" type="button" data-bs-target="#{$carouselId}" data-bs-slide="next">
           <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="sr-only">{l s='Next' mod='everblock'}</span>
-        </a>
+          <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+        </button>
       </div>
     {else}
       <div class="products row">
