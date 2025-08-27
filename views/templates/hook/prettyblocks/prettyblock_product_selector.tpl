@@ -30,7 +30,7 @@
         <div id="{$carouselId}" class="carousel slide" data-bs-ride="carousel" data-ride="carousel">
           <div class="carousel-indicators">
             {foreach from=$chunks item=chunk name=indicators}
-              <button type="button" data-bs-target="#{$carouselId}" data-bs-slide-to="{$smarty.foreach.indicators.index}" class="{if $smarty.foreach.indicators.first}active{/if}" {if $smarty.foreach.indicators.first}aria-current="true"{/if} aria-label="Slide {$smarty.foreach.indicators.iteration}"></button>
+              <button type="button" data-bs-target="#{$carouselId}" data-target="#{$carouselId}" data-bs-slide-to="{$smarty.foreach.indicators.index}" data-slide-to="{$smarty.foreach.indicators.index}" class="{if $smarty.foreach.indicators.first}active{/if}" {if $smarty.foreach.indicators.first}aria-current="true"{/if} aria-label="Slide {$smarty.foreach.indicators.iteration}"></button>
             {/foreach}
           </div>
           <div class="carousel-inner">
@@ -55,6 +55,14 @@
             <span class="sr-only visually-hidden">{l s='Next' d='Shop.Theme.Actions'}</span>
           </a>
         </div>
+        <style>
+          #{$carouselId} .carousel-indicators button {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #000;
+          }
+        </style>
       </section>
     {/if}
   {else}
