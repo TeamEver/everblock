@@ -22,7 +22,7 @@
   {/if}
   {assign var='carouselCounter' value=$carouselCounter+1}
 
-  <section class="ever-featured-products featured-products clearfix mt-3{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
+  <section class="ever-featured-products featured-products clearfix mx-5 d-none d-md-block{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     {if isset($carousel) && $carousel}
       {assign var="carouselId" value="ever-presented-carousel-"|cat:mt_rand(1000,999999)}
       <div id="{$carouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true">
@@ -64,4 +64,17 @@
       </div>
     {/if}
   </section>
+  {if isset($carousel) && $carousel}
+  <section class="ever-featured-products featured-products mx-2 d-block d-md-none">
+    <div id="everFeaturedCarouselMobile" class="overflow-auto" style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
+      <div class="d-flex flex-nowrap">
+        {foreach $everPresentProducts item=product name=productLoop}
+          <div class="me-3" style="flex: 0 0 85%; scroll-snap-align: start;">
+            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="w-100"}
+          </div>
+        {/foreach}
+      </div>
+    </div>
+  </section>
+  {/if}
 {/if}
