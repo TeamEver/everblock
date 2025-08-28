@@ -1208,6 +1208,64 @@ class EverblockTools extends ObjectModel
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
+    public static function getBrandDataById(int $idBrand, Context $context): array
+    {
+        $cacheId = 'everblock_getBrandDataById_'
+            . (int) $context->language->id . '_'
+            . (int) $idBrand;
+
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $manufacturer = new Manufacturer($idBrand, $context->language->id);
+            if (!Validate::isLoadedObject($manufacturer)) {
+                EverblockCache::cacheStore($cacheId, []);
+                return [];
+            }
+
+            $imageExtensions = ['jpg', 'png', 'webp'];
+            $width = null;
+            $height = null;
+            $logo = false;
+
+            foreach ($imageExtensions as $ext) {
+                $imagePath = _PS_MANU_IMG_DIR_ . (int) $idBrand . '-small_default.' . $ext;
+                if (file_exists($imagePath)) {
+                    $webpLogo = self::convertToWebP($imagePath);
+                    if ($webpLogo) {
+                        $logo = $webpLogo;
+                        $webpPath = self::urlToFilePath($webpLogo);
+                        if (file_exists($webpPath)) {
+                            [$width, $height] = getimagesize($webpPath);
+                        }
+                    } else {
+                        [$width, $height] = getimagesize($imagePath);
+                        $logo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/m/' . (int) $idBrand . '-small_default.' . $ext;
+                    }
+                    break;
+                }
+            }
+
+            if (!$logo) {
+                $logo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/m/default.jpg';
+                $width = 150;
+                $height = 150;
+            }
+
+            $url = $context->link->getManufacturerLink($idBrand);
+            $brandData = [
+                'id' => (int) $idBrand,
+                'name' => $manufacturer->name,
+                'logo' => $logo,
+                'url' => $url,
+                'width' => $width,
+                'height' => $height,
+            ];
+            EverblockCache::cacheStore($cacheId, $brandData);
+            return $brandData;
+        }
+
+        return EverblockCache::cacheRetrieve($cacheId);
+    }
+
     public static function getFeatureValueProductShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);

@@ -17,14 +17,18 @@
 *}
 {if isset($brands) && $brands}
   <section class="featured-brands clearfix mt-3">
-    <div class="brands row ever-slick-carousel">
+    <div class="brands row{if $carousel} ever-slick-carousel{/if}">
       {foreach from=$brands item=brand}
-        <div class="col-md-3 mb-3 d-flex justify-content-center align-items-center text-center">
+        <div class="col-6 col-md-3 mb-3 d-flex justify-content-center align-items-center text-center">
           <a href="{$brand.url|escape:'htmlall':'UTF-8'}" title="{$brand.name|escape:'htmlall':'UTF-8'}" class="brand-link">
-            <img src="{$brand.logo|escape:'htmlall':'UTF-8'}" alt="{$brand.name|escape:'htmlall':'UTF-8'}"
-                 width="{$brand.width|escape:'htmlall':'UTF-8'}"
-                 height="{$brand.height|escape:'htmlall':'UTF-8'}"
-                 class="brand-image lazyload" loading="lazy">
+            <picture>
+              <source srcset="{$brand.logo|escape:'htmlall':'UTF-8'}" type="image/webp">
+              <source srcset="{$brand.logo|replace:'.webp':'.jpg'|escape:'htmlall':'UTF-8'}" type="image/jpeg">
+              <img src="{$brand.logo|replace:'.webp':'.jpg'|escape:'htmlall':'UTF-8'}" alt="{$brand.name|escape:'htmlall':'UTF-8'}"
+                   width="{$brand.width|escape:'htmlall':'UTF-8'}"
+                   height="{$brand.height|escape:'htmlall':'UTF-8'}"
+                   class="brand-image lazyload" loading="lazy">
+            </picture>
           </a>
         </div>
       {/foreach}
