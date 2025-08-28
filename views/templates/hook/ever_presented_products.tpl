@@ -34,7 +34,7 @@
               <div class="carousel-item{if $product@first} active{/if}">
                 <div class="row">
             {/if}
-            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
+            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-12 col-sm-6 col-lg-4 col-xl-3"}
             {if ($product@index + 1) % $numProductsPerSlide == 0 || $product@last}
                 </div>
               </div>
@@ -58,7 +58,7 @@
       <div class="products row">
         {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
         {foreach $everPresentProducts item=product}
-          {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-xs-12 col-sm-6 col-lg-4 col-xl-3"}
+          {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-12 col-sm-6 col-lg-4 col-xl-3"}
         {/foreach}
         {hook h='displayAfterProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
       </div>
