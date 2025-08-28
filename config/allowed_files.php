@@ -179,6 +179,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_accordeon.tpl',
     'views/templates/hook/prettyblocks/prettyblock_alert.tpl',
     'views/templates/hook/prettyblocks/prettyblock_button.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_brands.tpl',
     'views/templates/hook/prettyblocks/prettyblock_card.tpl',
     'views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl',
     'views/templates/hook/prettyblocks/prettyblock_category_price.tpl',
