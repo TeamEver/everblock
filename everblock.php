@@ -448,7 +448,7 @@ class Everblock extends Module
         $this->registerHook('actionObjectEverBlockFlagsDeleteAfter');
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
-        $this->registerHook('actionProductFlagsModifier');
+        $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
@@ -458,6 +458,44 @@ class Everblock extends Module
             $this->registerHook('beforeRenderingEverblockProductSelector');
         } else {
             $this->unregisterHook('actionRegisterBlock');
+        }
+    }
+
+    protected function updateProductFlagsHook()
+    {
+        $idShop = (int) $this->context->shop->id;
+        $cacheId = $this->name . 'NeedProductFlagsHook_' . $idShop;
+
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $needHook = false;
+
+            if (Configuration::get('EVERBLOCK_SOLDOUT_FLAG')) {
+                $needHook = true;
+            }
+
+            $featuresAsFlags = json_decode(Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
+            if (!empty($featuresAsFlags)) {
+                $needHook = true;
+            }
+
+            $sql = new DbQuery();
+            $sql->select('id_everblock_flags');
+            $sql->from(EverblockFlagsClass::$definition['table']);
+            $sql->where('id_shop = ' . (int) $idShop);
+            $sql->limit(1);
+            if (Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql)) {
+                $needHook = true;
+            }
+
+            EverblockCache::cacheStore($cacheId, $needHook);
+        }
+
+        $needHook = (bool) EverblockCache::cacheRetrieve($cacheId);
+
+        if ($needHook) {
+            $this->registerHook('actionProductFlagsModifier');
+        } else {
+            $this->unregisterHook('actionProductFlagsModifier');
         }
     }
 
@@ -1727,7 +1765,10 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERPS_FLAG_NB',
             Tools::getValue('EVERPS_FLAG_NB')
-        );        
+        );
+        $cacheId = $this->name . 'NeedProductFlagsHook_' . $idShop;
+        EverblockCache::cacheDrop($cacheId);
+        $this->updateProductFlagsHook();
         if ((bool) Tools::getValue('EVERPSCSS_CACHE') === true) {
             $this->emptyAllCache();
         }
@@ -2453,12 +2494,19 @@ class Everblock extends Module
         $cachePattern = $this->name . 'EverblockFlagsClass_getByIdProduct_';
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'EverBlockFlags_getBlocks_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
+        EverblockCache::cacheDrop($cacheId);
+        $this->updateProductFlagsHook();
     }
 
     public function hookActionObjectEverBlockFlagsUpdateAfter($params)
     {
         $cachePattern = $this->name . 'EverblockFlagsClass_getByIdProduct_';
         EverblockCache::cacheDropByPattern($cachePattern);
+        $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
+        EverblockCache::cacheDrop($cacheId);
+        $this->updateProductFlagsHook();
     }
 
     public function hookActionObjectEverblockFaqDeleteAfter($params)
