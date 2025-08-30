@@ -1331,6 +1331,23 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $featuredCategoryTemplate
                 ],
+                'config' => [
+                    'fields' => [
+                        'desktop_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Desktop columns'),
+                            'default' => '2',
+                            'choices' => [
+                                '1' => '1',
+                                '2' => '2',
+                                '3' => '3',
+                                '4' => '4',
+                                '5' => '5',
+                                '6' => '6',
+                            ],
+                        ],
+                    ],
+                ],
                 'repeater' => [
                     'name' => 'Menu',
                     'nameFrom' => 'name',
