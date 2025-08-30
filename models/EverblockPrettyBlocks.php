@@ -1374,18 +1374,6 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => \HelperBuilder::getRandomCategory((int) $context->language->id, (int) $context->shop->id),
                             'force_default_value' => true,
                         ],
-                        'order' => [
-                            'type' => 'select',
-                            'label' => 'Layout width', 
-                            'default' => 'col-12',
-                            'choices' => [
-                                'col-12' => '100%',
-                                'col-12 col-md-6' => '50%',
-                                'col-12 col-md-4' => '33,33%',
-                                'col-12 col-md-3' => '25%',
-                                'col-12 col-md-2' => '16,67%',
-                            ]
-                        ],
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Featured category image',

@@ -27,18 +27,6 @@
     {else}
     {assign var='category_link' value='#'}
     {/if}
-    {* Bootstrap column class based on selected layout width *}
-    {assign var="bootstrapClass" value="col-12"}
-    {if $state.order == '50'}
-      {assign var="bootstrapClass" value="col-12 col-md-6"}
-    {elseif $state.order == '33,33'}
-      {assign var="bootstrapClass" value="col-12 col-md-4"}
-    {elseif $state.order == '25'}
-      {assign var="bootstrapClass" value="col-12 col-md-3"}
-    {elseif $state.order == '16,67'}
-      {assign var="bootstrapClass" value="col-12 col-md-2"}
-    {/if}
-
     <div id="block-{$block.id_prettyblocks}-{$key}" class="col {$state.css_class|escape:'htmlall'}">
       <div class="position-relative overflow-hidden h-100 w-100" style="
         {if $state.padding_left}padding-left:{$state.padding_left};{/if}
