@@ -38,7 +38,7 @@
         {/if}
       {/if}
 
-      <div id="block-{$block.id_prettyblocks}-{$key}" class="text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
+      <div id="block-{$block.id_prettyblocks}-{$key}" class="{if $block.settings.default.display_inline}col {/if}text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
         {if $state.padding_left}padding-left:{$state.padding_left};{/if}
         {if $state.padding_right}padding-right:{$state.padding_right};{/if}
         {if $state.padding_top}padding-top:{$state.padding_top};{/if}
