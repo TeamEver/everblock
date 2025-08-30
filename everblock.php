@@ -482,7 +482,6 @@ class Everblock extends Module
             $sql->select('id_everblock_flags');
             $sql->from(EverblockFlagsClass::$definition['table']);
             $sql->where('id_shop = ' . (int) $idShop);
-            $sql->limit(1);
             if (Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql)) {
                 $needHook = true;
             }
