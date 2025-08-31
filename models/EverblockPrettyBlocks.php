@@ -80,6 +80,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $tocTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_toc.tpl';
             $imageMapTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_image_map.tpl';
             $everblockTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_everblock.tpl';
+            $lookbookTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_lookbook.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -3682,6 +3683,97 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Choose a product'),
                             'collection' => 'Product',
                             'selector' => '{id} - {name}',
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Lookbook'),
+                'description' => $module->l('Display looks with associated products'),
+                'code' => 'everblock_lookbook',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $lookbookTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Look',
+                    'nameFrom' => 'title',
+                    'groups' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Look title'),
+                            'default' => '',
+                        ],
+                        'image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Look image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'product_ids' => [
+                            'type' => 'text',
+                            'label' => $module->l('Associated product IDs (comma-separated)'),
+                            'default' => '',
+                        ],
+                        'background_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'default' => '',
+                            'label' => $module->l('Block background color'),
+                        ],
+                        'text_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'default' => '',
+                            'label' => $module->l('Block text color'),
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
                         ],
                     ],

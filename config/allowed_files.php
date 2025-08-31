@@ -199,6 +199,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_layout.tpl',
     'views/templates/hook/prettyblocks/prettyblock_link_list.tpl',
     'views/templates/hook/prettyblocks/prettyblock_login.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_lookbook.tpl',
     'views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl',
     'views/templates/hook/prettyblocks/prettyblock_modal.tpl',
     'views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl',
