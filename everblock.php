@@ -341,14 +341,23 @@ class Everblock extends Module
                 $hook->description = 'This hook triggers before category price block is rendered';
                 $hook->save();
             }
+            if (!Hook::getIdByName('beforeRenderingEverblockLookbook')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockLookbook';
+                $hook->title = 'Before rendering lookbook block';
+                $hook->description = 'This hook triggers before lookbook block is rendered';
+                $hook->save();
+            }
             $this->registerHook('beforeRenderingEverblockProductHighlight');
             $this->registerHook('beforeRenderingEverblockCategoryTabs');
             $this->registerHook('beforeRenderingEverblockCategoryPrice');
+            $this->registerHook('beforeRenderingEverblockLookbook');
             $this->registerHook('beforeRenderingEverblockEverblock');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
             $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
             $this->unregisterHook('beforeRenderingEverblockCategoryPrice');
+            $this->unregisterHook('beforeRenderingEverblockLookbook');
             $this->unregisterHook('beforeRenderingEverblockEverblock');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
@@ -3890,6 +3899,29 @@ class Everblock extends Module
                 ], $this->context);
                 if (!empty($presented)) {
                     $products[$key] = reset($presented);
+                }
+            }
+        }
+
+        return ['products' => $products];
+    }
+
+    public function hookBeforeRenderingEverblockLookbook($params)
+    {
+        $products = [];
+        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
+            foreach ($params['block']['states'] as $key => $state) {
+                if (empty($state['product_ids'])) {
+                    continue;
+                }
+                $ids = array_filter(array_map('intval', explode(',', $state['product_ids'])));
+                $ids = array_slice($ids, 0, 8);
+                if (!$ids) {
+                    continue;
+                }
+                $presented = EverblockTools::everPresentProducts($ids, $this->context);
+                if (!empty($presented)) {
+                    $products[$key] = $presented;
                 }
             }
         }
