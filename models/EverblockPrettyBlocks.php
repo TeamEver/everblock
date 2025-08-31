@@ -2863,6 +2863,11 @@ class EverblockPrettyBlocks extends ObjectModel
                 ],
                 'config' => [
                     'fields' => [
+                        'slider' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable slider'),
+                            'default' => 0,
+                        ],
                         'padding_left' => [
                             'type' => 'text',
                             'label' => $module->l('Padding left (Please specify the unit of measurement)'),

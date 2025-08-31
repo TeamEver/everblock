@@ -28,7 +28,7 @@
     {/foreach}
   {/if}
   {if $brands}
-    {include file='module:everblock/views/templates/hook/ever_brand.tpl' brands=$brands carousel=(count($brands) > 4)}
+    {include file='module:everblock/views/templates/hook/ever_brand.tpl' brands=$brands carousel=$block.settings.slider}
   {/if}
 </div>
 
