@@ -254,6 +254,44 @@ $(document).ready(function(){
         });
     });
 
+    // Flash deals countdown
+    document.querySelectorAll('.flash-deals-wrapper').forEach(function(wrapper) {
+        var dealsData = wrapper.dataset.deals;
+        if (!dealsData) {
+            return;
+        }
+        try {
+            var deals = JSON.parse(dealsData);
+        } catch (e) {
+            return;
+        }
+        deals.forEach(function(deal) {
+            var productEl = wrapper.querySelector('[data-id-product="' + deal.id_product + '"]');
+            if (!productEl) {
+                return;
+            }
+            productEl.style.position = 'relative';
+            var timer = document.createElement('div');
+            timer.className = 'flash-deal-countdown badge bg-danger position-absolute';
+            timer.style.top = '0.5rem';
+            timer.style.left = '0.5rem';
+            productEl.appendChild(timer);
+            function updateTimer() {
+                var distance = new Date(deal.end_date).getTime() - new Date().getTime();
+                if (distance <= 0) {
+                    timer.textContent = '';
+                    return;
+                }
+                var hours = Math.floor(distance / (1000 * 60 * 60));
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                timer.textContent = hours + 'h ' + minutes + 'm ' + seconds + 's';
+            }
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        });
+    });
+
     // Play video on scroll
     const everVideos = document.querySelectorAll('.everblock-scroll-video');
     if (everVideos.length) {

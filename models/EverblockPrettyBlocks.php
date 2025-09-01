@@ -72,6 +72,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $brandListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_brands.tpl';
             $productHighlightTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl';
             $productSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_selector.tpl';
+            $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
             $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
             $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
             $coverTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cover.tpl';
@@ -3676,6 +3677,79 @@ class EverblockPrettyBlocks extends ObjectModel
                 ],
                 'repeater' => [
                     'name' => 'Product',
+                    'nameFrom' => 'product',
+                    'groups' => [
+                        'product' => [
+                            'type' => 'selector',
+                            'label' => $module->l('Choose a product'),
+                            'collection' => 'Product',
+                            'selector' => '{id} - {name}',
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Flash deals'),
+                'description' => $module->l('Display temporary deals with a countdown timer'),
+                'code' => 'everblock_flash_deals',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $flashDealsTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'slider' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable slider'),
+                            'default' => 0,
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+                'repeater' => [
+                    'name' => 'Deal',
                     'nameFrom' => 'product',
                     'groups' => [
                         'product' => [

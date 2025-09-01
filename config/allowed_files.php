@@ -189,6 +189,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_cta.tpl',
     'views/templates/hook/prettyblocks/prettyblock_divider.tpl',
     'views/templates/hook/prettyblocks/prettyblock_everblock.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl',
     'views/templates/hook/prettyblocks/prettyblock_gallery.tpl',
     'views/templates/hook/prettyblocks/prettyblock_gmap.tpl',
     'views/templates/hook/prettyblocks/prettyblock_heading.tpl',
