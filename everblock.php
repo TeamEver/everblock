@@ -348,16 +348,25 @@ class Everblock extends Module
                 $hook->description = 'This hook triggers before lookbook block is rendered';
                 $hook->save();
             }
+            if (!Hook::getIdByName('beforeRenderingEverblockFlashDeals')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockFlashDeals';
+                $hook->title = 'Before rendering flash deals block';
+                $hook->description = 'This hook triggers before flash deals block is rendered';
+                $hook->save();
+            }
             $this->registerHook('beforeRenderingEverblockProductHighlight');
             $this->registerHook('beforeRenderingEverblockCategoryTabs');
             $this->registerHook('beforeRenderingEverblockCategoryPrice');
             $this->registerHook('beforeRenderingEverblockLookbook');
+            $this->registerHook('beforeRenderingEverblockFlashDeals');
             $this->registerHook('beforeRenderingEverblockEverblock');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
             $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
             $this->unregisterHook('beforeRenderingEverblockCategoryPrice');
             $this->unregisterHook('beforeRenderingEverblockLookbook');
+            $this->unregisterHook('beforeRenderingEverblockFlashDeals');
             $this->unregisterHook('beforeRenderingEverblockEverblock');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
@@ -3904,6 +3913,64 @@ class Everblock extends Module
         }
 
         return ['products' => $products];
+    }
+
+    public function hookBeforeRenderingEverblockFlashDeals($params)
+    {
+        $deals = [];
+        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
+            $idCustomer = (int) $this->context->customer->id;
+            $groupIds = Customer::getGroupsStatic($idCustomer);
+            if (empty($groupIds)) {
+                $groupIds = [(int) Configuration::get('PS_UNIDENTIFIED_GROUP')];
+            }
+            $groupIds = array_map('intval', $groupIds);
+            $groupList = implode(',', $groupIds);
+            foreach ($params['block']['states'] as $key => $state) {
+                if (empty($state['product']['id'])) {
+                    continue;
+                }
+                $idProduct = (int) $state['product']['id'];
+                if ($idProduct <= 0) {
+                    continue;
+                }
+                $endDate = Db::getInstance()->getValue(
+                    'SELECT MIN(cr.date_to) FROM ' . _DB_PREFIX_ . 'cart_rule cr '
+                    . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule_group crprg ON cr.id_cart_rule = crprg.id_cart_rule '
+                    . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule crpr ON crprg.id_product_rule_group = crpr.id_product_rule_group '
+                    . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule_value crprv ON crpr.id_product_rule = crprv.id_product_rule '
+                    . 'LEFT JOIN ' . _DB_PREFIX_ . 'cart_rule_group crg ON cr.id_cart_rule = crg.id_cart_rule '
+                    . 'WHERE cr.active = 1 AND cr.date_to > NOW() AND crprv.id_item = ' . $idProduct
+                    . ' AND (cr.id_customer = 0 OR cr.id_customer = ' . $idCustomer . ')'
+                    . ' AND (crg.id_group IS NULL OR crg.id_group IN (' . $groupList . '))'
+                );
+                if (!$endDate) {
+                    $endDate = Db::getInstance()->getValue(
+                        'SELECT MIN(`to`) FROM ' . _DB_PREFIX_ . 'specific_price '
+                        . 'WHERE id_product = ' . $idProduct . ' AND `to` > NOW()'
+                        . ' AND (id_customer = 0 OR id_customer = ' . $idCustomer . ')'
+                        . ' AND (id_group = 0 OR id_group IN (' . $groupList . '))'
+                    );
+                }
+                if (!$endDate) {
+                    continue;
+                }
+                $presented = EverblockTools::everPresentProducts([
+                    $idProduct,
+                ], $this->context);
+                if (!empty($presented)) {
+                    $product = reset($presented);
+                    $product['end_date'] = $endDate;
+                    $deals[$key] = $product;
+                }
+            }
+        }
+
+        if (empty($deals)) {
+            return false;
+        }
+
+        return ['deals' => $deals];
     }
 
     public function hookBeforeRenderingEverblockLookbook($params)
