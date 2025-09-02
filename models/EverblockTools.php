@@ -3035,104 +3035,98 @@ class EverblockTools extends ObjectModel
         $context = Context::getContext();
         $id_lang = (int) $context->language->id;
         $id_shop = (int) $context->shop->id;
-        $cacheId = 'store_locator_data_' . $id_shop;
+        $stores = Store::getStores($id_lang);
+        $days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            $stores = Store::getStores($id_lang);
-            $days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+        $now = new \DateTime('now', new \DateTimeZone(Configuration::get('PS_TIMEZONE')));
+        $todayIndex = (int) $now->format('w'); // 0 = dimanche
+        $currentTime = $now->format('H:i');
+        $todayDate = $now->format('Y-m-d');
+        $frenchHolidays = self::getFrenchHolidays((int) $now->format('Y'));
+        $isHoliday = in_array($todayDate, $frenchHolidays);
 
-            $now = new \DateTime('now', new \DateTimeZone(Configuration::get('PS_TIMEZONE')));
-            $todayIndex = (int) $now->format('w'); // 0 = dimanche
-            $currentTime = $now->format('H:i');
-            $todayDate = $now->format('Y-m-d');
-            $frenchHolidays = self::getFrenchHolidays((int) $now->format('Y'));
-            $isHoliday = in_array($todayDate, $frenchHolidays);
+        foreach ($stores as &$store) {
+            $id_store = (int) $store['id_store'];
+            $cms_id = (int) Configuration::get('QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $id_store, null, null, $id_shop);
+            $cms_link = null;
+            $storeHolidayHours = self::getStoreHolidayHoursConfig($id_store);
+            $todayStoreHolidaySlot = $storeHolidayHours[$todayDate] ?? null;
 
-            foreach ($stores as &$store) {
-                $id_store = (int) $store['id_store'];
-                $cms_id = (int) Configuration::get('QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $id_store, null, null, $id_shop);
-                $cms_link = null;
-                $storeHolidayHours = self::getStoreHolidayHoursConfig($id_store);
-                $todayStoreHolidaySlot = $storeHolidayHours[$todayDate] ?? null;
-
-                if ($cms_id > 0) {
-                    $cms = new CMS($cms_id, $id_lang, $id_shop);
-                    if (Validate::isLoadedObject($cms)) {
-                        $link = new Link();
-                        $cms_link = $link->getCMSLink($cms);
-                    }
+            if ($cms_id > 0) {
+                $cms = new CMS($cms_id, $id_lang, $id_shop);
+                if (Validate::isLoadedObject($cms)) {
+                    $link = new Link();
+                    $cms_link = $link->getCMSLink($cms);
                 }
+            }
 
-                $store['cms_id'] = $cms_id;
-                $store['cms_link'] = $cms_link;
+            $store['cms_id'] = $cms_id;
+            $store['cms_link'] = $cms_link;
 
-                $decodedHours = json_decode($store['hours'], true);
-                $store['hours_display'] = [];
-                $store['is_open'] = false;
-                $store['open_until'] = null;
-                $store['opens_at'] = null;
+            $decodedHours = json_decode($store['hours'], true);
+            $store['hours_display'] = [];
+            $store['is_open'] = false;
+            $store['open_until'] = null;
+            $store['opens_at'] = null;
 
-                foreach ($days as $i => $day) {
-                    $slots = isset($decodedHours[$i]) ? $decodedHours[$i] : [];
-                    if ($i === $todayIndex && $isHoliday && $todayStoreHolidaySlot) {
-                        $slots = [$todayStoreHolidaySlot];
+            foreach ($days as $i => $day) {
+                $slots = isset($decodedHours[$i]) ? $decodedHours[$i] : [];
+                if ($i === $todayIndex && $isHoliday && $todayStoreHolidaySlot) {
+                    $slots = [$todayStoreHolidaySlot];
+                }
+                $hoursFormatted = [];
+
+                foreach ($slots as $slot) {
+                    if (empty($slot)) {
+                        continue;
                     }
-                    $hoursFormatted = [];
 
-                    foreach ($slots as $slot) {
-                        if (empty($slot)) {
-                            continue;
-                        }
+                    // Plusieurs créneaux ? → on découpe
+                    $subSlots = explode(' / ', $slot);
+                    foreach ($subSlots as $subSlot) {
+                        $hoursFormatted[] = trim($subSlot);
 
-                        // Plusieurs créneaux ? → on découpe
-                        $subSlots = explode(' / ', $slot);
-                        foreach ($subSlots as $subSlot) {
-                            $hoursFormatted[] = trim($subSlot);
-
-                            if (($i === $todayIndex) && (!$isHoliday || $todayStoreHolidaySlot) && strpos($subSlot, '-') !== false) {
-                                [$startRaw, $endRaw] = explode(' - ', $subSlot);
-                                $start = self::normalizeTime($startRaw);
-                                $end = self::normalizeTime($endRaw);
-                                if ($start && $end) {
-                                    if ($currentTime >= $start && $currentTime <= $end) {
-                                        $store['is_open'] = true;
-                                        $store['open_until'] = $end;
-                                    } elseif ($currentTime < $start) {
-                                        if ($store['opens_at'] === null || $start < $store['opens_at']) {
-                                            $store['opens_at'] = $start;
-                                        }
+                        if (($i === $todayIndex) && (!$isHoliday || $todayStoreHolidaySlot) && strpos($subSlot, '-') !== false) {
+                            [$startRaw, $endRaw] = explode(' - ', $subSlot);
+                            $start = self::normalizeTime($startRaw);
+                            $end = self::normalizeTime($endRaw);
+                            if ($start && $end) {
+                                if ($currentTime >= $start && $currentTime <= $end) {
+                                    $store['is_open'] = true;
+                                    $store['open_until'] = $end;
+                                } elseif ($currentTime < $start) {
+                                    if ($store['opens_at'] === null || $start < $store['opens_at']) {
+                                        $store['opens_at'] = $start;
                                     }
                                 }
                             }
                         }
                     }
+                }
 
-                    $label = count($hoursFormatted) > 0 ? implode(' / ', $hoursFormatted) : 'Fermé';
-                    if ($isHoliday && $i === $todayIndex) {
-                        if ($todayStoreHolidaySlot) {
-                            $label .= ' (jour férié)';
-                        } else {
-                            $label = 'Fermé (jour férié)';
-                        }
+                $label = count($hoursFormatted) > 0 ? implode(' / ', $hoursFormatted) : 'Fermé';
+                if ($isHoliday && $i === $todayIndex) {
+                    if ($todayStoreHolidaySlot) {
+                        $label .= ' (jour férié)';
+                    } else {
+                        $label = 'Fermé (jour férié)';
                     }
-
-                    $store['hours_display'][] = [
-                        'day' => $day,
-                        'hours' => $label,
-                    ];
                 }
 
-                if ($isHoliday && !$todayStoreHolidaySlot) {
-                    $store['is_open'] = false;
-                    $store['open_until'] = null;
-                    $store['opens_at'] = null;
-                }
+                $store['hours_display'][] = [
+                    'day' => $day,
+                    'hours' => $label,
+                ];
             }
 
-            EverblockCache::cacheStore($cacheId, $stores);
+            if ($isHoliday && !$todayStoreHolidaySlot) {
+                $store['is_open'] = false;
+                $store['open_until'] = null;
+                $store['opens_at'] = null;
+            }
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return $stores;
     }
 
     protected static function normalizeTime($str)
