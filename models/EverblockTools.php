@@ -3049,7 +3049,8 @@ class EverblockTools extends ObjectModel
         $stores = Store::getStores($id_lang);
         $days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
-        $now = new \DateTime('now', new \DateTimeZone(Configuration::get('PS_TIMEZONE')));
+        $psTimezone = Configuration::get('PS_TIMEZONE');
+        $now = new \DateTime('now', new \DateTimeZone($psTimezone));
         $todayIndex = (int) $now->format('w'); // 0 = dimanche
         $currentTime = $now->format('H:i');
         $todayDate = $now->format('Y-m-d');
@@ -3073,6 +3074,7 @@ class EverblockTools extends ObjectModel
 
             $store['cms_id'] = $cms_id;
             $store['cms_link'] = $cms_link;
+            $store['timezone'] = $psTimezone;
 
             $decodedHours = json_decode($store['hours'], true);
             $store['hours_display'] = [];
@@ -3247,7 +3249,7 @@ class EverblockTools extends ObjectModel
     }
 
 
-    public static function generateGoogleMapScript($markers)
+    public static function generateGoogleMapScript($markers, $translations = [])
     {
         if (!$markers) {
             return;
@@ -3262,10 +3264,56 @@ class EverblockTools extends ObjectModel
                 var map;
                 var infoWindow;
                 var markers = ' . json_encode($markers) . ';
+                var translations = ' . json_encode($translations) . ';
+                var userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                 var markerMap = {};
                 var storeList = document.getElementById("everblock-storelist");
                 var originalItems = Array.from(storeList.children);
                 var defaultCenter = { lat: markers[0].lat, lng: markers[0].lng };
+
+                function convertTime(timeStr, fromTZ, toTZ) {
+                    if (!timeStr) { return ""; }
+                    var parts = timeStr.split(":");
+                    if (parts.length < 2) { return timeStr; }
+                    var now = new Date();
+                    var date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), parts[0], parts[1]));
+                    var fromOffset = -new Date(date.toLocaleString("en-US", { timeZone: fromTZ })).getTimezoneOffset();
+                    var toOffset = -new Date(date.toLocaleString("en-US", { timeZone: toTZ })).getTimezoneOffset();
+                    var diff = toOffset - fromOffset;
+                    var converted = new Date(date.getTime() + diff * 60000);
+                    return converted.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+                }
+
+                function getStatus(marker) {
+                    var tz = marker.timezone || userTimeZone;
+                    if (marker.is_open) {
+                        var t = convertTime(marker.open_until, tz, userTimeZone);
+                        return translations.open_until.replace("%s", t);
+                    } else if (marker.opens_at) {
+                        var t2 = convertTime(marker.opens_at, tz, userTimeZone);
+                        return translations.open_at.replace("%s", t2);
+                    }
+                    return translations.closed;
+                }
+
+                function updateStoreListStatus() {
+                    var items = document.querySelectorAll("#everblock-storelist .store-status");
+                    items.forEach(function (el) {
+                        var status = el.getAttribute("data-open-status");
+                        var tz = el.getAttribute("data-store-timezone") || userTimeZone;
+                        var label = el.querySelector(".status-label");
+                        if (!label) { return; }
+                        if (status === "open") {
+                            var until = convertTime(el.getAttribute("data-open-until"), tz, userTimeZone);
+                            label.textContent = translations.open_until.replace("%s", until);
+                        } else if (status === "opens") {
+                            var at = convertTime(el.getAttribute("data-opens-at"), tz, userTimeZone);
+                            label.textContent = translations.open_at.replace("%s", at);
+                        } else {
+                            label.textContent = translations.closed;
+                        }
+                    });
+                }
 
                 function renderContent(marker) {
                     var phone = marker.phone ? `<div>${marker.phone}</div>` : "";
@@ -3281,8 +3329,8 @@ class EverblockTools extends ObjectModel
                                 ${marker.address1}<br>
                                 ${address2}
                                 ${marker.postcode} ${marker.city}<br>
-                                ${phone}
-                                <div>${marker.status}</div>
+                ${phone}
+                                <div>${getStatus(marker)}</div>
                                 <a href="#" data-bs-toggle="modal" data-bs-target="#storeHoursModal${marker.id}"><u>${marker.hours_label}</u> &gt;</a>
                                 <div class="mt-2">${directions}</div>
                             </div>
@@ -3419,6 +3467,7 @@ class EverblockTools extends ObjectModel
                 }
 
                 document.addEventListener("DOMContentLoaded", function () {
+                    updateStoreListStatus();
                     var mapTabBtn = document.getElementById("tab-map");
                     if (mapTabBtn) {
                         mapTabBtn.addEventListener("shown.bs.tab", function () {

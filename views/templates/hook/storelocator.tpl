@@ -41,7 +41,7 @@
     <div class="tab-pane fade col-12 col-md-4 d-md-block order-md-1" id="pane-list" role="tabpanel" aria-labelledby="tab-list">
       <div id="everblock-storelist" class="row" style="max-height:500px; overflow-y:auto;">
         {foreach from=$everblock_stores item=item name=store_loop}
-        <div class="col-12 everblock-store-item mt-4" data-id="{$item.id|escape:'htmlall':'UTF-8'}" data-lat="{$item.latitude}" data-lng="{$item.longitude}">
+        <div class="col-12 everblock-store-item mt-4" data-id="{$item.id|escape:'htmlall':'UTF-8'}" data-lat="{$item.latitude}" data-lng="{$item.longitude}" data-store-timezone="{$item.timezone|escape:'htmlall':'UTF-8'}">
           <div class="d-flex align-items-start">
             <div class="flex-shrink-0 me-3">
               <img src="{$urls.img_store_url|escape:'htmlall':'UTF-8'}{$item.id|escape:'htmlall':'UTF-8'}.jpg"
@@ -71,17 +71,17 @@
               {/if}
 
               {* Status d'ouverture *}
-              <p class="mb-1 small d-flex align-items-center">
+              <p class="mb-1 small d-flex align-items-center store-status" data-open-status="{if $item.is_open}open{elseif $item.opens_at}opens{else}closed{/if}" data-open-until="{$item.open_until|escape:'htmlall':'UTF-8'}" data-opens-at="{$item.opens_at|escape:'htmlall':'UTF-8'}" data-store-timezone="{$item.timezone|escape:'htmlall':'UTF-8'}">
+                <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: {if $item.is_open}#28a745{elseif $item.opens_at}#ffc107{else}#dc3545{/if};"></span>
+                <span class="status-label">
                 {if $item.is_open}
-                  <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: #28a745;"></span>
                   {l s='Open today until %s' sprintf=[$item.open_until] mod='everblock'}
                 {elseif $item.opens_at}
-                  <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: #ffc107;"></span>
                   {l s='Open today at %s' sprintf=[$item.opens_at] mod='everblock'}
                 {else}
-                  <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: #dc3545;"></span>
                   {l s='Closed' mod='everblock'}
                 {/if}
+                </span>
               </p>
 
               {* Voir les horaires (ouvre une modal Bootstrap) *}

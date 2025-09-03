@@ -1807,13 +1807,6 @@ class Everblock extends Module
             $context = Context::getContext();
             foreach ($stores as $store) {
                 $storeId = isset($store['id']) ? (int) $store['id'] : (int) $store['id_store'];
-                if (!empty($store['is_open'])) {
-                    $status = sprintf($this->l('Open today until %s'), $store['open_until']);
-                } elseif (!empty($store['opens_at'])) {
-                    $status = sprintf($this->l('Open today at %s'), $store['opens_at']);
-                } else {
-                    $status = $this->l('Closed');
-                }
                 $marker = [
                     'id' => $storeId,
                     'lat' => $store['latitude'],
@@ -1825,13 +1818,21 @@ class Everblock extends Module
                     'city' => $store['city'],
                     'phone' => $store['phone'],
                     'img' => $context->link->getBaseLink(null, null) . 'img/st/' . $storeId . '.jpg',
-                    'status' => $status,
+                    'is_open' => (bool) $store['is_open'],
+                    'open_until' => $store['open_until'],
+                    'opens_at' => $store['opens_at'],
+                    'timezone' => $store['timezone'],
                     'directions_label' => $this->l('Get directions'),
                     'hours_label' => $this->l('See hours'),
                 ];
                 $markers[] = $marker;
             }
-            $gmapScript = EverblockTools::generateGoogleMapScript($markers);
+            $translations = [
+                'open_until' => $this->l('Open today until %s'),
+                'open_at' => $this->l('Open today at %s'),
+                'closed' => $this->l('Closed'),
+            ];
+            $gmapScript = EverblockTools::generateGoogleMapScript($markers, $translations);
             if ($gmapScript) {
                 file_put_contents($filePath, $gmapScript);
             }
