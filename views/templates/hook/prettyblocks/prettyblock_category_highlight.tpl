@@ -59,7 +59,7 @@
           {/if}
 
         {if $state.name}
-          <div class="prettyblock-cover-overlay category_state_name position-desktop-{$state.title_position_desktop|default:'center'|escape:'htmlall'} position-mobile-{$state.title_position_mobile|default:'center'|escape:'htmlall'}">
+          <div class="prettyblock-cover-overlay category_state_name position-desktop-{$state.title_position_desktop|default:'center'|lower|escape:'htmlall'} position-mobile-{$state.title_position_mobile|default:'center'|lower|escape:'htmlall'}">
             <h2 class="m-0 text-white">{$state.name nofilter}</h2>
           </div>
         {/if}
