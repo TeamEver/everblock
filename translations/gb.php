@@ -16,4 +16,5 @@
  *  @author    Team Ever <https://www.team-ever.com/>
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
+*/
+$_MODULE['<{everblock}prestashop>everblock_da3b1fba450fdb0bc71ccb8231f075d6'] = 'Number of brands per slide';

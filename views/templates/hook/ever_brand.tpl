@@ -16,18 +16,19 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($brands) && $brands}
+  {assign var="numBrandsPerSlide" value=$brandsPerSlide|default:4}
+  {assign var="colWidth" value=12/$numBrandsPerSlide}
   {if isset($carousel) && $carousel}
     {assign var="carouselId" value="ever-brand-carousel-"|cat:mt_rand(1000,999999)}
     <section class="featured-brands clearfix mt-3 d-none d-md-block">
       <div id="{$carouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true">
         <div class="carousel-inner brands">
-          {assign var="numBrandsPerSlide" value=4}
           {foreach from=$brands item=brand name=brands}
             {if $brand@index % $numBrandsPerSlide == 0}
               <div class="carousel-item{if $brand@first} active{/if}">
                 <div class="row">
             {/if}
-            <div class="col-6 col-md-3 mb-3 d-flex justify-content-center align-items-center text-center">
+            <div class="col-6 col-md-{$colWidth|intval} mb-3 d-flex justify-content-center align-items-center text-center">
               <a href="{$brand.url|escape:'htmlall':'UTF-8'}" title="{$brand.name|escape:'htmlall':'UTF-8'}" class="brand-link">
                 <picture>
                   <source srcset="{$brand.logo|escape:'htmlall':'UTF-8'}" type="image/webp">
@@ -81,7 +82,7 @@
     <section class="featured-brands clearfix mt-3">
       <div class="brands row">
         {foreach from=$brands item=brand}
-          <div class="col-6 col-md-3 mb-3 d-flex justify-content-center align-items-center text-center">
+          <div class="col-6 col-md-{$colWidth|intval} mb-3 d-flex justify-content-center align-items-center text-center">
             <a href="{$brand.url|escape:'htmlall':'UTF-8'}" title="{$brand.name|escape:'htmlall':'UTF-8'}" class="brand-link">
               <picture>
                 <source srcset="{$brand.logo|escape:'htmlall':'UTF-8'}" type="image/webp">
