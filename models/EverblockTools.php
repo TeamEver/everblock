@@ -1985,6 +1985,17 @@ class EverblockTools extends ObjectModel
             $newsletter = Module::getInstanceByName('ps_emailsubscription');
             if (method_exists($newsletter, 'renderWidget')) {
                 $replacement = $newsletter->renderWidget('displayFooter', []);
+
+                // Force the newsletter form to submit to the current page instead
+                // of the homepage, otherwise inserting the shortcode in a page
+                // (e.g. contact form) breaks the form action.
+                $currentUrl = Tools::getHttpHost(true) . $_SERVER['REQUEST_URI'];
+                $replacement = preg_replace(
+                    '#(<form[^>]*action=")[^"]*#blockEmailSubscription_displayFooter(")#',
+                    '$1' . htmlspecialchars($currentUrl, ENT_QUOTES) . '#blockEmailSubscription_displayFooter$2',
+                    $replacement
+                );
+
                 $txt = str_replace('[newsletter_form]', $replacement, $txt);
             }
         }
