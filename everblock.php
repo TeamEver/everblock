@@ -355,11 +355,19 @@ class Everblock extends Module
                 $hook->description = 'This hook triggers before flash deals block is rendered';
                 $hook->save();
             }
+            if (!Hook::getIdByName('beforeRenderingEverblockCategoryProducts')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockCategoryProducts';
+                $hook->title = 'Before rendering category products block';
+                $hook->description = 'This hook triggers before category products block is rendered';
+                $hook->save();
+            }
             $this->registerHook('beforeRenderingEverblockProductHighlight');
             $this->registerHook('beforeRenderingEverblockCategoryTabs');
             $this->registerHook('beforeRenderingEverblockCategoryPrice');
             $this->registerHook('beforeRenderingEverblockLookbook');
             $this->registerHook('beforeRenderingEverblockFlashDeals');
+            $this->registerHook('beforeRenderingEverblockCategoryProducts');
             $this->registerHook('beforeRenderingEverblockEverblock');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
@@ -367,6 +375,7 @@ class Everblock extends Module
             $this->unregisterHook('beforeRenderingEverblockCategoryPrice');
             $this->unregisterHook('beforeRenderingEverblockLookbook');
             $this->unregisterHook('beforeRenderingEverblockFlashDeals');
+            $this->unregisterHook('beforeRenderingEverblockCategoryProducts');
             $this->unregisterHook('beforeRenderingEverblockEverblock');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
@@ -474,6 +483,7 @@ class Everblock extends Module
         ) {
             $this->registerHook('actionRegisterBlock');
             $this->registerHook('beforeRenderingEverblockProductSelector');
+            $this->registerHook('beforeRenderingEverblockCategoryProducts');
         } else {
             $this->unregisterHook('actionRegisterBlock');
         }
@@ -3989,6 +3999,33 @@ class Everblock extends Module
                 $presented = EverblockTools::everPresentProducts($ids, $this->context);
                 if (!empty($presented)) {
                     $products[$key] = $presented;
+                }
+            }
+        }
+
+        return ['products' => $products];
+    }
+
+    public function hookBeforeRenderingEverblockCategoryProducts($params)
+    {
+        $products = [];
+        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
+            foreach ($params['block']['states'] as $key => $state) {
+                if (empty($state['category']['id'])) {
+                    continue;
+                }
+                $idCategory = (int) $state['category']['id'];
+                if ($idCategory <= 0) {
+                    continue;
+                }
+                $limit = !empty($state['product_limit']) ? (int) $state['product_limit'] : 4;
+                $categoryProducts = EverblockTools::getProductsByCategoryId($idCategory, $limit);
+                if (!empty($categoryProducts)) {
+                    $ids = array_column($categoryProducts, 'id_product');
+                    $presented = EverblockTools::everPresentProducts($ids, $this->context);
+                    if (!empty($presented)) {
+                        $products[$key] = $presented;
+                    }
                 }
             }
         }
