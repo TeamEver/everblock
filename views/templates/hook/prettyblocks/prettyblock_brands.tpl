@@ -28,7 +28,7 @@
     {/foreach}
   {/if}
   {if $brands}
-    {include file='module:everblock/views/templates/hook/ever_brand.tpl' brands=$brands carousel=$block.settings.slider}
+    {include file='module:everblock/views/templates/hook/ever_brand.tpl' brands=$brands carousel=$block.settings.slider brandsPerSlide=$block.settings.brands_per_slide}
   {/if}
 </div>
 

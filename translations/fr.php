@@ -651,6 +651,7 @@ $_MODULE['<{everblock}prestashop>everblock_21f59a9a3e796f0e797ad7736028089c'] = 
 $_MODULE['<{everblock}prestashop>everblock_a97e8578c3942df9fc98bb501d385883'] = 'Heure d\'ouverture de %s le %s';
 $_MODULE['<{everblock}prestashop>everblock_5ce749b4b55e9ed91bda1aba920e1ffd'] = 'Heure de fermeture de %s le %s';
 $_MODULE['<{everblock}prestashop>everblock_78d5da4bd57ce3e990efd714138339bb'] = 'Activer le slider';
+$_MODULE['<{everblock}prestashop>everblock_da3b1fba450fdb0bc71ccb8231f075d6'] = 'Nombre de marques par slide';
 $_MODULE['<{everblock}prestashop>storelocator_1d66769fe7f641de0c633976e5f46cb5'] = 'Trouver un magasin';
 $_MODULE['<{everblock}prestashop>storelocator_13348442cc6a27032d2b4aa28b75a5d3'] = 'Rechercher';
 $_MODULE['<{everblock}prestashop>storelocator_46f3ea056caa3126b91f3f70beea068c'] = 'Carte';

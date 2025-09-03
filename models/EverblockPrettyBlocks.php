@@ -1353,7 +1353,6 @@ class EverblockPrettyBlocks extends ObjectModel
                                 '2' => '2',
                                 '3' => '3',
                                 '4' => '4',
-                                '5' => '5',
                                 '6' => '6',
                             ],
                         ],
@@ -2869,6 +2868,18 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'checkbox',
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
+                        ],
+                        'brands_per_slide' => [
+                            'type' => 'select',
+                            'label' => $module->l('Number of brands per slide'),
+                            'default' => '4',
+                            'choices' => [
+                                '1' => '1',
+                                '2' => '2',
+                                '3' => '3',
+                                '4' => '4',
+                                '6' => '6',
+                            ],
                         ],
                         'padding_left' => [
                             'type' => 'text',
