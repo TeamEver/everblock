@@ -18,3 +18,8 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 */
 $_MODULE['<{everblock}prestashop>everblock_da3b1fba450fdb0bc71ccb8231f075d6'] = 'Number of brands per slide';
+$_MODULE['<{everblock}prestashop>everblock_df644ae155e79abf54175bd15d75f363'] = 'Product name';
+$_MODULE['<{everblock}prestashop>everblock_98f770b0af18ca763421bac22b4b6805'] = 'Features';
+$_MODULE['<{everblock}prestashop>everblock_3601146c4e948c32b6424d2c0a7f0118'] = 'Price';
+$_MODULE['<{everblock}prestashop>everblock_6bad61b9ccbce7b54a971752b6a9e4f6'] = 'CTA label';
+$_MODULE['<{everblock}prestashop>everblock_a071cf4c36ab33786b9eed04502122eb'] = 'CTA URL';

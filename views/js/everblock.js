@@ -316,4 +316,23 @@ $(document).ready(function(){
         });
     }
 
+    $('.everblock-product-comparison').each(function(){
+        var minPrice = Infinity;
+        var $items = $(this).find('.comparison-item');
+        $items.each(function(){
+            var priceText = $(this).find('.product-price').text().replace(/[^0-9.,]/g, '').replace(',', '.');
+            var price = parseFloat(priceText);
+            if (!isNaN(price) && price < minPrice) {
+                minPrice = price;
+            }
+        });
+        $items.each(function(){
+            var priceText = $(this).find('.product-price').text().replace(/[^0-9.,]/g, '').replace(',', '.');
+            var price = parseFloat(priceText);
+            if (!isNaN(price) && price === minPrice) {
+                $(this).addClass('best-offer');
+            }
+        });
+    });
+
 });

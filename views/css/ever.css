@@ -95,3 +95,28 @@
     content: '\25BC';
 }
 
+/* Product comparison block */
+.everblock-product-comparison {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.everblock-product-comparison .comparison-item {
+    border: 1px solid #ddd;
+    padding: 1rem;
+    flex: 1 1 200px;
+    text-align: center;
+}
+.everblock-product-comparison .comparison-item.best-offer {
+    border-color: #4caf50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+.everblock-product-comparison .product-price {
+    font-weight: bold;
+}
+.everblock-product-comparison .product-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+}
+

@@ -72,6 +72,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $brandListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_brands.tpl';
             $productHighlightTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl';
             $productSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_selector.tpl';
+            $productComparisonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_comparison.tpl';
             $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
             $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
             $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
@@ -3696,6 +3697,92 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Choose a product'),
                             'collection' => 'Product',
                             'selector' => '{id} - {name}',
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Product comparison'),
+                'description' => $module->l('Display a comparison table for products'),
+                'code' => 'everblock_product_comparison',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $productComparisonTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+                'repeater' => [
+                    'name' => 'Product',
+                    'nameFrom' => 'product_name',
+                    'groups' => [
+                        'product_name' => [
+                            'type' => 'text',
+                            'label' => $module->l('Product name'),
+                            'default' => '',
+                        ],
+                        'features' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Features'),
+                            'default' => '',
+                        ],
+                        'price' => [
+                            'type' => 'text',
+                            'label' => $module->l('Price'),
+                            'default' => '',
+                        ],
+                        'cta_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA label'),
+                            'default' => '',
+                        ],
+                        'cta_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA URL'),
                             'default' => '',
                         ],
                     ],
