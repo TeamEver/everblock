@@ -75,6 +75,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
             $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
             $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
+            $stepsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_steps.tpl';
             $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
             $coverTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cover.tpl';
             $headingTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_heading.tpl';
@@ -3823,6 +3824,101 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'color',
                             'default' => '',
                             'label' => $module->l('Block text color'),
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                    'margin_bottom' => [
+                        'type' => 'text',
+                        'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                        'default' => '',
+                    ],
+                ],
+            ],
+        ];
+            $blocks[] = [
+                'name' => $module->l('Steps'),
+                'description' => $module->l('Display steps with icons'),
+                'code' => 'everblock_steps',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $stepsTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'orientation' => [
+                            'type' => 'select',
+                            'label' => $module->l('Orientation'),
+                            'default' => 'row',
+                            'choices' => [
+                                'row' => $module->l('Row'),
+                                'column' => $module->l('Column'),
+                            ],
+                        ],
+                    ],
+                ],
+                'repeater' => [
+                    'name' => 'Step',
+                    'nameFrom' => 'title',
+                    'groups' => [
+                        'step_number' => [
+                            'type' => 'text',
+                            'label' => $module->l('Step number'),
+                            'default' => '1',
+                        ],
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Step title'),
+                            'default' => $module->l('Step title'),
+                        ],
+                        'description' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Step description'),
+                            'default' => $module->l('Step description'),
+                        ],
+                        'icon' => [
+                            'type' => 'text',
+                            'label' => $module->l('Icon class'),
+                            'default' => 'fa fa-check',
                         ],
                         'css_class' => [
                             'type' => 'text',

@@ -316,4 +316,12 @@ $(document).ready(function(){
         });
     }
 
+    $('.everblock-steps').each(function() {
+        var \$container = $(this);
+        \$container.find('.everblock-step').on('click', function() {
+            \$container.find('.everblock-step').removeClass('active');
+            $(this).addClass('active');
+        });
+    });
+
 });

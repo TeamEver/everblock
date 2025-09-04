@@ -95,3 +95,21 @@
     content: '\25BC';
 }
 
+/* Steps block styles */
+.everblock-steps {
+    display: flex;
+    gap: 1rem;
+}
+.everblock-steps.column {
+    flex-direction: column;
+}
+.everblock-steps.row {
+    flex-direction: row;
+}
+.everblock-step {
+    text-align: center;
+}
+.everblock-step-icon {
+    font-size: 2rem;
+}
+
