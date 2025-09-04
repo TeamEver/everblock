@@ -54,6 +54,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $layoutTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_layout.tpl';
             $featuredCategoryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl';
             $imgSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img_slider.tpl';
+            $beforeAfterTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_before_after.tpl';
             $tabTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_tab.tpl';
             $categoryTabsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_tabs.tpl';
             $dividerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
@@ -2665,6 +2666,47 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Before/After slider'),
+                'description' => $module->l('Display before/after images slider'),
+                'code' => 'everblock_before_after',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $beforeAfterTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Before/After',
+                    'nameFrom' => 'label_before',
+                    'groups' => [
+                        'image_before' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Before image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'image_after' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('After image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'label_before' => [
+                            'type' => 'text',
+                            'label' => $module->l('Before label'),
+                            'default' => $module->l('Before'),
+                        ],
+                        'label_after' => [
+                            'type' => 'text',
+                            'label' => $module->l('After label'),
+                            'default' => $module->l('After'),
                         ],
                     ],
                 ],

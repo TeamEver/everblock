@@ -1,0 +1,37 @@
+.everblock-before-after {
+  position: relative;
+  overflow: hidden;
+}
+.everblock-before-after img {
+  width: 100%;
+  display: block;
+}
+.everblock-before-after .eba-after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 50%;
+  overflow: hidden;
+}
+.everblock-before-after .eba-range {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  width: 80%;
+}
+.everblock-before-after .eba-label {
+  position: absolute;
+  top: 10px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 0.875rem;
+}
+.everblock-before-after .eba-label-before {
+  left: 10px;
+}
+.everblock-before-after .eba-label-after {
+  right: 10px;
+}

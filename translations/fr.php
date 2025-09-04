@@ -656,3 +656,11 @@ $_MODULE['<{everblock}prestashop>storelocator_1d66769fe7f641de0c633976e5f46cb5']
 $_MODULE['<{everblock}prestashop>storelocator_13348442cc6a27032d2b4aa28b75a5d3'] = 'Rechercher';
 $_MODULE['<{everblock}prestashop>storelocator_46f3ea056caa3126b91f3f70beea068c'] = 'Carte';
 $_MODULE['<{everblock}prestashop>storelocator_821b8ee6937cec96c30fdafbfe836d68'] = 'Magasins';
+$_MODULE['<{everblock}prestashop>everblock_f82ac990d059841f74ba7312fb7a17af'] = 'Slider avant/après';
+$_MODULE['<{everblock}prestashop>everblock_435a48cbd32051986784b592adf14bee'] = 'Afficher un slider d\'images avant/après';
+$_MODULE['<{everblock}prestashop>everblock_9424a9c74e981d5a8429ac2d762de378'] = 'Image avant';
+$_MODULE['<{everblock}prestashop>everblock_d36a5d59bf1877168c8e746a2df605a0'] = 'Image après';
+$_MODULE['<{everblock}prestashop>everblock_999fb543a9bc0f1144eb284785e8bd17'] = 'Label avant';
+$_MODULE['<{everblock}prestashop>everblock_ea2e428321b3bb037783af1032e4c564'] = 'Label après';
+$_MODULE['<{everblock}prestashop>everblock_9060587edeb01a63e3d3edc959678d1e'] = 'Avant';
+$_MODULE['<{everblock}prestashop>everblock_7bfcadb5535fe8aad5032762b7bfe159'] = 'Après';

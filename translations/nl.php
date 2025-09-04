@@ -18,3 +18,11 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 */
 $_MODULE['<{everblock}prestashop>everblock_da3b1fba450fdb0bc71ccb8231f075d6'] = 'Aantal merken per dia';
+$_MODULE['<{everblock}prestashop>everblock_f82ac990d059841f74ba7312fb7a17af'] = 'Voor/Na slider';
+$_MODULE['<{everblock}prestashop>everblock_435a48cbd32051986784b592adf14bee'] = 'Toon voor/na afbeeldingen slider';
+$_MODULE['<{everblock}prestashop>everblock_9424a9c74e981d5a8429ac2d762de378'] = 'Afbeelding voor';
+$_MODULE['<{everblock}prestashop>everblock_d36a5d59bf1877168c8e746a2df605a0'] = 'Afbeelding na';
+$_MODULE['<{everblock}prestashop>everblock_999fb543a9bc0f1144eb284785e8bd17'] = 'Label voor';
+$_MODULE['<{everblock}prestashop>everblock_ea2e428321b3bb037783af1032e4c564'] = 'Label na';
+$_MODULE['<{everblock}prestashop>everblock_9060587edeb01a63e3d3edc959678d1e'] = 'Voor';
+$_MODULE['<{everblock}prestashop>everblock_7bfcadb5535fe8aad5032762b7bfe159'] = 'Na';
