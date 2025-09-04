@@ -26,15 +26,15 @@
       {assign var=data value=$block.extra.state_data[$key]|default:null}
       {if $data}
         <div id="block-{$block.id_prettyblocks}-{$key}" class="col text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="{if $state.padding_left}padding-left:{$state.padding_left};{/if}{if $state.padding_right}padding-right:{$state.padding_right};{/if}{if $state.padding_top}padding-top:{$state.padding_top};{/if}{if $state.padding_bottom}padding-bottom:{$state.padding_bottom};{/if}{if $state.margin_left}margin-left:{$state.margin_left};{/if}{if $state.margin_right}margin-right:{$state.margin_right};{/if}{if $state.margin_top}margin-top:{$state.margin_top};{/if}{if $state.margin_bottom}margin-bottom:{$state.margin_bottom};{/if}">
-          <a href="{$data.category_link|default:'#'}" class="d-block text-decoration-none" title="{$data.title|escape:'htmlall'}">
+          <a href="{$data.category_link|default:'#'}" class="d-flex flex-column align-items-center text-decoration-none h-100" title="{$data.title|escape:'htmlall'}">
             {if $data.image_url}
-              <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" width="{$data.image_width}" height="{$data.image_height}" class="img-fluid mb-2" loading="lazy">
+              <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" width="{$data.image_width}" height="{$data.image_height}" class="img-fluid mb-2 mx-auto" loading="lazy">
             {/if}
             {if $data.title}
-              <p class="h6">{$data.title|unescape:'html'|escape:'html':'UTF-8'}</p>
+              <p class="h6 mb-2 text-center">{$data.title|unescape:'html'|escape:'html':'UTF-8'}</p>
             {/if}
             {if $data.min_price !== false}
-              <span class="small d-block">{l s='From' mod='everblock'} {Tools::displayPrice($data.min_price)}</span>
+              <span class="small d-block mt-auto text-center">{l s='From' mod='everblock'} {Tools::displayPrice($data.min_price)}</span>
             {/if}
           </a>
         </div>
