@@ -95,3 +95,19 @@
     content: '\25BC';
 }
 
+/* Downloads block styles */
+.pb-downloads-list {
+    list-style: none;
+    padding-left: 0;
+}
+.pb-download-item {
+    margin-bottom: 1rem;
+}
+.pb-download-icon {
+    max-width: 32px;
+    margin-right: .5rem;
+}
+.pb-download-description {
+    margin-top: .25rem;
+}
+

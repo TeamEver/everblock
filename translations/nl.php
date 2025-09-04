@@ -18,3 +18,11 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 */
 $_MODULE['<{everblock}prestashop>everblock_da3b1fba450fdb0bc71ccb8231f075d6'] = 'Aantal merken per dia';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_167a7e815468d271876997e0ae5efa68'] = 'Lijst met downloads';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_dcc309325d4107c3b9a17d7d4f32da1f'] = 'Toont een lijst met downloadbare bronnen';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_b22c8f9ad7db023c548c3b8e846cb169'] = 'Bloktitel';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_c20c35ef53bf1b70789ce94e66800147'] = 'Downloads';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_b78a3223503896721cca1303f776159b'] = 'Titel';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_0b27918290ff5323bea1e3b78a9cf04e'] = 'Bestand';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_b5a7adde1af5c87d7fd797b6245c2a39'] = 'Beschrijving';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_817434295a673aed431435658b65d9a7'] = 'Icoon';
