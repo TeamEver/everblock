@@ -59,6 +59,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $dividerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
             $spacerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_spacer.tpl';
             $galleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gallery.tpl';
+            $videoGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_video_gallery.tpl';
             $masonryGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl';
             $testimonialTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial.tpl';
             $testimonialSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial_slider.tpl';
@@ -2097,6 +2098,54 @@ class EverblockPrettyBlocks extends ObjectModel
                         'margin_bottom' => [
                             'type' => 'text',
                             'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Video gallery'),
+                'description' => $module->l('Display video gallery'),
+                'code' => 'everblock_video_gallery',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $videoGalleryTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'use_carousel' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Display as carousel'),
+                            'default' => '0',
+                        ],
+                    ],
+                ],
+                'repeater' => [
+                    'name' => 'Video',
+                    'nameFrom' => 'title',
+                    'groups' => [
+                        'thumbnail' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Thumbnail image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'video_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Video URL'),
+                            'default' => '',
+                        ],
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Video title'),
+                            'default' => '',
+                        ],
+                        'description' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Video description'),
                             'default' => '',
                         ],
                     ],

@@ -656,3 +656,10 @@ $_MODULE['<{everblock}prestashop>storelocator_1d66769fe7f641de0c633976e5f46cb5']
 $_MODULE['<{everblock}prestashop>storelocator_13348442cc6a27032d2b4aa28b75a5d3'] = 'Rechercher';
 $_MODULE['<{everblock}prestashop>storelocator_46f3ea056caa3126b91f3f70beea068c'] = 'Carte';
 $_MODULE['<{everblock}prestashop>storelocator_821b8ee6937cec96c30fdafbfe836d68'] = 'Magasins';
+$_MODULE['<{everblock}prestashop>everblock_1bd4e734c62ac931c1be15b08a079544'] = 'Galerie vidéo';
+$_MODULE['<{everblock}prestashop>everblock_50e7cbda3d4802d68ad107064f391fe8'] = 'Afficher une galerie vidéo';
+$_MODULE['<{everblock}prestashop>everblock_ec27e0a5d09b5ca6a3cede37466dc2c5'] = 'Image miniature';
+$_MODULE['<{everblock}prestashop>everblock_cf26c0d5b71f36207ad9b694d77ab7c5'] = 'URL de la vidéo';
+$_MODULE['<{everblock}prestashop>everblock_5d386201332e3ccfa10545a1277256da'] = 'Titre de la vidéo';
+$_MODULE['<{everblock}prestashop>everblock_95b8dcac2cf646d33645645f59505e75'] = 'Description de la vidéo';
+$_MODULE['<{everblock}prestashop>everblock_3c56841c8ae9ef1081609af22dd40ccb'] = 'Afficher en carrousel';

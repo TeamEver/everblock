@@ -95,3 +95,20 @@
     content: '\25BC';
 }
 
+/* Video gallery */
+.everblock-video-gallery .everblock-video-item {
+    cursor: pointer;
+    text-align: center;
+}
+.everblock-video-gallery .everblock-video-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.everblock-video-gallery .everblock-video-title {
+    font-size: 1rem;
+    margin-top: .5rem;
+}
+.everblock-video-gallery .everblock-video-desc {
+    font-size: .875rem;
+}
