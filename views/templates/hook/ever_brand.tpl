@@ -56,11 +56,14 @@
         </button>
       </div>
     </section>
+    {assign var="mobileBrandsPerSlide" value=$numBrandsPerSlide}
+    {if $mobileBrandsPerSlide < 2}{assign var="mobileBrandsPerSlide" value=2}{/if}
+    {if $mobileBrandsPerSlide > 3}{assign var="mobileBrandsPerSlide" value=3}{/if}
     <section class="featured-brands mt-3 d-block d-md-none">
       <div id="everBrandsCarouselMobile" class="overflow-auto" style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
         <div class="d-flex flex-nowrap">
           {foreach from=$brands item=brand}
-            <div class="me-3" style="flex: 0 0 85%; scroll-snap-align: start;">
+            <div class="me-3" style="flex: 0 0 calc(100% / {$mobileBrandsPerSlide} - 1rem); scroll-snap-align: start;">
               <div class="d-flex justify-content-center align-items-center text-center">
                 <a href="{$brand.url|escape:'htmlall':'UTF-8'}" title="{$brand.name|escape:'htmlall':'UTF-8'}" class="brand-link">
                   <picture>
