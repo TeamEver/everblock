@@ -3049,22 +3049,27 @@ class EverblockTools extends ObjectModel
         $stores = Store::getStores($id_lang);
         $days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
-        $now = new \DateTime('now', new \DateTimeZone(Configuration::get('PS_TIMEZONE')));
-        $todayIndex = (int) $now->format('w'); // 0 = dimanche
-        $currentTime = $now->format('H:i');
-        $todayDate = $now->format('Y-m-d');
-        $frenchHolidays = self::getFrenchHolidays((int) $now->format('Y'));
-        $isHoliday = in_array($todayDate, $frenchHolidays);
-
         foreach ($stores as &$store) {
+            $storeShopId = isset($store['id_shop']) ? (int) $store['id_shop'] : $id_shop;
+            $timezone = Configuration::get('PS_TIMEZONE', null, null, $storeShopId);
+            if (empty($timezone)) {
+                $timezone = Configuration::get('PS_TIMEZONE');
+            }
+            $now = new \DateTime('now', new \DateTimeZone($timezone));
+            $todayIndex = (int) $now->format('w'); // 0 = dimanche
+            $currentTime = $now->format('H:i');
+            $todayDate = $now->format('Y-m-d');
+            $frenchHolidays = self::getFrenchHolidays((int) $now->format('Y'));
+            $isHoliday = in_array($todayDate, $frenchHolidays);
+
             $id_store = (int) $store['id_store'];
-            $cms_id = (int) Configuration::get('QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $id_store, null, null, $id_shop);
+            $cms_id = (int) Configuration::get('QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $id_store, null, null, $storeShopId);
             $cms_link = null;
             $storeHolidayHours = self::getStoreHolidayHoursConfig($id_store);
             $todayStoreHolidaySlot = $storeHolidayHours[$todayDate] ?? null;
 
             if ($cms_id > 0) {
-                $cms = new CMS($cms_id, $id_lang, $id_shop);
+                $cms = new CMS($cms_id, $id_lang, $storeShopId);
                 if (Validate::isLoadedObject($cms)) {
                     $link = new Link();
                     $cms_link = $link->getCMSLink($cms);
