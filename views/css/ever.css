@@ -95,3 +95,21 @@
     content: '\25BC';
 }
 
+/* Counter styles */
+.ever-counters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+.ever-counter i {
+    display: block;
+    font-size: 2rem;
+    margin-bottom: .5rem;
+}
+.ever-counter-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+}
+

@@ -74,6 +74,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $productSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_selector.tpl';
             $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
             $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
+            $countersTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_counters.tpl';
             $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
             $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
             $coverTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cover.tpl';
@@ -3959,6 +3960,43 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Counters'),
+                'description' => $module->l('Display animated counters'),
+                'code' => 'everblock_counters',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $countersTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Counter',
+                    'nameFrom' => 'label',
+                    'groups' => [
+                        'icon' => [
+                            'type' => 'text',
+                            'label' => $module->l('Icon class'),
+                            'default' => '',
+                        ],
+                        'value' => [
+                            'type' => 'text',
+                            'label' => $module->l('Counter value'),
+                            'default' => '100',
+                        ],
+                        'label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Counter label'),
+                            'default' => $module->l('Projects'),
+                        ],
+                        'animation_speed' => [
+                            'type' => 'text',
+                            'label' => $module->l('Animation speed (ms)'),
+                            'default' => '2000',
                         ],
                     ],
                 ],

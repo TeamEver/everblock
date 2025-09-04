@@ -18,3 +18,9 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 */
 $_MODULE['<{everblock}prestashop>everblock_da3b1fba450fdb0bc71ccb8231f075d6'] = 'Number of brands per slide';
+$_MODULE['<{everblock}prestashop>everblock_6d934d434a35ece59d870a44263a20d6'] = 'Counters';
+$_MODULE['<{everblock}prestashop>everblock_799eb0fc8f8786f7e3bb9b8228d19eca'] = 'Display animated counters';
+$_MODULE['<{everblock}prestashop>everblock_de0ad6b7a678e57fabc12bce050c79dc'] = 'Icon class';
+$_MODULE['<{everblock}prestashop>everblock_2c4d66afba61b600b2932ccd3de0c7e1'] = 'Counter value';
+$_MODULE['<{everblock}prestashop>everblock_7f576abcf2e228af10d567bb0d2df452'] = 'Counter label';
+$_MODULE['<{everblock}prestashop>everblock_dee7cae0a61d46454861d5fc218842ba'] = 'Animation speed (ms)';

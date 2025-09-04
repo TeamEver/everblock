@@ -656,3 +656,9 @@ $_MODULE['<{everblock}prestashop>storelocator_1d66769fe7f641de0c633976e5f46cb5']
 $_MODULE['<{everblock}prestashop>storelocator_13348442cc6a27032d2b4aa28b75a5d3'] = 'Rechercher';
 $_MODULE['<{everblock}prestashop>storelocator_46f3ea056caa3126b91f3f70beea068c'] = 'Carte';
 $_MODULE['<{everblock}prestashop>storelocator_821b8ee6937cec96c30fdafbfe836d68'] = 'Magasins';
+$_MODULE['<{everblock}prestashop>everblock_6d934d434a35ece59d870a44263a20d6'] = 'Compteurs';
+$_MODULE['<{everblock}prestashop>everblock_799eb0fc8f8786f7e3bb9b8228d19eca'] = 'Afficher des compteurs animés';
+$_MODULE['<{everblock}prestashop>everblock_de0ad6b7a678e57fabc12bce050c79dc'] = 'Classe d\'icône';
+$_MODULE['<{everblock}prestashop>everblock_2c4d66afba61b600b2932ccd3de0c7e1'] = 'Valeur du compteur';
+$_MODULE['<{everblock}prestashop>everblock_7f576abcf2e228af10d567bb0d2df452'] = 'Libellé du compteur';
+$_MODULE['<{everblock}prestashop>everblock_dee7cae0a61d46454861d5fc218842ba'] = 'Vitesse d\'animation (ms)';

@@ -316,4 +316,21 @@ $(document).ready(function(){
         });
     }
 
+    // Counter animation
+    $('.ever-counter-value').each(function() {
+        var $this = $(this);
+        var target = parseInt($this.data('value'));
+        var speed = parseInt($this.data('speed')) || 2000;
+        $({countNum: 0}).animate({countNum: target}, {
+            duration: speed,
+            easing: 'swing',
+            step: function() {
+                $this.text(Math.floor(this.countNum));
+            },
+            complete: function() {
+                $this.text(this.countNum);
+            }
+        });
+    });
+
 });
