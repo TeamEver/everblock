@@ -22,7 +22,7 @@
         {foreach from=$block.states item=state}
           <div class="flex-shrink-0 prettyblocks-card-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="width:90%;max-width:90%;">
             <div class="card border border-light-subtle rounded-4 shadow-sm">
-              <div class="card-body d-flex flex-column h-100 p-4">
+              <div class="card-body d-flex flex-column h-100 p-2">
                 {if isset($state.image.url) && $state.image.url}
                   <div class="mb-4">
                     {assign var="imgExt" value=$state.image.url|lower|substr:-4}
