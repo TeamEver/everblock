@@ -56,9 +56,7 @@
         </button>
       </div>
     </section>
-    {assign var="mobileBrandsPerSlide" value=$numBrandsPerSlide}
-    {if $mobileBrandsPerSlide < 2}{assign var="mobileBrandsPerSlide" value=2}{/if}
-    {if $mobileBrandsPerSlide > 3}{assign var="mobileBrandsPerSlide" value=3}{/if}
+    {assign var="mobileBrandsPerSlide" value=3.5}
     <section class="featured-brands mt-3 d-block d-md-none">
       <div id="everBrandsCarouselMobile" class="overflow-auto" style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
         <div class="d-flex flex-nowrap">
