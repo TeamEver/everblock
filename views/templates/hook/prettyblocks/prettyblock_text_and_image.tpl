@@ -34,7 +34,7 @@
             {/if}
             
             {* Row responsive, image à gauche ou à droite selon ordre *}
-            <div class="row align-items-center {if $state.order == 'First text, then image'}flex-md-row-reverse{/if}">
+            <div class="row align-items-{$state.text_position_mobile|default:'center'} align-items-md-{$state.text_position_desktop|default:'center'} {if $state.order == 'First text, then image'}flex-md-row-reverse{/if}">
                 
                 {* IMAGE *}
                 <div class="col-md-6 mb-3 mb-md-0 text-center">
