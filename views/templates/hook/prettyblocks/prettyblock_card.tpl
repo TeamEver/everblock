@@ -21,8 +21,8 @@
       <div class="d-flex flex-nowrap gap-3 pe-1">
         {foreach from=$block.states item=state}
           <div class="flex-shrink-0 prettyblocks-card-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="width:90%;max-width:90%;">
-            <div class="card border border-light-subtle rounded-4 shadow-sm">
-              <div class="card-body d-flex flex-column h-100 p-2">
+            <div class="card h-100 mb-3 border border-light-subtle rounded-4 shadow-sm">
+              <div class="card-body d-flex flex-column h-100 p-4">
                 {if isset($state.image.url) && $state.image.url}
                   <div class="mb-4">
                     {assign var="imgExt" value=$state.image.url|lower|substr:-4}
@@ -42,7 +42,7 @@
                   {if $state.content}<div class="card-text text-body-secondary">{$state.content nofilter}</div>{/if}
                 </div>
                 {if $state.button_link}
-                  <div class="text-end">
+                  <div class="mt-4 text-end">
                     <a href="{$state.button_link|escape:'htmlall'}" class="btn btn-light rounded-circle p-2 d-inline-flex align-items-center justify-content-center" title="{$state.title|escape:'htmlall'}">
                       <span class="visually-hidden">En savoir plus</span>
                       <span aria-hidden="true">&rarr;</span>
