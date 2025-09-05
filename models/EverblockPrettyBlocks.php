@@ -60,6 +60,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $spacerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_spacer.tpl';
             $galleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gallery.tpl';
             $masonryGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl';
+            $videoGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_video_gallery.tpl';
             $testimonialTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial.tpl';
             $testimonialSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial_slider.tpl';
             $imgTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img.tpl';
@@ -2169,6 +2170,90 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' =>  $module->l('alt attribute'),
                             'default' => $module->l('My alt attribute')
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Video gallery'),
+                'description' => $module->l('Display a gallery of videos'),
+                'code' => 'everblock_video_gallery',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $videoGalleryTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Video',
+                    'nameFrom' => 'title',
+                    'groups' => [
+                        'thumbnail' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Thumbnail'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'video_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Video URL'),
+                            'default' => '',
+                        ],
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title'),
+                            'default' => '',
+                        ],
+                        'description' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Description'),
+                            'default' => '',
                         ],
                         'css_class' => [
                             'type' => 'text',
