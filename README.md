@@ -28,6 +28,17 @@ Please check ps_hook table on your database to see every available hook on your 
 ## Pretty Blocks compatibility
 This module is compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
 
+In the PrettyBlocks cover block, you can choose Bootstrap button classes, including outline variants:
+
+<button type="button" class="btn btn-outline-primary">Primary</button> 
+<button type="button" class="btn btn-outline-secondary">Secondary</button>
+<button type="button" class="btn btn-outline-success">Success</button>
+<button type="button" class="btn btn-outline-danger">Danger</button>
+<button type="button" class="btn btn-outline-warning">Warning</button>
+<button type="button" class="btn btn-outline-info">Info</button>
+<button type="button" class="btn btn-outline-light">Light</button>
+<button type="button" class="btn btn-outline-dark">Dark</button>
+
 
 ## QCD ACF compatibility
 This module is compatible with the QCD ACF module developed by the 410 Gone agency. The QCD ACF module allows you to add custom fields to products, categories, brands, suppliers, characteristics, etc. [You can contact the 410 Gone agency from their website to obtain the QCD ACF module.](https://www.410-gone.fr/e-commerce/prestashop.html)
@@ -256,6 +267,17 @@ Veuillez consulter la table ps_hook de votre base de données pour voir tous les
 ## Compatibilité Pretty Blocks
 Ce module est compatible avec le constructeur de pages Pretty Blocks. [Retrouvez ce module gratuit ici.](https://prettyblocks.io/)
 
+Dans le bloc cover de PrettyBlocks, vous pouvez choisir des classes de boutons Bootstrap, y compris les variantes outline :
+
+<button type="button" class="btn btn-outline-primary">Primary</button> 
+<button type="button" class="btn btn-outline-secondary">Secondary</button>
+<button type="button" class="btn btn-outline-success">Success</button>
+<button type="button" class="btn btn-outline-danger">Danger</button>
+<button type="button" class="btn btn-outline-warning">Warning</button>
+<button type="button" class="btn btn-outline-info">Info</button>
+<button type="button" class="btn btn-outline-light">Light</button>
+<button type="button" class="btn btn-outline-dark">Dark</button>
+
 ## Compatibilité QCD ACF
 Ce module est compatible avec le module QCD ACF développé par l'agence 410 Gone. Il permet d'ajouter des champs personnalisés aux produits, catégories, marques, fournisseurs, caractéristiques, etc. [Contactez l'agence 410 Gone depuis leur site pour obtenir le module QCD ACF.](https://www.410-gone.fr/e-commerce/prestashop.html)
 
@@ -445,6 +467,17 @@ Consulta la tabla ps_hook de tu base de datos para ver todos los hooks disponibl
 ## Compatibilidad con Pretty Blocks
 Este módulo es compatible con el constructor de páginas Pretty Blocks. [Encuentra este módulo gratuito aquí.](https://prettyblocks.io/)
 
+En el bloque cover de PrettyBlocks, puedes elegir clases de botones de Bootstrap, incluidas las variantes outline:
+
+<button type="button" class="btn btn-outline-primary">Primary</button> 
+<button type="button" class="btn btn-outline-secondary">Secondary</button>
+<button type="button" class="btn btn-outline-success">Success</button>
+<button type="button" class="btn btn-outline-danger">Danger</button>
+<button type="button" class="btn btn-outline-warning">Warning</button>
+<button type="button" class="btn btn-outline-info">Info</button>
+<button type="button" class="btn btn-outline-light">Light</button>
+<button type="button" class="btn btn-outline-dark">Dark</button>
+
 ## Compatibilidad con QCD ACF
 Este módulo es compatible con el módulo QCD ACF desarrollado por la agencia 410 Gone. Permite añadir campos personalizados a productos, categorías, marcas, proveedores, características, etc. [Contacta con la agencia 410 Gone desde su web para obtener el módulo QCD ACF.](https://www.410-gone.fr/e-commerce/prestashop.html)
 
@@ -632,6 +665,17 @@ Controlla la tabella ps_hook del tuo database per vedere tutti gli hook disponib
 
 ## Compatibilità con Pretty Blocks
 Questo modulo è compatibile con il page builder Pretty Blocks. [Trovi il modulo gratuito qui.](https://prettyblocks.io/)
+
+Nel blocco cover di PrettyBlocks puoi scegliere le classi dei bottoni Bootstrap, comprese le varianti outline:
+
+<button type="button" class="btn btn-outline-primary">Primary</button> 
+<button type="button" class="btn btn-outline-secondary">Secondary</button>
+<button type="button" class="btn btn-outline-success">Success</button>
+<button type="button" class="btn btn-outline-danger">Danger</button>
+<button type="button" class="btn btn-outline-warning">Warning</button>
+<button type="button" class="btn btn-outline-info">Info</button>
+<button type="button" class="btn btn-outline-light">Light</button>
+<button type="button" class="btn btn-outline-dark">Dark</button>
 
 ## Compatibilità con QCD ACF
 Questo modulo è compatibile con il modulo QCD ACF sviluppato dall'agenzia 410 Gone. Permette di aggiungere campi personalizzati a prodotti, categorie, marchi, fornitori, caratteristiche, ecc. [Contatta l'agenzia 410 Gone dal loro sito per ottenere il modulo QCD ACF.](https://www.410-gone.fr/e-commerce/prestashop.html)
