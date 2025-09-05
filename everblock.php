@@ -3841,14 +3841,17 @@ class Everblock extends Module
                         (int) $this->context->language->id
                     );
                     $info['title'] = !empty($state['name']) ? $state['name'] : $category->name;
-                    $products = Product::getProducts(
+                    $products = $category->getProducts(
                         (int) $this->context->language->id,
-                        0,
+                        1,
                         1,
                         'price',
                         'asc',
-                        $idCategory,
-                        true
+                        false,
+                        true,
+                        false,
+                        1,
+                        $this->context
                     );
                     if (!empty($products)) {
                         $info['min_price'] = $products[0]['price'];
