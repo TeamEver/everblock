@@ -147,3 +147,10 @@
     margin-top: .5rem;
 }
 
+/* Counters */
+.everblock-counter-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+}
+

@@ -77,6 +77,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
             $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
             $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
+            $countersTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_counters.tpl';
             $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
             $coverTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cover.tpl';
             $headingTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_heading.tpl';
@@ -3379,6 +3380,44 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Counters'),
+                'description' => $module->l('Display animated counters'),
+                'code' => 'everblock_counters',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $countersTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Counter',
+                    'nameFrom' => 'label',
+                    'groups' => [
+                        'icon' => [
+                            'type' => 'select',
+                            'label' => $module->l('Select an icon'),
+                            'choices' => EverblockTools::getAvailableSvgIcons(),
+                            'default' => 'payment.svg',
+                        ],
+                        'value' => [
+                            'type' => 'text',
+                            'label' => $module->l('Value'),
+                            'default' => '100',
+                        ],
+                        'label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Label'),
+                            'default' => '',
+                        ],
+                        'animation_speed' => [
+                            'type' => 'text',
+                            'label' => $module->l('Animation speed (ms)'),
+                            'default' => '2000',
                         ],
                     ],
                 ],
