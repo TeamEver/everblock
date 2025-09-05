@@ -4691,7 +4691,7 @@ class EverblockTools extends ObjectModel
             if ($imgUrl) {
                 $localPath = self::downloadImage($imgUrl);
                 if ($localPath) {
-                    $webpUrl = self::convertToWebP($localPath, 800, 450);
+                    $webpUrl = self::convertToWebP($localPath);
                     $originalUrl = self::filePathToUrl($localPath);
                     $size = file_exists($localPath) ? getimagesize($localPath) : [0,0];
                     $width = $size[0] ?? '';
@@ -4967,7 +4967,7 @@ class EverblockTools extends ObjectModel
         return $field;
     }
 
-    public static function convertToWebP($imagePath, int $maxWidth = 1920, int $maxHeight = 600)
+    public static function convertToWebP($imagePath)
     {
         // Si déjà en webp, on ne fait rien
         if (strtolower(pathinfo($imagePath, PATHINFO_EXTENSION)) === 'webp') {
@@ -5011,23 +5011,6 @@ class EverblockTools extends ObjectModel
 
         if (!$image) {
             return false;
-        }
-
-        $originalWidth = imagesx($image);
-        $originalHeight = imagesy($image);
-
-        if ($originalWidth > $maxWidth || $originalHeight > $maxHeight) {
-            $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
-            $newWidth = (int) round($originalWidth * $ratio);
-            $newHeight = (int) round($originalHeight * $ratio);
-
-            $resized = imagecreatetruecolor($newWidth, $newHeight);
-            imagealphablending($resized, false);
-            imagesavealpha($resized, true);
-            imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
-
-            imagedestroy($image);
-            $image = $resized;
         }
 
         imagepalettetotruecolor($image);
