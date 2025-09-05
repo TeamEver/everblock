@@ -18,6 +18,14 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 */
 $_MODULE['<{everblock}prestashop>everblock_da3b1fba450fdb0bc71ccb8231f075d6'] = 'Number of brands per slide';
+$_MODULE['<{everblock}prestashop>everblock_5a007b1257a85c32e4c435c60cbad339'] = 'Plan title';
+$_MODULE['<{everblock}prestashop>everblock_1d89b70bf1410131de72cef713ef3d20'] = 'Plan price';
+$_MODULE['<{everblock}prestashop>everblock_98f770b0af18ca763421bac22b4b6805'] = 'Features';
+$_MODULE['<{everblock}prestashop>everblock_6bad61b9ccbce7b54a971752b6a9e4f6'] = 'CTA label';
+$_MODULE['<{everblock}prestashop>everblock_a071cf4c36ab33786b9eed04502122eb'] = 'CTA URL';
+$_MODULE['<{everblock}prestashop>everblock_0b90582f4589d84be89f5b847d4d1ed1'] = 'Highlight';
+$_MODULE['<{everblock}prestashop>everblock_78d5da4bd57ce3e990efd714138339bb'] = 'Enable slider';
+$_MODULE['<{everblock}prestashop>everblock_26290d95407771415ff52a22bed4c39c'] = 'Number of plans per slide';
 $_MODULE['<{everblock}prestashop>everblock_1bd4e734c62ac931c1be15b08a079544'] = 'Video gallery';
 $_MODULE['<{everblock}prestashop>everblock_50e7cbda3d4802d68ad107064f391fe8'] = 'Display video gallery';
 $_MODULE['<{everblock}prestashop>everblock_ec27e0a5d09b5ca6a3cede37466dc2c5'] = 'Thumbnail image';

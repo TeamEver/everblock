@@ -17,38 +17,43 @@
  */
 $(document).ready(function(){
     if ($.fn.slick) {
-        $('.ever-slick-carousel:not(.slick-initialised)').slick({
-            infinite: true,
-            arrows: false,
-            dots: true,
-            slidesToShow: 4,
-            slidesToScroll: 1,
-            responsive: [{
-                breakpoint: 1024,
-                settings: {
-                    slidesToShow: 3,
-                    slidesToScroll: 1,
-                    infinite: true,
-                    dots: true
-                }
-            }, {
-                breakpoint: 600,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-                    dots: true
-                }
-            }, {
-                breakpoint: 300,
-                settings: {
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-                    dots: true
-                }
-            }]
-        });
-        $('.ever-slick-carousel').on('setPosition', function(event, slick) {
-            $(slick.$slider).find('.slick-track').addClass('row');
+        $('.ever-slick-carousel:not(.slick-initialised)').each(function(){
+            var $carousel = $(this);
+            var slides = parseInt($carousel.data('items')) || 4;
+            $carousel.slick({
+                infinite: true,
+                arrows: false,
+                dots: true,
+                slidesToShow: slides,
+                slidesToScroll: 1,
+                responsive: [{
+                    breakpoint: 1024,
+                    settings: {
+                        slidesToShow: Math.min(slides,3),
+                        slidesToScroll: 1,
+                        infinite: true,
+                        dots: true
+                    }
+                }, {
+                    breakpoint: 600,
+                    settings: {
+                        slidesToShow: Math.min(slides,2),
+                        slidesToScroll: 1,
+                        dots: true
+                    }
+                }, {
+                    breakpoint: 300,
+                    settings: {
+                        slidesToShow: 1,
+                        slidesToScroll: 1,
+                        dots: true
+                    }
+                }]
+            });
+            $carousel.on('setPosition', function(event, slick) {
+                $(slick.$slider).find('.slick-track').addClass('row');
+            });
+            $carousel.addClass('slick-initialised');
         });
         $('.ever-cover-carousel:not(.slick-initialised)').each(function(){
             var $carousel = $(this);
