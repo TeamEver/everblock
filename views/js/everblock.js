@@ -342,4 +342,21 @@ $(document).ready(function(){
         });
     }
 
+    // Animated counters
+    $('.everblock-counter').each(function() {
+        var $counter = $(this).find('.everblock-counter-value');
+        var target = parseInt($(this).data('value')) || 0;
+        var speed = parseInt($(this).data('speed')) || 2000;
+        $({countNum: 0}).animate({countNum: target}, {
+            duration: speed,
+            easing: 'swing',
+            step: function() {
+                $counter.text(Math.floor(this.countNum));
+            },
+            complete: function() {
+                $counter.text(this.countNum);
+            }
+        });
+    });
+
 });
