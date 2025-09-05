@@ -22,7 +22,7 @@
     <div class="row">
   {/if}
 
-<div id="block-{$block.id_prettyblocks}" class="everblock-spacer" style="{if isset($block.settings.space_top) && $block.settings.space_top}margin-top:{$block.settings.space_top|escape:'htmlall':'UTF-8'}rem;{/if}{if isset($block.settings.space_bottom) && $block.settings.space_bottom}margin-bottom:{$block.settings.space_bottom|escape:'htmlall':'UTF-8'}rem;{/if}height:0;"></div>
+<div id="block-{$block.id_prettyblocks}" class="everblock-spacer {$block.settings.css_class|escape:'htmlall':'UTF-8'}" style="{if isset($block.settings.space_top) && $block.settings.space_top}margin-top:{$block.settings.space_top|escape:'htmlall':'UTF-8'}rem;{/if}{if isset($block.settings.space_bottom) && $block.settings.space_bottom}margin-bottom:{$block.settings.space_bottom|escape:'htmlall':'UTF-8'}rem;{/if}height:0;"></div>
 
   {if $block.settings.default.force_full_width || $block.settings.default.container}
     </div>

@@ -360,6 +360,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Space bottom (rem)'),
                             'default' => '0',
                         ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
                     ],
                 ],
             ];
