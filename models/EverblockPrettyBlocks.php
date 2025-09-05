@@ -1981,6 +1981,26 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Open in new tab (only if not obfuscated)'),
                             'default' => '0',
                         ],
+                        'text_position_desktop' => [
+                            'type' => 'select',
+                            'label' => $module->l('Text position (desktop)'),
+                            'choices' => [
+                                'start' => $module->l('Top'),
+                                'center' => $module->l('Center'),
+                                'end' => $module->l('Bottom'),
+                            ],
+                            'default' => 'center',
+                        ],
+                        'text_position_mobile' => [
+                            'type' => 'select',
+                            'label' => $module->l('Text position (mobile)'),
+                            'choices' => [
+                                'start' => $module->l('Top'),
+                                'center' => $module->l('Center'),
+                                'end' => $module->l('Bottom'),
+                            ],
+                            'default' => 'center',
+                        ],
                         'css_class' => [
                             'type' => 'text',
                             'label' => $module->l('Custom CSS class'),
