@@ -68,6 +68,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $ctaTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cta.tpl';
             $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
             $linkListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_link_list.tpl';
+            $downloadsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_downloads.tpl';
             $socialLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_social_links.tpl';
             $brandListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_brands.tpl';
             $productHighlightTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl';
@@ -2772,6 +2773,56 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+
+            $blocks[] = [
+                'name' => $module->l('Downloads list'),
+                'description' => $module->l('Display a list of downloadable resources'),
+                'code' => 'everblock_downloads',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $downloadsTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Block title'),
+                            'default' => $module->l('Downloads'),
+                        ],
+                    ],
+                ],
+                'repeater' => [
+                    'name' => 'Download',
+                    'nameFrom' => 'title',
+                    'groups' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title'),
+                            'default' => $module->l('My file'),
+                        ],
+                        'file' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('File'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'description' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Description'),
+                            'default' => '',
+                        ],
+                        'icon' => [
+                            'type' => 'select',
+                            'label' => $module->l('Select an icon'),
+                            'choices' => EverblockTools::getAvailableSvgIcons(),
+                            'default' => 'file.svg',
                         ],
                     ],
                 ],

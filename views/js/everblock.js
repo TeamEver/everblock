@@ -297,6 +297,13 @@ $(document).ready(function(){
         });
     });
 
+    // Disable downloads in preview mode
+    $(document).on('click', '.everblock-downloads a', function (e) {
+        if ($('body').hasClass('prettyblocks-preview')) {
+            e.preventDefault();
+        }
+    });
+
     // Play video on scroll
     const everVideos = document.querySelectorAll('.everblock-scroll-video');
     if (everVideos.length) {
