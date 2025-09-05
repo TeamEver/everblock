@@ -139,3 +139,11 @@
     margin: 0;
 }
 
+/* Video gallery */
+.everblock-video-gallery img {
+    cursor: pointer;
+}
+.everblock-video-gallery .video-description {
+    margin-top: .5rem;
+}
+
