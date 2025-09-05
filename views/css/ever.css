@@ -154,3 +154,12 @@
     font-weight: 700;
 }
 
+/* Exit intent modal */
+.ever-exit-intent-modal .modal-content {
+    text-align: center;
+}
+.ever-exit-intent-modal img {
+    max-width: 100%;
+    height: auto;
+}
+

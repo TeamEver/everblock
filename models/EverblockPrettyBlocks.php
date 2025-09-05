@@ -87,6 +87,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $everblockTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_everblock.tpl';
             $lookbookTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_lookbook.tpl';
             $pricingTableTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pricing_table.tpl';
+            $exitIntentTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_exit_intent.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -1670,6 +1671,50 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Exit intent offer'),
+                'description' => $module->l('Display popup when leaving the page'),
+                'code' => 'everblock_exit_intent',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $exitIntentTemplate,
+                ],
+                'repeater' => [
+                    'name' => $module->l('Offer'),
+                    'nameFrom' => 'title',
+                    'groups' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title'),
+                            'default' => '',
+                        ],
+                        'message' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Message'),
+                            'default' => '',
+                        ],
+                        'cta_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA label'),
+                            'default' => '',
+                        ],
+                        'cta_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA URL'),
+                            'default' => '#',
+                        ],
+                        'image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Image'),
+                            'default' => [
+                                'url' => '',
+                            ],
                         ],
                     ],
                 ],

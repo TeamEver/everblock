@@ -359,4 +359,16 @@ $(document).ready(function(){
         });
     });
 
+    // Exit intent modal
+    var exitIntentShown = false;
+    $(document).on('mouseout', function(e) {
+        if (e.clientY <= 0 && !exitIntentShown) {
+            var $modal = $('.ever-exit-intent-modal').first();
+            if ($modal.length) {
+                $modal.modal('show');
+                exitIntentShown = true;
+            }
+        }
+    });
+
 });
