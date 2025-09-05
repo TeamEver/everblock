@@ -50,7 +50,7 @@
               </div>
             {/if}
             {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
-              <div class="mt-3 d-flex justify-content-center gap-2">
+              <div class="d-flex justify-content-center gap-2">
                 {if $state.btn1_text && $state.btn1_link}
                   <a href="{$state.btn1_link|escape:'htmlall'}" class="btn btn-{$state.btn1_type|escape:'htmlall'}">{$state.btn1_text|escape:'htmlall'}</a>
                 {/if}
@@ -88,7 +88,7 @@
             </div>
           {/if}
           {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
-            <div class="mt-3 d-flex justify-content-center gap-2">
+            <div class="d-flex justify-content-center gap-2">
               {if $state.btn1_text && $state.btn1_link}
                 <a href="{$state.btn1_link|escape:'htmlall'}" class="btn btn-{$state.btn1_type|escape:'htmlall'}">{$state.btn1_text|escape:'htmlall'}</a>
               {/if}
