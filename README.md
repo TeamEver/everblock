@@ -40,6 +40,58 @@ In the PrettyBlocks cover block, you can choose Bootstrap button classes, includ
 <button type="button" class="btn btn-outline-dark">Dark</button>
 
 
+### PrettyBlock blocks
+
+Ever Block includes a library of PrettyBlock blocks ready to use:
+
+- Accordion
+- Alert
+- Button
+- Brands
+- Card
+- Category highlight
+- Category price
+- Category tabs
+- Contact form
+- Counters
+- Cover
+- Call to action
+- Divider
+- Downloads
+- Everblock content
+- Flash deals
+- Category products
+- Gallery
+- Google map
+- Heading
+- Iframe
+- Image map
+- Image
+- Image slider
+- Layout
+- Link list
+- Login form
+- Lookbook
+- Masonry gallery
+- Modal
+- Pricing table
+- Product highlight
+- Product selector
+- Progress bar
+- Reassurance
+- Scroll video
+- Sharer
+- Shopping cart
+- Shortcode
+- Social links
+- Spacer
+- Tab
+- Testimonial
+- Testimonial slider
+- Text and image
+- Table of contents
+- Video gallery
+
 ## QCD ACF compatibility
 This module is compatible with the QCD ACF module developed by the 410 Gone agency. The QCD ACF module allows you to add custom fields to products, categories, brands, suppliers, characteristics, etc. [You can contact the 410 Gone agency from their website to obtain the QCD ACF module.](https://www.410-gone.fr/e-commerce/prestashop.html)
 
