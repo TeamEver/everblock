@@ -191,6 +191,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_divider.tpl',
     'views/templates/hook/prettyblocks/prettyblock_downloads.tpl',
     'views/templates/hook/prettyblocks/prettyblock_everblock.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_exit_intent.tpl',
     'views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl',
     'views/templates/hook/prettyblocks/prettyblock_category_products.tpl',
     'views/templates/hook/prettyblocks/prettyblock_gallery.tpl',
