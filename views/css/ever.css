@@ -176,3 +176,9 @@
     color: #6c757d;
 }
 
+.everblock-podcasts audio {
+    width: 100%;
+    display: block;
+    margin-top: .5rem;
+}
+
