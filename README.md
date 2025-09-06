@@ -74,6 +74,7 @@ Ever Block includes a library of PrettyBlock blocks ready to use:
 - Lookbook
 - Masonry gallery
 - Modal
+- Podcasts
 - Pricing table
 - Product highlight
 - Product selector
