@@ -154,3 +154,25 @@
     font-weight: 700;
 }
 
+/* Podcasts block */
+.everblock-podcasts .podcast-item {
+    margin-bottom: 1.5rem;
+}
+
+.everblock-podcasts .podcast-cover {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-bottom: .5rem;
+}
+
+.everblock-podcasts .podcast-title {
+    font-weight: 700;
+    margin-top: .5rem;
+}
+
+.everblock-podcasts .podcast-duration {
+    font-size: .875rem;
+    color: #6c757d;
+}
+

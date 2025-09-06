@@ -70,6 +70,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
             $linkListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_link_list.tpl';
             $downloadsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_downloads.tpl';
+            $podcastsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_podcasts.tpl';
             $socialLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_social_links.tpl';
             $brandListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_brands.tpl';
             $productHighlightTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl';
@@ -4282,6 +4283,50 @@ class EverblockPrettyBlocks extends ObjectModel
                         'margin_bottom' => [
                             'type' => 'text',
                             'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Podcasts'),
+                'description' => $module->l('Display podcast episodes with an audio player'),
+                'code' => 'everblock_podcasts',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $podcastsTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Podcast',
+                    'nameFrom' => 'episode_title',
+                    'groups' => [
+                        'cover_image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Cover image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'episode_title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Episode title'),
+                            'default' => '',
+                        ],
+                        'audio_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Audio URL'),
+                            'default' => '',
+                        ],
+                        'duration' => [
+                            'type' => 'text',
+                            'label' => $module->l('Duration'),
+                            'default' => '',
+                        ],
+                        'description' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Description'),
                             'default' => '',
                         ],
                     ],

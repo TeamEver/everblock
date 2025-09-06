@@ -318,6 +318,14 @@ $(document).ready(function(){
         }
     });
 
+    // Podcasts: pause other players when one starts
+    var $podcastPlayers = $('.everblock-podcasts audio');
+    $podcastPlayers.on('play', function() {
+        $podcastPlayers.not(this).each(function() {
+            this.pause();
+        });
+    });
+
     // Play video on scroll
     const everVideos = document.querySelectorAll('.everblock-scroll-video');
     if (everVideos.length) {
