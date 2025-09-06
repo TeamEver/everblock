@@ -208,6 +208,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl',
     'views/templates/hook/prettyblocks/prettyblock_modal.tpl',
     'views/templates/hook/prettyblocks/prettyblock_pricing_table.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_podcasts.tpl',
     'views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl',
     'views/templates/hook/prettyblocks/prettyblock_product_selector.tpl',
     'views/templates/hook/prettyblocks/prettyblock_progressbar.tpl',

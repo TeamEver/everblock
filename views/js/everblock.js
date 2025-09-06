@@ -359,6 +359,13 @@ $(document).ready(function(){
         });
     });
 
+    // Podcasts player
+    $('.everblock-podcasts audio').on('play', function () {
+        $('.everblock-podcasts audio').not(this).each(function () {
+            this.pause();
+        });
+    });
+
     // Exit intent modal
     var exitIntentShown = false;
     $(document).on('mouseout', function(e) {

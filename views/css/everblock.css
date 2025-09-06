@@ -487,3 +487,22 @@
     position: static;
   }
 }
+
+/* Podcasts block */
+.everblock-podcasts {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.everblock-podcasts .podcast-item {
+  display: flex;
+  flex-direction: column;
+}
+.everblock-podcasts .podcast-cover {
+  max-width: 100%;
+  height: auto;
+}
+.everblock-podcasts .podcast-audio {
+  width: 100%;
+  margin-top: 0.5rem;
+}

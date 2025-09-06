@@ -87,6 +87,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $everblockTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_everblock.tpl';
             $lookbookTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_lookbook.tpl';
             $pricingTableTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pricing_table.tpl';
+            $podcastsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_podcasts.tpl';
             $exitIntentTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_exit_intent.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
@@ -2959,6 +2960,60 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Select an icon'),
                             'choices' => EverblockTools::getAvailableSvgIcons(),
                             'default' => 'file.svg',
+                        ],
+                    ],
+                ],
+            ];
+
+            $blocks[] = [
+                'name' => $module->l('Podcasts'),
+                'description' => $module->l('Display podcasts'),
+                'code' => 'everblock_podcasts',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $podcastsTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Block title'),
+                            'default' => $module->l('Podcasts'),
+                        ],
+                    ],
+                ],
+                'repeater' => [
+                    'name' => 'Podcast',
+                    'nameFrom' => 'episode_title',
+                    'groups' => [
+                        'cover_image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Cover image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'episode_title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Episode title'),
+                            'default' => '',
+                        ],
+                        'audio_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Audio URL'),
+                            'default' => '',
+                        ],
+                        'duration' => [
+                            'type' => 'text',
+                            'label' => $module->l('Duration'),
+                            'default' => '',
+                        ],
+                        'description' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Description'),
+                            'default' => '',
                         ],
                     ],
                 ],
