@@ -533,6 +533,19 @@ class Everblock extends Module
         EverblockTools::checkAndFixDatabase();
         $this->checkHooks();
         $this->html = '';
+
+        if (Tools::isSubmit('deleteEVERBLOCK_MARKER_ICON')) {
+            $icon = Configuration::get('EVERBLOCK_MARKER_ICON');
+            if ($icon) {
+                $path = _PS_MODULE_DIR_ . $this->name . '/views/img/' . $icon;
+                if (file_exists($path)) {
+                    @unlink($path);
+                }
+                Configuration::deleteByName('EVERBLOCK_MARKER_ICON');
+                $this->postSuccess[] = $this->l('Marker icon removed.');
+            }
+        }
+
         if (((bool) Tools::isSubmit('submit' . $this->name . 'Module')) == true) {
             $this->postValidation();
             if (!count($this->postErrors)) {
@@ -891,6 +904,19 @@ class Everblock extends Module
                         'desc' => $this->l('Add here your Google Map API key'),
                         'hint' => $this->l('Without API key, auto complete wont work'),
                         'name' => 'EVERBLOCK_GMAP_KEY',
+                    ],
+                    [
+                        'type' => 'file',
+                        'label' => $this->l('Store locator marker icon'),
+                        'desc' => $this->l('Upload an SVG icon used as the Google Maps marker'),
+                        'hint' => $this->l('Only SVG files are allowed'),
+                        'name' => 'EVERBLOCK_MARKER_ICON',
+                        'display_image' => true,
+                        'image' => Configuration::get('EVERBLOCK_MARKER_ICON')
+                            ? $this->context->link->getBaseLink(null, null) . 'modules/' . $this->name . '/views/img/' . Configuration::get('EVERBLOCK_MARKER_ICON')
+                            : false,
+                        'delete_url' => $this->context->link->getAdminLink('AdminModules')
+                            . '&configure=' . $this->name . '&deleteEVERBLOCK_MARKER_ICON=1',
                     ],
                     [
                         'type' => 'switch',
@@ -1461,6 +1487,7 @@ class Everblock extends Module
             'EVERWP_API_PWD' => Configuration::get('EVERWP_API_PWD'),
             'EVERWP_POST_NBR' => Configuration::get('EVERWP_POST_NBR'),
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
+            'EVERBLOCK_MARKER_ICON' => Configuration::get('EVERBLOCK_MARKER_ICON'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
@@ -1735,6 +1762,25 @@ class Everblock extends Module
             'EVERBLOCK_GMAP_KEY',
             Tools::getValue('EVERBLOCK_GMAP_KEY')
         );
+        if (isset($_FILES['EVERBLOCK_MARKER_ICON'])
+            && isset($_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'])
+            && !empty($_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'])
+        ) {
+            $filename = $_FILES['EVERBLOCK_MARKER_ICON']['name'];
+            $extension = Tools::strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            if ($extension !== 'svg') {
+                $this->postErrors[] = $this->l('Marker icon must be an SVG file.');
+            } elseif (!($tmpName = tempnam(_PS_TMP_IMG_DIR_, 'PS'))
+                || !move_uploaded_file($_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'], $tmpName)
+            ) {
+                $this->postErrors[] = $this->l('Error while uploading marker icon.');
+            } else {
+                $dest = _PS_MODULE_DIR_ . $this->name . '/views/img/store-locator-marker.svg';
+                copy($tmpName, $dest);
+                @unlink($tmpName);
+                Configuration::updateValue('EVERBLOCK_MARKER_ICON', 'store-locator-marker.svg');
+            }
+        }
         $stores = Store::getStores((int) $this->context->language->id);
         $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
         foreach ($stores as $store) {
@@ -1805,6 +1851,7 @@ class Everblock extends Module
         if (!empty($stores) && Tools::getValue('EVERBLOCK_GMAP_KEY')) {
             $markers = [];
             $context = Context::getContext();
+            $markerIcon = Configuration::get('EVERBLOCK_MARKER_ICON');
             foreach ($stores as $store) {
                 $storeId = isset($store['id']) ? (int) $store['id'] : (int) $store['id_store'];
                 if (!empty($store['is_open'])) {
@@ -1830,6 +1877,9 @@ class Everblock extends Module
                     'directions_label' => $this->l('Get directions'),
                     'hours_label' => $this->l('See hours'),
                 ];
+                if ($markerIcon) {
+                    $marker['icon'] = $context->link->getBaseLink(null, null) . 'modules/' . $this->name . '/views/img/' . $markerIcon;
+                }
                 $markers[] = $marker;
             }
             $gmapScript = EverblockTools::generateGoogleMapScript($markers);
