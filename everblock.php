@@ -3656,8 +3656,37 @@ class Everblock extends Module
             ) {
                 return false;
             }
+            $content = file_get_contents($tmp_name);
+            if ($content === false) {
+                return false;
+            }
+            libxml_use_internal_errors(true);
+            $dom = new DOMDocument();
+            if (!$dom->loadXML($content, LIBXML_NONET)) {
+                $this->postErrors[] = $this->l('Error : File is not valid.');
+                return false;
+            }
+            libxml_clear_errors();
+
+            foreach (['script', 'foreignObject'] as $tag) {
+                $nodes = $dom->getElementsByTagName($tag);
+                while ($nodes->length > 0) {
+                    $node = $nodes->item(0);
+                    $node->parentNode->removeChild($node);
+                }
+            }
+
+            $xpath = new DOMXPath($dom);
+            foreach ($xpath->query('//@*') as $attr) {
+                if (stripos($attr->nodeName, 'on') === 0 || preg_match('/^\s*javascript:/i', $attr->nodeValue)) {
+                    $attr->ownerElement->removeAttributeNode($attr);
+                }
+            }
+
+            $clean = $dom->saveXML();
             $safeName = preg_replace('/[^a-zA-Z0-9-_\.]/', '', $filename);
-            copy($tmp_name, _PS_MODULE_DIR_ . $this->name . '/views/img/svg/' . $safeName);
+            file_put_contents(_PS_MODULE_DIR_ . $this->name . '/views/img/svg/' . $safeName, $clean);
+            unlink($tmp_name);
             $this->html .= $this->displayConfirmation($this->l('File has been uploaded'));
         }
     }
