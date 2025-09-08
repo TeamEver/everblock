@@ -25,6 +25,7 @@ $_MODULE['<{everblock}prestashop>everblock_6bad61b9ccbce7b54a971752b6a9e4f6'] = 
 $_MODULE['<{everblock}prestashop>everblock_a071cf4c36ab33786b9eed04502122eb'] = 'CTA URL';
 $_MODULE['<{everblock}prestashop>everblock_0b90582f4589d84be89f5b847d4d1ed1'] = 'Markeren';
 $_MODULE['<{everblock}prestashop>everblock_78d5da4bd57ce3e990efd714138339bb'] = 'Schakel slider in';
+$_MODULE['<{everblock}prestashop>everblock_a281105e9083d836b5a2cca69294e38a'] = 'Producten uit subcategorieën opnemen';
 $_MODULE['<{everblock}prestashop>everblock_26290d95407771415ff52a22bed4c39c'] = 'Aantal plannen per dia';
 $_MODULE['<{everblock}prestashop>everblock_downloads_list'] = 'Downloadlijst';
 $_MODULE['<{everblock}prestashop>everblock_downloads_blockdesc'] = 'Toont een lijst met downloadbare bronnen';

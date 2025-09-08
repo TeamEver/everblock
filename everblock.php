@@ -4022,7 +4022,14 @@ class Everblock extends Module
                     continue;
                 }
                 $limit = !empty($state['product_limit']) ? (int) $state['product_limit'] : 4;
-                $categoryProducts = EverblockTools::getProductsByCategoryId($idCategory, $limit);
+                $includeSub = !empty($state['include_subcategories']);
+                $categoryProducts = EverblockTools::getProductsByCategoryId(
+                    $idCategory,
+                    $limit,
+                    'id_product',
+                    'ASC',
+                    $includeSub
+                );
                 if (!empty($categoryProducts)) {
                     $ids = array_column($categoryProducts, 'id_product');
                     $presented = EverblockTools::everPresentProducts($ids, $this->context);

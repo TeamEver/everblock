@@ -4124,6 +4124,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Number of products to display'),
                             'default' => '4',
                         ],
+                        'include_subcategories' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Include products from subcategories'),
+                            'default' => 0,
+                        ],
                         'slider' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Enable slider'),

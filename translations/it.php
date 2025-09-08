@@ -25,6 +25,7 @@ $_MODULE['<{everblock}prestashop>everblock_6bad61b9ccbce7b54a971752b6a9e4f6'] = 
 $_MODULE['<{everblock}prestashop>everblock_a071cf4c36ab33786b9eed04502122eb'] = 'URL CTA';
 $_MODULE['<{everblock}prestashop>everblock_0b90582f4589d84be89f5b847d4d1ed1'] = 'Evidenzia';
 $_MODULE['<{everblock}prestashop>everblock_78d5da4bd57ce3e990efd714138339bb'] = 'Abilita slider';
+$_MODULE['<{everblock}prestashop>everblock_a281105e9083d836b5a2cca69294e38a'] = 'Includi prodotti dalle sottocategorie';
 $_MODULE['<{everblock}prestashop>everblock_26290d95407771415ff52a22bed4c39c'] = 'Numero di piani per diapositiva';
 $_MODULE['<{everblock}prestashop>everblock_downloads_list'] = 'Lista download';
 $_MODULE['<{everblock}prestashop>everblock_downloads_blockdesc'] = 'Mostra un elenco di risorse scaricabili';

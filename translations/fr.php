@@ -651,6 +651,7 @@ $_MODULE['<{everblock}prestashop>everblock_21f59a9a3e796f0e797ad7736028089c'] = 
 $_MODULE['<{everblock}prestashop>everblock_a97e8578c3942df9fc98bb501d385883'] = 'Heure d\'ouverture de %s le %s';
 $_MODULE['<{everblock}prestashop>everblock_5ce749b4b55e9ed91bda1aba920e1ffd'] = 'Heure de fermeture de %s le %s';
 $_MODULE['<{everblock}prestashop>everblock_78d5da4bd57ce3e990efd714138339bb'] = 'Activer le slider';
+$_MODULE['<{everblock}prestashop>everblock_a281105e9083d836b5a2cca69294e38a'] = 'Afficher les produits des sous-catégories';
 $_MODULE['<{everblock}prestashop>everblock_da3b1fba450fdb0bc71ccb8231f075d6'] = 'Nombre de marques par slide';
 $_MODULE['<{everblock}prestashop>everblock_5a007b1257a85c32e4c435c60cbad339'] = 'Titre du plan';
 $_MODULE['<{everblock}prestashop>everblock_1d89b70bf1410131de72cef713ef3d20'] = 'Prix du plan';
