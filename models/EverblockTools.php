@@ -3312,13 +3312,14 @@ class EverblockTools extends ObjectModel
                     var phone = marker.phone ? `<div>${marker.phone}</div>` : "";
                     var address2 = marker.address2 ? marker.address2 + "<br>" : "";
                     var directions = `<a href="https://www.google.com/maps/dir/?api=1&destination=${marker.lat},${marker.lng}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">${marker.directions_label}</a>`;
+                    var title = marker.cms_link ? `<a href="${marker.cms_link}" class="text-dark text-decoration-none">${marker.title}</a>` : marker.title;
                     return `
                         <div class="everblock-marker-info row g-2">
                             <div class="col-4">
                                 <img src="${marker.img}" alt="${marker.title}" style="width:80px;height:80px;object-fit:cover;" class="rounded w-100">
                             </div>
                             <div class="col-8">
-                                <strong>${marker.title}</strong><br>
+                                <strong>${title}</strong><br>
                                 ${marker.address1}<br>
                                 ${address2}
                                 ${marker.postcode} ${marker.city}<br>

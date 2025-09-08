@@ -1826,6 +1826,7 @@ class Everblock extends Module
                     'phone' => $store['phone'],
                     'img' => $context->link->getBaseLink(null, null) . 'img/st/' . $storeId . '.jpg',
                     'status' => $status,
+                    'cms_link' => $store['cms_link'],
                     'directions_label' => $this->l('Get directions'),
                     'hours_label' => $this->l('See hours'),
                 ];
