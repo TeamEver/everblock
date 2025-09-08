@@ -3668,15 +3668,10 @@ class Everblock extends Module
             }
             libxml_clear_errors();
 
-            foreach (['script', 'foreignObject'] as $tag) {
-                $nodes = $dom->getElementsByTagName($tag);
-                while ($nodes->length > 0) {
-                    $node = $nodes->item(0);
-                    $node->parentNode->removeChild($node);
-                }
-            }
-
             $xpath = new DOMXPath($dom);
+            foreach ($xpath->query('//*[translate(local-name(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="script" or translate(local-name(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="foreignobject"]') as $node) {
+                $node->parentNode->removeChild($node);
+            }
             foreach ($xpath->query('//@*') as $attr) {
                 if (stripos($attr->nodeName, 'on') === 0 || preg_match('/^\s*javascript:/i', $attr->nodeValue)) {
                     $attr->ownerElement->removeAttributeNode($attr);
