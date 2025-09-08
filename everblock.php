@@ -559,6 +559,9 @@ class Everblock extends Module
         if ((bool) Tools::isSubmit('submitUploadBlocksFile') === true) {
             $this->uploadBlocksFile();
         }
+        if ((bool) Tools::isSubmit('submitUploadSvg') === true) {
+            $this->uploadSvgFile();
+        }
         if ((bool) Tools::isSubmit('submitEmptyCache') === true) {
             $this->emptyAllCache();
         }
@@ -1404,6 +1407,44 @@ class Everblock extends Module
                 ],
             ],
         ];
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            $formFields[] = [
+                'form' => [
+                    'legend' => [
+                        'title' => $this->l('PrettyBlocks'),
+                        'icon' => 'icon-smile',
+                    ],
+                    'input' => [
+                        [
+                            'type' => 'html',
+                            'name' => 'anchor_everblock_prettyblocks',
+                            'html_content' => '<span id="everblock_prettyblocks"></span>',
+                        ],
+                        [
+                            'type' => 'file',
+                            'label' => $this->l('Upload custom SVG'),
+                            'desc' => $this->l('Upload your own SVG icon for PrettyBlocks'),
+                            'hint' => $this->l('Only SVG files are allowed'),
+                            'name' => 'CUSTOM_SVG',
+                            'display_image' => false,
+                            'required' => false,
+                        ],
+                    ],
+                    'buttons' => [
+                        'import' => [
+                            'name' => 'submitUploadSvg',
+                            'type' => 'submit',
+                            'class' => 'btn btn-default pull-right',
+                            'icon' => 'process-icon-download',
+                            'title' => $this->l('Upload SVG'),
+                        ],
+                    ],
+                ],
+            ];
+        }
         $stores = Store::getStores((int) $this->context->language->id);
         $holidayInputs = [];
         if (!empty($stores)) {
@@ -1514,6 +1555,7 @@ class Everblock extends Module
             'EVERPS_FLAG_NB' => Configuration::get('EVERPS_FLAG_NB'),
             'TABS_FILE' => '',
             'BLOCKS_FILE' => '',
+            'CUSTOM_SVG' => '',
         ];
         $stores = Store::getStores((int) $this->context->language->id);
         $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
@@ -3593,6 +3635,30 @@ class Everblock extends Module
             copy($tmp_name, _PS_MODULE_DIR_ . $this->name . '/input/blocks.xlsx');
             $this->processBlocksFile();
             $this->html .= $this->displayConfirmation($this->l('File has been imported'));
+        }
+    }
+
+    protected function uploadSvgFile()
+    {
+        if (isset($_FILES['CUSTOM_SVG'])
+            && isset($_FILES['CUSTOM_SVG']['tmp_name'])
+            && !empty($_FILES['CUSTOM_SVG']['tmp_name'])
+        ) {
+            $filename = $_FILES['CUSTOM_SVG']['name'];
+            $exploded_filename = explode('.', $filename);
+            $ext = end($exploded_filename);
+            if (Tools::strtolower($ext) != 'svg') {
+                $this->postErrors[] = $this->l('Error : File is not valid.');
+                return false;
+            }
+            if (!($tmp_name = tempnam(_PS_TMP_IMG_DIR_, 'PS'))
+                || !move_uploaded_file($_FILES['CUSTOM_SVG']['tmp_name'], $tmp_name)
+            ) {
+                return false;
+            }
+            $safeName = preg_replace('/[^a-zA-Z0-9-_\.]/', '', $filename);
+            copy($tmp_name, _PS_MODULE_DIR_ . $this->name . '/views/img/svg/' . $safeName);
+            $this->html .= $this->displayConfirmation($this->l('File has been uploaded'));
         }
     }
 
