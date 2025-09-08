@@ -25,6 +25,7 @@ $_MODULE['<{everblock}prestashop>everblock_6bad61b9ccbce7b54a971752b6a9e4f6'] = 
 $_MODULE['<{everblock}prestashop>everblock_a071cf4c36ab33786b9eed04502122eb'] = 'CTA URL';
 $_MODULE['<{everblock}prestashop>everblock_0b90582f4589d84be89f5b847d4d1ed1'] = 'Highlight';
 $_MODULE['<{everblock}prestashop>everblock_78d5da4bd57ce3e990efd714138339bb'] = 'Enable slider';
+$_MODULE['<{everblock}prestashop>everblock_a281105e9083d836b5a2cca69294e38a'] = 'Include products from subcategories';
 $_MODULE['<{everblock}prestashop>everblock_26290d95407771415ff52a22bed4c39c'] = 'Number of plans per slide';
 $_MODULE['<{everblock}prestashop>everblock_downloads_list'] = 'Downloads list';
 $_MODULE['<{everblock}prestashop>everblock_downloads_blockdesc'] = 'Display a list of downloadable resources';

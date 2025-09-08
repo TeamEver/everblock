@@ -1364,33 +1364,69 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getProductsByCategoryId($categoryId, int $limit, string $orderBy = 'id_product', string $orderWay = 'ASC'): array
-    {
+    public static function getProductsByCategoryId(
+        $categoryId,
+        int $limit,
+        string $orderBy = 'id_product',
+        string $orderWay = 'ASC',
+        bool $includeSubcategories = false
+    ): array {
         $categoryId = (int) $categoryId;
 
         if ($categoryId <= 0) {
             return [];
         }
 
-        $cacheId = 'everblock_getProductsByCategoryId_' . $categoryId . '_' . $limit . '_' . $orderBy . '_' . $orderWay;
+        $cacheId = 'everblock_getProductsByCategoryId_'
+            . $categoryId . '_' . $limit . '_' . $orderBy . '_' . $orderWay . '_' . (int) $includeSubcategories;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $category = new Category($categoryId);
-            $return = [];
+            $idLang = (int) Context::getContext()->language->id;
+            $categoryIds = [$categoryId];
 
-            if (Validate::isLoadedObject($category)) {
-                $products = $category->getProducts(
-                    Context::getContext()->language->id,
+            if ($includeSubcategories) {
+                $toProcess = [$categoryId];
+                while (!empty($toProcess)) {
+                    $current = array_pop($toProcess);
+                    $children = Category::getChildren($current, $idLang);
+                    foreach ($children as $child) {
+                        $childId = (int) $child['id_category'];
+                        if (!in_array($childId, $categoryIds)) {
+                            $categoryIds[] = $childId;
+                            $toProcess[] = $childId;
+                        }
+                    }
+                }
+            }
+
+            $products = [];
+            $ids = [];
+            foreach ($categoryIds as $cid) {
+                $category = new Category($cid);
+                if (!Validate::isLoadedObject($category)) {
+                    continue;
+                }
+                $catProducts = $category->getProducts(
+                    $idLang,
                     1,
                     $limit,
                     $orderBy,
                     $orderWay
                 );
-                $return = $products;
+                foreach ($catProducts as $product) {
+                    $pid = (int) $product['id_product'];
+                    if (!in_array($pid, $ids)) {
+                        $products[] = $product;
+                        $ids[] = $pid;
+                    }
+                    if (count($products) >= $limit) {
+                        break 2;
+                    }
+                }
             }
 
-            EverblockCache::cacheStore($cacheId, $return);
-            return is_array($return) ? $return : [];
+            EverblockCache::cacheStore($cacheId, $products);
+            return $products;
         }
 
         $cachedProducts = EverblockCache::cacheRetrieve($cacheId);
