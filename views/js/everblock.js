@@ -378,4 +378,47 @@ $(document).ready(function(){
         }
     });
 
+    function positionLookbookHotspots() {
+        $('img[usemap^="#ever-lookbook-map"]').each(function() {
+            var $img = $(this);
+            var mapName = $img.attr('usemap').substring(1);
+            var imgWidth = $img.width();
+            var imgHeight = $img.height();
+            $('map[name="' + mapName + '"]').find('area.ever-lookbook-hotspot').each(function() {
+                var x = parseFloat($(this).data('x')) || 0;
+                var y = parseFloat($(this).data('y')) || 0;
+                var r = parseInt($(this).data('r'), 10) || 15;
+                var cx = Math.round(imgWidth * x / 100);
+                var cy = Math.round(imgHeight * y / 100);
+                $(this).attr('coords', cx + ',' + cy + ',' + r);
+            });
+        });
+    }
+    $(window).on('load resize', positionLookbookHotspots);
+
+    // Lookbook hotspots
+    $(document).on('click', '.ever-lookbook-hotspot', function(e) {
+        e.preventDefault();
+        var productId = $(this).data('product');
+        var blockId = $(this).data('block');
+        var modalId = 'ever-lookbook-modal-' + productId;
+        if ($('#' + modalId).length) {
+            $('#' + modalId).modal('show');
+            return;
+        }
+        $.ajax({
+            url: atob(everlookbook_link),
+            type: 'GET',
+            data: { id_product: productId, id_block: blockId, token: everblock_token },
+            success: function(html) {
+                $('body').append(html);
+                var $modal = $('#' + modalId);
+                $modal.modal('show');
+                $modal.on('hidden.bs.modal', function() {
+                    $(this).remove();
+                });
+            }
+        });
+    });
+
 });

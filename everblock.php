@@ -3419,9 +3419,16 @@ class Everblock extends Module
                 'modal'
             )
         );
+        $lookbookLink = base64_encode(
+            $this->context->link->getModuleLink(
+                $this->name,
+                'lookbook'
+            )
+        );
         Media::addJsDef([
             'evercontact_link' => $contactLink,
             'evermodal_link' => $modalLink,
+            'everlookbook_link' => $lookbookLink,
             'everblock_token' => Tools::getToken(),
         ]);
         $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
@@ -4045,13 +4052,34 @@ class Everblock extends Module
                 if (empty($state['product_ids'])) {
                     continue;
                 }
-                $ids = array_filter(array_map('intval', explode(',', $state['product_ids'])));
+                $rawItems = array_map('trim', explode(',', $state['product_ids']));
+                $ids = [];
+                $coords = [];
+                foreach ($rawItems as $item) {
+                    $parts = array_map('trim', explode(':', $item));
+                    $idProduct = (int) $parts[0];
+                    if (!$idProduct) {
+                        continue;
+                    }
+                    $ids[] = $idProduct;
+                    $coords[$idProduct] = [
+                        'x' => isset($parts[1]) ? (float) $parts[1] : 50,
+                        'y' => isset($parts[2]) ? (float) $parts[2] : 50,
+                    ];
+                }
                 $ids = array_slice($ids, 0, 8);
                 if (!$ids) {
                     continue;
                 }
                 $presented = EverblockTools::everPresentProducts($ids, $this->context);
                 if (!empty($presented)) {
+                    foreach ($presented as &$product) {
+                        $idProd = (int) $product['id_product'];
+                        if (isset($coords[$idProd])) {
+                            $product['lookbook_x'] = $coords[$idProd]['x'];
+                            $product['lookbook_y'] = $coords[$idProd]['y'];
+                        }
+                    }
                     $products[$key] = $presented;
                 }
             }
