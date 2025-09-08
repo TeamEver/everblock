@@ -17,7 +17,7 @@
 *}
 <div id="store-search-block" class="mb-3 text-center mx-auto" style="max-width:600px;">
   <div class="d-flex flex-column flex-md-row align-items-center justify-content-center">
-    <label for="store_search" class="me-md-2 mb-2 mb-md-0 fw-bold">{l s='Find a store' mod='everblock'}</label>
+    <label for="store_search" class="me-md-2 mb-2 mb-md-0 fw-bold text-nowrap">{l s='Find a store' mod='everblock'}</label>
     <div class="input-group mb-2 mb-md-0 w-100">
       <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
       <button type="button" class="btn btn-primary" id="store_search_btn">{l s='Search' mod='everblock'}</button>
