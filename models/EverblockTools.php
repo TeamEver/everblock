@@ -3139,7 +3139,9 @@ class EverblockTools extends ObjectModel
                         $hoursFormatted[] = trim($subSlot);
 
                         if (($i === $todayIndex) && (!$isHoliday || $todayStoreHolidaySlot) && strpos($subSlot, '-') !== false) {
-                            [$startRaw, $endRaw] = explode(' - ', $subSlot);
+                            $parts = preg_split('/\s*-\s*/', $subSlot);
+                            $startRaw = $parts[0] ?? '';
+                            $endRaw = $parts[1] ?? '';
                             $start = self::normalizeTime($startRaw);
                             $end = self::normalizeTime($endRaw);
                             if ($start && $end) {
