@@ -3402,11 +3402,15 @@ class EverblockTools extends ObjectModel
                     infoWindow = new google.maps.InfoWindow();
 
                     markers.forEach(function (marker) {
-                        var markerObj = new google.maps.Marker({
+                        var markerOptions = {
                             position: { lat: marker.lat, lng: marker.lng },
                             map: map,
                             title: marker.title
-                        });
+                        };
+                        if (marker.icon) {
+                            markerOptions.icon = marker.icon;
+                        }
+                        var markerObj = new google.maps.Marker(markerOptions);
                         markerMap[marker.id] = markerObj;
                         markerObj.addListener("click", function () {
                             infoWindow.setContent(renderContent(marker));
