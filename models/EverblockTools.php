@@ -2027,7 +2027,7 @@ class EverblockTools extends ObjectModel
                 // (e.g. contact form) breaks the form action.
                 $currentUrl = Tools::getHttpHost(true) . $_SERVER['REQUEST_URI'];
                 $replacement = preg_replace(
-                    '#(<form[^>]*action=")[^"]*#blockEmailSubscription_displayFooter(")#',
+                    '@(<form[^>]*action=")[^"]*#blockEmailSubscription_displayFooter(")@',
                     '$1' . htmlspecialchars($currentUrl, ENT_QUOTES) . '#blockEmailSubscription_displayFooter$2',
                     $replacement
                 );
