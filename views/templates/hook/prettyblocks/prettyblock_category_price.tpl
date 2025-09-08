@@ -23,13 +23,16 @@
       {elseif $block.settings.default.container}
         <div class="row">
       {/if}
+        {assign var=imageHeight value=$block.settings.default.image_height|default:150}
         {foreach from=$block.states item=state key=key}
           {assign var=data value=$block.extra.state_data[$key]|default:null}
           {if $data}
             <div id="block-{$block.id_prettyblocks}-{$key}" class="col text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="{if $state.padding_left}padding-left:{$state.padding_left};{/if}{if $state.padding_right}padding-right:{$state.padding_right};{/if}{if $state.padding_top}padding-top:{$state.padding_top};{/if}{if $state.padding_bottom}padding-bottom:{$state.padding_bottom};{/if}{if $state.margin_left}margin-left:{$state.margin_left};{/if}{if $state.margin_right}margin-right:{$state.margin_right};{/if}{if $state.margin_top}margin-top:{$state.margin_top};{/if}{if $state.margin_bottom}margin-bottom:{$state.margin_bottom};{/if}">
               <a href="{$data.category_link|default:'#'}" class="d-flex flex-column align-items-center text-decoration-none h-100" title="{$data.title|escape:'htmlall'}">
                 {if $data.image_url}
-                  <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" width="{$data.image_width}" height="{$data.image_height}" class="img-fluid mb-2 mx-auto" loading="lazy">
+                  <div class="d-flex align-items-center justify-content-center mb-2 w-100" style="height:{$imageHeight}px;">
+                    <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" class="img-fluid h-100" style="object-fit:contain;" loading="lazy">
+                  </div>
                 {/if}
                 {if $data.title}
                   <p class="h6 mb-2 text-center">{$data.title|unescape:'html'|escape:'html':'UTF-8'}</p>
@@ -48,18 +51,21 @@
     <div class="d-block d-md-none">
       <div class="overflow-auto" style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
         <div class="d-flex flex-nowrap">
-          {foreach from=$block.states item=state key=key}
-            {assign var=data value=$block.extra.state_data[$key]|default:null}
-            {if $data}
-              <div id="block-{$block.id_prettyblocks}-{$key}-mobile" class="text-center me-3{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="flex:0 0 calc(100% / 3.5 - 1rem); scroll-snap-align:start;{if $state.padding_left}padding-left:{$state.padding_left};{/if}{if $state.padding_right}padding-right:{$state.padding_right};{/if}{if $state.padding_top}padding-top:{$state.padding_top};{/if}{if $state.padding_bottom}padding-bottom:{$state.padding_bottom};{/if}{if $state.margin_left}margin-left:{$state.margin_left};{/if}{if $state.margin_right}margin-right:{$state.margin_right};{/if}{if $state.margin_top}margin-top:{$state.margin_top};{/if}{if $state.margin_bottom}margin-bottom:{$state.margin_bottom};{/if}">
-                <a href="{$data.category_link|default:'#'}" class="d-flex flex-column align-items-center text-decoration-none h-100" title="{$data.title|escape:'htmlall'}">
-                  {if $data.image_url}
-                    <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" width="{$data.image_width}" height="{$data.image_height}" class="img-fluid mb-2 mx-auto" loading="lazy">
-                  {/if}
-                  {if $data.title}
+        {assign var=imageHeight value=$block.settings.default.image_height|default:150}
+        {foreach from=$block.states item=state key=key}
+          {assign var=data value=$block.extra.state_data[$key]|default:null}
+          {if $data}
+            <div id="block-{$block.id_prettyblocks}-{$key}-mobile" class="text-center me-3{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="flex:0 0 calc(100% / 3.5 - 1rem); scroll-snap-align:start;{if $state.padding_left}padding-left:{$state.padding_left};{/if}{if $state.padding_right}padding-right:{$state.padding_right};{/if}{if $state.padding_top}padding-top:{$state.padding_top};{/if}{if $state.padding_bottom}padding-bottom:{$state.padding_bottom};{/if}{if $state.margin_left}margin-left:{$state.margin_left};{/if}{if $state.margin_right}margin-right:{$state.margin_right};{/if}{if $state.margin_top}margin-top:{$state.margin_top};{/if}{if $state.margin_bottom}margin-bottom:{$state.margin_bottom};{/if}">
+              <a href="{$data.category_link|default:'#'}" class="d-flex flex-column align-items-center text-decoration-none h-100" title="{$data.title|escape:'htmlall'}">
+                {if $data.image_url}
+                    <div class="d-flex align-items-center justify-content-center mb-2 w-100" style="height:{$imageHeight}px;">
+                      <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" class="img-fluid h-100" style="object-fit:contain;" loading="lazy">
+                    </div>
+                {/if}
+                {if $data.title}
                     <p class="h6 mb-2 text-center">{$data.title|unescape:'html'|escape:'html':'UTF-8'}</p>
-                  {/if}
-                  {if $data.min_price !== false}
+                {/if}
+                {if $data.min_price !== false}
                     <span class="small d-block mt-auto text-center">{l s='From' mod='everblock'} {Tools::displayPrice($data.min_price)}</span>
                   {/if}
                 </a>
