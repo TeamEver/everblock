@@ -4039,25 +4039,7 @@ class Everblock extends Module
 
     public function hookBeforeRenderingEverblockLookbook($params)
     {
-        $products = [];
-        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
-            foreach ($params['block']['states'] as $key => $state) {
-                if (empty($state['product_ids'])) {
-                    continue;
-                }
-                $ids = array_filter(array_map('intval', explode(',', $state['product_ids'])));
-                $ids = array_slice($ids, 0, 8);
-                if (!$ids) {
-                    continue;
-                }
-                $presented = EverblockTools::everPresentProducts($ids, $this->context);
-                if (!empty($presented)) {
-                    $products[$key] = $presented;
-                }
-            }
-        }
-
-        return ['products' => $products];
+        return [];
     }
 
     public function hookBeforeRenderingEverblockCategoryProducts($params)
