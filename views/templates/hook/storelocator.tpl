@@ -20,7 +20,7 @@
     <label for="store_search" class="me-md-2 mb-2 mb-md-0 fw-bold text-nowrap">{l s='Find a store' mod='everblock'}</label>
     <div class="input-group mb-2 mb-md-0 w-100">
       <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
-      <button type="button" class="btn btn-primary" id="store_search_btn">{l s='Search' mod='everblock'}</button>
+      <button type="button" class="btn btn-primary rounded-5 ms-3" id="store_search_btn">{l s='Search' mod='everblock'}</button>
     </div>
   </div>
 </div>
