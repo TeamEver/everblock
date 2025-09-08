@@ -3318,7 +3318,7 @@ class EverblockTools extends ObjectModel
                     return `
                         <div class="everblock-marker-info row g-2">
                             <div class="col-4">
-                                <img src="${marker.img}" alt="${marker.title}" style="width:80px;height:80px;object-fit:cover;" class="rounded w-100">
+                                <img src="${marker.img}" alt="${marker.title}" style="width:80px;height:80px;object-fit:cover;" class="rounded w-100 ms-2">
                             </div>
                             <div class="col-8">
                                 <strong>${title}</strong><br>
