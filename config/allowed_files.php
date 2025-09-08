@@ -39,6 +39,7 @@ return [
     'controllers/front/cron.php',
     'controllers/front/everlogin.php',
     'controllers/front/index.php',
+    'controllers/front/lookbook.php',
     'controllers/front/modal.php',
     'controllers/index.php',
     'everblock.php',
