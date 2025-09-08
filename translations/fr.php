@@ -631,6 +631,7 @@ $_MODULE['<{everblock}prestashop>storelocator_047a1dd66c6e4d29b5f45cd776a42992']
 $_MODULE['<{everblock}prestashop>storelocator_0987be375bb6cdd954eb90e2b023ced4'] = 'Horaires à %s';
 $_MODULE['<{everblock}prestashop>storelocator_d3d2e617335f08df83599665eef8a418'] = 'Fermer';
 $_MODULE['<{everblock}prestashop>storelocator_a9407a9201ef1b64f0c567ed291574ba'] = 'S\'y rendre';
+$_MODULE['<{everblock}prestashop>storelocator_d59048f21fd887ad520398ce677be586'] = 'En savoir plus';
 $_MODULE['<{everblock}prestashop>everblocktools_465bdb56b331fa5d1b1e3bab14bc6c41'] = 'Veuillez renseigner la clé Google Maps dans la configuration du module.';
 $_MODULE['<{everblock}prestashop>everblocktools_d6f69704e815d4fa6fd548878c6f9d1e'] = 'Veuillez renseigner l\'adresse postale de la boutique.';
 $_MODULE['<{everblock}prestashop>everblocktools_8a46c2c7448b0db1b1ddc0d5e44629da'] = 'Impossible de géocoder l\'adresse de la boutique.';

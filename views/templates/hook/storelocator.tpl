@@ -90,6 +90,13 @@
                   <u>{l s='See hours' mod='everblock'}</u> &gt;
                 </a>
               </p>
+              {if $item.cms_link}
+                <p class="mb-0 small">
+                  <a href="{$item.cms_link|escape:'htmlall':'UTF-8'}" class="text-decoration-none">
+                    {l s='Learn more' mod='everblock'}
+                  </a>
+                </p>
+              {/if}
             </div>
           </div>
           {hook h='displayAfterLocatorStore' store=$item}

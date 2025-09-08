@@ -60,3 +60,4 @@ $_MODULE['<{everblock}prestashop>everblock_podcasts_episode_title'] = 'Titel van
 $_MODULE['<{everblock}prestashop>everblock_podcasts_audio_url'] = 'Audiourl';
 $_MODULE['<{everblock}prestashop>everblock_podcasts_duration'] = 'Duur';
 $_MODULE['<{everblock}prestashop>everblock_podcasts_description'] = 'Beschrijving';
+$_MODULE['<{everblock}prestashop>storelocator_d59048f21fd887ad520398ce677be586'] = 'Meer informatie';
