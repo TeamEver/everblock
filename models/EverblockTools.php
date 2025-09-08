@@ -3316,11 +3316,11 @@ class EverblockTools extends ObjectModel
                     var directions = `<a href="https://www.google.com/maps/dir/?api=1&destination=${marker.lat},${marker.lng}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">${marker.directions_label}</a>`;
                     var title = marker.cms_link ? `<a href="${marker.cms_link}" class="text-dark text-decoration-none">${marker.title}</a>` : marker.title;
                     return `
-                        <div class="everblock-marker-info row g-2">
+                        <div class="everblock-marker-info row g-3">
                             <div class="col-4">
                                 <img src="${marker.img}" alt="${marker.title}" style="width:80px;height:80px;object-fit:cover;" class="rounded w-100 ms-2">
                             </div>
-                            <div class="col-8">
+                            <div class="col-8 ps-3">
                                 <strong>${title}</strong><br>
                                 ${marker.address1}<br>
                                 ${address2}
