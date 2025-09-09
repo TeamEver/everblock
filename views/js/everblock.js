@@ -366,6 +366,34 @@ $(document).ready(function(){
         });
     });
 
+    // Lookbook modal triggers
+    document.querySelectorAll('[id^="block-"][data-lookbook-url]').forEach(function(block) {
+        var ajaxUrl = block.getAttribute('data-lookbook-url');
+        var blockId = block.id.replace('block-', '');
+        var modalEl = document.getElementById('lookbook-modal-' + blockId);
+        if (!modalEl) {
+            return;
+        }
+        var modalBody = modalEl.querySelector('.modal-body');
+        var bootstrapModal = window.bootstrap ? new bootstrap.Modal(modalEl) : null;
+        block.querySelectorAll('.lookbook-marker').forEach(function(marker) {
+            marker.addEventListener('click', function(e) {
+                e.preventDefault();
+                var productId = marker.getAttribute('data-product-id');
+                fetch(ajaxUrl + '&id_product=' + productId)
+                    .then(function(resp) { return resp.text(); })
+                    .then(function(html) {
+                        modalBody.innerHTML = html;
+                        if (bootstrapModal) {
+                            bootstrapModal.show();
+                        } else if (typeof $ !== 'undefined' && $(modalEl).modal) {
+                            $(modalEl).modal('show');
+                        }
+                    });
+            });
+        });
+    });
+
     // Exit intent modal
     var exitIntentShown = false;
     $(document).on('mouseout', function(e) {
