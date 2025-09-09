@@ -22,6 +22,16 @@
 [data-obflink] {
   cursor: pointer;
 }
+/* Lookbook product markers */
+.lookbook-marker {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 /* Style pour le panier déroulant */
 .ever-shopping-cart .dropdown-menu.cart-dropdown-content {
   padding: 15px;
