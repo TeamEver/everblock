@@ -27,7 +27,8 @@
     <div class="ever-cover-carousel">
       {foreach from=$block.states item=state key=key}
         <div id="block-{$block.id_prettyblocks}-{$key}"
-             class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
+             class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}"
+             {if $state.margin_left || $state.margin_right || $state.margin_top || $state.margin_bottom}style="{if $state.margin_left}margin-left:{$state.margin_left|escape:'htmlall'};{/if}{if $state.margin_right}margin-right:{$state.margin_right|escape:'htmlall'};{/if}{if $state.margin_top}margin-top:{$state.margin_top|escape:'htmlall'};{/if}{if $state.margin_bottom}margin-bottom:{$state.margin_bottom|escape:'htmlall'};{/if}"{/if}>
             {if isset($state.background_image.url) && $state.background_image.url}
               <picture>
                 {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
@@ -61,11 +62,24 @@
             {/if}
           </div>
         </div>
+        {if $state.margin_left_mobile || $state.margin_right_mobile || $state.margin_top_mobile || $state.margin_bottom_mobile}
+          <style>
+            @media (max-width: 767px) {
+              #block-{$block.id_prettyblocks}-{$key} {
+                {if $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall'};{/if}
+                {if $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall'};{/if}
+                {if $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall'};{/if}
+                {if $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall'};{/if}
+              }
+            }
+          </style>
+        {/if}
       {/foreach}
   {else}
     {foreach from=$block.states item=state key=key}
       <div id="block-{$block.id_prettyblocks}-{$key}"
-           class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
+           class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}"
+           {if $state.margin_left || $state.margin_right || $state.margin_top || $state.margin_bottom}style="{if $state.margin_left}margin-left:{$state.margin_left|escape:'htmlall'};{/if}{if $state.margin_right}margin-right:{$state.margin_right|escape:'htmlall'};{/if}{if $state.margin_top}margin-top:{$state.margin_top|escape:'htmlall'};{/if}{if $state.margin_bottom}margin-bottom:{$state.margin_bottom|escape:'htmlall'};{/if}"{/if}>
         {if isset($state.background_image.url) && $state.background_image.url}
           <picture>
             {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
@@ -99,6 +113,18 @@
           {/if}
         </div>
       </div>
+      {if $state.margin_left_mobile || $state.margin_right_mobile || $state.margin_top_mobile || $state.margin_bottom_mobile}
+        <style>
+          @media (max-width: 767px) {
+            #block-{$block.id_prettyblocks}-{$key} {
+              {if $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall'};{/if}
+              {if $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall'};{/if}
+              {if $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall'};{/if}
+              {if $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall'};{/if}
+            }
+          }
+        </style>
+      {/if}
     {/foreach}
   {/if}
 {/if}
