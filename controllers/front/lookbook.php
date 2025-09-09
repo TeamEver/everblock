@@ -48,11 +48,11 @@ class EverblockLookbookModuleFrontController extends ModuleFrontController
         }
         $product = reset($presented);
         $this->context->smarty->assign([
-            'everPresentProducts' => [$product],
-            'carousel' => false,
-            'shortcodeClass' => 'lookbook-modal',
+            'product' => $product,
         ]);
-        $html = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/hook/ever_presented_products.tpl');
+        $html = $this->context->smarty->fetch(
+            _PS_THEME_DIR_ . 'templates/catalog/_partials/miniatures/product.tpl'
+        );
         exit($html);
     }
 }
