@@ -15,14 +15,14 @@
  * @copyright 2019-2025 Team Ever
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}">
-  {if $block.settings.default.force_full_width}
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width|default:false}container-fluid px-0 mx-0{elseif $block.settings.default.container|default:false}container{/if}">
+  {if $block.settings.default.force_full_width|default:false}
     <div class="row gx-0 no-gutters">
-  {elseif $block.settings.default.container}
+  {elseif $block.settings.default.container|default:false}
     <div class="row">
   {/if}
 
-  <div class="{if $block.settings.default.container}container{/if} text-center">
+  <div class="{if $block.settings.default.container|default:false}container{/if} text-center">
     {if $block.settings.title}
       <h2 class="mb-3">{$block.settings.title|escape:'htmlall':'UTF-8'}</h2>
     {/if}
@@ -33,7 +33,7 @@
       {if isset($block.states) && $block.states}
         {foreach from=$block.states item=state}
           {if isset($state.product.id) && $state.product.id}
-            <button type="button" class="btn btn-light rounded-circle lookbook-marker position-absolute" style="top:{$state.top|escape:'htmlall'};left:{$state.left|escape:'htmlall'};transform:translate(-50%,-50%);" data-product-id="{$state.product.id}">
+            <button type="button" class="btn btn-light rounded-circle lookbook-marker position-absolute" style="top:{$state.top|default:'0%'|escape:'htmlall'};left:{$state.left|default:'0%'|escape:'htmlall'};transform:translate(-50%,-50%);" data-product-id="{$state.product.id}">
               <span class="visually-hidden">{l s='View product' mod='everblock'}</span>
             </button>
           {/if}
@@ -45,7 +45,7 @@
     </div>
   </div>
 
-  {if $block.settings.default.force_full_width || $block.settings.default.container}
+  {if $block.settings.default.force_full_width|default:false || $block.settings.default.container|default:false}
     </div>
   {/if}
 </div>

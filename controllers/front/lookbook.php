@@ -29,15 +29,18 @@ class EverblockLookbookModuleFrontController extends ModuleFrontController
         parent::initContent();
         $token = Tools::getValue('token');
         if (!$token || $token !== Tools::getToken()) {
-            die();
+            http_response_code(400);
+            exit;
         }
         $idProduct = (int) Tools::getValue('id_product');
         if (!$idProduct) {
-            die();
+            http_response_code(400);
+            exit;
         }
         $presented = EverblockTools::everPresentProducts([$idProduct], $this->context);
         if (empty($presented)) {
-            die();
+            http_response_code(404);
+            exit;
         }
         $product = reset($presented);
         $this->context->smarty->assign([
@@ -46,6 +49,6 @@ class EverblockLookbookModuleFrontController extends ModuleFrontController
             'shortcodeClass' => 'lookbook-modal',
         ]);
         $html = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/hook/ever_presented_products.tpl');
-        die($html);
+        exit($html);
     }
 }
