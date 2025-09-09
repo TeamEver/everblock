@@ -121,7 +121,7 @@ $(document).ready(function(){
         $.ajax({
             url: atob(evermodal_link),
             type: 'POST',
-            data: { id_everblock: blockId, token: everblock_token },
+            data: { id_everblock: blockId, token: everblock_token, everblock_origin_url: window.location.href },
             success: function(modal) {
                 $(modal).insertAfter($('body'));
                 let $modal = $('#everblockModal');
@@ -161,7 +161,7 @@ $(document).ready(function(){
         if (!blockId && !cmsId && !productModalId) {
             return;
         }
-        let data = { token: everblock_token, force: 1 };
+        let data = { token: everblock_token, force: 1, everblock_origin_url: window.location.href };
         if (blockId) {
             data.id_everblock = blockId;
         }
