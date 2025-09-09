@@ -27,8 +27,12 @@ class EverblockLookbookModuleFrontController extends ModuleFrontController
     {
         $this->ajax = true;
         parent::initContent();
+        // Front-office AJAX calls use the static token available in Smarty as
+        // {$static_token}.  Tools::getToken() may generate a different value
+        // depending on context, which caused legitimate requests to be rejected
+        // with a 400 error.  Use the same static token to validate the request.
         $token = Tools::getValue('token');
-        if (!$token || $token !== Tools::getToken()) {
+        if (!$token || $token !== Tools::getToken(false)) {
             http_response_code(400);
             exit;
         }
