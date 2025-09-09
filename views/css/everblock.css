@@ -322,6 +322,31 @@
     display: block;
 }
 
+.everblock-scroll-video {
+    position: relative;
+}
+
+.everblock-scroll-video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.everblock-scroll-video-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    text-align: center;
+    color: #fff;
+    width: 100%;
+    padding: 1rem;
+}
+
 /* Cover block */
 .prettyblock-cover-item {
     position: relative;
