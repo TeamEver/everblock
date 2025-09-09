@@ -2024,8 +2024,14 @@ class EverblockTools extends ObjectModel
 
                 // Force the newsletter form to submit to the current page instead
                 // of the homepage, otherwise inserting the shortcode in a page
-                // (e.g. contact form) breaks the form action.
-                $currentUrl = Tools::getHttpHost(true) . $_SERVER['REQUEST_URI'];
+                // (e.g. contact form) breaks the form action. When the form is
+                // loaded via AJAX (e.g. inside a modal), the request URI points to
+                // the AJAX controller. In that case, rely on the origin URL sent
+                // from JavaScript.
+                $currentUrl = Tools::getValue('everblock_origin_url');
+                if (!$currentUrl || !Validate::isUrl($currentUrl)) {
+                    $currentUrl = Tools::getHttpHost(true) . $_SERVER['REQUEST_URI'];
+                }
                 $replacement = preg_replace(
                     '@(<form[^>]*action=")[^"]*#blockEmailSubscription_displayFooter(")@',
                     '$1' . htmlspecialchars($currentUrl, ENT_QUOTES) . '#blockEmailSubscription_displayFooter$2',
