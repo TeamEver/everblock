@@ -71,6 +71,18 @@
         {/if}
       </div>
     </div>
+    {if $state.margin_left_mobile || $state.margin_right_mobile || $state.margin_top_mobile || $state.margin_bottom_mobile}
+      <style>
+        @media (max-width: 767px) {
+          #block-{$block.id_prettyblocks}-{$key} .position-relative {
+            {if $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall'};{/if}
+            {if $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall'};{/if}
+            {if $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall'};{/if}
+            {if $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall'};{/if}
+          }
+        }
+      </style>
+    {/if}
   {/foreach}
   {if $block.settings.default.force_full_width || $block.settings.default.container}
     </div>
