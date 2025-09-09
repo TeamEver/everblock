@@ -15,6 +15,8 @@
  * @copyright 2019-2025 Team Ever
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+{assign var=columns value=$block.settings.columns|default:'1'}
+<div class="prettyblock-lookbook columns-{$columns}">
 <div id="block-{$block.id_prettyblocks}" data-lookbook-url="{$link->getModuleLink('everblock', 'lookbook', ['token' => $static_token])|escape:'html':'UTF-8'}" class="{if $block.settings.default.force_full_width|default:false}container-fluid px-0 mx-0{elseif $block.settings.default.container|default:false}container{/if}">
   {if $block.settings.default.force_full_width|default:false}
     <div class="row gx-0 no-gutters">
@@ -48,6 +50,8 @@
   {if $block.settings.default.force_full_width|default:false || $block.settings.default.container|default:false}
     </div>
   {/if}
+</div>
+
 </div>
 
 <div class="modal fade" id="lookbook-modal-{$block.id_prettyblocks}" tabindex="-1" aria-hidden="true">
