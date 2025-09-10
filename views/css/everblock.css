@@ -34,13 +34,16 @@
 }
 .prettyblock-lookbook {
   width: 100%;
-  display: grid;
+  display: inline-grid;
   gap: 1rem;
+  vertical-align: top;
 }
 .prettyblock-lookbook.columns-2 {
+  width: 50%;
   grid-template-columns: repeat(2, 1fr);
 }
 .prettyblock-lookbook.columns-3 {
+  width: 33.3333333%;
   grid-template-columns: repeat(3, 1fr);
 }
 @media (max-width: 767.98px) {
