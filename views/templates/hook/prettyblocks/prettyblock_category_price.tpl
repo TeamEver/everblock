@@ -38,7 +38,7 @@
                   <p class="h6 mb-2 text-center">{$data.title|unescape:'html'|escape:'html':'UTF-8'}</p>
                 {/if}
                 {if $data.min_price !== false}
-                  <span class="small d-block mt-auto text-center">{l s='From' mod='everblock'} {Tools::displayPrice($data.min_price)}</span>
+                  <span class="small d-block mt-auto text-center min-price">{l s='From' mod='everblock'} {Tools::displayPrice($data.min_price)}</span>
                 {/if}
               </a>
             </div>
