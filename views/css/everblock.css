@@ -34,18 +34,19 @@
 }
 .prettyblock-lookbook {
   width: 100%;
+  display: grid;
+  gap: 1rem;
 }
-@media (min-width: 768px) {
+.prettyblock-lookbook.columns-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.prettyblock-lookbook.columns-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 767.98px) {
   .prettyblock-lookbook.columns-2,
   .prettyblock-lookbook.columns-3 {
-    display: inline-block;
-    vertical-align: top;
-  }
-  .prettyblock-lookbook.columns-2 {
-    width: 50%;
-  }
-  .prettyblock-lookbook.columns-3 {
-    width: 33.3333%;
+    grid-template-columns: 1fr;
   }
 }
 /* Style pour le panier déroulant */
