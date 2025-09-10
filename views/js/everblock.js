@@ -274,37 +274,37 @@ $(document).ready(function(){
     });
 
     // Flash deals countdown
-    document.querySelectorAll('.flash-deals-wrapper').forEach(function(wrapper) {
-        var dealsData = wrapper.dataset.deals;
+    $('.flash-deals-wrapper').each(function() {
+        var $wrapper = $(this);
+        var dealsData = $wrapper.attr('data-deals');
         if (!dealsData) {
             return;
         }
+        var deals;
         try {
-            var deals = JSON.parse(dealsData);
+            deals = typeof dealsData === 'string' ? JSON.parse(dealsData) : dealsData;
         } catch (e) {
             return;
         }
-        deals.forEach(function(deal) {
-            var productEl = wrapper.querySelector('[data-id-product="' + deal.id_product + '"]');
-            if (!productEl) {
+        $.each(deals, function(_, deal) {
+            var $productEl = $wrapper.find('[data-id-product="' + deal.id_product + '"]');
+            if (!$productEl.length) {
                 return;
             }
-            productEl.style.position = 'relative';
-            var timer = document.createElement('div');
-            timer.className = 'flash-deal-countdown badge bg-danger position-absolute';
-            timer.style.top = '0.5rem';
-            timer.style.left = '0.5rem';
-            productEl.appendChild(timer);
+            $productEl.css('position', 'relative');
+            var $timer = $('<div>', { 'class': 'flash-deal-countdown badge bg-danger position-absolute' })
+                .css({ top: '0.5rem', left: '0.5rem' });
+            $productEl.append($timer);
             function updateTimer() {
                 var distance = new Date(deal.end_date).getTime() - new Date().getTime();
                 if (distance <= 0) {
-                    timer.textContent = '';
+                    $timer.text('');
                     return;
                 }
                 var hours = Math.floor(distance / (1000 * 60 * 60));
                 var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                timer.textContent = hours + 'h ' + minutes + 'm ' + seconds + 's';
+                $timer.text(hours + 'h ' + minutes + 'm ' + seconds + 's');
             }
             updateTimer();
             setInterval(updateTimer, 1000);
@@ -319,27 +319,30 @@ $(document).ready(function(){
     });
 
     // Play video on scroll
-    const everVideos = document.querySelectorAll('.everblock-scroll-video');
-    if (everVideos.length) {
-        const options = { threshold: 0.5 };
-        const observer = new IntersectionObserver(function(entries, obs) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    const container = entry.target;
-                    const img = container.querySelector('.everblock-video-thumb');
-                    const video = container.querySelector('video');
-                    if (video && img) {
-                        img.classList.add('d-none');
-                        video.classList.remove('d-none');
-                        video.play();
+    var $everVideos = $('.everblock-scroll-video');
+    if ($everVideos.length) {
+        function playVideosOnScroll() {
+            var windowHeight = $(window).height();
+            $everVideos.each(function() {
+                var $container = $(this);
+                if ($container.data('played')) {
+                    return;
+                }
+                var rect = this.getBoundingClientRect();
+                var visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+                if (visibleHeight > rect.height / 2) {
+                    var $img = $container.find('.everblock-video-thumb');
+                    var $video = $container.find('video');
+                    if ($video.length && $img.length) {
+                        $img.addClass('d-none');
+                        $video.removeClass('d-none')[0].play();
+                        $container.data('played', true);
                     }
-                    obs.unobserve(container);
                 }
             });
-        }, options);
-        everVideos.forEach(function(el) {
-            observer.observe(el);
-        });
+        }
+        $(window).on('scroll resize load', playVideosOnScroll);
+        playVideosOnScroll();
     }
 
     // Animated counters
@@ -367,29 +370,21 @@ $(document).ready(function(){
     });
 
     // Lookbook modal triggers
-    document.querySelectorAll('[id^="block-"][data-lookbook-url]').forEach(function(block) {
-        var ajaxUrl = block.getAttribute('data-lookbook-url');
-        var blockId = block.id.replace('block-', '');
-        var modalEl = document.getElementById('lookbook-modal-' + blockId);
-        if (!modalEl) {
+    $('[id^="block-"][data-lookbook-url]').each(function() {
+        var $block = $(this);
+        var ajaxUrl = $block.data('lookbook-url');
+        var blockId = this.id.replace('block-', '');
+        var $modal = $('#lookbook-modal-' + blockId);
+        if (!$modal.length) {
             return;
         }
-        var modalBody = modalEl.querySelector('.modal-body');
-        var bootstrapModal = window.bootstrap ? new bootstrap.Modal(modalEl) : null;
-        block.querySelectorAll('.lookbook-marker').forEach(function(marker) {
-            marker.addEventListener('click', function(e) {
-                e.preventDefault();
-                var productId = marker.getAttribute('data-product-id');
-                fetch(ajaxUrl + '&id_product=' + productId)
-                    .then(function(resp) { return resp.text(); })
-                    .then(function(html) {
-                        modalBody.innerHTML = html;
-                        if (bootstrapModal) {
-                            bootstrapModal.show();
-                        } else if (typeof $ !== 'undefined' && $(modalEl).modal) {
-                            $(modalEl).modal('show');
-                        }
-                    });
+        var $modalBody = $modal.find('.modal-body');
+        $block.find('.lookbook-marker').on('click', function(e) {
+            e.preventDefault();
+            var productId = $(this).data('product-id');
+            $.get(ajaxUrl + '&id_product=' + productId, function(html) {
+                $modalBody.html(html);
+                $modal.modal('show');
             });
         });
     });
