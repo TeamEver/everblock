@@ -16,8 +16,12 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {assign var=columns value=$block.settings.columns|default:'1'}
+{capture name=lookbook_before}{prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-before"}{/capture}
+{capture name=lookbook_after}{prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-after"}{/capture}
 <div class="prettyblock-lookbook columns-{$columns}">
-  {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-before"}
+  {if $smarty.capture.lookbook_before|trim}
+    <div class="lookbook-item">{$smarty.capture.lookbook_before}</div>
+  {/if}
   <div class="lookbook-item">
     <div id="block-{$block.id_prettyblocks}" data-lookbook-url="{$link->getModuleLink('everblock', 'lookbook', ['token' => $static_token])|escape:'html':'UTF-8'}" class="{if $block.settings.default.force_full_width|default:false}container-fluid px-0 mx-0{elseif $block.settings.default.container|default:false}container{/if}">
       {if $block.settings.default.force_full_width|default:false}
@@ -54,7 +58,9 @@
       {/if}
     </div>
   </div>
-  {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-after"}
+  {if $smarty.capture.lookbook_after|trim}
+    <div class="lookbook-item">{$smarty.capture.lookbook_after}</div>
+  {/if}
 </div>
 
 <div class="modal fade" id="lookbook-modal-{$block.id_prettyblocks}" tabindex="-1" aria-hidden="true">
