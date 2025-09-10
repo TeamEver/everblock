@@ -665,3 +665,12 @@
     max-width: 100%;
     height: auto;
 }
+
+/* Brand carousel arrows */
+.featured-brands .carousel-control-prev {
+    left: 1rem;
+}
+
+.featured-brands .carousel-control-next {
+    right: 1rem;
+}
