@@ -17,8 +17,8 @@
 *}
 <div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}">
   {if isset($block.states) && $block.states}
-    <div class="overflow-auto px-2 px-md-0 pb-2">
-      <div class="d-flex flex-nowrap gap-3 pe-1">
+    <div class="{if $block.settings.default.center_cards}px-2 px-md-0 pb-2{else}overflow-auto px-2 px-md-0 pb-2{/if}">
+      <div class="d-flex gap-3 pe-1{if $block.settings.default.center_cards} flex-wrap justify-content-center{else} flex-nowrap{/if}">
         {foreach from=$block.states item=state}
           <div class="flex-shrink-0 prettyblocks-card-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="width:90%;max-width:90%;">
             <div class="card h-100 mb-3 border border-light-subtle rounded-4 shadow-sm">
