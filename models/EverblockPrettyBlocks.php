@@ -1190,6 +1190,41 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Video height (e.g., 360px)'),
                             'default' => '360px',
                         ],
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title'),
+                            'default' => '',
+                        ],
+                        'content' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Text'),
+                            'default' => '',
+                        ],
+                        'button_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button label'),
+                            'default' => '',
+                        ],
+                        'button_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button URL'),
+                            'default' => '',
+                        ],
+                        'overlay_color' => [
+                            'type' => 'text',
+                            'label' => $module->l('Overlay color'),
+                            'default' => '#000000',
+                        ],
+                        'overlay_opacity' => [
+                            'type' => 'text',
+                            'label' => $module->l('Overlay opacity (0-1)'),
+                            'default' => '0.5',
+                        ],
+                        'loop' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Infinite loop'),
+                            'default' => false,
+                        ],
                         'css_class' => [
                             'type' => 'text',
                             'label' => $module->l('Custom CSS class'),
