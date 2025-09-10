@@ -32,6 +32,22 @@
   align-items: center;
   justify-content: center;
 }
+.prettyblock-lookbook {
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .prettyblock-lookbook.columns-2,
+  .prettyblock-lookbook.columns-3 {
+    display: inline-block;
+    vertical-align: top;
+  }
+  .prettyblock-lookbook.columns-2 {
+    width: 50%;
+  }
+  .prettyblock-lookbook.columns-3 {
+    width: 33.3333%;
+  }
+}
 /* Style pour le panier déroulant */
 .ever-shopping-cart .dropdown-menu.cart-dropdown-content {
   padding: 15px;

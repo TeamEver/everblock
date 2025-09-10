@@ -4386,6 +4386,25 @@ class EverblockPrettyBlocks extends ObjectModel
                                 'url' => '',
                             ],
                         ],
+                        'columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on desktop'),
+                            'default' => '1',
+                            'options' => [
+                                [
+                                    'label' => '1',
+                                    'value' => '1',
+                                ],
+                                [
+                                    'label' => '2',
+                                    'value' => '2',
+                                ],
+                                [
+                                    'label' => '3',
+                                    'value' => '3',
+                                ],
+                            ],
+                        ],
                     ],
                 ],
                 'repeater' => [
