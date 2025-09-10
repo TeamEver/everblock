@@ -17,41 +17,44 @@
 *}
 {assign var=columns value=$block.settings.columns|default:'1'}
 <div class="prettyblock-lookbook columns-{$columns}">
-<div id="block-{$block.id_prettyblocks}" data-lookbook-url="{$link->getModuleLink('everblock', 'lookbook', ['token' => $static_token])|escape:'html':'UTF-8'}" class="{if $block.settings.default.force_full_width|default:false}container-fluid px-0 mx-0{elseif $block.settings.default.container|default:false}container{/if}">
-  {if $block.settings.default.force_full_width|default:false}
-    <div class="row gx-0 no-gutters">
-  {elseif $block.settings.default.container|default:false}
-    <div class="row">
-  {/if}
+  {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-before"}
+  <div class="lookbook-item">
+    <div id="block-{$block.id_prettyblocks}" data-lookbook-url="{$link->getModuleLink('everblock', 'lookbook', ['token' => $static_token])|escape:'html':'UTF-8'}" class="{if $block.settings.default.force_full_width|default:false}container-fluid px-0 mx-0{elseif $block.settings.default.container|default:false}container{/if}">
+      {if $block.settings.default.force_full_width|default:false}
+        <div class="row gx-0 no-gutters">
+      {elseif $block.settings.default.container|default:false}
+        <div class="row">
+      {/if}
 
-  <div class="{if $block.settings.default.container|default:false}container{/if} text-center">
-    {if $block.settings.title}
-      <h2 class="mb-3">{$block.settings.title|escape:'htmlall':'UTF-8'}</h2>
-    {/if}
-    <div class="lookbook-image position-relative mb-3 d-inline-block">
-      {if isset($block.settings.image.url) && $block.settings.image.url}
-        <img src="{$block.settings.image.url}" alt="{$block.settings.title|escape:'htmlall':'UTF-8'}" class="img-fluid w-100" loading="lazy">
-      {/if}
-      {if isset($block.states) && $block.states}
-        {foreach from=$block.states item=state}
-          {if isset($state.product.id) && $state.product.id}
-            <button type="button" class="btn btn-light rounded-circle lookbook-marker position-absolute" style="top:{$state.top|default:'0%'|escape:'htmlall'};left:{$state.left|default:'0%'|escape:'htmlall'};transform:translate(-50%,-50%);" data-product-id="{$state.product.id}">
-              <span class="visually-hidden">{l s='View product' mod='everblock'}</span>
-            </button>
+      <div class="{if $block.settings.default.container|default:false}container{/if} text-center">
+        {if $block.settings.title}
+          <h2 class="mb-3">{$block.settings.title|escape:'htmlall':'UTF-8'}</h2>
+        {/if}
+        <div class="lookbook-image position-relative mb-3 d-inline-block">
+          {if isset($block.settings.image.url) && $block.settings.image.url}
+            <img src="{$block.settings.image.url}" alt="{$block.settings.title|escape:'htmlall':'UTF-8'}" class="img-fluid w-100" loading="lazy">
           {/if}
-        {/foreach}
+          {if isset($block.states) && $block.states}
+            {foreach from=$block.states item=state}
+              {if isset($state.product.id) && $state.product.id}
+                <button type="button" class="btn btn-light rounded-circle lookbook-marker position-absolute" style="top:{$state.top|default:'0%'|escape:'htmlall'};left:{$state.left|default:'0%'|escape:'htmlall'};transform:translate(-50%,-50%);" data-product-id="{$state.product.id}">
+                  <span class="visually-hidden">{l s='View product' mod='everblock'}</span>
+                </button>
+              {/if}
+            {/foreach}
+          {/if}
+        </div>
+        <div class="mt-3">
+          <small class="text-muted">{l s='Cliquez sur un point pour voir le produit' mod='everblock'}</small>
+        </div>
+      </div>
+
+      {if $block.settings.default.force_full_width|default:false || $block.settings.default.container|default:false}
+        </div>
       {/if}
-    </div>
-    <div class="mt-3">
-      <small class="text-muted">{l s='Cliquez sur un point pour voir le produit' mod='everblock'}</small>
     </div>
   </div>
-
-  {if $block.settings.default.force_full_width|default:false || $block.settings.default.container|default:false}
-    </div>
-  {/if}
-</div>
-
+  {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-after"}
 </div>
 
 <div class="modal fade" id="lookbook-modal-{$block.id_prettyblocks}" tabindex="-1" aria-hidden="true">
