@@ -867,7 +867,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'settings' => [
                     'default' => [
                         'display_inline' => [
-                            'type' => 'switch',
+                            'type' => 'checkbox',
                             'label' => $module->l('Display reassurances side by side'),
                             'default' => false,
                         ],
@@ -3643,6 +3643,15 @@ class EverblockPrettyBlocks extends ObjectModel
                 'need_reload' => true,
                 'templates' => [
                     'default' => $cardTemplate,
+                ],
+                'settings' => [
+                    'default' => [
+                        'center_cards' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Center cards in container'),
+                            'default' => false,
+                        ],
+                    ],
                 ],
                 'repeater' => [
                     'name' => 'Card',
