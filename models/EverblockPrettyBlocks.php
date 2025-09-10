@@ -1893,6 +1893,15 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $imgTemplate,
                 ],
+                'config' => [
+                    'fields' => [
+                        'slider' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable slider'),
+                            'default' => 0,
+                        ],
+                    ],
+                ],
                 'repeater' => [
                     'name' => $module->l('Image title'),
                     'nameFrom' => 'name',
@@ -1925,6 +1934,13 @@ class EverblockPrettyBlocks extends ObjectModel
                         'banner' => [
                             'type' => 'fileupload',
                             'label' => 'Images',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'banner_mobile' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Mobile image'),
                             'default' => [
                                 'url' => '',
                             ],
