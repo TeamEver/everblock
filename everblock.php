@@ -4069,6 +4069,28 @@ class Everblock extends Module
         return ['products' => $products];
     }
 
+    public function hookBeforeRenderingEverblockVideoProducts($params)
+    {
+        $products = [];
+        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
+            foreach ($params['block']['states'] as $key => $state) {
+                if (empty($state['product_ids'])) {
+                    continue;
+                }
+                $ids = array_filter(array_map('intval', explode(',', $state['product_ids'])));
+                if (empty($ids)) {
+                    continue;
+                }
+                $presented = EverblockTools::everPresentProducts($ids, $this->context);
+                if (!empty($presented)) {
+                    $products[$key] = $presented;
+                }
+            }
+        }
+
+        return ['products' => $products];
+    }
+
     public function hookBeforeRenderingEverblockFlashDeals($params)
     {
         $deals = [];
