@@ -57,6 +57,7 @@ $(document).ready(function(){
         });
         $('.ever-cover-carousel:not(.slick-initialised)').each(function(){
             var $carousel = $(this);
+            var slides = parseInt($carousel.data('items')) || 3;
             $carousel.on('init', function(event, slick){
                 var $center = $(slick.$slides[slick.currentSlide]);
                 $(slick.$prevArrow).appendTo($center);
@@ -68,7 +69,7 @@ $(document).ready(function(){
                 $(slick.$nextArrow).appendTo($center);
             });
             $carousel.slick({
-                slidesToShow: 3,
+                slidesToShow: slides,
                 centerMode: true,
                 arrows: true,
                 dots: false,
@@ -76,7 +77,7 @@ $(document).ready(function(){
                 responsive: [{
                     breakpoint: 768,
                     settings: {
-                        slidesToShow: 1
+                        slidesToShow: Math.min(slides, 1)
                     }
                 }]
             });

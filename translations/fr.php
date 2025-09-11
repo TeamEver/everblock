@@ -433,6 +433,7 @@ $_MODULE['<{everblock}prestashop>everblockprettyblocks_11409cf9f3d90e1c7f5f61419
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_5cdcf2315e4ae4c3284559bef9171585'] = 'Titre du shortcode';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_3022a99e31c6c4996b5775c66f941c51'] = 'Images simple';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_31b3f43385eea965b6b6dde5d984a0cb'] = 'Ajoute une image simple';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_925258bd3942934b838168f3535ae1cb'] = 'Nombre d\'images à afficher dans le slider';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_cf82fa946fab5855cd8c6479b0eb95d1'] = 'Titre de l\'image';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_6bbbabc7eb5cf211a14822c4de525b6e'] = 'Texte alternatif de l\'image';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_a5f65cdb85d34151afd967e013a6808d'] = 'Mon texte alternatif';
