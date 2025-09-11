@@ -16,14 +16,10 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {assign var=columns value=$block.settings.columns|default:'1'}
-{capture name=lookbook_before}{prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-before"}{/capture}
-{capture name=lookbook_after}{prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-after"}{/capture}
-{assign var=lookbook_before_content value=$smarty.capture.lookbook_before}
-{assign var=lookbook_after_content value=$smarty.capture.lookbook_after}
 <div class="prettyblock-lookbook columns-{$columns}">
-  {if $lookbook_before_content|strip_tags|trim}
-    <div class="lookbook-item">{$lookbook_before_content nofilter}</div>
-  {/if}
+  <div class="lookbook-item">
+    {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-before"}
+  </div>
   <div class="lookbook-item">
     <div id="block-{$block.id_prettyblocks}" data-lookbook-url="{$link->getModuleLink('everblock', 'lookbook', ['token' => $static_token])|escape:'html':'UTF-8'}" class="{if $block.settings.default.force_full_width|default:false}container-fluid px-0 mx-0{elseif $block.settings.default.container|default:false}container{/if}">
       {if $block.settings.default.force_full_width|default:false}
@@ -60,9 +56,9 @@
       {/if}
     </div>
   </div>
-  {if $lookbook_after_content|strip_tags|trim}
-    <div class="lookbook-item">{$lookbook_after_content nofilter}</div>
-  {/if}
+  <div class="lookbook-item">
+    {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-after"}
+  </div>
 </div>
 
 <div class="modal fade" id="lookbook-modal-{$block.id_prettyblocks}" tabindex="-1" aria-hidden="true">
