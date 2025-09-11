@@ -1900,6 +1900,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
                         ],
+                        'slider_items' => [
+                            'type' => 'text',
+                            'label' => $module->l('Number of images in slider'),
+                            'default' => 3,
+                        ],
                     ],
                 ],
                 'repeater' => [

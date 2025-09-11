@@ -24,7 +24,7 @@
 {if isset($block.states) && $block.states}
   {assign var='use_slider' value=(isset($block.settings.slider) && $block.settings.slider && $block.states|@count > 1)}
   {if $use_slider}
-    <div class="mt-4 ever-cover-carousel">
+    <div class="mt-4 ever-cover-carousel" data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}">
       {foreach from=$block.states item=state key=key}
         <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden" style="
           {if isset($state.padding_left)}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}
