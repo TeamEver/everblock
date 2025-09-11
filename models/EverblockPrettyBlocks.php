@@ -3649,12 +3649,12 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $cardTemplate,
                 ],
-                'settings' => [
-                    'default' => [
+                'config' => [
+                    'fields' => [
                         'center_cards' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Center cards in container'),
-                            'default' => false,
+                            'default' => 0,
                         ],
                     ],
                 ],
