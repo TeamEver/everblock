@@ -61,13 +61,10 @@
               {if $state.text_highlight_2}
                 <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
               {/if}
-              {if $state.url}
-                </a> {* close <a> before button to avoid nested links *}
-                <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="btn btn-primary mt-1">
-                  {$state.alt|escape:'htmlall':'UTF-8'}
-                </a>
-              {/if}
             </div>
+          {if isset($state.url) && $state.url}
+            </a>
+          {/if}
         </div>
         {if $state.margin_left_mobile || $state.margin_right_mobile || $state.margin_top_mobile || $state.margin_bottom_mobile}
           <style>
@@ -121,13 +118,10 @@
               {if $state.text_highlight_2}
                 <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
               {/if}
-              {if $state.url}
-                </a> {* close <a> before button to avoid nested links *}
-                <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="btn btn-primary mt-1">
-                  {$state.alt|escape:'htmlall':'UTF-8'}
-                </a>
-              {/if}
             </div>
+          {if isset($state.url) && $state.url}
+            </a>
+          {/if}
         </div>
         {if $state.margin_left_mobile || $state.margin_right_mobile || $state.margin_top_mobile || $state.margin_bottom_mobile}
           <style>
