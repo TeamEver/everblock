@@ -36,7 +36,6 @@
           {if isset($state.margin_top)}margin-top:{$state.margin_top|escape:'htmlall':'UTF-8'};{/if}
           {if isset($state.margin_bottom)}margin-bottom:{$state.margin_bottom|escape:'htmlall':'UTF-8'};{/if}
           {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
-          width:100%;
         ">
           {if isset($state.url) && $state.url}
             <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative">
@@ -93,7 +92,6 @@
           {if isset($state.margin_top)}margin-top:{$state.margin_top|escape:'htmlall':'UTF-8'};{/if}
           {if isset($state.margin_bottom)}margin-bottom:{$state.margin_bottom|escape:'htmlall':'UTF-8'};{/if}
           {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
-          width:100%;
         ">
           {if isset($state.url) && $state.url}
             <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative">
