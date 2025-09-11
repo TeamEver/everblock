@@ -565,6 +565,11 @@
     background: transparent;
     border: 0;
     color: #fff;
+    font-size: 0;
+    line-height: 0;
+}
+.ever-cover-carousel .slick-prev:before,
+.ever-cover-carousel .slick-next:before {
     font-size: 2rem;
 }
 .ever-cover-carousel .slick-prev {
