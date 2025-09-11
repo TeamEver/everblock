@@ -80,6 +80,9 @@
       {/foreach}
     </div>
   {else}
+    {if $block.settings.default.force_full_width || $block.settings.default.container}
+      <div class="col-12">
+    {/if}
     <div class="row mt-4 g-3 justify-content-center">
       {foreach from=$block.states item=state key=key}
         <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden col-12{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
@@ -135,6 +138,9 @@
         {/if}
       {/foreach}
     </div>
+    {if $block.settings.default.force_full_width || $block.settings.default.container}
+      </div>
+    {/if}
   {/if}
 {/if}
 
