@@ -26,7 +26,7 @@
   {if $use_slider}
     <div class="mt-4 ever-cover-carousel" data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}">
       {foreach from=$block.states item=state key=key}
-        <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden" style="
+        <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
           {if isset($state.padding_left)}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}
           {if isset($state.padding_right)}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}
           {if isset($state.padding_top)}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}
@@ -83,7 +83,7 @@
   {else}
     <div class="mt-4 d-flex flex-wrap gap-3 justify-content-center">
       {foreach from=$block.states item=state key=key}
-        <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden" style="
+        <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
           {if isset($state.padding_left)}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}
           {if isset($state.padding_right)}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}
           {if isset($state.padding_top)}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}
