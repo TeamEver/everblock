@@ -748,6 +748,11 @@
     margin-top: 0.5rem;
 }
 
+/* Video products */
+.everblock-video-products img {
+    cursor: pointer;
+}
+
 /* Counters */
 .everblock-counter-value {
     display: block;

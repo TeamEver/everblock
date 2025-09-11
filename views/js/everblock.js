@@ -274,6 +274,22 @@ $(document).ready(function(){
         });
     });
 
+    // Video products modal
+    $(document).on('click', '.everblock-video-products img', function () {
+        let $img = $(this);
+        let blockId = $img.data('block');
+        let key = $img.data('key');
+        let modal = $('#productVideoModal-' + blockId);
+        modal.find('iframe').attr('src', $img.data('video-url'));
+        modal.find('.modal-title').text($img.attr('title'));
+        modal.find('.products-container').html($('#products-' + blockId + '-' + key).html());
+        modal.modal('show');
+        modal.on('hidden.bs.modal', function () {
+            modal.find('iframe').attr('src', '');
+            modal.find('.products-container').html('');
+        });
+    });
+
     // Flash deals countdown
     $('.flash-deals-wrapper').each(function() {
         var $wrapper = $(this);
