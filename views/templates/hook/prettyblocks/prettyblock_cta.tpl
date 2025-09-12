@@ -44,14 +44,14 @@
       ">
         <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 px-3" style="z-index: 1;">
           {if $state.name}
-            <p class="mb-3 h2" style="{if $state.text_color}color:{$state.text_color}!important;{/if}">{$state.name|escape:'htmlall'}</p>
+            <p class="mb-3 h2" style="{if $state.text_color}color:{$state.text_color}!important;{/if}">{$state.name nofilter}</p>
           {/if}
           {if $state.content}
             {$state.content nofilter}
           {/if}
           {if $state.cta_link && $state.cta_text}
             <a href="{$state.cta_link|escape:'htmlall'}" class="btn btn-primary btn-cta mt-3">
-              {$state.cta_text|escape:'htmlall'}
+              {$state.cta_text nofilter}
             </a>
           {/if}
         </div>
