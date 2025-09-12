@@ -282,12 +282,13 @@ $(document).ready(function(){
         let $wrapper = $('#video-products-' + blockId);
         let fetchUrl = $wrapper.data('fetch-url');
         let productsLabel = $wrapper.data('products-label');
+        let token = $wrapper.data('token') || (typeof prestashop !== 'undefined' ? prestashop.static_token : '');
 
         $.ajax({
             url: fetchUrl,
             type: 'POST',
             data: {
-                token: prestashop.static_token,
+                token: token,
                 product_ids: productIds
             },
             success: function (html) {
