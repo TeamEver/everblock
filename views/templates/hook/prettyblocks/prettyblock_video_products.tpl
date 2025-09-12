@@ -27,11 +27,11 @@
         <div class="row">
     {/if}
     {if isset($block.states) && $block.states}
-      <div class="row justify-content-center" id="video-products-{$block.id_prettyblocks}">
+      <div class="row justify-content-center" id="video-products-{$block.id_prettyblocks}" data-fetch-url="{$link->getModuleLink('everblock', 'videoproducts')|escape:'htmlall':'UTF-8'}" data-products-label="{l s='Products featured in this video' mod='everblock'}">
         {foreach from=$block.states item=state key=key}
           <div class="col mb-4 col-md-4" style="{if isset($state.padding_left) && $state.padding_left}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}{if isset($state.padding_right) && $state.padding_right}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}{if isset($state.padding_top) && $state.padding_top}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}{if isset($state.padding_bottom) && $state.padding_bottom}padding-bottom:{$state.padding_bottom|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_left) && $state.margin_left}margin-left:{$state.margin_left|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_right) && $state.margin_right}margin-right:{$state.margin_right|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_top) && $state.margin_top}margin-top:{$state.margin_top|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_bottom) && $state.margin_bottom}margin-bottom:{$state.margin_bottom|escape:'htmlall':'UTF-8'};{/if}{if isset($state.default.bg_color) && $state.default.bg_color}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
             <div class="card {if isset($state.css_class) && $state.css_class}{$state.css_class|escape:'htmlall':'UTF-8'}{/if}">
-              <img src="{$state.thumbnail.url|replace:'.webp':'.jpg'}" class="img-fluid cursor-pointer" alt="{$state.title}" title="{$state.title}" loading="lazy" data-block="{$block.id_prettyblocks}" data-key="{$key}" data-video-url="{$state.video_url|escape:'htmlall':'UTF-8'}" data-description="{$state.description|escape:'htmlall':'UTF-8'}" data-bs-toggle="modal" data-bs-target="#productVideoModal-{$block.id_prettyblocks}">
+              <img src="{$state.thumbnail.url|replace:'.webp':'.jpg'}" class="img-fluid cursor-pointer" alt="{$state.title}" title="{$state.title}" loading="lazy" data-block="{$block.id_prettyblocks}" data-key="{$key}" data-video-url="{$state.video_url|escape:'htmlall':'UTF-8'}" data-description="{$state.description|escape:'htmlall':'UTF-8'}" data-product-ids="{$state.product_ids|escape:'htmlall':'UTF-8'}">
               {if $state.title || $state.description}
               <div class="card-body">
                 {if $state.title}<p class="card-title h5">{$state.title}</p>{/if}
@@ -39,30 +39,8 @@
               </div>
               {/if}
             </div>
-            {if isset($block.extra.products[$key]) && $block.extra.products[$key]}
-              <div id="products-{$block.id_prettyblocks}-{$key}" class="d-none">
-                {include file="module:everblock/views/templates/hook/ever_presented_products.tpl" everPresentProducts=$block.extra.products[$key] carousel=false shortcodeClass='video-products'}
-              </div>
-            {/if}
           </div>
         {/foreach}
-      </div>
-      <div class="modal fade everblock-video-product-modal" id="productVideoModal-{$block.id_prettyblocks}" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <span class="modal-title h5"></span>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="ratio ratio-16x9 mb-3">
-                <iframe id="productVideoIframe-{$block.id_prettyblocks}" src="" allowfullscreen loading="lazy"></iframe>
-              </div>
-              <p class="h5">{l s='Products featured in this video' mod='everblock'}</p>
-              <div class="products-container"></div>
-            </div>
-          </div>
-        </div>
       </div>
     {/if}
     {if $block.settings.default.container}
