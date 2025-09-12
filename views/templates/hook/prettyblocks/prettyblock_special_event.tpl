@@ -51,9 +51,9 @@
               </div>
             </div>
           {/if}
-          {if $state.products_shortcode}
+          {if isset($block.extra.products[$key]) && $block.extra.products[$key]}
             <div class="mt-3 w-100">
-              {$state.products_shortcode nofilter}
+              {include file="module:everblock/views/templates/hook/ever_presented_products.tpl" everPresentProducts=$block.extra.products[$key] shortcodeClass='special-event-products'}
             </div>
           {/if}
         </div>

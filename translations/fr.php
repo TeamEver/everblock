@@ -691,6 +691,7 @@ $_MODULE['<{everblock}prestashop>everblock_video_description'] = 'Description';
 $_MODULE['<{everblock}prestashop>everblock_video_products'] = 'Vidéos produits';
 $_MODULE['<{everblock}prestashop>everblock_video_products_desc'] = 'Afficher des vidéos avec les produits associés';
 $_MODULE['<{everblock}prestashop>everblock_video_product_ids'] = 'IDs produits';
+$_MODULE['<{everblock}prestashop>everblock_special_event_product_ids'] = 'IDs produits';
 $_MODULE['<{everblock}prestashop>everblock_6d934d434a35ece59d870a44263a20d6'] = 'Compteurs';
 $_MODULE['<{everblock}prestashop>everblock_799eb0fc8f8786f7e3bb9b8228d19eca'] = 'Afficher des compteurs animés';
 $_MODULE['<{everblock}prestashop>everblock_689202409e48743b914713f96d93947c'] = 'Valeur';
