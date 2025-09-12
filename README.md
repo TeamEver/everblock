@@ -60,6 +60,7 @@ Ever Block includes a library of PrettyBlock blocks ready to use:
 - Downloads
 - Everblock content
 - Flash deals
+- Special event
 - Category products
 - Gallery
 - Google map

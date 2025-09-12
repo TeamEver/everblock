@@ -91,6 +91,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $pricingTableTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pricing_table.tpl';
             $podcastsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_podcasts.tpl';
             $exitIntentTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_exit_intent.tpl';
+            $specialEventTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_special_event.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -4335,6 +4336,112 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Choose a product'),
                             'collection' => 'Product',
                             'selector' => '{id} - {name}',
+                            'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Special event'),
+                'description' => $module->l('Display a special event with countdown and CTA'),
+                'code' => 'everblock_special_event',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $specialEventTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Event',
+                    'nameFrom' => 'title',
+                    'groups' => [
+                        'title' => [
+                            'type' => 'editor',
+                            'label' => 'Title',
+                            'default' => $module->l('Winter sale'),
+                        ],
+                        'background_image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Background image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'cta_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA Button Text'),
+                            'default' => $module->l('Shop now'),
+                        ],
+                        'cta_link' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA Link'),
+                            'default' => '#',
+                        ],
+                        'target_date' => [
+                            'type' => 'text',
+                            'label' => $module->l('Target date (YYYY-MM-DD HH:MM:SS)'),
+                            'default' => '',
+                        ],
+                        'products_shortcode' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Products shortcode'),
+                            'default' => '',
+                        ],
+                        'background_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'default' => '',
+                            'label' => $module->l('Block background color'),
+                        ],
+                        'text_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'default' => '',
+                            'label' => $module->l('Block text color'),
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
                         ],
                     ],

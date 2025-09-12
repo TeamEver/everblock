@@ -467,6 +467,8 @@ $_MODULE['<{everblock}prestashop>everblockprettyblocks_e807d3ccf8d24c8c1a3d86db5
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_6a7e73161603d87b26a8eac49dab0a9c'] = 'Heures';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_f670ea66cfb0e90bd6090472ad692694'] = 'Minutes';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_8f19a8c7566af54ea8981029730e5465'] = 'Secondes';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_92fc8f3bed5eaf9a21d6854f189d7101'] = 'Événement spécial';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_6d4a459395e0afa84de9b398f128d130'] = 'Affiche un événement spécial avec compte à rebours et bouton d\'appel à l\'action';
 $_MODULE['<{everblock}prestashop>configure_621886d5d907cadfb35840e0bc9688d3'] = 'Qu\'est-ce qu\'un hook ?';
 $_MODULE['<{everblock}prestashop>configure_714f82bdd35410e27b403a7ed10fa67e'] = 'Un hook est un endroit où vous pouvez « greffer » un module. Très nombreux sur Prestashop, ils sont enregistrés dans votre base de données, et affichés par votre thème et vos modules.';
 $_MODULE['<{everblock}prestashop>configure_6c9cc2811d8dd20065be04ab58bbcaa7'] = 'Ces hooks sont disponibles à la fois sur votre site, mais aussi dans l\'administration de votre boutique.';
