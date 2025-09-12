@@ -41,6 +41,7 @@ return [
     'controllers/front/index.php',
     'controllers/front/lookbook.php',
     'controllers/front/modal.php',
+    'controllers/front/videoproducts.php',
     'controllers/index.php',
     'everblock.php',
     'index.php',

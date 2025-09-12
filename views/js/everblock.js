@@ -278,15 +278,51 @@ $(document).ready(function(){
     $(document).on('click', '.everblock-video-products img', function () {
         let $img = $(this);
         let blockId = $img.data('block');
-        let key = $img.data('key');
-        let modal = $('#productVideoModal-' + blockId);
-        modal.find('iframe').attr('src', $img.data('video-url'));
-        modal.find('.modal-title').text($img.attr('title'));
-        modal.find('.products-container').html($('#products-' + blockId + '-' + key).html());
-        modal.modal('show');
-        modal.on('hidden.bs.modal', function () {
-            modal.find('iframe').attr('src', '');
-            modal.find('.products-container').html('');
+        let productIds = $img.data('product-ids');
+        let $wrapper = $('#video-products-' + blockId);
+        let fetchUrl = $wrapper.data('fetch-url');
+        let productsLabel = $wrapper.data('products-label');
+
+        $.ajax({
+            url: fetchUrl,
+            type: 'POST',
+            data: {
+                token: prestashop.static_token,
+                product_ids: productIds
+            },
+            success: function (html) {
+                let modalId = 'productVideoModal-' + blockId;
+                let modal = $('<div>', {
+                    'class': 'modal fade everblock-video-product-modal',
+                    'id': modalId,
+                    'tabindex': -1,
+                    'aria-hidden': 'true'
+                }).append(
+                    '<div class="modal-dialog modal-dialog-centered modal-lg">' +
+                    '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                    '<span class="modal-title h5"></span>' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
+                    '</div>' +
+                    '<div class="modal-body">' +
+                    '<div class="ratio ratio-16x9 mb-3">' +
+                    '<iframe id="productVideoIframe-' + blockId + '" src="" allowfullscreen loading="lazy"></iframe>' +
+                    '</div>' +
+                    '<p class="h5">' + productsLabel + '</p>' +
+                    '<div class="products-container"></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+                modal.find('.modal-title').text($img.attr('title'));
+                modal.find('.products-container').html(html);
+                modal.find('iframe').attr('src', $img.data('video-url'));
+                $('body').append(modal);
+                modal.modal('show');
+                modal.on('hidden.bs.modal', function () {
+                    modal.remove();
+                });
+            }
         });
     });
 
