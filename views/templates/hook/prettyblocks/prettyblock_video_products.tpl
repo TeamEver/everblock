@@ -34,8 +34,8 @@
               <img src="{$state.thumbnail.url|replace:'.webp':'.jpg'}" class="img-fluid cursor-pointer" alt="{$state.title}" title="{$state.title}" loading="lazy" data-block="{$block.id_prettyblocks}" data-key="{$key}" data-video-url="{$state.video_url|escape:'htmlall':'UTF-8'}" data-description="{$state.description|escape:'htmlall':'UTF-8'}" data-product-ids="{$state.product_ids|escape:'htmlall':'UTF-8'}">
               {if $state.title || $state.description}
               <div class="card-body">
-                {if $state.title}<p class="card-title h5">{$state.title}</p>{/if}
-                {if $state.description}<p class="card-text">{$state.description}</p>{/if}
+                {if $state.title}<p class="card-title h5 text-center">{$state.title}</p>{/if}
+                {if $state.description}<span class="card-text">{$state.description nofilter}</span>{/if}
               </div>
               {/if}
             </div>

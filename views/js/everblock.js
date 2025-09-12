@@ -16,6 +16,19 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 $(document).ready(function(){
+    function makeLoopUrl(url) {
+        if (!url) {
+            return url;
+        }
+        let separator = url.indexOf('?') === -1 ? '?' : '&';
+        if (url.indexOf('youtube.com/embed/') !== -1) {
+            let match = url.match(/embed\/([^?]+)/);
+            if (match && match[1]) {
+                return url + separator + 'autoplay=1&loop=1&playlist=' + match[1];
+            }
+        }
+        return url + separator + 'autoplay=1&loop=1';
+    }
     if ($.fn.slick) {
         $('.ever-slick-carousel:not(.slick-initialised)').each(function(){
             var $carousel = $(this);
@@ -265,7 +278,7 @@ $(document).ready(function(){
         let $img = $(this);
         let blockId = $img.data('block');
         let modal = $('#videoModal-' + blockId);
-        modal.find('iframe').attr('src', $img.data('video-url'));
+        modal.find('iframe').attr('src', makeLoopUrl($img.data('video-url')));
         modal.find('.modal-title').text($img.attr('title'));
         modal.find('.video-description').text($img.data('description'));
         modal.modal('show');
@@ -301,23 +314,24 @@ $(document).ready(function(){
                 }).append(
                     '<div class="modal-dialog modal-dialog-centered modal-lg">' +
                     '<div class="modal-content">' +
-                    '<div class="modal-header">' +
-                    '<span class="modal-title h5"></span>' +
-                    '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
+                    '<div class="modal-header justify-content-center position-relative">' +
+                    '<span class="modal-title h5 w-100 text-center"></span>' +
+                    '<button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>' +
                     '</div>' +
                     '<div class="modal-body">' +
                     '<div class="ratio ratio-16x9 mb-3">' +
                     '<iframe id="productVideoIframe-' + blockId + '" src="" allowfullscreen loading="lazy"></iframe>' +
                     '</div>' +
-                    '<p class="h5">' + productsLabel + '</p>' +
-                    '<div class="products-container"></div>' +
+                    '<p class="h5 text-center">' + productsLabel + '</p>' +
+                    '<div class="products-container d-flex flex-wrap justify-content-center"></div>' +
                     '</div>' +
                     '</div>' +
                     '</div>'
                 );
                 modal.find('.modal-title').text($img.attr('title'));
                 modal.find('.products-container').html(html);
-                modal.find('iframe').attr('src', $img.data('video-url'));
+                modal.find('.products-container .products').addClass('justify-content-center');
+                modal.find('iframe').attr('src', makeLoopUrl($img.data('video-url')));
                 $('body').append(modal);
                 modal.modal('show');
                 modal.on('hidden.bs.modal', function () {
