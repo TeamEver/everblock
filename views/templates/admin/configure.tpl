@@ -109,9 +109,9 @@
             <br>
             <h4>{l s='Shortcodes list' mod='everblock'}</h3>
             <ul>
-                <li><p>[everblock 1] {l s='to show block ID 1' mod='everblock'}</p></li>
-                <li><p>[product 1] {l s='to show product ID 1' mod='everblock'}</p></li>
-                <li><p>[product 1,2,3] {l s='to show products ID 1, 2 and 3' mod='everblock'}</p></li>
+                <li><p>[everblock id="1"] {l s='to show block ID 1' mod='everblock'}</p></li>
+                <li><p>[product id="1"] {l s='to show product ID 1' mod='everblock'}</p></li>
+                <li><p>[product id="1,2,3"] {l s='to show products ID 1, 2 and 3' mod='everblock'}</p></li>
                 <li><p>[random_product nb="10" carousel=true] {l s='to show ten random products in a carousel' mod='everblock'}</p></li>
                 <li><p>[entity_lastname] {l s='for customer lastname' mod='everblock'}</p></li>
                 <li><p>[entity_firstname] {l s='for customer firstname' mod='everblock'}</p></li>
@@ -122,33 +122,100 @@
                 <li><p>[brands nb="8"] {l s='to show 8 brands name with their associated logos' mod='everblock'}</p></li>
                 <li><p>[storelocator] {l s='to show a store locator on any CMS page' mod='everblock'}</p></li>
                 <li><p>[subcategories id="2" nb="8"] {l s='to display 8 subcategories (name, image and link) of category 2' mod='everblock'}</p></li>
-                <li><p>[last-products 4] {l s='to display the last 4 products listed in the store' mod='everblock'}</p></li>
-                <li><p>[best-sales 4] {l s='to display the 4 best-selling products in your store' mod='everblock'}</p></li>
+                <li><p>[last-products nb="4"] {l s='to display the last products listed in the store' mod='everblock'}</p></li>
+                <li><p>[best-sales nb="4"] {l s='to display the best-selling products in your store' mod='everblock'}</p></li>
                 <li><p>[evercart] {l s='to display dropdown cart' mod='everblock'}</p></li>
                 <li><p>[nativecontact] {l s='to display Prestashop native contact form' mod='everblock'}</p></li>
-                <li><p>[everstore 4] {l s='to display store information id 1' mod='everblock'}</p></li>
-                <li><p>[video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj] {l s='to display a YouTube iframe of the video whose sharing URL is in parameter (also works with Vimeo, Dailymotion, and Vidyard)' mod='everblock'}</p></li>
+                <li><p>[everstore id="4"] {l s='to display store information id 4' mod='everblock'}</p></li>
+                <li><p>[video url="https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj"] {l s='to display a YouTube iframe of the video whose sharing URL is in parameter (also works with Vimeo, Dailymotion, and Vidyard)' mod='everblock'}</p></li>
                 <li><p>[everaddtocart ref="1234" text="Add me to cart"] {l s='creates an add to cart link for product reference 1234' mod='everblock'}</p></li>
                 <li><p>[everfaq tag="faq1"] {l s='shows FAQs related to the faq tag' mod='everblock'}</p></li>
                 <li><p>[productfeature id="2" nb="12" carousel="true"] {l s='displays 12 products with feature ID 2 as a carousel' mod='everblock'}</p></li>
                 <li><p>[productfeaturevalue id="2" nb="12" carousel="true"] {l s='same as before but for feature value ID 2' mod='everblock'}</p></li>
-                <li><p>[promo-products 10 carousel=true] {l s='displays ten products on sale in a carousel' mod='everblock'}</p></li>
-                <li><p>[best-sales 10 carousel=true] {l s='displays the top ten best-selling products' mod='everblock'}</p></li>
+                <li><p>[promo-products nb="10" carousel=true] {l s='displays ten products on sale in a carousel' mod='everblock'}</p></li>
+                <li><p>[best-sales nb="10" carousel=true] {l s='displays the top ten best-selling products' mod='everblock'}</p></li>
                 <li><p>[categorybestsales id="8" nb="10"] {l s='displays the best-selling products from category ID 8' mod='everblock'}</p></li>
                 <li><p>[brandbestsales id="3" nb="10"] {l s='displays the best-selling products from brand ID 3' mod='everblock'}</p></li>
                 <li><p>[linkedproducts nb="8" orderby="date_add" orderway="DESC"] {l s='displays products linked to the current product' mod='everblock'}</p></li>
                 <li><p>[accessories nb="8" orderby="date_add" orderway="DESC"] {l s='displays accessories of the current product' mod='everblock'}</p></li>
-                <li><p>[crosselling nb=4 orderby="id_product" orderway="asc"] {l s='shows cross-selling products when the cart is empty' mod='everblock'}</p></li>
+                <li><p>[crosselling nb="4" orderby="id_product" orderway="asc"] {l s='shows cross-selling products when the cart is empty' mod='everblock'}</p></li>
                 <li><p>{literal}{hook h='displayHome'}{/literal} {l s='displays the displayHome hook' mod='everblock'}</p></li>
                 <li><p>[everinstagram] {l s='display your latest Instagram photos. Images are cached for 24h in /img/cms/instagram and refreshed automatically or via the everblock:tools:execute refreshtokens command' mod='everblock'}</p></li>
                 <li><p>[everimg name="image.jpg" class="img-fluid" carousel=true] {l s='display one or more CMS images (carousel optional)' mod='everblock'}</p></li>
                 <li><p>[displayQcdSvg name="icon" class="myclass" inline=true] {l s='display a QCD SVG icon' mod='everblock'}</p></li>
-                <li><p>[qcdacf field objectType objectId] {l s='display a value from QCD ACF fields' mod='everblock'}</p></li>
+                <li><p>[qcdacf field="field" objectType="objectType" objectId="objectId"] {l s='display a value from QCD ACF fields' mod='everblock'}</p></li>
                 <li><p>[widget moduleName="mymodule" hookName="displayHome"] {l s='render another module widget' mod='everblock'}</p></li>
                 <li><p>[prettyblocks name="myzone"] {l s='render a PrettyBlocks zone if the module is installed' mod='everblock'}</p></li>
-                <li><p>[everblock 3] {l s='insert block ID 3' mod='everblock'}</p></li>
+                <li><p>[everblock id="3"] {l s='insert block ID 3' mod='everblock'}</p></li>
                 <li><p>[cms id="1"] {l s='display the content of CMS page ID 1' mod='everblock'}</p></li>
             </ul>
+            <br>
+            <h4>{l s='Shortcode parameters reference' mod='everblock'}</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{l s='Shortcode' mod='everblock'}</th>
+                        <th>{l s='Required parameters' mod='everblock'}</th>
+                        <th>{l s='Optional parameters' mod='everblock'}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>[alert]</td><td>-</td><td>type</td></tr>
+                    <tr><td>[everfaq]</td><td>tag</td><td>-</td></tr>
+                    <tr><td>[product]</td><td>id(s)</td><td>carousel</td></tr>
+                    <tr><td>[product_image]</td><td>id</td><td>image number</td></tr>
+                    <tr><td>[productfeature]</td><td>id</td><td>nb, limit, carousel, orderby, orderway</td></tr>
+                    <tr><td>[productfeaturevalue]</td><td>id</td><td>nb, limit, carousel, orderby, orderway</td></tr>
+                    <tr><td>[category]</td><td>id</td><td>nb, limit, carousel, orderby, orderway</td></tr>
+                    <tr><td>[manufacturer]</td><td>id</td><td>nb, limit, carousel, orderby, orderway</td></tr>
+                    <tr><td>[brands]</td><td>nb</td><td>carousel</td></tr>
+                    <tr><td>[subcategories]</td><td>id, nb</td><td>-</td></tr>
+                    <tr><td>[everstore]</td><td>id(s)</td><td>-</td></tr>
+                    <tr><td>[video]</td><td>url</td><td>-</td></tr>
+                    <tr><td>[qcdacf]</td><td>field, objectType, objectId</td><td>-</td></tr>
+                    <tr><td>[displayQcdSvg]</td><td>name</td><td>class, inline</td></tr>
+                    <tr><td>[everimg]</td><td>name</td><td>class, carousel</td></tr>
+                    <tr><td>[entity_lastname]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[entity_firstname]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[entity_gender]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[storelocator]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[evermap]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[evercart]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[cart_total]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[cart_quantity]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[shop_logo]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[newsletter_form]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[nativecontact]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[everinstagram]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[evercontactform_open]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[evercontactform_close]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[everorderform_open]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[everorderform_close]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[llorem]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[wordpress-posts]</td><td>-</td><td>-</td></tr>
+                    <tr><td>[best-sales]</td><td>-</td><td>nb, limit, days, carousel, orderby, orderway</td></tr>
+                    <tr><td>[categorybestsales]</td><td>id</td><td>nb, limit, days, carousel, orderby, orderway</td></tr>
+                    <tr><td>[brandbestsales]</td><td>id</td><td>nb, limit, days, carousel, orderby, orderway</td></tr>
+                    <tr><td>[featurebestsales]</td><td>id</td><td>nb, limit, days, carousel, orderby, orderway</td></tr>
+                    <tr><td>[featurevaluebestsales]</td><td>id</td><td>nb, limit, days, carousel, orderby, orderway</td></tr>
+                    <tr><td>[last-products]</td><td>-</td><td>nb, limit, carousel, orderby, orderway</td></tr>
+                    <tr><td>[promo-products]</td><td>-</td><td>nb, limit, carousel, orderby, orderway</td></tr>
+                    <tr><td>[products_by_tag]</td><td>tag or tag_id</td><td>match, limit, offset, order, way, cols, visibility</td></tr>
+                    <tr><td>[low_stock]</td><td>-</td><td>limit, offset, threshold, match, order, way, days, id_category, id_manufacturer, visibility, available_only, cols, by</td></tr>
+                    <tr><td>[random_product]</td><td>-</td><td>nb, limit, carousel, orderby, orderway</td></tr>
+                    <tr><td>[accessories]</td><td>nb or limit</td><td>orderby, orderway</td></tr>
+                    <tr><td>[linkedproducts]</td><td>-</td><td>nb, limit, orderby, orderway</td></tr>
+                    <tr><td>[crosselling]</td><td>-</td><td>nb, limit, orderby, orderway, carousel</td></tr>
+                    <tr><td>[widget]</td><td>moduleName, hookName</td><td>-</td></tr>
+                    <tr><td>[prettyblocks]</td><td>name</td><td>-</td></tr>
+                    <tr><td>[everaddtocart]</td><td>ref</td><td>text</td></tr>
+                    <tr><td>[evercontact]</td><td>type, label</td><td>value, values, required, class</td></tr>
+                    <tr><td>[everorderform]</td><td>type, label</td><td>value, values, required, class</td></tr>
+                    <tr><td>[cms]</td><td>id</td><td>-</td></tr>
+                    <tr><td>[evercms]</td><td>id</td><td>-</td></tr>
+                    <tr><td>[everblock]</td><td>id</td><td>-</td></tr>
+                </tbody>
+            </table>
             <br>
             <h4>{l s='Create a custom contact form using shortcodes' mod='everblock'}</h3>
             <p>{l s='A contact form must start with the shortcode [evercontactform_open] and end with the shortcode [evercontactform_close]' mod='everblock'}</p>
