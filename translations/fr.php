@@ -460,6 +460,13 @@ $_MODULE['<{everblock}prestashop>everblockprettyblocks_212f9ac581ccabed469caf2e6
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_46b883ef3f1530fd1c2b28b381800084'] = 'Affiche un carousel d\'images (les images doivent avoir la même taille)';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_84be54bb4bd1b755a27d86388700d097'] = 'Marques';
 $_MODULE['<{everblock}prestashop>everblockprettyblocks_8f9eabc1113072d009965c1009eeb5ce'] = 'Affiche une liste de marques sélectionnées';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_e64465da4a42d65847b321045b155602'] = 'Compte à rebours';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_98f446a44692c7e467177f1be5b44963'] = 'Affiche un compte à rebours';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_0ab22329873ec29390070d1ce966c20d'] = 'Date cible (AAAA-MM-JJ HH:MM:SS)';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_e807d3ccf8d24c8c1a3d86db5da78da8'] = 'Jours';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_6a7e73161603d87b26a8eac49dab0a9c'] = 'Heures';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_f670ea66cfb0e90bd6090472ad692694'] = 'Minutes';
+$_MODULE['<{everblock}prestashop>everblockprettyblocks_8f19a8c7566af54ea8981029730e5465'] = 'Secondes';
 $_MODULE['<{everblock}prestashop>configure_621886d5d907cadfb35840e0bc9688d3'] = 'Qu\'est-ce qu\'un hook ?';
 $_MODULE['<{everblock}prestashop>configure_714f82bdd35410e27b403a7ed10fa67e'] = 'Un hook est un endroit où vous pouvez « greffer » un module. Très nombreux sur Prestashop, ils sont enregistrés dans votre base de données, et affichés par votre thème et vos modules.';
 $_MODULE['<{everblock}prestashop>configure_6c9cc2811d8dd20065be04ab58bbcaa7'] = 'Ces hooks sont disponibles à la fois sur votre site, mais aussi dans l\'administration de votre boutique.';

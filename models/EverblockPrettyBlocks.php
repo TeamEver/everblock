@@ -79,6 +79,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
             $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
             $countersTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_counters.tpl';
+            $countdownTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_countdown.tpl';
             $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
             $coverTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cover.tpl';
             $headingTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_heading.tpl';
@@ -3725,6 +3726,71 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Animation speed (ms)'),
                             'default' => '2000',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Countdown'),
+                'description' => $module->l('Display a countdown timer'),
+                'code' => 'everblock_countdown',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $countdownTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'target_date' => [
+                            'type' => 'text',
+                            'label' => $module->l('Target date (YYYY-MM-DD HH:MM:SS)'),
+                            'default' => '',
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                            'default' => '',
                         ],
                     ],
                 ],
