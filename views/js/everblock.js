@@ -430,6 +430,32 @@ $(document).ready(function(){
         });
     });
 
+    // Countdown block
+    $('.everblock-countdown').each(function() {
+        var $block = $(this);
+        var target = $block.data('target');
+        if (!target) {
+            return;
+        }
+        function updateCountdown() {
+            var distance = new Date(target).getTime() - new Date().getTime();
+            if (distance <= 0) {
+                $block.find('.everblock-countdown-value').text('00');
+                return;
+            }
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            $block.find('[data-type="days"]').text(('0' + days).slice(-2));
+            $block.find('[data-type="hours"]').text(('0' + hours).slice(-2));
+            $block.find('[data-type="minutes"]').text(('0' + minutes).slice(-2));
+            $block.find('[data-type="seconds"]').text(('0' + seconds).slice(-2));
+        }
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    });
+
     // Podcasts player
     $('.everblock-podcasts audio').on('play', function () {
         $('.everblock-podcasts audio').not(this).each(function () {

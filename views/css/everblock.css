@@ -760,6 +760,18 @@
     font-weight: 700;
 }
 
+/* Countdown */
+.everblock-countdown-value {
+    display: block;
+    font-size: 3rem;
+    font-weight: 700;
+}
+.everblock-countdown-label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
 /* Exit intent modal */
 .ever-exit-intent-modal .modal-content {
     text-align: center;
