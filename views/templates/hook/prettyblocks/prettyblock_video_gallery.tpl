@@ -35,7 +35,7 @@
               {if $state.title || $state.description}
               <div class="card-body">
                 {if $state.title}<h5 class="card-title">{$state.title}</h5>{/if}
-                {if $state.description}<p class="card-text">{$state.description}</p>{/if}
+                {if $state.description}<span class="card-text">{$state.description nofilter}</span>{/if}
               </div>
               {/if}
             </div>
