@@ -483,6 +483,21 @@ $(document).ready(function(){
         });
     });
 
+    // Guided product selector
+    $(document).on('click', '.everblock-product-quiz .quiz-answer', function() {
+        var $question = $(this).closest('.quiz-question');
+        var $next = $question.next('.quiz-question');
+        if ($next.length) {
+            $question.addClass('d-none');
+            $next.removeClass('d-none');
+        } else {
+            var url = $(this).data('url');
+            if (url) {
+                window.location.href = url;
+            }
+        }
+    });
+
     // Exit intent modal
     var exitIntentShown = false;
     $(document).on('mouseout', function(e) {

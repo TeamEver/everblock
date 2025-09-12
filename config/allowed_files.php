@@ -199,6 +199,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_category_products.tpl',
     'views/templates/hook/prettyblocks/prettyblock_gallery.tpl',
     'views/templates/hook/prettyblocks/prettyblock_gmap.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_guided_selector.tpl',
     'views/templates/hook/prettyblocks/prettyblock_heading.tpl',
     'views/templates/hook/prettyblocks/prettyblock_iframe.tpl',
     'views/templates/hook/prettyblocks/prettyblock_image_map.tpl',
