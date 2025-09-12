@@ -168,10 +168,19 @@ class Everblock extends Module
             $hook->description = 'Ne pas afficher ce hook en front, il sera utilisé pour du contenu asynchrone';
             $hook->save();
         }
+        // Hook beforeRenderingEverblockSpecialEvent
+        if (!Hook::getIdByName('beforeRenderingEverblockSpecialEvent')) {
+            $hook = new Hook();
+            $hook->name = 'beforeRenderingEverblockSpecialEvent';
+            $hook->title = 'Before rendering special event block';
+            $hook->description = 'This hook triggers before special event block is rendered';
+            $hook->save();
+        }
         return (parent::install()
             && $this->registerHook('displayHeader')
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->registerHook('actionRegisterBlock')
+            && $this->registerHook('beforeRenderingEverblockSpecialEvent')
             && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
             && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
             && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
@@ -362,12 +371,20 @@ class Everblock extends Module
                 $hook->description = 'This hook triggers before category products block is rendered';
                 $hook->save();
             }
+            if (!Hook::getIdByName('beforeRenderingEverblockSpecialEvent')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockSpecialEvent';
+                $hook->title = 'Before rendering special event block';
+                $hook->description = 'This hook triggers before special event block is rendered';
+                $hook->save();
+            }
             $this->registerHook('beforeRenderingEverblockProductHighlight');
             $this->registerHook('beforeRenderingEverblockCategoryTabs');
             $this->registerHook('beforeRenderingEverblockCategoryPrice');
             $this->registerHook('beforeRenderingEverblockLookbook');
             $this->registerHook('beforeRenderingEverblockFlashDeals');
             $this->registerHook('beforeRenderingEverblockCategoryProducts');
+            $this->registerHook('beforeRenderingEverblockSpecialEvent');
             $this->registerHook('beforeRenderingEverblockEverblock');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
@@ -376,6 +393,7 @@ class Everblock extends Module
             $this->unregisterHook('beforeRenderingEverblockLookbook');
             $this->unregisterHook('beforeRenderingEverblockFlashDeals');
             $this->unregisterHook('beforeRenderingEverblockCategoryProducts');
+            $this->unregisterHook('beforeRenderingEverblockSpecialEvent');
             $this->unregisterHook('beforeRenderingEverblockEverblock');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
@@ -4086,6 +4104,28 @@ class Everblock extends Module
     }
 
     public function hookBeforeRenderingEverblockVideoProducts($params)
+    {
+        $products = [];
+        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
+            foreach ($params['block']['states'] as $key => $state) {
+                if (empty($state['product_ids'])) {
+                    continue;
+                }
+                $ids = array_filter(array_map('intval', explode(',', $state['product_ids'])));
+                if (empty($ids)) {
+                    continue;
+                }
+                $presented = EverblockTools::everPresentProducts($ids, $this->context);
+                if (!empty($presented)) {
+                    $products[$key] = $presented;
+                }
+            }
+        }
+
+        return ['products' => $products];
+    }
+
+    public function hookBeforeRenderingEverblockSpecialEvent($params)
     {
         $products = [];
         if (!empty($params['block']['states']) && is_array($params['block']['states'])) {

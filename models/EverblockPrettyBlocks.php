@@ -4382,9 +4382,9 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Target date (YYYY-MM-DD HH:MM:SS)'),
                             'default' => '',
                         ],
-                        'products_shortcode' => [
-                            'type' => 'editor',
-                            'label' => $module->l('Products shortcode'),
+                        'product_ids' => [
+                            'type' => 'text',
+                            'label' => $module->l('Product IDs'),
                             'default' => '',
                         ],
                         'background_color' => [
