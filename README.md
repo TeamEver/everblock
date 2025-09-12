@@ -142,55 +142,110 @@ The module allows you to use many shortcodes anywhere in your store. However, re
 You can create your own shortcodes from the "Shortcodes" tab accessible in the "Ever block" submenu.
 
 -### Basic shortcodes
-- `[product 1]`: Display product with ID 1. Supports `carousel=true`.
-- `[product 1,2,3]`: Display products with IDs 1, 2, and 3. Supports `carousel=true`.
-- `[product_image 1 1]`: Displays the first image of the product with ID 1. By default, the first image is displayed if nothing is specified after the image ID.
+- `[product id="1"]`: Display product with ID 1. Optional parameter: `carousel`.
+- `[product id="1,2,3"]`: Display products with IDs 1, 2, and 3. Optional parameter: `carousel`.
+- `[product_image id="1" image="1"]`: Displays an image of product ID 1. Optional parameter: `image` (defaults to the first image).
 - `[entity_lastname]`: Display customer's last name.
 - `[entity_firstname]`: Display customer's first name.
 - `[entity_gender]`: Display customer's gender.
-- `[category id="8" nb="8"]`: Display 8 products from category with ID 8.
-- `[manufacturer id="2" nb="8"]`: Display 8 products from manufacturer with ID 2.
-- `[brands nb="8"]`: Display 8 brand names with their associated logos. Optional `carousel=true`.
+- `[category id="8" nb="8"]`: Display products from category ID 8. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
+- `[manufacturer id="2" nb="8"]`: Display products from manufacturer ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
+- `[brands nb="8" carousel=true]`: Display brand names with logos. Required parameter: `nb`. Optional parameter: `carousel`.
 - `[storelocator]`: Show a store locator on any CMS page when a Google Maps API key is configured.
 - `[evermap]`: Display a Google Map centered on the shop address when a Google Maps API key is configured.
-- `[subcategories id="2" nb="8"]`: Display 8 subcategories (name, image and link) of category 2.
-- `[last-products 4]`: Display the last 4 products listed in the store. Supports `carousel=true`.
-- `[best-sales 4]`: Display the 4 best-selling products in your store. Supports `carousel=true`.
+- `[subcategories id="2" nb="8"]`: Display subcategories of category 2. Parameters `id` and `nb` are required.
+- `[last-products nb="4" carousel=true]`: Display the last products listed in the store. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
+- `[best-sales nb="4" carousel=true]`: Display best-selling products. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
 - `[evercart]`: Display dropdown cart.
 - `[cart_total]`: Display the total value of the current cart.
 - `[cart_quantity]`: Display the number of products currently in the cart.
 - `[shop_logo]`: Display the shop logo.
 - `[newsletter_form]`: Display the PrestaShop newsletter subscription form.
-- `[alert type="success"]Content[/alert]`: Display a Bootstrap alert box. Supports `primary`, `secondary`, `success`, `danger`, `warning`, `info`, `light`, and `dark`.
+- `[alert type="success"]Content[/alert]`: Display a Bootstrap alert box. Optional parameter: `type` (`primary`, `secondary`, `success`, `danger`, `warning`, `info`, `light`, `dark`).
 - `[nativecontact]`: Embed the native PrestaShop contact form (this replaces the obsolete `[evercontact]` shortcode).
-- `[everstore 4]`: Display store information for store ID 4 (several IDs can be separated with commas).
-- `[video https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj]`: Display a YouTube iframe of the video whose sharing URL is in the parameter (may also works with Vimeo, Dailymotion, and Vidyard).
-- `[everaddtocart ref="1234" text="Add me to cart"]`: Creates an add to cart button for product reference 1234 with the text "Add me to cart". By clicking on the link, the product will be automatically added to the cart and the user will be redirected directly to the cart page. Also works in emails.
-- `[everfaq tag="faq1"]`: Shows FAQs related to the faq tag
-- `[productfeature id="2" nb="12" carousel="true"]`: Displays 12 products with the ID 2 feature, in the form of a carousel (the carousel is optional, you must have slick slider by activating it in the module configuration)
-- `[productfeaturevalue id="2" nb="12" carousel="true"]`: Same as before, but this time concerns products that have the characteristic value id 2
-- `[promo-products 10 carousel=true]`: Displays ten products on sale in a carousel format.
-- `[products_by_tag tag="summer|sale" match="all" limit="8" order="price" way="asc" cols="4"]`: Display products filtered by PrestaShop tags. Supports `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols` and `visibility`.
-- `[best-sales 10 carousel=true]`: Displays the top ten best-selling products. Optional parameters: `days`, `orderby`, `orderway`.
-- `[categorybestsales id="8" nb="10"]`: Displays the best-selling products from category ID 8. Optional parameters: `orderby`, `orderway`.
-- `[brandbestsales id="3" nb="10"]`: Displays the best-selling products from brand ID 3. Optional parameters: `orderby`, `orderway`.
-- `[featurebestsales id="2" nb="10"]`: Displays the best-selling products with feature ID 2. Optional parameters: `orderby`, `orderway`.
-- `[featurevaluebestsales id="5" nb="10"]`: Displays the best-selling products with feature value ID 5. Optional parameters: `orderby`, `orderway`.
-- `[random_product nb="10" carousel=true]`: Displays ten random products in a carousel.
-- `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Displays products linked to the current product in a Bootstrap carousel.
-- `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Displays accessories of the current product in a Bootstrap carousel.
-- `[crosselling nb=4 orderby="id_product" orderway="asc"]`: If the cart is empty, shows best-selling products. Otherwise displays accessories of cart products. If there are none or not enough, it adds best sellers from the same categories and finally completes with overall best sellers.
+- `[everstore id="4"]`: Display store information for store ID 4 (several IDs can be separated with commas). Required parameter: `id`.
+- `[video url="https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj"]`: Display a YouTube iframe of the video whose sharing URL is in the parameter. Required parameter: `url`.
+- `[everaddtocart ref="1234" text="Add me to cart"]`: Create an add to cart button for product reference 1234. Required parameter: `ref`. Optional parameter: `text`.
+- `[everfaq tag="faq1"]`: Show FAQs related to the `tag`. Required parameter: `tag`.
+- `[productfeature id="2" nb="12" carousel="true"]`: Display products with feature ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
+- `[productfeaturevalue id="2" nb="12" carousel="true"]`: Display products with feature value ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
+- `[promo-products nb="10" carousel=true]`: Display products on sale. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
+- `[products_by_tag tag="summer|sale" match="all" limit="8" order="price" way="asc" cols="4"]`: Display products filtered by PrestaShop tags. Required parameter: `tag` or `tag_id`. Other parameters are optional: `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
+- `[best-sales nb="10" carousel=true]`: Display the top best-selling products. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
+- `[categorybestsales id="8" nb="10"]`: Display best-selling products from category ID 8. Required parameter: `id`. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
+- `[brandbestsales id="3" nb="10"]`: Display best-selling products from brand ID 3. Required parameter: `id`. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
+- `[featurebestsales id="2" nb="10"]`: Display best-selling products with feature ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
+- `[featurevaluebestsales id="5" nb="10"]`: Display best-selling products with feature value ID 5. Required parameter: `id`. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
+- `[random_product nb="10" carousel=true]`: Display random products. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
+- `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Display products linked to the current product. Optional parameters: `nb`, `limit`, `orderby`, `orderway`.
+- `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Display accessories of the current product. Required parameter: `nb` or `limit`. Optional parameters: `orderby`, `orderway`.
+- `[crosselling nb="4" orderby="id_product" orderway="asc"]`: If the cart is empty, show best-selling products. Otherwise display accessories of cart products. Optional parameters: `nb`, `limit`, `orderby`, `orderway`, `carousel`.
 - `{hook h='displayHome'}`: Displays the `displayHome` hook (hooks are not allowed on modals)
 - `[everinstagram]`: Display your latest Instagram photos. Images are stored in `/img/cms/instagram`. Images are cached for 24h and refreshed when the cache expires or when you run `everblock:tools:execute refreshtokens`.
-- `[nativecontact]`: Embed the native PrestaShop contact form.
-- `[everimg name="image.jpg" class="img-fluid" carousel=true]`: Display one or more CMS images. When `carousel=true` and multiple images are provided, a Bootstrap slideshow is rendered.
-- `[displayQcdSvg name="icon" class="myclass" inline=true]`: Display a QCD SVG icon. Module available at [410 Gone](https://www.410-gone.fr/).
-- `[qcdacf field objectType objectId]`: Display a value from QCD ACF fields. Module available at [410 Gone](https://www.410-gone.fr/).
-- `[widget moduleName="mymodule" hookName="displayHome"]`: Render another module's widget.
+- `[everimg name="image.jpg" class="img-fluid" carousel=true]`: Display one or more CMS images. Required parameter: `name`. Optional parameters: `class`, `carousel`.
+- `[displayQcdSvg name="icon" class="myclass" inline=true]`: Display a QCD SVG icon. Required parameter: `name`. Optional parameters: `class`, `inline`.
+- `[qcdacf field="field" objectType="objectType" objectId="objectId"]`: Display a value from QCD ACF fields. Required parameters: `field`, `objectType`, `objectId`.
+- `[widget moduleName="mymodule" hookName="displayHome"]`: Render another module's widget. Required parameters: `moduleName`, `hookName`.
 
-- `[prettyblocks name="myzone"]`: Render a PrettyBlocks zone if the module is installed.
-- `[everblock 3]`: Insert the content of block ID 3.
-- `[cms id="1"]` or `[evercms id="1"]`: Display the content of CMS page ID 1.
+### Shortcode parameters reference
+
+| Shortcode | Required parameters | Optional parameters |
+| --- | --- | --- |
+| `[alert]...[/alert]` | — | type |
+| `[everfaq]` | tag | — |
+| `[product]` | id(s) | carousel |
+| `[product_image]` | id | image number |
+| `[productfeature]` | id | nb, limit, carousel, orderby, orderway |
+| `[productfeaturevalue]` | id | nb, limit, carousel, orderby, orderway |
+| `[category]` | id | nb, limit, carousel, orderby, orderway |
+| `[manufacturer]` | id | nb, limit, carousel, orderby, orderway |
+| `[brands]` | nb | carousel |
+| `[subcategories]` | id, nb | — |
+| `[everstore]` | id(s) | — |
+| `[video]` | url | — |
+| `[qcdacf]` | field, objectType, objectId | — |
+| `[displayQcdSvg]` | name | class, inline |
+| `[everimg]` | name | class, carousel |
+| `[entity_lastname]` | — | — |
+| `[entity_firstname]` | — | — |
+| `[entity_gender]` | — | — |
+| `[storelocator]` | — | — |
+| `[evermap]` | — | — |
+| `[evercart]` | — | — |
+| `[cart_total]` | — | — |
+| `[cart_quantity]` | — | — |
+| `[shop_logo]` | — | — |
+| `[newsletter_form]` | — | — |
+| `[nativecontact]` | — | — |
+| `[everinstagram]` | — | — |
+| `[evercontactform_open]` | — | — |
+| `[evercontactform_close]` | — | — |
+| `[everorderform_open]` | — | — |
+| `[everorderform_close]` | — | — |
+| `[llorem]` | — | — |
+| `[wordpress-posts]` | — | — |
+| `[best-sales]` | — | nb, limit, days, carousel, orderby, orderway |
+| `[categorybestsales]` | id | nb, limit, days, carousel, orderby, orderway |
+| `[brandbestsales]` | id | nb, limit, days, carousel, orderby, orderway |
+| `[featurebestsales]` | id | nb, limit, days, carousel, orderby, orderway |
+| `[featurevaluebestsales]` | id | nb, limit, days, carousel, orderby, orderway |
+| `[last-products]` | — | nb, limit, carousel, orderby, orderway |
+| `[promo-products]` | — | nb, limit, carousel, orderby, orderway |
+| `[products_by_tag]` | tag or tag_id | match, limit, offset, order, way, cols, visibility |
+| `[low_stock]` | — | limit, offset, threshold, match, order, way, days, id_category, id_manufacturer, visibility, available_only, cols, by |
+| `[random_product]` | — | nb, limit, carousel, orderby, orderway |
+| `[accessories]` | nb or limit | orderby, orderway |
+| `[linkedproducts]` | — | nb, limit, orderby, orderway |
+| `[crosselling]` | — | nb, limit, orderby, orderway, carousel |
+| `[widget]` | moduleName, hookName | — |
+| `[prettyblocks]` | name | — |
+| `[everaddtocart]` | ref | text |
+| `[evercontact]` | type, label | value, values, required, class |
+| `[everorderform]` | type, label | value, values, required, class |
+| `[cms]` | id | — |
+| `[evercms]` | id | — |
+| `[everblock]` | id | — |
+
 ### Contact form shortcodes
 A contact form must start with the shortcode `[evercontactform_open]` and end with the shortcode `[evercontactform_close]`
 
@@ -382,10 +437,10 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[product 1]` : Affiche le produit ayant l'ID 1. Supporte `carousel=true`.
 - `[product 1,2,3]` : Affiche les produits 1, 2 et 3. Supporte `carousel=true`.
 - `[product_image 1 1]` : affiche la première image du produit dont l'ID est 1. Par défaut, la première image est affichée si rien n'est spécifié après l'ID de l'image.
-- `[entity_lastname]` : Affiche le nom du client connecté.
-- `[promo-products 10 carousel=true]` : Affiche dix produits en promotion en carousel.
-- `[products_by_tag tag="été|soldes" match="all" limit="8" order="price" way="asc" cols="4"]` : Affiche les produits filtrés par tags PrestaShop. Attributs : `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
-- `[best-sales 10 carousel=true]` : Affiche les dix meilleures ventes. Paramètres optionnels : `days`, `orderby`, `orderway`.
+ - `[entity_lastname]` : Affiche le nom du client connecté.
+ - `[promo-products nb="10" carousel=true]` : Affiche dix produits en promotion en carousel.
+ - `[products_by_tag tag="été|soldes" match="all" limit="8" order="price" way="asc" cols="4"]` : Affiche les produits filtrés par tags PrestaShop. Attributs : `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
+ - `[best-sales nb="10" carousel=true]` : Affiche les dix meilleures ventes. Paramètres optionnels : `days`, `orderby`, `orderway`.
 - `[categorybestsales id="8" nb="10"]` : Affiche les meilleures ventes de la catégorie 8. Paramètres optionnels : `orderby`, `orderway`.
 - `[brandbestsales id="3" nb="10"]` : Affiche les meilleures ventes de la marque 3. Paramètres optionnels : `orderby`, `orderway`.
 - `[featurebestsales id="2" nb="10"]` : Affiche les meilleures ventes associées à la caractéristique 2. Paramètres optionnels : `orderby`, `orderway`.
@@ -583,9 +638,9 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 - `[product 1,2,3]`: Muestra los productos 1, 2 y 3. Soporta `carousel=true`.
 - `[product_image 1 1]`: Muestra la primera imagen del producto con ID 1. Por defecto, la primera imagen es mostrada si no se especifica nada después del ID de la imagen.
 - `[entity_lastname]`: Muestra el apellido del cliente conectado.
-- `[promo-products 10 carousel=true]`: Muestra diez productos en promoción en un carrusel.
-- `[products_by_tag tag="verano|rebajas" match="all" limit="8" order="price" way="asc" cols="4"]`: Muestra productos filtrados por etiquetas nativas de PrestaShop. Atributos: `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
-- `[best-sales 10 carousel=true]`: Muestra los diez productos más vendidos. Parámetros opcionales: `days`, `orderby`, `orderway`.
+ - `[promo-products nb="10" carousel=true]`: Muestra diez productos en promoción en un carrusel.
+ - `[products_by_tag tag="verano|rebajas" match="all" limit="8" order="price" way="asc" cols="4"]`: Muestra productos filtrados por etiquetas nativas de PrestaShop. Atributos: `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
+ - `[best-sales nb="10" carousel=true]`: Muestra los diez productos más vendidos. Parámetros opcionales: `days`, `orderby`, `orderway`.
 - `[categorybestsales id="8" nb="10"]`: Muestra los productos más vendidos de la categoría 8. Parámetros opcionales: `orderby`, `orderway`.
 - `[brandbestsales id="3" nb="10"]`: Muestra los productos más vendidos de la marca 3. Parámetros opcionales: `orderby`, `orderway`.
 - `[featurebestsales id="2" nb="10"]`: Muestra los productos más vendidos con la característica 2. Parámetros opcionales: `orderby`, `orderway`.
@@ -782,9 +837,9 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 - `[product 1,2,3]`: Mostra i prodotti 1, 2 e 3. Supporta `carousel=true`.
 - `[product_image 1 1]`: Mostra la prima immagine del prodotto con ID 1. Per default, la prima immagine è mostrata se non si specifica nulla dopo l'ID dell'immagine.
 - `[entity_lastname]`: Mostra il cognome del cliente loggato.
-- `[promo-products 10 carousel=true]`: Mostra dieci prodotti in promozione in un carosello.
-- `[products_by_tag tag="estate|sconti" match="all" limit="8" order="price" way="asc" cols="4"]`: Mostra prodotti filtrati per tag nativi PrestaShop. Attributi: `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
-- `[best-sales 10 carousel=true]`: Mostra i dieci prodotti più venduti. Parametri opzionali: `days`, `orderby`, `orderway`.
+ - `[promo-products nb="10" carousel=true]`: Mostra dieci prodotti in promozione in un carosello.
+ - `[products_by_tag tag="estate|sconti" match="all" limit="8" order="price" way="asc" cols="4"]`: Mostra prodotti filtrati per tag nativi PrestaShop. Attributi: `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
+ - `[best-sales nb="10" carousel=true]`: Mostra i dieci prodotti più venduti. Parametri opzionali: `days`, `orderby`, `orderway`.
 - `[categorybestsales id="8" nb="10"]`: Mostra i prodotti più venduti della categoria 8. Parametri opzionali: `orderby`, `orderway`.
 - `[brandbestsales id="3" nb="10"]`: Mostra i prodotti più venduti del marchio 3. Parametri opzionali: `orderby`, `orderway`.
 - `[featurebestsales id="2" nb="10"]`: Mostra i prodotti più venduti con la caratteristica 2. Parametri opzionali: `orderby`, `orderway`.
