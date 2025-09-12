@@ -3300,8 +3300,9 @@ class Everblock extends Module
             && $this->context->controller->php_self === 'product'
             && ($idProduct = (int) Tools::getValue('id_product'))
         ) {
-            $viewed = isset($this->context->cookie->viewed)
-                ? (string) $this->context->cookie->viewed
+            $cookie = $this->context->cookie;
+            $viewed = $cookie->__isset('viewed')
+                ? (string) $cookie->__get('viewed')
                 : '';
             $viewedArray = array_filter(array_map('intval', explode(',', $viewed)));
             $viewedArray = array_diff($viewedArray, [$idProduct]);
@@ -3309,7 +3310,7 @@ class Everblock extends Module
             if (count($viewedArray) > 20) {
                 $viewedArray = array_slice($viewedArray, -20);
             }
-            $this->context->cookie->viewed = implode(',', $viewedArray);
+            $cookie->__set('viewed', implode(',', $viewedArray));
         }
         // Google Shopping hack
         $modelId = (int) Tools::getValue('model_id');
