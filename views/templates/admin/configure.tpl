@@ -123,6 +123,7 @@
                 <li><p>[storelocator] {l s='to show a store locator on any CMS page' mod='everblock'}</p></li>
                 <li><p>[subcategories id="2" nb="8"] {l s='to display 8 subcategories (name, image and link) of category 2' mod='everblock'}</p></li>
                 <li><p>[last-products nb="4"] {l s='to display the last products listed in the store' mod='everblock'}</p></li>
+                <li><p>[recently_viewed nb="4"] {l s='to display recently viewed products' mod='everblock'}</p></li>
                 <li><p>[best-sales nb="4"] {l s='to display the best-selling products in your store' mod='everblock'}</p></li>
                 <li><p>[evercart] {l s='to display dropdown cart' mod='everblock'}</p></li>
                 <li><p>[nativecontact] {l s='to display Prestashop native contact form' mod='everblock'}</p></li>
