@@ -2254,7 +2254,11 @@ class EverblockTools extends ObjectModel
                 $orderWay = 'DESC';
             }
 
-            $cacheId = 'getBestSalesShortcode_' . (int)$context->shop->id . "_$limit" . "_" . ($days ?? 'all') . "_$orderBy_$orderWay";
+            $cacheId = 'getBestSalesShortcode_' 
+                . (int)$context->shop->id 
+                . "_{$limit}_" 
+                . ($days ?? 'all') 
+                . "_{$orderBy}_{$orderWay}";
 
             if (!EverblockCache::isCacheStored($cacheId)) {
                 $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity
@@ -2277,7 +2281,6 @@ class EverblockTools extends ObjectModel
             } else {
                 $productIds = EverblockCache::cacheRetrieve($cacheId);
             }
-
             if (!empty($productIds)) {
                 $productIdsArray = array_map(fn ($row) => (int)$row['product_id'], $productIds);
                 $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
@@ -2292,17 +2295,7 @@ class EverblockTools extends ObjectModel
                     $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
                     $replacement = $context->smarty->fetch($templatePath);
 
-                    // Recompose shortcode (avec tous les paramètres capturés)
-                    $shortcodeParts = ['[best-sales'];
-                    if (isset($match[1]) && $match[1] !== '') { $shortcodeParts[] = 'nb=' . $match[1]; }
-                    elseif (isset($match[2])) { $shortcodeParts[] = 'limit=' . $match[2]; }
-                    if (isset($match[3])) $shortcodeParts[] = 'days=' . $match[3];
-                    if (isset($match[4])) $shortcodeParts[] = 'carousel=' . $match[4];
-                    if (isset($match[5])) $shortcodeParts[] = 'orderby=' . $match[5];
-                    if (isset($match[6])) $shortcodeParts[] = 'orderway=' . $match[6];
-                    $shortcode = implode(' ', $shortcodeParts) . ']';
-
-                    $txt = str_replace($shortcode, $replacement, $txt);
+                    $txt = str_replace($match[0], $replacement, $txt);
                 }
             }
         }
@@ -4059,43 +4052,61 @@ class EverblockTools extends ObjectModel
     {
         $resultHash = md5(json_encode($result));
         $cacheId = 'everblock_everPresentProducts_'
-        . (int) $context->shop->id
-        . '_'
-        . (int) $context->language->id
-        . '_'
-        . $resultHash;
+            . (int) $context->shop->id
+            . '_'
+            . (int) $context->language->id
+            . '_'
+            . $resultHash;
+
         $products = [];
+
         if (!EverblockCache::isCacheStored($cacheId)) {
             if (!empty($result)) {
                 $assembler = new ProductAssembler($context);
                 $presenterFactory = new ProductPresenterFactory($context);
                 $presentationSettings = $presenterFactory->getPresentationSettings();
-                $presenter = new ProductListingPresenter(
-                    new ImageRetriever(
-                        $context->link
-                    ),
-                    $context->link,
-                    new PriceFormatter(),
-                    new ProductColorsRetriever(),
-                    $context->getTranslator()
-                );
-                $presentationSettings->showPrices = true;
-                foreach ($result as $productId) {
-                    $psProduct = new Product(
-                        (int) $productId
+
+                // compatibilité PS 8 et PS 9
+                if (class_exists(\PrestaShop\PrestaShop\Core\Product\ProductListingPresenter::class)) {
+                    // PS 1.7 / 8
+                    $presenter = new \PrestaShop\PrestaShop\Core\Product\ProductListingPresenter(
+                        new ImageRetriever($context->link),
+                        $context->link,
+                        new PriceFormatter(),
+                        new ProductColorsRetriever(),
+                        $context->getTranslator()
                     );
-                    if (!Validate::isLoadedObject($psProduct)) {
+                } elseif (class_exists(\PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter::class)) {
+                    // PS 9
+                    $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter(
+                        new ImageRetriever($context->link),
+                        $context->link,
+                        new PriceFormatter(),
+                        new ProductColorsRetriever(),
+                        $context->getTranslator()
+                    );
+                } else {
+                    throw new \Exception('No suitable product presenter class found for this PrestaShop version.');
+                }
+
+
+                $presentationSettings->showPrices = true;
+
+                foreach ($result as $productId) {
+                    $psProduct = new Product((int) $productId);
+
+                    if (!Validate::isLoadedObject($psProduct) || !(bool) $psProduct->active) {
                         continue;
                     }
-                    if ((bool) $psProduct->active === false) {
-                        continue;
-                    }
+
                     $rawProduct = [
                         'id_product' => $productId,
-                        'id_lang' => $context->language->id,
-                        'id_shop' => $context->shop->id,
+                        'id_lang'   => $context->language->id,
+                        'id_shop'   => $context->shop->id,
                     ];
+
                     $pproduct = $assembler->assembleProduct($rawProduct);
+
                     if (Product::checkAccessStatic((int) $productId, (int) $context->customer->id)) {
                         $products[] = $presenter->present(
                             $presentationSettings,
@@ -4105,12 +4116,13 @@ class EverblockTools extends ObjectModel
                     }
                 }
             }
+
             EverblockCache::cacheStore($cacheId, $products);
             return $products;
         }
+
         return EverblockCache::cacheRetrieve($cacheId);
     }
-
     public static function dropUnusedLangs(): array
     {
         $postErrors = [];
