@@ -222,6 +222,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_shortcode.tpl',
     'views/templates/hook/prettyblocks/prettyblock_social_links.tpl',
     'views/templates/hook/prettyblocks/prettyblock_spacer.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_special_event.tpl',
     'views/templates/hook/prettyblocks/prettyblock_tab.tpl',
     'views/templates/hook/prettyblocks/prettyblock_testimonial.tpl',
     'views/templates/hook/prettyblocks/prettyblock_testimonial_slider.tpl',
