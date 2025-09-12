@@ -3296,6 +3296,22 @@ class Everblock extends Module
                 (int) Tools::getValue('qty')
             );
         }
+        if (isset($this->context->controller->php_self)
+            && $this->context->controller->php_self === 'product'
+            && ($idProduct = (int) Tools::getValue('id_product'))
+        ) {
+            $cookie = $this->context->cookie;
+            $viewed = $cookie->__isset('viewed')
+                ? (string) $cookie->__get('viewed')
+                : '';
+            $viewedArray = array_filter(array_map('intval', explode(',', $viewed)));
+            $viewedArray = array_diff($viewedArray, [$idProduct]);
+            $viewedArray[] = $idProduct;
+            if (count($viewedArray) > 20) {
+                $viewedArray = array_slice($viewedArray, -20);
+            }
+            $cookie->__set('viewed', implode(',', $viewedArray));
+        }
         // Google Shopping hack
         $modelId = (int) Tools::getValue('model_id');
         if ($modelId) {
