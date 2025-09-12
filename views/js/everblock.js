@@ -341,6 +341,30 @@ $(document).ready(function(){
         });
     });
 
+    // Guided product selector
+    var guidedSelections = {};
+    $(document).on('click', '.everblock-guided-step .guided-answer', function () {
+        var $btn = $(this);
+        var $step = $btn.closest('.everblock-guided-step');
+        var key = $step.data('question');
+        var value = $btn.data('value');
+        if (key && value) {
+            guidedSelections[key] = value;
+        }
+        var url = $btn.data('url');
+        if (url) {
+            var query = $.param(guidedSelections);
+            var separator = url.indexOf('?') === -1 ? '?' : '&';
+            window.location.href = url + (query ? separator + query : '');
+            return;
+        }
+        var $next = $step.nextAll('.everblock-guided-step').first();
+        if ($next.length) {
+            $step.addClass('d-none');
+            $next.removeClass('d-none');
+        }
+    });
+
     // Flash deals countdown
     $('.flash-deals-wrapper').each(function() {
         var $wrapper = $(this);

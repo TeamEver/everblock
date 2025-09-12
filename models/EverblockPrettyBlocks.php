@@ -75,6 +75,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $brandListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_brands.tpl';
             $productHighlightTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl';
             $productSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_selector.tpl';
+            $guidedSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guided_selector.tpl';
             $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
             $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
             $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
@@ -4337,6 +4338,45 @@ class EverblockPrettyBlocks extends ObjectModel
                             'collection' => 'Product',
                             'selector' => '{id} - {name}',
                             'default' => '',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Guided product selector'),
+                'description' => $module->l('Ask a few questions and redirect to a matching category'),
+                'code' => 'everblock_guided_selector',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $guidedSelectorTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Question',
+                    'nameFrom' => 'question',
+                    'groups' => [
+                        'question' => [
+                            'type' => 'text',
+                            'label' => $module->l('Question'),
+                            'default' => '',
+                        ],
+                        'answers' => [
+                            'type' => 'repeater',
+                            'name' => 'Answer',
+                            'nameFrom' => 'text',
+                            'groups' => [
+                                'text' => [
+                                    'type' => 'text',
+                                    'label' => $module->l('Answer label'),
+                                    'default' => '',
+                                ],
+                                'link' => [
+                                    'type' => 'text',
+                                    'label' => $module->l('Answer link'),
+                                    'default' => '',
+                                ],
+                            ],
                         ],
                     ],
                 ],
