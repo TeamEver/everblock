@@ -2500,7 +2500,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => '',
                         ],
                         'description' => [
-                            'type' => 'textarea',
+                            'type' => 'editor',
                             'label' => $module->l('Description'),
                             'default' => '',
                         ],
