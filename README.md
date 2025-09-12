@@ -155,6 +155,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[evermap]`: Display a Google Map centered on the shop address when a Google Maps API key is configured.
 - `[subcategories id="2" nb="8"]`: Display subcategories of category 2. Parameters `id` and `nb` are required.
 - `[last-products nb="4" carousel=true]`: Display the last products listed in the store. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
+- `[recently_viewed nb="4" carousel=true]`: Display the recently viewed products for the current visitor. Optional parameters: `nb`, `carousel`.
 - `[best-sales nb="4" carousel=true]`: Display best-selling products. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
 - `[evercart]`: Display dropdown cart.
 - `[cart_total]`: Display the total value of the current cart.
@@ -230,6 +231,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 | `[featurebestsales]` | id | nb, limit, days, carousel, orderby, orderway |
 | `[featurevaluebestsales]` | id | nb, limit, days, carousel, orderby, orderway |
 | `[last-products]` | — | nb, limit, carousel, orderby, orderway |
+| `[recently_viewed]` | — | nb, carousel |
 | `[promo-products]` | — | nb, limit, carousel, orderby, orderway |
 | `[products_by_tag]` | tag or tag_id | match, limit, offset, order, way, cols, visibility |
 | `[low_stock]` | — | limit, offset, threshold, match, order, way, days, id_category, id_manufacturer, visibility, available_only, cols, by |

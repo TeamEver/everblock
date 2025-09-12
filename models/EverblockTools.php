@@ -120,6 +120,9 @@ class EverblockTools extends ObjectModel
         if (strpos($txt, '[last-products') !== false) {
             $txt = static::getLastProductsShortcode($txt, $context, $module);
         }
+        if (strpos($txt, '[recently_viewed') !== false) {
+            $txt = static::getRecentlyViewedShortcode($txt, $context, $module);
+        }
         if (strpos($txt, '[promo-products') !== false) {
             $txt = static::getPromoProductsShortcode($txt, $context, $module);
         }
@@ -2165,6 +2168,40 @@ class EverblockTools extends ObjectModel
                     if (isset($match[4])) { $shortcodeParts[] = 'carousel=' . $match[4]; }
                     if (isset($match[5])) { $shortcodeParts[] = 'orderby=' . $match[5]; }
                     if (isset($match[6])) { $shortcodeParts[] = 'orderway=' . $match[6]; }
+                    $shortcode = implode(' ', $shortcodeParts) . ']';
+                    $txt = str_replace($shortcode, $replacement, $txt);
+                }
+            }
+        }
+
+        return $txt;
+    }
+
+    public static function getRecentlyViewedShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        preg_match_all('/\[recently_viewed(?:\s+nb=(\d+))?(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $limit = isset($match[1]) ? (int) $match[1] : 4;
+            $carousel = isset($match[2]) && $match[2] === 'true';
+            $viewed = isset($context->cookie->viewed) ? (string) $context->cookie->viewed : '';
+            $ids = array_filter(array_map('intval', array_reverse(array_unique(explode(',', $viewed)))));
+
+            if (!empty($ids)) {
+                $productIds = array_slice($ids, 0, $limit);
+                $everPresentProducts = static::everPresentProducts($productIds, $context);
+                if (!empty($everPresentProducts)) {
+                    $context->smarty->assign([
+                        'everPresentProducts' => $everPresentProducts,
+                        'carousel' => $carousel,
+                        'shortcodeClass' => 'recently-viewed',
+                    ]);
+                    $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
+                    $replacement = $context->smarty->fetch($templatePath);
+
+                    $shortcodeParts = ['[recently_viewed'];
+                    if (isset($match[1])) { $shortcodeParts[] = 'nb=' . $match[1]; }
+                    if (isset($match[2])) { $shortcodeParts[] = 'carousel=' . $match[2]; }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
