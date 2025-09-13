@@ -3128,7 +3128,7 @@ class EverblockTools extends ObjectModel
                 $timezone = Configuration::get('PS_TIMEZONE');
             }
             $now = new \DateTime('now', new \DateTimeZone($timezone));
-            $todayIndex = (int) $now->format('w'); // 0 = dimanche
+            $todayIndex = (int) $now->format('N') - 1; // 0 = lundi
             $currentTime = $now->format('H:i');
             $todayDate = $now->format('Y-m-d');
             $frenchHolidays = self::getFrenchHolidays((int) $now->format('Y'));
