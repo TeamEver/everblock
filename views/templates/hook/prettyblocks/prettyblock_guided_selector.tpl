@@ -22,20 +22,37 @@
     <div class="row">
   {/if}
     <div class="{if $block.settings.default.container}container{/if}">
-      {foreach from=$block.states item=state name=questions}
-        {assign var=questionKey value=$state.question|link_rewrite}
-        <div id="guided-step-{$block.id_prettyblocks}-{$smarty.foreach.questions.index}" class="everblock-guided-step{if !$smarty.foreach.questions.first} d-none{/if}" data-question="{$questionKey|escape:'htmlall':'UTF-8'}">
+      {assign var=totalSteps value=$block.extra.states|@count}
+      {if $totalSteps}
+      <div class="everblock-guided-progress mb-3">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" style="width:0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="{$totalSteps}"></div>
+        </div>
+        <div class="progress-counter text-end mt-1">0/{$totalSteps}</div>
+      </div>
+      {/if}
+      {foreach from=$block.extra.states item=state name=questions}
+        <div id="guided-step-{$block.id_prettyblocks}-{$smarty.foreach.questions.index}" class="everblock-guided-step{if !$smarty.foreach.questions.first} d-none{/if}" data-question="{$state.key|escape:'htmlall':'UTF-8'}">
           <p class="guided-question">{$state.question|escape:'htmlall':'UTF-8'}</p>
           <div class="guided-answers">
             {foreach from=$state.answers item=answer}
-              {if $answer.text}
-                {assign var=answerValue value=$answer.text|link_rewrite}
-                <button type="button" class="btn btn-primary guided-answer" data-value="{$answerValue|escape:'htmlall':'UTF-8'}"{if $answer.link} data-url="{$answer.link|escape:'htmlall':'UTF-8'}"{/if}>{$answer.text|escape:'htmlall':'UTF-8'}</button>
-              {/if}
+              <button type="button" class="btn btn-primary guided-answer" data-value="{$answer.value|escape:'htmlall':'UTF-8'}"{if $answer.link} data-url="{$answer.link|escape:'htmlall':'UTF-8'}"{/if}>{$answer.text|escape:'htmlall':'UTF-8'}</button>
             {/foreach}
+          </div>
+          <div class="guided-nav mt-3">
+            <button type="button" class="btn btn-secondary guided-back d-none">{l s='Back' mod='everblock'}</button>
+            <button type="button" class="btn btn-link guided-restart">{l s='Restart' mod='everblock'}</button>
           </div>
         </div>
       {/foreach}
+      {if $block.settings.fallback_shortcode}
+        <div class="everblock-guided-fallback d-none">
+          {$block.settings.fallback_shortcode nofilter}
+          <div class="guided-nav mt-3">
+            <button type="button" class="btn btn-link guided-restart">{l s='Restart' mod='everblock'}</button>
+          </div>
+        </div>
+      {/if}
     </div>
   {if $block.settings.default.force_full_width || $block.settings.default.container}
     </div>

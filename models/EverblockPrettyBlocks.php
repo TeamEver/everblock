@@ -4352,6 +4352,15 @@ class EverblockPrettyBlocks extends ObjectModel
                 'templates' => [
                     'default' => $guidedSelectorTemplate,
                 ],
+                'config' => [
+                    'fields' => [
+                        'fallback_shortcode' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Fallback content (shortcodes allowed)'),
+                            'default' => '[evercontactform_open][evercontact type="text" label="' . $module->l('Your name') . '"][evercontact type="email" label="' . $module->l('Your email') . '"][evercontact type="textarea" label="' . $module->l('Message') . '"][evercontact type="submit" label="' . $module->l('Send') . '"][evercontactform_close]',
+                        ],
+                    ],
+                ],
                 'repeater' => [
                     'name' => 'Question',
                     'nameFrom' => 'question',
@@ -4362,21 +4371,9 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => '',
                         ],
                         'answers' => [
-                            'type' => 'repeater',
-                            'name' => 'Answer',
-                            'nameFrom' => 'text',
-                            'groups' => [
-                                'text' => [
-                                    'type' => 'text',
-                                    'label' => $module->l('Answer label'),
-                                    'default' => '',
-                                ],
-                                'link' => [
-                                    'type' => 'text',
-                                    'label' => $module->l('Answer link'),
-                                    'default' => '',
-                                ],
-                            ],
+                            'type' => 'textarea',
+                            'label' => $module->l('Answers (one per line: "Answer label|Answer link")'),
+                            'default' => '',
                         ],
                     ],
                 ],
