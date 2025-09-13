@@ -343,6 +343,52 @@ $(document).ready(function(){
 
     // Guided product selector
     var guidedSelections = {};
+    var stepHistory = [];
+    var $guidedSteps = $('.everblock-guided-step');
+    var totalSteps = $guidedSteps.length;
+    var currentStep = 0;
+
+    function updateProgress(current) {
+        if (!totalSteps) {
+            $('.everblock-guided-progress').addClass('d-none');
+            return;
+        }
+        var pct = (current / totalSteps) * 100;
+        $('.everblock-guided-progress .progress-bar').css('width', pct + '%');
+        $('.everblock-guided-progress .progress-counter').text(current + '/' + totalSteps);
+    }
+
+    function showStep(index) {
+        if (index >= totalSteps) {
+            showFallback();
+            return;
+        }
+        var $target = $guidedSteps.eq(index);
+        var hasAnswers = $target.find('.guided-answer').length > 0;
+        if (!hasAnswers) {
+            showFallback();
+            return;
+        }
+        $guidedSteps.addClass('d-none');
+        $target.removeClass('d-none');
+        $target.find('.guided-back').toggleClass('d-none', index === 0);
+        $('.everblock-guided-fallback').addClass('d-none');
+        currentStep = index;
+        updateProgress(index + 1);
+    }
+
+    function showFallback() {
+        $guidedSteps.addClass('d-none');
+        $('.everblock-guided-fallback').removeClass('d-none');
+        updateProgress(totalSteps);
+    }
+
+    if (totalSteps) {
+        showStep(0);
+    } else {
+        showFallback();
+    }
+
     $(document).on('click', '.everblock-guided-step .guided-answer', function () {
         var $btn = $(this);
         var $step = $btn.closest('.everblock-guided-step');
@@ -358,11 +404,31 @@ $(document).ready(function(){
             window.location.href = url + (query ? separator + query : '');
             return;
         }
-        var $next = $step.nextAll('.everblock-guided-step').first();
-        if ($next.length) {
-            $step.addClass('d-none');
-            $next.removeClass('d-none');
+        var nextIndex = $guidedSteps.index($step) + 1;
+        if (nextIndex < totalSteps) {
+            stepHistory.push($guidedSteps.index($step));
+            showStep(nextIndex);
+        } else {
+            showFallback();
         }
+    });
+
+    $(document).on('click', '.guided-back', function () {
+        if (!stepHistory.length) {
+            return;
+        }
+        var prevIndex = stepHistory.pop();
+        var currentKey = $guidedSteps.eq(currentStep).data('question');
+        if (currentKey) {
+            delete guidedSelections[currentKey];
+        }
+        showStep(prevIndex);
+    });
+
+    $(document).on('click', '.guided-restart', function () {
+        guidedSelections = {};
+        stepHistory = [];
+        showStep(0);
     });
 
     // Flash deals countdown

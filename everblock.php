@@ -4205,6 +4205,37 @@ class Everblock extends Module
         return ['deals' => $deals];
     }
 
+    public function hookBeforeRenderingEverblockGuidedSelector($params)
+    {
+        $states = $params['block']['states'] ?? [];
+
+        foreach ($states as &$state) {
+            $question = isset($state['question']) ? trim($state['question']) : '';
+            $state['question'] = $question;
+            $state['key'] = Tools::link_rewrite($question);
+
+            $answers = [];
+            $lines = preg_split("/(\r\n|\r|\n)/", $state['answers'] ?? '');
+            foreach ($lines as $line) {
+                $parts = explode('|', $line);
+                $text = trim($parts[0] ?? '');
+                if ($text === '') {
+                    continue;
+                }
+                $link = trim($parts[1] ?? '');
+                $answers[] = [
+                    'text' => $text,
+                    'link' => $link,
+                    'value' => Tools::link_rewrite($text),
+                ];
+            }
+            $state['answers'] = $answers;
+        }
+        unset($state);
+
+        return ['states' => $states];
+    }
+
     public function hookBeforeRenderingEverblockLookbook($params)
     {
         return [];
