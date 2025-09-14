@@ -34,7 +34,7 @@
         ]}
         <div class="ever-wheel-of-fortune text-center" data-block-id="{$block.id_prettyblocks}" data-config="{$wheelConfig|json_encode|base64_encode|escape:'htmlall':'UTF-8'}">
             {if $block.settings.title}<h3>{$block.settings.title|escape:'htmlall':'UTF-8'}</h3>{/if}
-            {if $logged}
+            {if $customer.is_logged}
                 <canvas class="ever-wheel-canvas mb-3" style="width:100%;height:auto;"></canvas>
                 <button class="btn btn-primary ever-wheel-spin">{$block.settings.button_label|escape:'htmlall':'UTF-8'}</button>
             {else}
@@ -55,35 +55,10 @@
                                 <input type="hidden" name="back" value="{$urls.current_url|escape:'htmlall':'UTF-8'}">
                                 <button class="btn btn-primary btn-block" type="submit">{l s='Sign in' mod='everblock'}</button>
                             </div>
-                        </form>
-                    </div>
-                    <div class="col-md-5">
-                        <form action="{$link->getPageLink('authentication', true)|escape:'htmlall':'UTF-8'}?create_account=1&back={$urls.current_url|escape:'htmlall':'UTF-8'}" method="post" class="card card-block ever-wheel-register-form">
-                            <h4 class="card-title">{l s='Create account to play' mod='everblock'}</h4>
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="ever-wheel-register-firstname">{l s='First name' mod='everblock'}</label>
-                                    <input id="ever-wheel-register-firstname" class="form-control" type="text" name="firstname" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="ever-wheel-register-lastname">{l s='Last name' mod='everblock'}</label>
-                                    <input id="ever-wheel-register-lastname" class="form-control" type="text" name="lastname" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="ever-wheel-register-email">{l s='Email' mod='everblock'}</label>
-                                    <input id="ever-wheel-register-email" class="form-control" type="email" name="email" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="ever-wheel-register-password">{l s='Password' mod='everblock'}</label>
-                                    <input id="ever-wheel-register-password" class="form-control js-visible-password" type="password" name="password" required>
-                                </div>
-                                <div class="form-group form-check">
-                                    <input class="form-check-input" type="checkbox" id="ever-wheel-register-newsletter" name="newsletter" value="1">
-                                    <label class="form-check-label" for="ever-wheel-register-newsletter">{l s='Subscribe to newsletter' mod='everblock'}</label>
-                                </div>
-                                <input type="hidden" name="submitCreate" value="1">
-                                <input type="hidden" name="back" value="{$urls.current_url|escape:'htmlall':'UTF-8'}">
-                                <button class="btn btn-primary btn-block" type="submit">{l s='Create account' mod='everblock'}</button>
+                            <div class="card-body pt-0">
+                                <p class="mb-0 text-center">
+                                    <a href="{$link->getPageLink('authentication', true)|escape:'htmlall':'UTF-8'}?create_account=1&back={$urls.current_url|escape:'htmlall':'UTF-8'}">{l s='Create account' mod='everblock'}</a>
+                                </p>
                             </div>
                         </form>
                     </div>
