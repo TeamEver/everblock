@@ -789,3 +789,11 @@
 .featured-brands .carousel-control-next {
     right: 1rem;
 }
+
+/* Wheel of fortune */
+.ever-wheel-canvas {
+    transition: transform 4s cubic-bezier(.33, .66, .66, 1);
+    transform: rotate(0deg);
+    transform-origin: 50% 50%;
+    display: block;
+}
