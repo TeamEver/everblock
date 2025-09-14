@@ -3170,16 +3170,42 @@ class EverblockTools extends ObjectModel
                     }
 
                     // Plusieurs créneaux ? → on découpe
+                    // Patterns autorisés :
+                    //   - "10h - 12h" (plage unique)
+                    //   - "10h - 12h / 14h - 18h" (plages multiples)
+                    //   - "10h / 16h" (début et fin séparés par un slash)
                     $subSlots = explode(' / ', $slot);
+
                     foreach ($subSlots as $subSlot) {
                         $hoursFormatted[] = trim($subSlot);
+                    }
 
-                        if (($i === $todayIndex) && (!$isHoliday || $todayStoreHolidaySlot) && strpos($subSlot, '-') !== false) {
-                            $parts = preg_split('/\s*-\s*/', $subSlot);
-                            $startRaw = $parts[0] ?? '';
-                            $endRaw = $parts[1] ?? '';
-                            $start = self::normalizeTime($startRaw);
-                            $end = self::normalizeTime($endRaw);
+                    if (($i === $todayIndex) && (!$isHoliday || $todayStoreHolidaySlot)) {
+                        $rangeHandled = false;
+                        foreach ($subSlots as $subSlot) {
+                            if (strpos($subSlot, '-') !== false) {
+                                $parts = preg_split('/\s*-\s*/', $subSlot);
+                                $startRaw = $parts[0] ?? '';
+                                $endRaw = $parts[1] ?? '';
+                                $start = self::normalizeTime($startRaw);
+                                $end = self::normalizeTime($endRaw);
+                                if ($start && $end) {
+                                    if ($currentTime >= $start && $currentTime <= $end) {
+                                        $store['is_open'] = true;
+                                        $store['open_until'] = $end;
+                                    } elseif ($currentTime < $start) {
+                                        if ($store['opens_at'] === null || $start < $store['opens_at']) {
+                                            $store['opens_at'] = $start;
+                                        }
+                                    }
+                                }
+                                $rangeHandled = true;
+                            }
+                        }
+
+                        if (!$rangeHandled && count($subSlots) === 2) {
+                            $start = self::normalizeTime($subSlots[0]);
+                            $end = self::normalizeTime($subSlots[1]);
                             if ($start && $end) {
                                 if ($currentTime >= $start && $currentTime <= $end) {
                                     $store['is_open'] = true;
