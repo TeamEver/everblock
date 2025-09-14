@@ -42,18 +42,18 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             ]));
         }
         $idCustomer = (int) $this->context->customer->id;
-        $already = Db::getInstance()->getValue('SELECT id_everblock_wheel_play FROM ' . _DB_PREFIX_ . 'everblock_wheel_play WHERE id_customer = ' . $idCustomer);
-        if ($already) {
-            die(json_encode([
-                'status' => false,
-                'message' => $this->module->l('You have already played', 'wheel'),
-            ]));
-        }
         $idBlock = (int) Tools::getValue('id_block');
         if (!$idBlock) {
             die(json_encode([
                 'status' => false,
                 'message' => $this->module->l('Invalid configuration', 'wheel'),
+            ]));
+        }
+        $already = Db::getInstance()->getValue('SELECT id_everblock_game_play FROM ' . _DB_PREFIX_ . 'everblock_game_play WHERE id_customer = ' . $idCustomer . ' AND id_prettyblocks = ' . $idBlock);
+        if ($already) {
+            die(json_encode([
+                'status' => false,
+                'message' => $this->module->l('You have already played', 'wheel'),
             ]));
         }
         $row = Db::getInstance()->getRow('SELECT settings, state FROM ' . _DB_PREFIX_ . 'prettyblocks WHERE id_prettyblocks = ' . $idBlock);
@@ -134,7 +134,8 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 'id_item' => $idCategory,
             ]);
         }
-        Db::getInstance()->insert('everblock_wheel_play', [
+        Db::getInstance()->insert('everblock_game_play', [
+            'id_prettyblocks' => $idBlock,
             'id_customer' => $idCustomer,
             'result' => pSQL($result['label'] ?? ''),
             'date_add' => date('Y-m-d H:i:s'),

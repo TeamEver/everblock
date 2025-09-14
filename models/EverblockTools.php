@@ -3872,7 +3872,7 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_flags',
             _DB_PREFIX_ . 'everblock_modal',
             _DB_PREFIX_ . 'everblock_modal_lang',
-            _DB_PREFIX_ . 'everblock_wheel_play',
+            _DB_PREFIX_ . 'everblock_game_play',
         ];
         $tableExists = false;
         foreach ($tableNames as $tableName) {
