@@ -32,7 +32,6 @@
             {if $logged}
                 <canvas class="ever-wheel-canvas mb-3" style="width:100%;height:auto;"></canvas>
                 <button class="btn btn-primary ever-wheel-spin">{$block.settings.button_label|escape:'htmlall':'UTF-8'}</button>
-                <div class="ever-wheel-message mt-2"></div>
             {else}
                 <div class="ever-wheel-forms mt-2 row justify-content-center">
                     <div class="col-md-5">

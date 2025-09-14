@@ -622,7 +622,21 @@ $(document).ready(function(){
                 },
                 dataType: 'json',
                 success: function (res) {
-                    $container.find('.ever-wheel-message').text(res.message || '');
+                    var msg = res.message || '';
+                    var codeHtml = res.code ? '<p class="ever-wheel-code">' + res.code + '</p>' : '';
+                    $('#everWheelModal').remove();
+                    var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
+                        + '<div class="modal-dialog" role="document">'
+                        + '<div class="modal-content">'
+                        + '<div class="modal-body text-center">'
+                        + '<p>' + msg + '</p>' + codeHtml
+                        + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal">OK</button>'
+                        + '</div></div></div></div>';
+                    $('body').append(modal);
+                    $('#everWheelModal').modal('show');
+                    $('#everWheelModal').on('hidden.bs.modal', function () {
+                        $(this).remove();
+                    });
                 }
             });
         });
