@@ -589,7 +589,8 @@ $(document).ready(function(){
                 config = {};
             }
         }
-        var segments = config.segments || [];
+        var segmentsData = config.segments || [];
+        var segments = Array.isArray(segmentsData) ? segmentsData : Object.values(segmentsData);
         var spinUrl = config.spinUrl || '';
         var token = config.token || '';
         var blockId = $container.data('block-id') || 0;
