@@ -42,38 +42,49 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 'message' => $this->module->l('You have already played', 'wheel'),
             ]));
         }
-        $configEncoded = Tools::getValue('config');
-        $config = [];
-        if (is_string($configEncoded) && $configEncoded !== '') {
-            $decoded = base64_decode($configEncoded, true);
-            if ($decoded !== false) {
-                $config = json_decode($decoded, true);
-            }
+        $idBlock = (int) Tools::getValue('id_block');
+        if (!$idBlock) {
+            die(json_encode([
+                'status' => false,
+                'message' => $this->module->l('Invalid configuration', 'wheel'),
+            ]));
         }
-        if (!is_array($config)) {
-            $config = [];
+        $row = Db::getInstance()->getRow('SELECT settings, state FROM ' . _DB_PREFIX_ . 'prettyblocks WHERE id_prettyblocks = ' . $idBlock);
+        if (!$row) {
+            die(json_encode([
+                'status' => false,
+                'message' => $this->module->l('Configuration not found', 'wheel'),
+            ]));
         }
-        $segments = $config['segments'] ?? [];
+        $settings = json_decode($row['settings'], true);
+        if (!is_array($settings)) {
+            $settings = [];
+        }
+        $segments = json_decode($row['state'], true);
         if (!is_array($segments) || empty($segments)) {
             die(json_encode([
                 'status' => false,
                 'message' => $this->module->l('No segments available', 'wheel'),
             ]));
         }
-        $prefix = isset($config['coupon_prefix']) ? $config['coupon_prefix'] : 'WHEEL';
-        $validity = max(1, (int) ($config['coupon_validity'] ?? 30));
-        $discountType = isset($config['coupon_type']) ? $config['coupon_type'] : 'percent';
-        $couponName = isset($config['coupon_name']) ? $config['coupon_name'] : 'Wheel reward';
+        $prefix = isset($settings['coupon_prefix']) ? preg_replace('/[^A-Z0-9]/', '', Tools::strtoupper($settings['coupon_prefix'])) : 'WHEEL';
+        $validity = (int) ($settings['coupon_validity'] ?? 30);
+        $validity = max(1, min($validity, 365));
+        $discountType = in_array($settings['coupon_type'] ?? '', ['amount', 'percent']) ? $settings['coupon_type'] : 'percent';
+        $couponName = isset($settings['coupon_name']) ? $settings['coupon_name'] : 'Wheel reward';
         $total = 0;
-        foreach ($segments as $segment) {
-            $total += isset($segment['probability']) ? (float) $segment['probability'] : 1;
+        foreach ($segments as &$segment) {
+            $prob = isset($segment['probability']) ? (float) $segment['probability'] : 1;
+            $segment['probability'] = $prob;
+            $segment['discount'] = isset($segment['discount']) ? (float) $segment['discount'] : 0;
+            $total += $prob;
         }
+        unset($segment);
         $rand = (float) mt_rand() / (float) mt_getrandmax() * $total;
         $acc = 0;
         $result = $segments[0];
         foreach ($segments as $segment) {
-            $prob = isset($segment['probability']) ? (float) $segment['probability'] : 1;
-            $acc += $prob;
+            $acc += $segment['probability'];
             if ($rand <= $acc) {
                 $result = $segment;
                 break;
@@ -107,7 +118,7 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             'status' => true,
             'result' => $result,
             'code' => $code,
-            'message' => $this->module->l('You won:', 'wheel') . ' ' . ($result['label'] ?? '') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code,
+            'message' => $this->module->l('You won:', 'wheel') . ' ' . htmlspecialchars($result['label'] ?? '', ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code,
         ]));
     }
 }

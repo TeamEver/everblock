@@ -591,6 +591,7 @@ $(document).ready(function(){
         }
         var segments = config.segments || [];
         var spinUrl = config.spinUrl || '';
+        var blockId = $container.data('block-id') || 0;
         function drawWheel() {
             var dimension = $container.width();
             $canvas.attr('width', dimension).attr('height', dimension);
@@ -617,7 +618,7 @@ $(document).ready(function(){
                 url: spinUrl,
                 type: 'POST',
                 data: {
-                    config: configB64
+                    id_block: blockId
                 },
                 dataType: 'json',
                 success: function (res) {
