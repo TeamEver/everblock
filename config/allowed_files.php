@@ -79,6 +79,7 @@ return [
     'sql/index.php',
     'sql/install.php',
     'sql/uninstall.php',
+    'src/Command/CleanGameDataCommand.php',
     'src/Command/ExecuteAction.php',
     'src/Command/ExportFileCommand.php',
     'src/Command/ImportFileCommand.php',
