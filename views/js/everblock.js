@@ -594,6 +594,7 @@ $(document).ready(function(){
         var spinUrl = config.spinUrl || '';
         var token = config.token || '';
         var blockId = $container.data('block-id') || 0;
+        var currentRotation = 0;
         function drawWheel() {
             var dimension = $container.width();
             $canvas.attr('width', dimension).attr('height', dimension);
@@ -616,6 +617,8 @@ $(document).ready(function(){
         drawWheel();
         $(window).on('resize', drawWheel);
         $container.find('.ever-wheel-spin').on('click', function () {
+            currentRotation += 360 * 5 + Math.floor(Math.random() * 360);
+            $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
             $.ajax({
                 url: spinUrl,
                 type: 'POST',
