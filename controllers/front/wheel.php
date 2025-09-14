@@ -53,7 +53,7 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             ]));
         }
         $prefix = Tools::getValue('coupon_prefix', 'WHEEL');
-        $validity = (int) Tools::getValue('coupon_validity', 30);
+        $validity = max(1, (int) Tools::getValue('coupon_validity', 30));
         $discountType = Tools::getValue('coupon_type', 'percent');
         $couponName = Tools::getValue('coupon_name', 'Wheel reward');
         $total = 0;

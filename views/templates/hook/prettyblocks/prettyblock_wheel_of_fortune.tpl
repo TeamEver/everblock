@@ -27,7 +27,7 @@
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-        <div class="ever-wheel-of-fortune text-center" data-segments="{$wheelSegments|json_encode|escape:'htmlall':'UTF-8'}" data-spin-url="{$link->getModuleLink('everblock','wheel')|escape:'htmlall':'UTF-8'}" data-coupon-prefix="{$block.settings.coupon_prefix|escape:'htmlall':'UTF-8'}" data-coupon-validity="{$block.settings.coupon_validity|escape:'htmlall':'UTF-8'}" data-coupon-type="{$block.settings.coupon_type|escape:'htmlall':'UTF-8'}" data-coupon-name="{$block.settings.coupon_name|escape:'htmlall':'UTF-8'}">
+        <div class="ever-wheel-of-fortune text-center" data-segments="{$wheelSegments|json_encode|escape:'htmlall':'UTF-8'}" data-spin-url="{$link->getModuleLink('everblock','wheel')|escape:'htmlall':'UTF-8'}" data-coupon-prefix="{$block.settings.coupon_prefix|escape:'htmlall':'UTF-8'}" data-coupon-validity="{$block.settings.coupon_validity|intval}" data-coupon-type="{$block.settings.coupon_type|escape:'htmlall':'UTF-8'}" data-coupon-name="{$block.settings.coupon_name|escape:'htmlall':'UTF-8'}">
             {if $block.settings.title}<h3>{$block.settings.title|escape:'htmlall':'UTF-8'}</h3>{/if}
             {if $logged}
                 <canvas class="ever-wheel-canvas mb-3" style="width:100%;height:auto;"></canvas>

@@ -4861,7 +4861,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => 'WHEEL',
                         ],
                         'coupon_validity' => [
-                            'type' => 'text',
+                            'type' => 'number',
                             'label' => $module->l('Coupon validity in days'),
                             'default' => '30',
                         ],
