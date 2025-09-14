@@ -84,6 +84,7 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             $prob = isset($segment['probability']) ? (float) $segment['probability'] : 1;
             $segment['probability'] = $prob;
             $segment['discount'] = isset($segment['discount']) ? (float) $segment['discount'] : 0;
+            $segment['id_category'] = isset($segment['id_category']) ? (int) $segment['id_category'] : 0;
             $total += $prob;
         }
         unset($segment);
@@ -116,6 +117,23 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         }
         $voucher->active = 1;
         $voucher->add();
+        $idCategory = (int) ($result['id_category'] ?? 0);
+        if ($idCategory > 0) {
+            Db::getInstance()->insert('cart_rule_product_rule_group', [
+                'id_cart_rule' => (int) $voucher->id,
+                'quantity' => 1,
+            ]);
+            $idGroup = (int) Db::getInstance()->Insert_ID();
+            Db::getInstance()->insert('cart_rule_product_rule', [
+                'id_product_rule_group' => $idGroup,
+                'type' => 'categories',
+            ]);
+            $idRule = (int) Db::getInstance()->Insert_ID();
+            Db::getInstance()->insert('cart_rule_product_rule_value', [
+                'id_product_rule' => $idRule,
+                'id_item' => $idCategory,
+            ]);
+        }
         Db::getInstance()->insert('everblock_wheel_play', [
             'id_customer' => $idCustomer,
             'result' => pSQL($result['label'] ?? ''),

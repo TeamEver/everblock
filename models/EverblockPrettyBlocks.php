@@ -4940,6 +4940,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Discount value'),
                             'default' => '10',
                         ],
+                        'id_category' => [
+                            'type' => 'text',
+                            'label' => $module->l('Category ID'),
+                            'default' => '',
+                        ],
                     ],
                 ],
             ];
