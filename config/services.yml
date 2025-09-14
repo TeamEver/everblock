@@ -39,3 +39,9 @@ services:
         tags:
             - { name: 'console.command' }
 
+    everblock.tools.clean_games:
+        class: Everblock\Tools\Command\CleanGameDataCommand
+        public: true
+        tags:
+            - { name: 'console.command' }
+
