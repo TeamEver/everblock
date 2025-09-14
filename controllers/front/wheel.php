@@ -42,20 +42,28 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 'message' => $this->module->l('You have already played', 'wheel'),
             ]));
         }
-        $segments = Tools::getValue('segments');
-        if (is_string($segments)) {
-            $segments = json_decode($segments, true);
+        $configEncoded = Tools::getValue('config');
+        $config = [];
+        if (is_string($configEncoded) && $configEncoded !== '') {
+            $decoded = base64_decode($configEncoded, true);
+            if ($decoded !== false) {
+                $config = json_decode($decoded, true);
+            }
         }
+        if (!is_array($config)) {
+            $config = [];
+        }
+        $segments = $config['segments'] ?? [];
         if (!is_array($segments) || empty($segments)) {
             die(json_encode([
                 'status' => false,
                 'message' => $this->module->l('No segments available', 'wheel'),
             ]));
         }
-        $prefix = Tools::getValue('coupon_prefix', 'WHEEL');
-        $validity = max(1, (int) Tools::getValue('coupon_validity', 30));
-        $discountType = Tools::getValue('coupon_type', 'percent');
-        $couponName = Tools::getValue('coupon_name', 'Wheel reward');
+        $prefix = isset($config['coupon_prefix']) ? $config['coupon_prefix'] : 'WHEEL';
+        $validity = max(1, (int) ($config['coupon_validity'] ?? 30));
+        $discountType = isset($config['coupon_type']) ? $config['coupon_type'] : 'percent';
+        $couponName = isset($config['coupon_name']) ? $config['coupon_name'] : 'Wheel reward';
         $total = 0;
         foreach ($segments as $segment) {
             $total += isset($segment['probability']) ? (float) $segment['probability'] : 1;

@@ -580,14 +580,17 @@ $(document).ready(function(){
         if (!$canvas.length) {
             return;
         }
-        var segments = $container.data('segments');
-        if (typeof segments === 'string') {
+        var configB64 = $container.data('config');
+        var config = {};
+        if (typeof configB64 === 'string') {
             try {
-                segments = JSON.parse(segments);
+                config = JSON.parse(atob(configB64));
             } catch (e) {
-                segments = [];
+                config = {};
             }
         }
+        var segments = config.segments || [];
+        var spinUrl = config.spinUrl || '';
         function drawWheel() {
             var dimension = $container.width();
             $canvas.attr('width', dimension).attr('height', dimension);
@@ -611,14 +614,10 @@ $(document).ready(function(){
         $(window).on('resize', drawWheel);
         $container.find('.ever-wheel-spin').on('click', function () {
             $.ajax({
-                url: $container.data('spin-url'),
+                url: spinUrl,
                 type: 'POST',
                 data: {
-                    segments: JSON.stringify(segments),
-                    coupon_prefix: $container.data('coupon-prefix'),
-                    coupon_validity: $container.data('coupon-validity'),
-                    coupon_type: $container.data('coupon-type'),
-                    coupon_name: $container.data('coupon-name')
+                    config: configB64
                 },
                 dataType: 'json',
                 success: function (res) {
