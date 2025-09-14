@@ -29,7 +29,8 @@
     {/if}
         {assign var=wheelConfig value=[
             'segments' => $wheelSegments,
-            'spinUrl' => $link->getModuleLink('everblock','wheel')
+            'spinUrl' => $link->getModuleLink('everblock','wheel'),
+            'token' => $static_token
         ]}
         <div class="ever-wheel-of-fortune text-center" data-block-id="{$block.id_prettyblocks}" data-config="{$wheelConfig|json_encode|base64_encode|escape:'htmlall':'UTF-8'}">
             {if $block.settings.title}<h3>{$block.settings.title|escape:'htmlall':'UTF-8'}</h3>{/if}

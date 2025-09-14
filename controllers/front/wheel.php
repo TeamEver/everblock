@@ -28,6 +28,13 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         $this->ajax = true;
         parent::initContent();
         header('Content-Type: application/json');
+        $token = Tools::getValue('token');
+        if (!$token || $token !== Tools::getToken(false)) {
+            die(json_encode([
+                'status' => false,
+                'message' => $this->module->l('Invalid token', 'wheel'),
+            ]));
+        }
         if (!$this->context->customer->isLogged()) {
             die(json_encode([
                 'status' => false,
