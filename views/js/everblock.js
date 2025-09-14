@@ -573,6 +573,53 @@ $(document).ready(function(){
         });
     });
 
+    // Wheel of fortune
+    $('.ever-wheel-of-fortune').each(function () {
+        var $container = $(this);
+        var $canvas = $container.find('.ever-wheel-canvas');
+        if (!$canvas.length) {
+            return;
+        }
+        var segments = $container.data('segments');
+        if (typeof segments === 'string') {
+            try {
+                segments = JSON.parse(segments);
+            } catch (e) {
+                segments = [];
+            }
+        }
+        var ctx = $canvas[0].getContext('2d');
+        var size = $canvas[0].width / 2;
+        var start = 0;
+        var step = 2 * Math.PI / (segments.length || 1);
+        segments.forEach(function (seg) {
+            ctx.beginPath();
+            ctx.moveTo(size, size);
+            ctx.fillStyle = seg.color || '#' + Math.floor(Math.random() * 16777215).toString(16);
+            ctx.arc(size, size, size, start, start + step);
+            ctx.lineTo(size, size);
+            ctx.fill();
+            start += step;
+        });
+        $container.find('.ever-wheel-spin').on('click', function () {
+            $.ajax({
+                url: $container.data('spin-url'),
+                type: 'POST',
+                data: {
+                    segments: JSON.stringify(segments),
+                    coupon_prefix: $container.data('coupon-prefix'),
+                    coupon_validity: $container.data('coupon-validity'),
+                    coupon_type: $container.data('coupon-type'),
+                    coupon_name: $container.data('coupon-name')
+                },
+                dataType: 'json',
+                success: function (res) {
+                    $container.find('.ever-wheel-message').text(res.message || '');
+                }
+            });
+        });
+    });
+
     // Exit intent modal
     var exitIntentShown = false;
     $(document).on('mouseout', function(e) {

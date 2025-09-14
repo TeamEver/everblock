@@ -93,6 +93,7 @@ class EverblockPrettyBlocks extends ObjectModel
             $podcastsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_podcasts.tpl';
             $exitIntentTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_exit_intent.tpl';
             $specialEventTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_special_event.tpl';
+            $wheelTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_wheel_of_fortune.tpl';
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -4823,6 +4824,121 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Left position (e.g., 50%)'),
                             'default' => '0%',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Wheel of fortune'),
+                'description' => $module->l('Display a prize wheel'),
+                'code' => 'everblock_wheel_of_fortune',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $wheelTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Block title'),
+                            'default' => $module->l('Wheel of fortune'),
+                        ],
+                        'button_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button label'),
+                            'default' => $module->l('Spin'),
+                        ],
+                        'coupon_name' => [
+                            'type' => 'text',
+                            'label' => $module->l('Coupon name'),
+                            'default' => $module->l('Wheel reward'),
+                        ],
+                        'coupon_prefix' => [
+                            'type' => 'text',
+                            'label' => $module->l('Coupon code prefix'),
+                            'default' => 'WHEEL',
+                        ],
+                        'coupon_validity' => [
+                            'type' => 'text',
+                            'label' => $module->l('Coupon validity in days'),
+                            'default' => '30',
+                        ],
+                        'coupon_type' => [
+                            'type' => 'select',
+                            'label' => $module->l('Discount type'),
+                            'default' => 'percent',
+                            'choices' => [
+                                'percent' => $module->l('Percent'),
+                                'amount' => $module->l('Amount'),
+                            ],
+                        ],
+                        'padding_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'padding_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_left' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_right' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_top' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                        'margin_bottom' => [
+                            'type' => 'text',
+                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
+                'repeater' => [
+                    'name' => 'Segment',
+                    'nameFrom' => 'label',
+                    'groups' => [
+                        'label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Label'),
+                            'default' => '',
+                        ],
+                        'probability' => [
+                            'type' => 'text',
+                            'label' => $module->l('Probability'),
+                            'default' => '1',
+                        ],
+                        'color' => [
+                            'type' => 'color',
+                            'label' => $module->l('Color'),
+                            'default' => '#ff0000',
+                        ],
+                        'discount' => [
+                            'type' => 'text',
+                            'label' => $module->l('Discount value'),
+                            'default' => '10',
                         ],
                     ],
                 ],

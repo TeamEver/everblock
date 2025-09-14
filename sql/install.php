@@ -151,6 +151,14 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_modal_lang` (
         PRIMARY KEY (`id_everblock_modal`, `id_lang`))
         ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_wheel_play` (
+        `id_everblock_wheel_play` int(10) unsigned NOT NULL auto_increment,
+        `id_customer` int(10) unsigned NOT NULL,
+        `result` varchar(255) DEFAULT NULL,
+        `date_add` DATETIME DEFAULT NULL,
+        PRIMARY KEY (`id_everblock_wheel_play`))
+        ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
 foreach ($sql as $s) {
     if (!Db::getInstance()->execute($s)) {
         return false;
