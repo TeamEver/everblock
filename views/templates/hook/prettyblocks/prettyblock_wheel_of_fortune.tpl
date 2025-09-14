@@ -30,7 +30,7 @@
         <div class="ever-wheel-of-fortune text-center" data-segments="{$wheelSegments|json_encode|escape:'htmlall':'UTF-8'}" data-spin-url="{$link->getModuleLink('everblock','wheel')|escape:'htmlall':'UTF-8'}" data-coupon-prefix="{$block.settings.coupon_prefix|escape:'htmlall':'UTF-8'}" data-coupon-validity="{$block.settings.coupon_validity|escape:'htmlall':'UTF-8'}" data-coupon-type="{$block.settings.coupon_type|escape:'htmlall':'UTF-8'}" data-coupon-name="{$block.settings.coupon_name|escape:'htmlall':'UTF-8'}">
             {if $block.settings.title}<h3>{$block.settings.title|escape:'htmlall':'UTF-8'}</h3>{/if}
             {if $logged}
-                <canvas class="ever-wheel-canvas mb-3" width="300" height="300"></canvas>
+                <canvas class="ever-wheel-canvas mb-3" style="width:100%;height:auto;"></canvas>
                 <button class="btn btn-primary ever-wheel-spin">{$block.settings.button_label|escape:'htmlall':'UTF-8'}</button>
                 <div class="ever-wheel-message mt-2"></div>
             {else}

@@ -588,19 +588,27 @@ $(document).ready(function(){
                 segments = [];
             }
         }
-        var ctx = $canvas[0].getContext('2d');
-        var size = $canvas[0].width / 2;
-        var start = 0;
-        var step = 2 * Math.PI / (segments.length || 1);
-        segments.forEach(function (seg) {
-            ctx.beginPath();
-            ctx.moveTo(size, size);
-            ctx.fillStyle = seg.color || '#' + Math.floor(Math.random() * 16777215).toString(16);
-            ctx.arc(size, size, size, start, start + step);
-            ctx.lineTo(size, size);
-            ctx.fill();
-            start += step;
-        });
+        function drawWheel() {
+            var dimension = $container.width();
+            $canvas.attr('width', dimension).attr('height', dimension);
+            var ctx = $canvas[0].getContext('2d');
+            ctx.clearRect(0, 0, dimension, dimension);
+            var size = dimension / 2;
+            var start = 0;
+            var step = 2 * Math.PI / (segments.length || 1);
+            segments.forEach(function (seg) {
+                ctx.beginPath();
+                ctx.moveTo(size, size);
+                ctx.fillStyle = seg.color || '#' + Math.floor(Math.random() * 16777215).toString(16);
+                ctx.arc(size, size, size, start, start + step);
+                ctx.lineTo(size, size);
+                ctx.fill();
+                start += step;
+            });
+        }
+
+        drawWheel();
+        $(window).on('resize', drawWheel);
         $container.find('.ever-wheel-spin').on('click', function () {
             $.ajax({
                 url: $container.data('spin-url'),
