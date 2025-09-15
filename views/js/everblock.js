@@ -680,18 +680,22 @@ $(document).ready(function(){
                                 }
                             }
                             var anglePerSegment = 360 / segments.length;
-                            var targetAngle = 270 - (idx * anglePerSegment + anglePerSegment / 2);
+                            var targetAngle = -90 - (idx * anglePerSegment + anglePerSegment / 2);
                             if (targetAngle < 0) {
                                 targetAngle += 360;
                             }
                             currentRotation += 360 * 5 + targetAngle;
                             $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
                             $canvas.one('transitionend', function () {
-                                showWheelModal(msg, res.code);
+                                var isWinning = res.result && (res.result.isWinning || res.result.is_winning);
+                                var code = isWinning ? res.code : null;
+                                showWheelModal(msg, code);
                                 $btn.prop('disabled', false);
                             });
                         } else {
-                            showWheelModal(msg, res.code);
+                            var isWinning = res.result && (res.result.isWinning || res.result.is_winning);
+                            var code = isWinning ? res.code : null;
+                            showWheelModal(msg, code);
                             $btn.prop('disabled', false);
                         }
                     },
