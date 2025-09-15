@@ -818,7 +818,7 @@
     height: 0;
     border-left: 15px solid transparent;
     border-right: 15px solid transparent;
-    border-bottom: 30px solid #333;
+    border-top: 30px solid #333;
     z-index: 10;
     pointer-events: none;
 }
