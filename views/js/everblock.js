@@ -576,10 +576,6 @@ $(document).ready(function(){
     // Wheel of fortune
     $('.ever-wheel-of-fortune').each(function () {
         var $container = $(this);
-        var $canvas = $container.find('.ever-wheel-canvas');
-        if (!$canvas.length) {
-            return;
-        }
         var configB64 = $container.data('config');
         var config = {};
         if (typeof configB64 === 'string') {
@@ -594,58 +590,94 @@ $(document).ready(function(){
         var spinUrl = config.spinUrl || '';
         var token = config.token || '';
         var blockId = $container.data('block-id') || 0;
-        var currentRotation = 0;
-        function drawWheel() {
-            var dimension = $container.width();
-            $canvas.attr('width', dimension).attr('height', dimension);
-            var ctx = $canvas[0].getContext('2d');
-            ctx.clearRect(0, 0, dimension, dimension);
-            var size = dimension / 2;
-            var start = 0;
-            var step = 2 * Math.PI / (segments.length || 1);
-            segments.forEach(function (seg) {
-                ctx.beginPath();
-                ctx.moveTo(size, size);
-                ctx.fillStyle = seg.color || '#' + Math.floor(Math.random() * 16777215).toString(16);
-                ctx.arc(size, size, size, start, start + step);
-                ctx.lineTo(size, size);
-                ctx.fill();
-                start += step;
+
+        function initWheel() {
+            var $canvas = $container.find('.ever-wheel-canvas');
+            if (!$canvas.length) {
+                return;
+            }
+            var currentRotation = 0;
+            function drawWheel() {
+                var dimension = $container.width();
+                $canvas.attr('width', dimension).attr('height', dimension);
+                var ctx = $canvas[0].getContext('2d');
+                ctx.clearRect(0, 0, dimension, dimension);
+                var size = dimension / 2;
+                var start = 0;
+                var step = 2 * Math.PI / (segments.length || 1);
+                segments.forEach(function (seg) {
+                    ctx.beginPath();
+                    ctx.moveTo(size, size);
+                    ctx.fillStyle = seg.color || '#' + Math.floor(Math.random() * 16777215).toString(16);
+                    ctx.arc(size, size, size, start, start + step);
+                    ctx.lineTo(size, size);
+                    ctx.fill();
+                    start += step;
+                });
+            }
+
+            drawWheel();
+            $(window).on('resize', drawWheel);
+            $container.find('.ever-wheel-spin').on('click', function () {
+                currentRotation += 360 * 5 + Math.floor(Math.random() * 360);
+                $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
+                $.ajax({
+                    url: spinUrl,
+                    type: 'POST',
+                    data: {
+                        id_block: blockId,
+                        token: token
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        var msg = res.message || '';
+                        var codeHtml = res.code ? '<p class="ever-wheel-code">' + res.code + '</p>' : '';
+                        $('#everWheelModal').remove();
+                        var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
+                            + '<div class="modal-dialog" role="document">'
+                            + '<div class="modal-content">'
+                            + '<div class="modal-header border-0">'
+                            + '<button type="button" class="close" data-dismiss="modal" aria-label="Close">'
+                            + '<span aria-hidden="true">&times;</span>'
+                            + '</button>'
+                            + '</div>'
+                            + '<div class="modal-body text-center">'
+                            + '<p>' + msg + '</p>' + codeHtml
+                            + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal">OK</button>'
+                            + '</div></div></div></div>';
+                        $('body').append(modal);
+                        $('#everWheelModal').modal('show');
+                        $('#everWheelModal').on('hidden.bs.modal', function () {
+                            $(this).remove();
+                        });
+                    }
+                });
             });
         }
 
-        drawWheel();
-        $(window).on('resize', drawWheel);
-        $container.find('.ever-wheel-spin').on('click', function () {
-            currentRotation += 360 * 5 + Math.floor(Math.random() * 360);
-            $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
+        if (spinUrl) {
             $.ajax({
                 url: spinUrl,
                 type: 'POST',
                 data: {
                     id_block: blockId,
-                    token: token
+                    token: token,
+                    check: 1
                 },
                 dataType: 'json',
                 success: function (res) {
-                    var msg = res.message || '';
-                    var codeHtml = res.code ? '<p class="ever-wheel-code">' + res.code + '</p>' : '';
-                    $('#everWheelModal').remove();
-                    var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
-                        + '<div class="modal-dialog" role="document">'
-                        + '<div class="modal-content">'
-                        + '<div class="modal-body text-center">'
-                        + '<p>' + msg + '</p>' + codeHtml
-                        + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal">OK</button>'
-                        + '</div></div></div></div>';
-                    $('body').append(modal);
-                    $('#everWheelModal').modal('show');
-                    $('#everWheelModal').on('hidden.bs.modal', function () {
-                        $(this).remove();
-                    });
-                }
+                    if (res && res.played) {
+                        var msg = res.message || '';
+                        $container.html('<p class="ever-wheel-already-played">' + msg + '</p>');
+                    } else {
+                        initWheel();
+                    }
+                },
+                error: initWheel
             });
-        });
+        } else {
+            initWheel();
+        }
     });
 
     // Exit intent modal
