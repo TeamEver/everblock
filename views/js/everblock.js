@@ -597,6 +597,7 @@ $(document).ready(function(){
                 return;
             }
             var currentRotation = 0;
+            var segmentCenters = [];
             function drawWheel() {
                 var dimension = Math.min($container.width(), $(window).height());
                 $canvas.attr('width', dimension).attr('height', dimension);
@@ -604,8 +605,21 @@ $(document).ready(function(){
                 ctx.clearRect(0, 0, dimension, dimension);
                 var size = dimension / 2;
                 var start = 0;
-                var step = 2 * Math.PI / (segments.length || 1);
-                segments.forEach(function (seg) {
+                var totalProb = segments.reduce(function (sum, seg) {
+                    var p = parseFloat(seg.probability);
+                    return sum + (isNaN(p) ? 0 : p);
+                }, 0);
+                if (totalProb <= 0) {
+                    totalProb = segments.length || 1;
+                }
+                segmentCenters = [];
+                segments.forEach(function (seg, i) {
+                    var prob = parseFloat(seg.probability);
+                    prob = isNaN(prob) ? 0 : prob;
+                    var step = 2 * Math.PI * prob / totalProb;
+                    if (totalProb <= 0) {
+                        step = 2 * Math.PI / (segments.length || 1);
+                    }
                     ctx.beginPath();
                     ctx.moveTo(size, size);
                     ctx.fillStyle = seg.color || '#' + Math.floor(Math.random() * 16777215).toString(16);
@@ -632,6 +646,7 @@ $(document).ready(function(){
                     }
                     ctx.fillText(label || '', 0, 0);
                     ctx.restore();
+                    segmentCenters[i] = textAngle * 180 / Math.PI;
                     start += step;
                 });
             }
@@ -684,8 +699,8 @@ $(document).ready(function(){
                                     idx = 0;
                                 }
                             }
-                            var anglePerSegment = 360 / segments.length;
-                            var targetAngle = -90 - (idx * anglePerSegment + anglePerSegment / 2);
+                            var center = segmentCenters[idx] || 0;
+                            var targetAngle = -90 - center;
                             if (targetAngle < 0) {
                                 targetAngle += 360;
                             }
