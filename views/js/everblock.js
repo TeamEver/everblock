@@ -625,7 +625,12 @@ $(document).ready(function(){
                     if (typeof label === 'object') {
                         label = Object.values(label)[0] || '';
                     }
-                    ctx.fillText(label || '', textX, textY);
+                    ctx.translate(textX, textY);
+                    ctx.rotate(textAngle + Math.PI / 2);
+                    if (textAngle > Math.PI / 2 && textAngle < 3 * Math.PI / 2) {
+                        ctx.rotate(Math.PI);
+                    }
+                    ctx.fillText(label || '', 0, 0);
                     ctx.restore();
                     start += step;
                 });
