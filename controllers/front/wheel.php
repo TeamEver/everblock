@@ -56,14 +56,14 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 'message' => $this->module->l('You have already played', 'wheel'),
             ]));
         }
-        $row = Db::getInstance()->getRow('SELECT settings, state FROM ' . _DB_PREFIX_ . 'prettyblocks WHERE id_prettyblocks = ' . $idBlock);
+        $row = Db::getInstance()->getRow('SELECT config, state FROM ' . _DB_PREFIX_ . 'prettyblocks WHERE id_prettyblocks = ' . $idBlock);
         if (!$row) {
             die(json_encode([
                 'status' => false,
                 'message' => $this->module->l('Configuration not found', 'wheel'),
             ]));
         }
-        $settings = json_decode($row['settings'], true);
+        $settings = json_decode($row['config'], true);
         if (!is_array($settings)) {
             $settings = [];
         }
