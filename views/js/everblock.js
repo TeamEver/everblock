@@ -661,7 +661,14 @@ $(document).ready(function(){
             $(window).on('resize', drawWheel);
 
             function showWheelModal(msg, code) {
-                var codeHtml = code ? '<p class="ever-wheel-code">' + code + '</p>' : '';
+                var codeHtml = '';
+                if (code) {
+                    codeHtml = '<div class="ever-wheel-code-wrapper">'
+                        + '<span class="ever-wheel-code">' + code + '</span>'
+                        + '<button type="button" class="btn btn-secondary btn-sm ms-2 ever-wheel-copy">Copier</button>'
+                        + '<span class="ever-wheel-copy-feedback ms-2 text-success" style="display:none;"></span>'
+                        + '</div>';
+                }
                 $('#everWheelModal').remove();
                 var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
                     + '<div class="modal-dialog" role="document">'
@@ -676,8 +683,20 @@ $(document).ready(function(){
                     + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal" data-bs-dismiss="modal">OK</button>'
                     + '</div></div></div></div>';
                 $('body').append(modal);
-                $('#everWheelModal').modal('show');
-                $('#everWheelModal').on('hidden.bs.modal', function () {
+                var $modal = $('#everWheelModal');
+                $modal.modal('show');
+                if (code) {
+                    $modal.find('.ever-wheel-copy').on('click', function () {
+                        navigator.clipboard.writeText(code).then(function () {
+                            var $feedback = $modal.find('.ever-wheel-copy-feedback');
+                            $feedback.text('Code copié !').show();
+                            setTimeout(function () {
+                                $feedback.fadeOut();
+                            }, 2000);
+                        });
+                    });
+                }
+                $modal.on('hidden.bs.modal', function () {
                     $(this).remove();
                 });
             }
