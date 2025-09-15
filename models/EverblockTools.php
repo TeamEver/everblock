@@ -3139,6 +3139,9 @@ class EverblockTools extends ObjectModel
             $cms_link = null;
             $storeHolidayHours = self::getStoreHolidayHoursConfig($id_store);
             $todayStoreHolidaySlot = $storeHolidayHours[$todayDate] ?? null;
+            if ($todayStoreHolidaySlot) {
+                $todayStoreHolidaySlot = trim($todayStoreHolidaySlot);
+            }
 
             if ($cms_id > 0) {
                 $cms = new CMS($cms_id, $id_lang, $storeShopId);
@@ -3299,12 +3302,10 @@ class EverblockTools extends ObjectModel
         $result = [];
         $holidays = self::getFrenchHolidays((int) date('Y'));
         foreach ($holidays as $date) {
-            $openKey = 'EVERBLOCK_OPEN_' . (int) $storeId . '_' . $date;
-            $closeKey = 'EVERBLOCK_CLOSE_' . (int) $storeId . '_' . $date;
-            $open = Configuration::get($openKey);
-            $close = Configuration::get($closeKey);
-            if ($open && $close) {
-                $result[$date] = trim($open) . ' - ' . trim($close);
+            $hoursKey = 'EVERBLOCK_HOLIDAY_HOURS_' . (int) $storeId . '_' . $date;
+            $hours = Configuration::get($hoursKey);
+            if ($hours) {
+                $result[$date] = trim($hours);
             }
         }
         return $result;

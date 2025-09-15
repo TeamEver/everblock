@@ -1471,13 +1471,12 @@ class Everblock extends Module
                 foreach ($holidays as $date) {
                     $holidayInputs[] = [
                         'type' => 'text',
-                        'label' => sprintf($this->l('Opening hour for %s on %s'), $store['name'], $date),
-                        'name' => 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date,
-                    ];
-                    $holidayInputs[] = [
-                        'type' => 'text',
-                        'label' => sprintf($this->l('Closing hour for %s on %s'), $store['name'], $date),
-                        'name' => 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date,
+                        'label' => sprintf(
+                            $this->l('Holiday hours for %s on %s'),
+                            $store['name'],
+                            $date
+                        ),
+                        'name' => 'EVERBLOCK_HOLIDAY_HOURS_' . (int) $store['id_store'] . '_' . $date,
                     ];
                 }
             }
@@ -1579,10 +1578,8 @@ class Everblock extends Module
         $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
         foreach ($stores as $store) {
             foreach ($holidays as $date) {
-                $openKey = 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date;
-                $closeKey = 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date;
-                $configData[$openKey] = Configuration::get($openKey);
-                $configData[$closeKey] = Configuration::get($closeKey);
+                $hoursKey = 'EVERBLOCK_HOLIDAY_HOURS_' . (int) $store['id_store'] . '_' . $date;
+                $configData[$hoursKey] = Configuration::get($hoursKey);
             }
         }
         $configData = array_merge($configData, $bannedFeaturesColors);
@@ -1845,10 +1842,8 @@ class Everblock extends Module
         $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
         foreach ($stores as $store) {
             foreach ($holidays as $date) {
-                $openKey = 'EVERBLOCK_OPEN_' . (int) $store['id_store'] . '_' . $date;
-                $closeKey = 'EVERBLOCK_CLOSE_' . (int) $store['id_store'] . '_' . $date;
-                Configuration::updateValue($openKey, Tools::getValue($openKey));
-                Configuration::updateValue($closeKey, Tools::getValue($closeKey));
+                $hoursKey = 'EVERBLOCK_HOLIDAY_HOURS_' . (int) $store['id_store'] . '_' . $date;
+                Configuration::updateValue($hoursKey, Tools::getValue($hoursKey));
             }
         }
         Configuration::updateValue(
