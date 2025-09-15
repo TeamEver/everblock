@@ -795,6 +795,7 @@
     position: relative;
     display: inline-block;
     width: 100%;
+    max-width: 100vh;
 }
 
 .ever-wheel-canvas {
@@ -804,6 +805,8 @@
     display: block;
     width: 100%;
     height: auto;
+    max-width: 100vh;
+    max-height: 100vh;
 }
 
 .ever-wheel-arrow {
