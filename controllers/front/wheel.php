@@ -50,6 +50,20 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             ]));
         }
         $already = Db::getInstance()->getValue('SELECT id_everblock_game_play FROM ' . _DB_PREFIX_ . 'everblock_game_play WHERE id_customer = ' . $idCustomer . ' AND id_prettyblocks = ' . $idBlock);
+        $checkOnly = (bool) Tools::getValue('check');
+        if ($checkOnly) {
+            if ($already) {
+                die(json_encode([
+                    'status' => false,
+                    'played' => true,
+                    'message' => $this->module->l('You have already played', 'wheel'),
+                ]));
+            }
+            die(json_encode([
+                'status' => true,
+                'played' => false,
+            ]));
+        }
         if ($already) {
             die(json_encode([
                 'status' => false,
