@@ -78,7 +78,6 @@ class EverblockPrettyBlocks extends ObjectModel
             $guidedSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guided_selector.tpl';
             $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
             $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
-            $progressbarTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_progressbar.tpl';
             $countersTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_counters.tpl';
             $countdownTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_countdown.tpl';
             $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
@@ -3562,93 +3561,6 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Number of products to display (0 for default)'),
                             'default' => 0,
-                        ],
-                        'css_class' => [
-                            'type' => 'text',
-                            'label' => $module->l('Custom CSS class'),
-                            'default' => '',
-                        ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
-                ],
-            ];
-            $blocks[] = [
-                'name' => $module->l('Progress bars'),
-                'description' => $module->l('Display progress bars'),
-                'code' => 'everblock_progressbar',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $progressbarTemplate,
-                ],
-                'repeater' => [
-                    'name' => 'Bar',
-                    'nameFrom' => 'text',
-                    'groups' => [
-                        'text' => [
-                            'type' => 'text',
-                            'label' => $module->l('Bar text'),
-                            'default' => $module->l('Progress'),
-                        ],
-                        'value' => [
-                            'type' => 'text',
-                            'label' => $module->l('Progress value (0-100)'),
-                            'default' => '50',
-                        ],
-                        'style' => [
-                            'type' => 'select',
-                            'label' => $module->l('Bar style'),
-                            'default' => 'bg-success',
-                            'choices' => [
-                                'bg-primary' => 'bg-primary',
-                                'bg-secondary' => 'bg-secondary',
-                                'bg-success' => 'bg-success',
-                                'bg-danger' => 'bg-danger',
-                                'bg-warning' => 'bg-warning',
-                                'bg-info' => 'bg-info',
-                                'bg-light' => 'bg-light',
-                                'bg-dark' => 'bg-dark',
-                            ],
                         ],
                         'css_class' => [
                             'type' => 'text',
