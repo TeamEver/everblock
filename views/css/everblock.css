@@ -797,3 +797,12 @@
     transform-origin: 50% 50%;
     display: block;
 }
+.ever-wheel-top-text,
+.ever-wheel-bottom-text,
+.ever-wheel-login-text {
+    margin-bottom: 1rem;
+}
+
+.ever-wheel-bottom-text {
+    margin-top: 1rem;
+}

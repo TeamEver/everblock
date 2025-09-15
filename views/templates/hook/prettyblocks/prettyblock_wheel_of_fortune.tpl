@@ -35,11 +35,14 @@
         <div class="ever-wheel-of-fortune text-center" data-block-id="{$block.id_prettyblocks}" data-config="{$wheelConfig|json_encode|base64_encode|escape:'htmlall':'UTF-8'}">
             {if $block.settings.title}<h3>{$block.settings.title|escape:'htmlall':'UTF-8'}</h3>{/if}
             {if $customer.is_logged}
+                {if $block.settings.top_text}<div class="ever-wheel-top-text">{$block.settings.top_text nofilter}</div>{/if}
                 <canvas class="ever-wheel-canvas mb-3" style="width:100%;height:auto;"></canvas>
                 <button class="btn btn-primary ever-wheel-spin">{$block.settings.button_label|escape:'htmlall':'UTF-8'}</button>
+                {if $block.settings.bottom_text}<div class="ever-wheel-bottom-text">{$block.settings.bottom_text nofilter}</div>{/if}
             {else}
                 <div class="ever-wheel-forms mt-2 row justify-content-center">
                     <div class="col-md-5">
+                        {if $block.settings.login_text}<div class="ever-wheel-login-text mb-3">{$block.settings.login_text nofilter}</div>{/if}
                         <form action="{$link->getPageLink('authentication', true)|escape:'htmlall':'UTF-8'}?back={$urls.current_url|escape:'htmlall':'UTF-8'}" method="post" class="card card-block ever-wheel-login-form">
                             <h4 class="card-title">{l s='Sign in to play' mod='everblock'}</h4>
                             <div class="card-body">
