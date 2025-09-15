@@ -203,6 +203,17 @@ $(document).ready(function(){
         });
     });
     $('.everModalAutoTrigger').modal('show');
+    // Wheel login modal handlers
+    $(document).on('click', '.ever-wheel-login-btn', function(e){
+        e.preventDefault();
+        $('#everWheelLoginModal').modal('show');
+    });
+    $(document).on('hidden.bs.modal', '#everWheelLoginModal', function(){
+        var form = $(this).find('form')[0];
+        if(form){
+            form.reset();
+        }
+    });
     // Sélectionner tous les éléments avec la classe "ever-slide"
     let sliders = $('.ever-slide');
     // Parcourir chaque élément slider
@@ -590,6 +601,7 @@ $(document).ready(function(){
         var spinUrl = config.spinUrl || '';
         var token = config.token || '';
         var blockId = $container.data('block-id') || 0;
+        var isLogged = typeof prestashop !== 'undefined' && prestashop.customer && prestashop.customer.is_logged;
 
         function initWheel() {
             var $canvas = $container.find('.ever-wheel-canvas');
@@ -659,6 +671,10 @@ $(document).ready(function(){
 
             drawWheel();
             $(window).on('resize', drawWheel);
+
+            if (!isLogged) {
+                return;
+            }
 
             function showWheelModal(msg, code) {
                 var codeHtml = '';

@@ -43,30 +43,39 @@
                 <button class="btn btn-primary ever-wheel-spin">{$block.settings.button_label|escape:'htmlall':'UTF-8'}</button>
                 {if $block.settings.bottom_text}<div class="ever-wheel-bottom-text">{$block.settings.bottom_text nofilter}</div>{/if}
             {else}
-                <div class="ever-wheel-forms mt-2 row justify-content-center">
-                    <div class="col-md-5">
-                        {if $block.settings.login_text}<div class="ever-wheel-login-text mb-3">{$block.settings.login_text nofilter}</div>{/if}
-                        <form action="{$link->getPageLink('authentication', true)|escape:'htmlall':'UTF-8'}?back={$urls.current_url|escape:'htmlall':'UTF-8'}" method="post" class="card card-block ever-wheel-login-form">
-                            <h4 class="card-title">{l s='Sign in to play' mod='everblock'}</h4>
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="ever-wheel-login-email">{l s='Email' mod='everblock'}</label>
-                                    <input id="ever-wheel-login-email" class="form-control" type="email" name="email" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="ever-wheel-login-password">{l s='Password' mod='everblock'}</label>
-                                    <input id="ever-wheel-login-password" class="form-control js-visible-password" type="password" name="password" required>
-                                </div>
-                                <input type="hidden" name="submitLogin" value="1">
-                                <input type="hidden" name="back" value="{$urls.current_url|escape:'htmlall':'UTF-8'}">
-                                <button class="btn btn-primary btn-block" type="submit">{l s='Sign in' mod='everblock'}</button>
+                {if $block.settings.top_text}<div class="ever-wheel-top-text mb-4">{$block.settings.top_text nofilter}</div>{/if}
+                <div class="ever-wheel-wrapper mb-4 mt-4 ever-wheel-disabled" style="filter: grayscale(100%);opacity:0.5;pointer-events:none;">
+                    <canvas class="ever-wheel-canvas"></canvas>
+                    <div class="ever-wheel-arrow"></div>
+                </div>
+                <button class="btn btn-primary ever-wheel-login-btn">{l s='Connectez-vous pour jouer' mod='everblock'}</button>
+                {if $block.settings.bottom_text}<div class="ever-wheel-bottom-text">{$block.settings.bottom_text nofilter}</div>{/if}
+                <div class="modal fade" id="everWheelLoginModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{l s='Connexion' mod='everblock'}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{l s='Close' mod='everblock'}"></button>
                             </div>
-                            <div class="card-body pt-0">
-                                <p class="mb-0 text-center">
+                            <div class="modal-body">
+                                <form action="{$link->getPageLink('authentication', true)|escape:'htmlall':'UTF-8'}?back={$urls.current_url|escape:'htmlall':'UTF-8'}" method="post" class="ever-wheel-login-form">
+                                    <div class="form-group">
+                                        <label for="ever-wheel-login-email">{l s='Email' mod='everblock'}</label>
+                                        <input id="ever-wheel-login-email" class="form-control" type="email" name="email" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ever-wheel-login-password">{l s='Password' mod='everblock'}</label>
+                                        <input id="ever-wheel-login-password" class="form-control js-visible-password" type="password" name="password" required>
+                                    </div>
+                                    <input type="hidden" name="submitLogin" value="1">
+                                    <input type="hidden" name="back" value="{$urls.current_url|escape:'htmlall':'UTF-8'}">
+                                    <button class="btn btn-primary btn-block" type="submit">{l s='Sign in' mod='everblock'}</button>
+                                </form>
+                                <div class="text-center mt-3">
                                     <a href="{$link->getPageLink('authentication', true)|escape:'htmlall':'UTF-8'}?create_account=1&back={$urls.current_url|escape:'htmlall':'UTF-8'}">{l s='Create account' mod='everblock'}</a>
-                                </p>
+                                </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             {/if}
