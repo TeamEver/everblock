@@ -684,7 +684,7 @@ $(document).ready(function(){
                 return;
             }
 
-            function showWheelModal(msg, code) {
+            function showWheelModal(msg, code, categories) {
                 var codeHtml = '';
                 if (code) {
                     codeHtml = '<div class="ever-wheel-code-wrapper">'
@@ -692,6 +692,10 @@ $(document).ready(function(){
                         + '<button type="button" class="btn btn-secondary btn-sm ms-2 ever-wheel-copy">Copier</button>'
                         + '<span class="ever-wheel-copy-feedback ms-2 text-success" style="display:none;"></span>'
                         + '</div>';
+                }
+                var categoriesHtml = '';
+                if (categories) {
+                    categoriesHtml = '<p class="ever-wheel-categories">' + categories + '</p>';
                 }
                 $('#everWheelModal').remove();
                 var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
@@ -703,7 +707,7 @@ $(document).ready(function(){
                     + '</button>'
                     + '</div>'
                     + '<div class="modal-body text-center">'
-                    + '<p>' + msg + '</p>' + codeHtml
+                    + '<p>' + msg + '</p>' + codeHtml + categoriesHtml
                     + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal" data-bs-dismiss="modal">OK</button>'
                     + '</div></div></div></div>';
                 $('body').append(modal);
@@ -758,13 +762,15 @@ $(document).ready(function(){
                             $canvas.one('transitionend', function () {
                                 var isWinning = res.result && (res.result.isWinning || res.result.is_winning);
                                 var code = isWinning ? res.code : null;
-                                showWheelModal(msg, code);
+                                var categories = isWinning ? res.categories_message : '';
+                                showWheelModal(msg, code, categories);
                                 $btn.prop('disabled', false);
                             });
                         } else {
                             var isWinning = res.result && (res.result.isWinning || res.result.is_winning);
                             var code = isWinning ? res.code : null;
-                            showWheelModal(msg, code);
+                            var categories = isWinning ? res.categories_message : '';
+                            showWheelModal(msg, code, categories);
                             $btn.prop('disabled', false);
                         }
                     },

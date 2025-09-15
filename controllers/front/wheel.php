@@ -156,22 +156,33 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             $voucher->active = 1;
             $voucher->add();
             $idCategories = array_map('intval', (array) ($result['id_categories'] ?? []));
+            $categoryNames = [];
             if (!empty($idCategories)) {
-                Db::getInstance()->insert('cart_rule_product_rule_group', [
-                    'id_cart_rule' => (int) $voucher->id,
-                    'quantity' => 1,
-                ]);
-                $idGroup = (int) Db::getInstance()->Insert_ID();
-                Db::getInstance()->insert('cart_rule_product_rule', [
-                    'id_product_rule_group' => $idGroup,
-                    'type' => 'categories',
-                ]);
-                $idRule = (int) Db::getInstance()->Insert_ID();
+                $validCategoryIds = [];
                 foreach ($idCategories as $idCategory) {
-                    Db::getInstance()->insert('cart_rule_product_rule_value', [
-                        'id_product_rule' => $idRule,
-                        'id_item' => $idCategory,
+                    $category = new Category($idCategory, $idLang, $idShop);
+                    if (Validate::isLoadedObject($category) && $category->active && $category->isAssociatedToShop($idShop)) {
+                        $validCategoryIds[] = $idCategory;
+                        $categoryNames[] = $category->name;
+                    }
+                }
+                if (!empty($validCategoryIds)) {
+                    Db::getInstance()->insert('cart_rule_product_rule_group', [
+                        'id_cart_rule' => (int) $voucher->id,
+                        'quantity' => 1,
                     ]);
+                    $idGroup = (int) Db::getInstance()->Insert_ID();
+                    Db::getInstance()->insert('cart_rule_product_rule', [
+                        'id_product_rule_group' => $idGroup,
+                        'type' => 'categories',
+                    ]);
+                    $idRule = (int) Db::getInstance()->Insert_ID();
+                    foreach ($validCategoryIds as $idCategory) {
+                        Db::getInstance()->insert('cart_rule_product_rule_value', [
+                            'id_product_rule' => $idRule,
+                            'id_item' => $idCategory,
+                        ]);
+                    }
                 }
             }
         }
@@ -184,12 +195,17 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         $message = $isWinning
             ? $this->module->l('You won:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code
             : $this->module->l('You lost:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
+        $categoriesMessage = '';
+        if (!empty($categoryNames)) {
+            $categoriesMessage = $this->module->l('Valid for categories:', 'wheel') . ' ' . implode(', ', $categoryNames);
+        }
         die(json_encode([
             'status' => true,
             'result' => $result,
             'index' => $index,
             'code' => $code,
             'message' => $message,
+            'categories_message' => $categoriesMessage,
         ]));
     }
 }
