@@ -101,7 +101,7 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             $segment['probability'] = $prob;
             $segment['discount'] = isset($segment['discount']) ? (float) $segment['discount'] : 0;
             $segment['id_categories'] = array_map('intval', (array) ($segment['id_categories'] ?? []));
-            $segment['isWinning'] = isset($segment['isWinning']) ? (bool) $segment['isWinning'] : false;
+            $segment['isWinning'] = filter_var($segment['isWinning'] ?? false, FILTER_VALIDATE_BOOLEAN);
             $total += $prob;
         }
         unset($segment);
@@ -133,7 +133,7 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 $resultLabel = (string) $result['label'];
             }
         }
-        $isWinning = !empty($result['isWinning']);
+        $isWinning = filter_var($result['isWinning'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $code = null;
         if ($isWinning) {
             $code = $prefix . Tools::strtoupper(Tools::passwdGen(8));
