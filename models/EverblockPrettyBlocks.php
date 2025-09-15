@@ -4950,6 +4950,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Color'),
                             'default' => '#ff0000',
                         ],
+                        'text_color' => [
+                            'type' => 'color',
+                            'label' => $module->l('Text color'),
+                            'default' => '#ffffff',
+                        ],
                         'discount' => [
                             'type' => 'text',
                             'label' => $module->l('Discount value'),
