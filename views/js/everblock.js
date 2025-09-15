@@ -598,7 +598,7 @@ $(document).ready(function(){
             }
             var currentRotation = 0;
             function drawWheel() {
-                var dimension = $container.width();
+                var dimension = Math.min($container.width(), $(window).height());
                 $canvas.attr('width', dimension).attr('height', dimension);
                 var ctx = $canvas[0].getContext('2d');
                 ctx.clearRect(0, 0, dimension, dimension);
