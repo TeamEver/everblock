@@ -4965,6 +4965,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Category ID'),
                             'default' => '',
                         ],
+                        'isWinning' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Winning segment'),
+                            'default' => false,
+                        ],
                     ],
                 ],
             ];

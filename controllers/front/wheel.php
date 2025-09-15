@@ -101,9 +101,16 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             $segment['probability'] = $prob;
             $segment['discount'] = isset($segment['discount']) ? (float) $segment['discount'] : 0;
             $segment['id_category'] = isset($segment['id_category']) ? (int) $segment['id_category'] : 0;
+            $segment['isWinning'] = isset($segment['isWinning']) ? (bool) $segment['isWinning'] : false;
             $total += $prob;
         }
         unset($segment);
+        if ($total <= 0) {
+            die(json_encode([
+                'status' => false,
+                'message' => $this->module->l('Invalid probabilities', 'wheel'),
+            ]));
+        }
         $rand = (float) mt_rand() / (float) mt_getrandmax() * $total;
         $acc = 0;
         $result = reset($segments);
@@ -126,41 +133,45 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 $resultLabel = (string) $result['label'];
             }
         }
-        $code = $prefix . Tools::strtoupper(Tools::passwdGen(8));
-        $voucher = new CartRule();
-        foreach (Language::getIDs(false) as $idLang) {
-            $voucher->name[(int) $idLang] = $couponName;
-        }
-        $voucher->code = $code;
-        $voucher->id_customer = (int) $this->context->customer->id;
-        $voucher->date_from = date('Y-m-d H:i:s');
-        $voucher->date_to = date('Y-m-d H:i:s', strtotime('+' . $validity . ' days'));
-        $voucher->quantity = 1;
-        $voucher->quantity_per_user = 1;
-        if ($discountType === 'amount') {
-            $voucher->reduction_amount = isset($result['discount']) ? (float) $result['discount'] : 0;
-            $voucher->reduction_tax = 1;
-        } else {
-            $voucher->reduction_percent = isset($result['discount']) ? (float) $result['discount'] : 10;
-        }
-        $voucher->active = 1;
-        $voucher->add();
-        $idCategory = (int) ($result['id_category'] ?? 0);
-        if ($idCategory > 0) {
-            Db::getInstance()->insert('cart_rule_product_rule_group', [
-                'id_cart_rule' => (int) $voucher->id,
-                'quantity' => 1,
-            ]);
-            $idGroup = (int) Db::getInstance()->Insert_ID();
-            Db::getInstance()->insert('cart_rule_product_rule', [
-                'id_product_rule_group' => $idGroup,
-                'type' => 'categories',
-            ]);
-            $idRule = (int) Db::getInstance()->Insert_ID();
-            Db::getInstance()->insert('cart_rule_product_rule_value', [
-                'id_product_rule' => $idRule,
-                'id_item' => $idCategory,
-            ]);
+        $isWinning = !empty($result['isWinning']);
+        $code = null;
+        if ($isWinning) {
+            $code = $prefix . Tools::strtoupper(Tools::passwdGen(8));
+            $voucher = new CartRule();
+            foreach (Language::getIDs(false) as $idLang) {
+                $voucher->name[(int) $idLang] = $couponName;
+            }
+            $voucher->code = $code;
+            $voucher->id_customer = (int) $this->context->customer->id;
+            $voucher->date_from = date('Y-m-d H:i:s');
+            $voucher->date_to = date('Y-m-d H:i:s', strtotime('+' . $validity . ' days'));
+            $voucher->quantity = 1;
+            $voucher->quantity_per_user = 1;
+            if ($discountType === 'amount') {
+                $voucher->reduction_amount = isset($result['discount']) ? (float) $result['discount'] : 0;
+                $voucher->reduction_tax = 1;
+            } else {
+                $voucher->reduction_percent = isset($result['discount']) ? (float) $result['discount'] : 10;
+            }
+            $voucher->active = 1;
+            $voucher->add();
+            $idCategory = (int) ($result['id_category'] ?? 0);
+            if ($idCategory > 0) {
+                Db::getInstance()->insert('cart_rule_product_rule_group', [
+                    'id_cart_rule' => (int) $voucher->id,
+                    'quantity' => 1,
+                ]);
+                $idGroup = (int) Db::getInstance()->Insert_ID();
+                Db::getInstance()->insert('cart_rule_product_rule', [
+                    'id_product_rule_group' => $idGroup,
+                    'type' => 'categories',
+                ]);
+                $idRule = (int) Db::getInstance()->Insert_ID();
+                Db::getInstance()->insert('cart_rule_product_rule_value', [
+                    'id_product_rule' => $idRule,
+                    'id_item' => $idCategory,
+                ]);
+            }
         }
         Db::getInstance()->insert('everblock_game_play', [
             'id_prettyblocks' => $idBlock,
@@ -168,12 +179,15 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             'result' => pSQL($resultLabel),
             'date_add' => date('Y-m-d H:i:s'),
         ]);
+        $message = $isWinning
+            ? $this->module->l('You won:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code
+            : $this->module->l('You lost:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
         die(json_encode([
             'status' => true,
             'result' => $result,
             'index' => $index,
             'code' => $code,
-            'message' => $this->module->l('You won:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code,
+            'message' => $message,
         ]));
     }
 }
