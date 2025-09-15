@@ -28,6 +28,9 @@ Please check ps_hook table on your database to see every available hook on your 
 ## Pretty Blocks compatibility
 This module is compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
 
+### Wheel of fortune segments
+Segments for the wheel now accept an array of category IDs through the `id_categories` field. Use this to restrict generated coupons to one or more categories. The former `id_category` field is deprecated.
+
 In the PrettyBlocks cover block, you can choose Bootstrap button classes, including outline variants:
 
 <button type="button" class="btn btn-outline-primary">Primary</button> 

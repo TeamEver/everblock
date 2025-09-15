@@ -16,6 +16,14 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 $(document).ready(function(){
+    var $wheelCatSelects = $('select[name$="[id_categories][]"], select[name$="[id_categories]"]');
+    if ($wheelCatSelects.length) {
+        if ($.fn.select2) {
+            $wheelCatSelects.select2();
+        } else if ($.fn.chosen) {
+            $wheelCatSelects.chosen();
+        }
+    }
     function makeLoopUrl(url) {
         if (!url) {
             return url;

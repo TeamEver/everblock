@@ -100,7 +100,7 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             $prob = isset($segment['probability']) ? (float) $segment['probability'] : 1;
             $segment['probability'] = $prob;
             $segment['discount'] = isset($segment['discount']) ? (float) $segment['discount'] : 0;
-            $segment['id_category'] = isset($segment['id_category']) ? (int) $segment['id_category'] : 0;
+            $segment['id_categories'] = array_map('intval', (array) ($segment['id_categories'] ?? []));
             $segment['isWinning'] = isset($segment['isWinning']) ? (bool) $segment['isWinning'] : false;
             $total += $prob;
         }
@@ -155,8 +155,8 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             }
             $voucher->active = 1;
             $voucher->add();
-            $idCategory = (int) ($result['id_category'] ?? 0);
-            if ($idCategory > 0) {
+            $idCategories = array_map('intval', (array) ($result['id_categories'] ?? []));
+            if (!empty($idCategories)) {
                 Db::getInstance()->insert('cart_rule_product_rule_group', [
                     'id_cart_rule' => (int) $voucher->id,
                     'quantity' => 1,
@@ -167,10 +167,12 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                     'type' => 'categories',
                 ]);
                 $idRule = (int) Db::getInstance()->Insert_ID();
-                Db::getInstance()->insert('cart_rule_product_rule_value', [
-                    'id_product_rule' => $idRule,
-                    'id_item' => $idCategory,
-                ]);
+                foreach ($idCategories as $idCategory) {
+                    Db::getInstance()->insert('cart_rule_product_rule_value', [
+                        'id_product_rule' => $idRule,
+                        'id_item' => $idCategory,
+                    ]);
+                }
             }
         }
         Db::getInstance()->insert('everblock_game_play', [

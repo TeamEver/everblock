@@ -3550,10 +3550,13 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => 'Tab title',
                             'default' => Configuration::get('PS_SHOP_NAME'),
                         ],
-                        'id_category' => [
-                            'type' => 'text',
-                            'label' => $module->l('Category ID'),
-                            'default' => '',
+                        'id_categories' => [
+                            'type' => 'selector',
+                            'label' => $module->l('Categories'),
+                            'collection' => 'Category',
+                            'selector' => '{id} - {name}',
+                            'multiple' => true,
+                            'default' => [],
                         ],
                         'nb_products' => [
                             'type' => 'text',
@@ -4960,10 +4963,13 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Discount value'),
                             'default' => '10',
                         ],
-                        'id_category' => [
-                            'type' => 'text',
-                            'label' => $module->l('Category ID'),
-                            'default' => '',
+                        'id_categories' => [
+                            'type' => 'selector',
+                            'label' => $module->l('Coupon category restrictions'),
+                            'collection' => 'Category',
+                            'selector' => '{id} - {name}',
+                            'multiple' => true,
+                            'default' => [],
                         ],
                         'isWinning' => [
                             'type' => 'checkbox',
