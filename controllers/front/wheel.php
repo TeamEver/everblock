@@ -92,12 +92,22 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         unset($segment);
         $rand = (float) mt_rand() / (float) mt_getrandmax() * $total;
         $acc = 0;
-        $result = $segments[0];
+        $result = reset($segments);
         foreach ($segments as $segment) {
             $acc += $segment['probability'];
             if ($rand <= $acc) {
                 $result = $segment;
                 break;
+            }
+        }
+
+        $resultLabel = '';
+        if (isset($result['label'])) {
+            if (is_array($result['label'])) {
+                $labels = $result['label'];
+                $resultLabel = (string) ($labels[$idLang] ?? reset($labels));
+            } else {
+                $resultLabel = (string) $result['label'];
             }
         }
         $code = $prefix . Tools::strtoupper(Tools::passwdGen(8));
@@ -139,14 +149,14 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         Db::getInstance()->insert('everblock_game_play', [
             'id_prettyblocks' => $idBlock,
             'id_customer' => $idCustomer,
-            'result' => pSQL($result['label'] ?? ''),
+            'result' => pSQL($resultLabel),
             'date_add' => date('Y-m-d H:i:s'),
         ]);
         die(json_encode([
             'status' => true,
             'result' => $result,
             'code' => $code,
-            'message' => $this->module->l('You won:', 'wheel') . ' ' . htmlspecialchars($result['label'] ?? '', ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code,
+            'message' => $this->module->l('You won:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code,
         ]));
     }
 }
