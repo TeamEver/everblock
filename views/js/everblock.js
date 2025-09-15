@@ -632,19 +632,25 @@ $(document).ready(function(){
                     var textY = size + Math.sin(textAngle) * textRadius;
                     ctx.save();
                     ctx.fillStyle = seg.text_color || '#ffffff';
-                    ctx.font = Math.max(12, size / 10) + 'px sans-serif';
+                    var fontSize = Math.max(12, size / 10);
+                    ctx.font = fontSize + 'px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     var label = seg.label;
                     if (typeof label === 'object') {
                         label = Object.values(label)[0] || '';
                     }
+                    label = label || '';
                     ctx.translate(textX, textY);
                     ctx.rotate(textAngle + Math.PI / 2);
                     if (textAngle > Math.PI / 2 && textAngle < 3 * Math.PI / 2) {
                         ctx.rotate(Math.PI);
                     }
-                    ctx.fillText(label || '', 0, 0);
+                    var letters = label.split('');
+                    var startY = -((letters.length - 1) * fontSize) / 2;
+                    letters.forEach(function (ch, idx) {
+                        ctx.fillText(ch, 0, startY + idx * fontSize);
+                    });
                     ctx.restore();
                     segmentCenters[i] = textAngle * 180 / Math.PI;
                     start += step;
