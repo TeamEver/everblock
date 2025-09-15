@@ -35,8 +35,8 @@
         <div class="ever-wheel-of-fortune text-center" data-block-id="{$block.id_prettyblocks}" data-config="{$wheelConfig|json_encode|base64_encode|escape:'htmlall':'UTF-8'}">
             {if $block.settings.title}<h3>{$block.settings.title|escape:'htmlall':'UTF-8'}</h3>{/if}
             {if $customer.is_logged}
-                {if $block.settings.top_text}<div class="ever-wheel-top-text">{$block.settings.top_text nofilter}</div>{/if}
-                <div class="ever-wheel-wrapper mb-3">
+                {if $block.settings.top_text}<div class="ever-wheel-top-text mb-4">{$block.settings.top_text nofilter}</div>{/if}
+                <div class="ever-wheel-wrapper mb-4 mt-4">
                     <canvas class="ever-wheel-canvas"></canvas>
                     <div class="ever-wheel-arrow"></div>
                 </div>
