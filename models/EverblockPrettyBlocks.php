@@ -4850,6 +4850,21 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Button label'),
                             'default' => $module->l('Spin'),
                         ],
+                        'login_text' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Text above login form'),
+                            'default' => '',
+                        ],
+                        'top_text' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Text above the wheel'),
+                            'default' => '',
+                        ],
+                        'bottom_text' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Text below the wheel'),
+                            'default' => '',
+                        ],
                         'coupon_name' => [
                             'type' => 'text',
                             'label' => $module->l('Coupon name'),
