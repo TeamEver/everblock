@@ -56,7 +56,9 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 'message' => $this->module->l('You have already played', 'wheel'),
             ]));
         }
-        $row = Db::getInstance()->getRow('SELECT config, state FROM ' . _DB_PREFIX_ . 'prettyblocks WHERE id_prettyblocks = ' . $idBlock);
+        $idShop = (int) $this->context->shop->id;
+        $idLang = (int) $this->context->language->id;
+        $row = Db::getInstance()->getRow('SELECT config, state FROM ' . _DB_PREFIX_ . 'prettyblocks WHERE id_prettyblocks = ' . $idBlock . ' AND id_shop = ' . $idShop . ' AND id_lang = ' . $idLang);
         if (!$row) {
             die(json_encode([
                 'status' => false,
