@@ -107,10 +107,12 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         $rand = (float) mt_rand() / (float) mt_getrandmax() * $total;
         $acc = 0;
         $result = reset($segments);
-        foreach ($segments as $segment) {
+        $index = 0;
+        foreach ($segments as $i => $segment) {
             $acc += $segment['probability'];
             if ($rand <= $acc) {
                 $result = $segment;
+                $index = (int) $i;
                 break;
             }
         }
@@ -169,6 +171,7 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         die(json_encode([
             'status' => true,
             'result' => $result,
+            'index' => $index,
             'code' => $code,
             'message' => $this->module->l('You won:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code,
         ]));
