@@ -612,6 +612,21 @@ $(document).ready(function(){
                     ctx.arc(size, size, size, start, start + step);
                     ctx.lineTo(size, size);
                     ctx.fill();
+                    var textAngle = start + step / 2;
+                    var textRadius = size * 0.65;
+                    var textX = size + Math.cos(textAngle) * textRadius;
+                    var textY = size + Math.sin(textAngle) * textRadius;
+                    ctx.save();
+                    ctx.fillStyle = seg.text_color || '#ffffff';
+                    ctx.font = Math.max(12, size / 10) + 'px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    var label = seg.label;
+                    if (typeof label === 'object') {
+                        label = Object.values(label)[0] || '';
+                    }
+                    ctx.fillText(label || '', textX, textY);
+                    ctx.restore();
                     start += step;
                 });
             }
