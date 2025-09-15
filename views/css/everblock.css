@@ -791,11 +791,33 @@
 }
 
 /* Wheel of fortune */
+.ever-wheel-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
 .ever-wheel-canvas {
     transition: transform 4s cubic-bezier(.33, .66, .66, 1);
     transform: rotate(0deg);
     transform-origin: 50% 50%;
     display: block;
+    width: 100%;
+    height: auto;
+}
+
+.ever-wheel-arrow {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 30px solid #333;
+    z-index: 10;
+    pointer-events: none;
 }
 .ever-wheel-top-text,
 .ever-wheel-bottom-text,

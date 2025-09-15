@@ -36,7 +36,10 @@
             {if $block.settings.title}<h3>{$block.settings.title|escape:'htmlall':'UTF-8'}</h3>{/if}
             {if $customer.is_logged}
                 {if $block.settings.top_text}<div class="ever-wheel-top-text">{$block.settings.top_text nofilter}</div>{/if}
-                <canvas class="ever-wheel-canvas mb-3" style="width:100%;height:auto;"></canvas>
+                <div class="ever-wheel-wrapper mb-3">
+                    <canvas class="ever-wheel-canvas"></canvas>
+                    <div class="ever-wheel-arrow"></div>
+                </div>
                 <button class="btn btn-primary ever-wheel-spin">{$block.settings.button_label|escape:'htmlall':'UTF-8'}</button>
                 {if $block.settings.bottom_text}<div class="ever-wheel-bottom-text">{$block.settings.bottom_text nofilter}</div>{/if}
             {else}

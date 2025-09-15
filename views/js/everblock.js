@@ -633,9 +633,32 @@ $(document).ready(function(){
 
             drawWheel();
             $(window).on('resize', drawWheel);
+
+            function showWheelModal(msg, code) {
+                var codeHtml = code ? '<p class="ever-wheel-code">' + code + '</p>' : '';
+                $('#everWheelModal').remove();
+                var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
+                    + '<div class="modal-dialog" role="document">'
+                    + '<div class="modal-content">'
+                    + '<div class="modal-header border-0">'
+                    + '<button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">'
+                    + '<span aria-hidden="true">&times;</span>'
+                    + '</button>'
+                    + '</div>'
+                    + '<div class="modal-body text-center">'
+                    + '<p>' + msg + '</p>' + codeHtml
+                    + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal" data-bs-dismiss="modal">OK</button>'
+                    + '</div></div></div></div>';
+                $('body').append(modal);
+                $('#everWheelModal').modal('show');
+                $('#everWheelModal').on('hidden.bs.modal', function () {
+                    $(this).remove();
+                });
+            }
+
             $container.find('.ever-wheel-spin').on('click', function () {
-                currentRotation += 360 * 5 + Math.floor(Math.random() * 360);
-                $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
+                var $btn = $(this);
+                $btn.prop('disabled', true);
                 $.ajax({
                     url: spinUrl,
                     type: 'POST',
@@ -646,25 +669,34 @@ $(document).ready(function(){
                     dataType: 'json',
                     success: function (res) {
                         var msg = res.message || '';
-                        var codeHtml = res.code ? '<p class="ever-wheel-code">' + res.code + '</p>' : '';
-                        $('#everWheelModal').remove();
-                        var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
-                            + '<div class="modal-dialog" role="document">'
-                            + '<div class="modal-content">'
-                            + '<div class="modal-header border-0">'
-                            + '<button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">'
-                            + '<span aria-hidden="true">&times;</span>'
-                            + '</button>'
-                            + '</div>'
-                            + '<div class="modal-body text-center">'
-                            + '<p>' + msg + '</p>' + codeHtml
-                            + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal" data-bs-dismiss="modal">OK</button>'
-                            + '</div></div></div></div>';
-                        $('body').append(modal);
-                        $('#everWheelModal').modal('show');
-                        $('#everWheelModal').on('hidden.bs.modal', function () {
-                            $(this).remove();
-                        });
+                        if (res && res.status && res.result) {
+                            var idx = typeof res.index !== 'undefined' ? res.index : -1;
+                            if (idx === -1) {
+                                idx = segments.findIndex(function (seg) {
+                                    return JSON.stringify(seg) === JSON.stringify(res.result);
+                                });
+                                if (idx === -1) {
+                                    idx = 0;
+                                }
+                            }
+                            var anglePerSegment = 360 / segments.length;
+                            var targetAngle = 270 - (idx * anglePerSegment + anglePerSegment / 2);
+                            if (targetAngle < 0) {
+                                targetAngle += 360;
+                            }
+                            currentRotation += 360 * 5 + targetAngle;
+                            $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
+                            $canvas.one('transitionend', function () {
+                                showWheelModal(msg, res.code);
+                                $btn.prop('disabled', false);
+                            });
+                        } else {
+                            showWheelModal(msg, res.code);
+                            $btn.prop('disabled', false);
+                        }
+                    },
+                    error: function () {
+                        $btn.prop('disabled', false);
                     }
                 });
             });
