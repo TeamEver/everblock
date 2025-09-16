@@ -3174,10 +3174,12 @@ class EverblockTools extends ObjectModel
 
                     // Plusieurs créneaux ? → on découpe
                     // Patterns autorisés :
-                    //   - "10h - 12h" (plage unique)
+                    //   - "10h - 12h" ou "10h – 12h" (plage unique)
                     //   - "10h - 12h / 14h - 18h" (plages multiples)
                     //   - "10h / 16h" (début et fin séparés par un slash)
+                    $normalizedSlot = self::normalizeDashes($slot);
                     $subSlots = explode(' / ', $slot);
+                    $normalizedSubSlots = explode(' / ', $normalizedSlot);
 
                     foreach ($subSlots as $subSlot) {
                         $hoursFormatted[] = trim($subSlot);
@@ -3185,9 +3187,9 @@ class EverblockTools extends ObjectModel
 
                     if (($i === $todayIndex) && (!$isHoliday || $todayStoreHolidaySlot)) {
                         $rangeHandled = false;
-                        foreach ($subSlots as $subSlot) {
-                            if (strpos($subSlot, '-') !== false) {
-                                $parts = preg_split('/\s*-\s*/', $subSlot);
+                        foreach ($normalizedSubSlots as $normalizedSubSlot) {
+                            if (strpos($normalizedSubSlot, '-') !== false) {
+                                $parts = preg_split('/\s*-\s*/', $normalizedSubSlot);
                                 $startRaw = $parts[0] ?? '';
                                 $endRaw = $parts[1] ?? '';
                                 $start = self::normalizeTime($startRaw);
@@ -3206,9 +3208,9 @@ class EverblockTools extends ObjectModel
                             }
                         }
 
-                        if (!$rangeHandled && count($subSlots) === 2) {
-                            $start = self::normalizeTime($subSlots[0]);
-                            $end = self::normalizeTime($subSlots[1]);
+                        if (!$rangeHandled && count($normalizedSubSlots) === 2) {
+                            $start = self::normalizeTime($normalizedSubSlots[0]);
+                            $end = self::normalizeTime($normalizedSubSlots[1]);
                             if ($start && $end) {
                                 if ($currentTime >= $start && $currentTime <= $end) {
                                     $store['is_open'] = true;
@@ -3270,6 +3272,17 @@ class EverblockTools extends ObjectModel
         }
 
         return null;
+    }
+
+    protected static function normalizeDashes($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        $result = preg_replace('/[\x{2010}-\x{2015}\x{2212}]/u', '-', $value);
+
+        return is_string($result) ? $result : $value;
     }
 
 
