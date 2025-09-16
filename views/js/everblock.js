@@ -672,28 +672,18 @@ $(document).ready(function(){
                     });
                     return adjustedLines.length ? adjustedLines : [''];
                 }
-                var totalProb = segments.reduce(function (sum, seg) {
-                    var p = parseFloat(seg.probability);
-                    return sum + (isNaN(p) ? 0 : p);
-                }, 0);
-                if (totalProb <= 0) {
-                    totalProb = segments.length || 1;
-                }
+                var segmentCount = segments.length || 1;
+                var stepAngle = 2 * Math.PI / segmentCount;
                 segmentCenters = [];
                 segments.forEach(function (seg, i) {
-                    var prob = parseFloat(seg.probability);
-                    prob = isNaN(prob) ? 0 : prob;
-                    var step = 2 * Math.PI * prob / totalProb;
-                    if (totalProb <= 0) {
-                        step = 2 * Math.PI / (segments.length || 1);
-                    }
+                    var end = start + stepAngle;
                     ctx.beginPath();
                     ctx.moveTo(size, size);
                     ctx.fillStyle = seg.color || '#' + Math.floor(Math.random() * 16777215).toString(16);
-                    ctx.arc(size, size, size, start, start + step);
+                    ctx.arc(size, size, size, start, end);
                     ctx.lineTo(size, size);
                     ctx.fill();
-                    var textAngle = start + step / 2;
+                    var textAngle = start + stepAngle / 2;
                     var textRadius = size * 0.65;
                     var textX = size + Math.cos(textAngle) * textRadius;
                     var textY = size + Math.sin(textAngle) * textRadius;
@@ -741,7 +731,7 @@ $(document).ready(function(){
                     });
                     ctx.restore();
                     segmentCenters[i] = textAngle * 180 / Math.PI;
-                    start += step;
+                    start = end;
                 });
             }
 
