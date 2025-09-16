@@ -830,3 +830,22 @@
 .ever-wheel-bottom-text {
     margin-top: 1rem;
 }
+
+.ever-wheel-status-message {
+    display: none;
+    margin-bottom: 1.5rem;
+}
+
+.ever-wheel-status-text > :last-child {
+    margin-bottom: 0;
+}
+
+.ever-wheel-countdown {
+    display: none;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.ever-wheel-countdown-label {
+    margin-right: 0.35rem;
+}

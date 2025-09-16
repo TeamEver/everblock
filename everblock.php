@@ -3490,10 +3490,22 @@ class Everblock extends Module
                 'modal'
             )
         );
+        $employeeLogged = false;
+        if (isset($this->context->employee) && $this->context->employee) {
+            if (method_exists($this->context->employee, 'isLoggedBack')) {
+                $employeeLogged = (bool) $this->context->employee->isLoggedBack();
+            }
+            if (!$employeeLogged && (int) $this->context->employee->id > 0) {
+                $employeeLogged = true;
+            }
+        }
+        $this->context->smarty->assign('everblock_is_employee', $employeeLogged);
+
         Media::addJsDef([
             'evercontact_link' => $contactLink,
             'evermodal_link' => $modalLink,
             'everblock_token' => Tools::getToken(),
+            'everblock_is_employee' => $employeeLogged,
         ]);
         $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
         if (file_exists($filePath) && filesize($filePath) > 0) {

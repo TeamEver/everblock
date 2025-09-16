@@ -71,50 +71,155 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             'wheel'
         );
         $checkOnly = (bool) Tools::getValue('check');
-        if ($checkOnly) {
-            if ($already || $ipAlready) {
-                die(json_encode([
-                    'status' => false,
-                    'played' => true,
-                    'message' => $refusalMessage,
-                ]));
-            }
-            die(json_encode([
-                'status' => true,
-                'played' => false,
-            ]));
-        }
-        if ($already || $ipAlready) {
-            die(json_encode([
-                'status' => false,
-                'message' => $refusalMessage,
-            ]));
-        }
         $idShop = (int) $this->context->shop->id;
         $idLang = (int) $this->context->language->id;
         $row = Db::getInstance()->getRow('SELECT config, state FROM ' . _DB_PREFIX_ . 'prettyblocks WHERE id_prettyblocks = ' . $idBlock . ' AND id_shop = ' . $idShop . ' AND id_lang = ' . $idLang);
         if (!$row) {
-            die(json_encode([
+            $response = [
                 'status' => false,
                 'message' => $this->module->l('Configuration not found', 'wheel'),
-            ]));
+            ];
+            if ($checkOnly) {
+                $response['played'] = false;
+                $response['playable'] = false;
+            }
+            die(json_encode($response));
         }
         $settings = json_decode($row['config'], true);
         if (!is_array($settings)) {
             $settings = [];
         }
-        $segments = json_decode($row['state'], true);
-        if (!is_array($segments) || empty($segments)) {
+        $rawSegments = json_decode($row['state'], true);
+
+        $startDateValue = $this->resolveConfigValue($settings['start_date'] ?? '');
+        $endDateValue = $this->resolveConfigValue($settings['end_date'] ?? '');
+        $preStartMessage = $this->resolveConfigValue($settings['pre_start_message'] ?? '');
+        $postEndMessage = $this->resolveConfigValue($settings['post_end_message'] ?? '');
+        $defaultPreStartMessage = $this->module->l('The game has not started yet.', 'wheel');
+        $defaultPostEndMessage = $this->module->l('The game is over.', 'wheel');
+        $employeeLogged = $this->isEmployeeLogged();
+        $now = time();
+        $startTimestamp = $this->parseDateTime($startDateValue);
+        $endTimestamp = $this->parseDateTime($endDateValue);
+        $isBeforeStart = $startTimestamp !== null && $now < $startTimestamp;
+        $isAfterEnd = $endTimestamp !== null && $now > $endTimestamp;
+
+        if (!$employeeLogged) {
+            if ($isBeforeStart) {
+                $message = $preStartMessage !== '' ? $preStartMessage : $defaultPreStartMessage;
+                $response = [
+                    'status' => false,
+                    'message' => $message,
+                    'playable' => false,
+                    'reason' => 'before_start',
+                ];
+                if ($checkOnly) {
+                    $response['played'] = false;
+                }
+                if ($startTimestamp !== null) {
+                    $response['start_timestamp'] = $startTimestamp;
+                    $response['countdown'] = max(0, $startTimestamp - $now);
+                }
+                die(json_encode($response));
+            }
+            if ($isAfterEnd) {
+                $message = $postEndMessage !== '' ? $postEndMessage : $defaultPostEndMessage;
+                $response = [
+                    'status' => false,
+                    'message' => $message,
+                    'playable' => false,
+                    'reason' => 'after_end',
+                ];
+                if ($checkOnly) {
+                    $response['played'] = false;
+                }
+                if ($endTimestamp !== null) {
+                    $response['end_timestamp'] = $endTimestamp;
+                }
+                die(json_encode($response));
+            }
+        }
+
+        if ($checkOnly) {
+            if ($already || $ipAlready) {
+                die(json_encode([
+                    'status' => false,
+                    'played' => true,
+                    'playable' => false,
+                    'message' => $refusalMessage,
+                ]));
+            }
+            if (!is_array($rawSegments) || empty($rawSegments)) {
+                die(json_encode([
+                    'status' => false,
+                    'played' => false,
+                    'playable' => false,
+                    'message' => $this->module->l('No segments available', 'wheel'),
+                ]));
+            }
+            die(json_encode([
+                'status' => true,
+                'played' => false,
+                'playable' => true,
+                'start_timestamp' => $startTimestamp,
+                'end_timestamp' => $endTimestamp,
+            ]));
+        }
+
+        if ($already || $ipAlready) {
+            die(json_encode([
+                'status' => false,
+                'message' => $refusalMessage,
+                'playable' => false,
+            ]));
+        }
+
+        $now = time();
+        $isBeforeStart = $startTimestamp !== null && $now < $startTimestamp;
+        $isAfterEnd = $endTimestamp !== null && $now > $endTimestamp;
+        if (!$employeeLogged) {
+            if ($isBeforeStart) {
+                $message = $preStartMessage !== '' ? $preStartMessage : $defaultPreStartMessage;
+                $response = [
+                    'status' => false,
+                    'message' => $message,
+                    'playable' => false,
+                    'reason' => 'before_start',
+                ];
+                if ($startTimestamp !== null) {
+                    $response['start_timestamp'] = $startTimestamp;
+                    $response['countdown'] = max(0, $startTimestamp - $now);
+                }
+                die(json_encode($response));
+            }
+            if ($isAfterEnd) {
+                $message = $postEndMessage !== '' ? $postEndMessage : $defaultPostEndMessage;
+                $response = [
+                    'status' => false,
+                    'message' => $message,
+                    'playable' => false,
+                    'reason' => 'after_end',
+                ];
+                if ($endTimestamp !== null) {
+                    $response['end_timestamp'] = $endTimestamp;
+                }
+                die(json_encode($response));
+            }
+        }
+
+        if (!is_array($rawSegments) || empty($rawSegments)) {
             die(json_encode([
                 'status' => false,
                 'message' => $this->module->l('No segments available', 'wheel'),
+                'playable' => false,
             ]));
         }
-        $segments = $this->normalizeSegments($segments);
+        $segments = $this->normalizeSegments($rawSegments);
         if (empty($segments)) {
             die(json_encode([
                 'status' => false,
                 'message' => $this->module->l('No segments available', 'wheel'),
+                'playable' => false,
             ]));
         }
         $defaultCouponName = 'Wheel reward';
@@ -441,6 +546,59 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             'categories_message' => $categoriesMessage,
             'minimum_purchase_message' => $minimumPurchaseMessage,
         ]));
+    }
+
+    private function parseDateTime($value)
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return null;
+        }
+
+        return (int) $timestamp;
+    }
+
+    private function resolveConfigValue($value)
+    {
+        if (is_array($value)) {
+            if (array_key_exists('value', $value)) {
+                return $this->resolveConfigValue($value['value']);
+            }
+            if (array_key_exists($this->context->language->id, $value)) {
+                return $this->resolveConfigValue($value[$this->context->language->id]);
+            }
+            $first = reset($value);
+            if ($first !== false) {
+                return $this->resolveConfigValue($first);
+            }
+
+            return '';
+        }
+
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+
+        return '';
+    }
+
+    private function isEmployeeLogged()
+    {
+        if (!isset($this->context->employee) || !$this->context->employee) {
+            return false;
+        }
+        if (method_exists($this->context->employee, 'isLoggedBack') && $this->context->employee->isLoggedBack()) {
+            return true;
+        }
+
+        return (int) $this->context->employee->id > 0;
     }
 
     private function normalizeSegments(array $segments)
