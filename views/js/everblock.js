@@ -662,15 +662,14 @@ $(document).ready(function(){
                     }
                     label = label || '';
                     ctx.translate(textX, textY);
-                    ctx.rotate(textAngle + Math.PI / 2);
-                    if (textAngle > Math.PI / 2 && textAngle < 3 * Math.PI / 2) {
-                        ctx.rotate(Math.PI);
-                    }
                     var letters = label.split('');
-                    var startY = -((letters.length - 1) * fontSize) / 2;
-                    letters.forEach(function (ch, idx) {
-                        ctx.fillText(ch, 0, startY + idx * fontSize);
-                    });
+                    if (letters.length) {
+                        var lineHeight = fontSize * 1.1;
+                        var startY = -((letters.length - 1) * lineHeight) / 2;
+                        letters.forEach(function (ch, idx) {
+                            ctx.fillText(ch, 0, startY + idx * lineHeight);
+                        });
+                    }
                     ctx.restore();
                     segmentCenters[i] = textAngle * 180 / Math.PI;
                     start += step;
