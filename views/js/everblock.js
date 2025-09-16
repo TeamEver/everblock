@@ -610,12 +610,291 @@ $(document).ready(function(){
         var token = config.token || '';
         var blockId = $container.data('block-id') || 0;
         var isLogged = typeof prestashop !== 'undefined' && prestashop.customer && prestashop.customer.is_logged;
+        var startDate = parseWheelDate(config.startDate);
+        var endDate = parseWheelDate(config.endDate);
+        var preStartMessage = typeof config.preStartMessage === 'string' ? config.preStartMessage : '';
+        var postEndMessage = typeof config.postEndMessage === 'string' ? config.postEndMessage : '';
+        var defaultPreStartMessage = typeof config.defaultPreStartMessage === 'string' ? config.defaultPreStartMessage : '';
+        var defaultPostEndMessage = typeof config.defaultPostEndMessage === 'string' ? config.defaultPostEndMessage : '';
+        var countdownLabel = typeof config.countdownLabel === 'string' ? config.countdownLabel : '';
+        var isEmployee = !!config.isEmployee;
+        if (!isEmployee && typeof everblock_is_employee !== 'undefined') {
+            isEmployee = !!everblock_is_employee;
+        }
+        var $statusMessage = $container.find('.ever-wheel-status-message');
+        var $statusText = $statusMessage.find('.ever-wheel-status-text');
+        var $countdownWrapper = $statusMessage.find('.ever-wheel-countdown');
+        var $countdownLabel = $countdownWrapper.find('.ever-wheel-countdown-label');
+        var $countdownValue = $countdownWrapper.find('.ever-wheel-countdown-value');
+        var $content = $container.find('.ever-wheel-content');
+        if (countdownLabel) {
+            $countdownLabel.text(countdownLabel);
+        }
+        var countdownTimer = null;
+        var countdownTargetDate = null;
+        var wheelCheckRequested = false;
+        var serverOverrideReason = null;
+        var serverOverrideMessage = '';
+        var serverStartDate = null;
+        var wheelInitialized = false;
+
+        function parseWheelDate(dateStr) {
+            if (typeof dateStr !== 'string') {
+                return null;
+            }
+            var trimmed = dateStr.trim();
+            if (!trimmed) {
+                return null;
+            }
+            var normalized = trimmed.replace('T', ' ');
+            var parts = normalized.split(/\s+/);
+            var dateParts = parts[0] ? parts[0].split('-') : [];
+            if (dateParts.length < 3) {
+                return null;
+            }
+            var year = parseInt(dateParts[0], 10);
+            var month = parseInt(dateParts[1], 10) - 1;
+            var day = parseInt(dateParts[2], 10);
+            var timeParts = parts[1] ? parts[1].split(':') : [];
+            var hour = parseInt(timeParts[0] || 0, 10);
+            var minute = parseInt(timeParts[1] || 0, 10);
+            var second = parseInt(timeParts[2] || 0, 10);
+            if ([year, month, day, hour, minute, second].some(function (value) { return isNaN(value); })) {
+                return null;
+            }
+            return new Date(year, month, day, hour, minute, second);
+        }
+
+        function clearCountdown() {
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+            countdownTargetDate = null;
+            $countdownValue.text('');
+            $countdownWrapper.hide();
+        }
+
+        function startCountdown(targetDate) {
+            if (!(targetDate instanceof Date)) {
+                clearCountdown();
+                return;
+            }
+            if (countdownTargetDate && countdownTargetDate.getTime() === targetDate.getTime()) {
+                return;
+            }
+            clearCountdown();
+            countdownTargetDate = targetDate;
+            if (countdownLabel) {
+                $countdownLabel.text(countdownLabel);
+            }
+            $countdownWrapper.show();
+
+            function updateCountdown() {
+                var now = new Date();
+                var diff = targetDate.getTime() - now.getTime();
+                if (diff <= 0) {
+                    clearCountdown();
+                    if (serverOverrideReason === 'before_start') {
+                        serverOverrideReason = null;
+                        serverOverrideMessage = '';
+                        serverStartDate = null;
+                        wheelCheckRequested = false;
+                    }
+                    setTimeout(function () {
+                        updateStatus();
+                    }, 100);
+                    return;
+                }
+                var totalSeconds = Math.floor(diff / 1000);
+                var days = Math.floor(totalSeconds / 86400);
+                totalSeconds -= days * 86400;
+                var hours = Math.floor(totalSeconds / 3600);
+                totalSeconds -= hours * 3600;
+                var minutes = Math.floor(totalSeconds / 60);
+                var seconds = totalSeconds - minutes * 60;
+                var parts = [];
+                if (days > 0) {
+                    parts.push(days + 'd');
+                }
+                parts.push(('0' + hours).slice(-2) + 'h');
+                parts.push(('0' + minutes).slice(-2) + 'm');
+                parts.push(('0' + seconds).slice(-2) + 's');
+                $countdownValue.text(parts.join(' '));
+            }
+
+            updateCountdown();
+            countdownTimer = setInterval(updateCountdown, 1000);
+        }
+
+        function evaluateStatus() {
+            var now = new Date();
+            var effectiveStart = serverStartDate || startDate;
+            var beforeStart = false;
+            var afterEnd = false;
+            var message = '';
+            var countdownTarget = null;
+
+            if (serverOverrideReason === 'after_end') {
+                afterEnd = true;
+                message = serverOverrideMessage || postEndMessage || defaultPostEndMessage;
+            } else {
+                if (effectiveStart instanceof Date) {
+                    if (serverOverrideReason === 'before_start') {
+                        beforeStart = true;
+                        countdownTarget = effectiveStart;
+                        message = serverOverrideMessage || preStartMessage || defaultPreStartMessage;
+                    } else if (now < effectiveStart) {
+                        beforeStart = true;
+                        countdownTarget = effectiveStart;
+                        message = preStartMessage || defaultPreStartMessage;
+                    }
+                }
+                if (!beforeStart && endDate instanceof Date && now > endDate) {
+                    afterEnd = true;
+                    message = postEndMessage || defaultPostEndMessage;
+                }
+            }
+
+            if (!message && beforeStart) {
+                message = preStartMessage || defaultPreStartMessage;
+            }
+            if (!message && afterEnd) {
+                message = postEndMessage || defaultPostEndMessage;
+            }
+
+            return {
+                beforeStart: beforeStart,
+                afterEnd: afterEnd,
+                active: !beforeStart && !afterEnd,
+                message: message,
+                countdownTarget: countdownTarget
+            };
+        }
+
+        function maybeStartWheel(force) {
+            if (wheelCheckRequested && !force) {
+                return;
+            }
+            if (!force) {
+                var status = evaluateStatus();
+                if (!status.active && !isEmployee) {
+                    return;
+                }
+            }
+            wheelCheckRequested = true;
+            if (spinUrl) {
+                $.ajax({
+                    url: spinUrl,
+                    type: 'POST',
+                    data: {
+                        id_block: blockId,
+                        token: token,
+                        check: 1
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res && res.played) {
+                            var playedMsg = res.message || '';
+                            $container.html('<p class="ever-wheel-already-played">' + playedMsg + '</p>');
+                            return;
+                        }
+                        if (res && res.playable === false && !isEmployee) {
+                            if (res.reason === 'before_start' || res.reason === 'after_end') {
+                                wheelCheckRequested = false;
+                                serverOverrideReason = res.reason;
+                                serverOverrideMessage = res.message || '';
+                                if (res.reason === 'before_start') {
+                                    if (typeof res.start_timestamp === 'number') {
+                                        serverStartDate = new Date(res.start_timestamp * 1000);
+                                    } else if (!serverStartDate) {
+                                        serverStartDate = startDate;
+                                    }
+                                } else {
+                                    serverStartDate = null;
+                                }
+                                updateStatus();
+                            } else {
+                                wheelCheckRequested = true;
+                                serverOverrideReason = null;
+                                serverOverrideMessage = '';
+                                if (res && res.message) {
+                                    $statusText.html(res.message);
+                                    $statusMessage.show();
+                                } else {
+                                    $statusMessage.hide();
+                                }
+                                $content.hide();
+                            }
+                            return;
+                        }
+                        serverOverrideReason = null;
+                        serverOverrideMessage = '';
+                        serverStartDate = null;
+                        initWheel();
+                    },
+                    error: function () {
+                        initWheel();
+                    }
+                });
+            } else {
+                initWheel();
+            }
+        }
+
+        function updateStatus() {
+            var status = evaluateStatus();
+            if (status.beforeStart) {
+                if (status.message) {
+                    $statusText.html(status.message);
+                    $statusMessage.show();
+                } else {
+                    $statusMessage.hide();
+                }
+                if (status.countdownTarget instanceof Date) {
+                    startCountdown(status.countdownTarget);
+                } else {
+                    clearCountdown();
+                }
+                if (!isEmployee) {
+                    $content.hide();
+                } else {
+                    $content.show();
+                    maybeStartWheel();
+                }
+                return;
+            }
+            if (status.afterEnd) {
+                clearCountdown();
+                if (status.message) {
+                    $statusText.html(status.message);
+                    $statusMessage.show();
+                } else {
+                    $statusMessage.hide();
+                }
+                if (!isEmployee) {
+                    $content.hide();
+                } else {
+                    $content.show();
+                    maybeStartWheel();
+                }
+                return;
+            }
+            clearCountdown();
+            $statusMessage.hide();
+            $content.show();
+            maybeStartWheel();
+        }
 
         function initWheel() {
             var $canvas = $container.find('.ever-wheel-canvas');
             if (!$canvas.length) {
                 return;
             }
+            if (wheelInitialized) {
+                return;
+            }
+            wheelInitialized = true;
             var currentRotation = 0;
             var segmentCenters = [];
 
@@ -886,6 +1165,19 @@ $(document).ready(function(){
                     },
                     dataType: 'json',
                     success: function (res) {
+                        if (res && res.reason && (res.reason === 'before_start' || res.reason === 'after_end') && !isEmployee) {
+                            serverOverrideReason = res.reason;
+                            serverOverrideMessage = res.message || '';
+                            if (res.reason === 'before_start' && typeof res.start_timestamp === 'number') {
+                                serverStartDate = new Date(res.start_timestamp * 1000);
+                            } else if (res.reason === 'after_end') {
+                                serverStartDate = null;
+                            }
+                            wheelCheckRequested = false;
+                            updateStatus();
+                            $btn.prop('disabled', false);
+                            return;
+                        }
                         var msg = res.message || '';
                         if (res && res.status && res.result) {
                             var idx = typeof res.index !== 'undefined' ? res.index : -1;
@@ -942,29 +1234,7 @@ $(document).ready(function(){
             });
         }
 
-        if (spinUrl) {
-            $.ajax({
-                url: spinUrl,
-                type: 'POST',
-                data: {
-                    id_block: blockId,
-                    token: token,
-                    check: 1
-                },
-                dataType: 'json',
-                success: function (res) {
-                    if (res && res.played) {
-                        var msg = res.message || '';
-                        $container.html('<p class="ever-wheel-already-played">' + msg + '</p>');
-                    } else {
-                        initWheel();
-                    }
-                },
-                error: initWheel
-            });
-        } else {
-            initWheel();
-        }
+        updateStatus();
     });
 
     // Exit intent modal

@@ -4780,6 +4780,26 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Text below the wheel'),
                             'default' => '',
                         ],
+                        'start_date' => [
+                            'type' => 'text',
+                            'label' => $module->l('Game start date (YYYY-MM-DD HH:MM:SS)'),
+                            'default' => '',
+                        ],
+                        'end_date' => [
+                            'type' => 'text',
+                            'label' => $module->l('Game end date (YYYY-MM-DD HH:MM:SS)'),
+                            'default' => '',
+                        ],
+                        'pre_start_message' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Message before the game starts'),
+                            'default' => '',
+                        ],
+                        'post_end_message' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Message after the game ends'),
+                            'default' => '',
+                        ],
                         'padding_left' => [
                             'type' => 'text',
                             'label' => $module->l('Padding left (Please specify the unit of measurement)'),
