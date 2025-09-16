@@ -4795,6 +4795,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Coupon validity in days'),
                             'default' => '30',
                         ],
+                        'max_winners' => [
+                            'type' => 'number',
+                            'label' => $module->l('Maximum winners (0 for unlimited)'),
+                            'default' => '0',
+                        ],
                         'coupon_type' => [
                             'type' => 'select',
                             'label' => $module->l('Discount type'),
