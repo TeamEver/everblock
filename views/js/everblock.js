@@ -820,7 +820,7 @@ $(document).ready(function(){
                 return;
             }
 
-            function showWheelModal(msg, code, categories) {
+            function showWheelModal(msg, code, details) {
                 var codeHtml = '';
                 if (code) {
                     codeHtml = '<div class="ever-wheel-code-wrapper">'
@@ -829,9 +829,18 @@ $(document).ready(function(){
                         + '<span class="ever-wheel-copy-feedback ms-2 text-success" style="display:none;"></span>'
                         + '</div>';
                 }
-                var categoriesHtml = '';
-                if (categories) {
-                    categoriesHtml = '<p class="ever-wheel-categories">' + categories + '</p>';
+                var detailsHtml = '';
+                if (Array.isArray(details)) {
+                    var filteredDetails = details.filter(function (item) {
+                        return typeof item === 'string' && item.trim().length;
+                    });
+                    if (filteredDetails.length) {
+                        detailsHtml = filteredDetails.map(function (item) {
+                            return '<p class="ever-wheel-detail">' + item + '</p>';
+                        }).join('');
+                    }
+                } else if (details) {
+                    detailsHtml = '<p class="ever-wheel-detail">' + details + '</p>';
                 }
                 $('#everWheelModal').remove();
                 var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
@@ -843,7 +852,7 @@ $(document).ready(function(){
                     + '</button>'
                     + '</div>'
                     + '<div class="modal-body text-center">'
-                    + '<p>' + msg + '</p>' + codeHtml + categoriesHtml
+                    + '<p>' + msg + '</p>' + codeHtml + detailsHtml
                     + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal" data-bs-dismiss="modal">OK</button>'
                     + '</div></div></div></div>';
                 $('body').append(modal);
@@ -898,15 +907,31 @@ $(document).ready(function(){
                             $canvas.one('transitionend', function () {
                                 var isWinning = res.result && (res.result.isWinning || res.result.is_winning);
                                 var code = isWinning ? res.code : null;
-                                var categories = isWinning ? res.categories_message : '';
-                                showWheelModal(msg, code, categories);
+                                var details = [];
+                                if (isWinning) {
+                                    if (res.categories_message) {
+                                        details.push(res.categories_message);
+                                    }
+                                    if (res.minimum_purchase_message) {
+                                        details.push(res.minimum_purchase_message);
+                                    }
+                                }
+                                showWheelModal(msg, code, details);
                                 $btn.prop('disabled', false);
                             });
                         } else {
                             var isWinning = res.result && (res.result.isWinning || res.result.is_winning);
                             var code = isWinning ? res.code : null;
-                            var categories = isWinning ? res.categories_message : '';
-                            showWheelModal(msg, code, categories);
+                            var details = [];
+                            if (isWinning) {
+                                if (res.categories_message) {
+                                    details.push(res.categories_message);
+                                }
+                                if (res.minimum_purchase_message) {
+                                    details.push(res.minimum_purchase_message);
+                                }
+                            }
+                            showWheelModal(msg, code, details);
                             $btn.prop('disabled', false);
                         }
                     },
