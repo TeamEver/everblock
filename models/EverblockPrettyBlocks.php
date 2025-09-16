@@ -4780,35 +4780,6 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Text below the wheel'),
                             'default' => '',
                         ],
-                        'coupon_name' => [
-                            'type' => 'text',
-                            'label' => $module->l('Coupon name'),
-                            'default' => $module->l('Wheel reward'),
-                        ],
-                        'coupon_prefix' => [
-                            'type' => 'text',
-                            'label' => $module->l('Coupon code prefix'),
-                            'default' => 'WHEEL',
-                        ],
-                        'coupon_validity' => [
-                            'type' => 'number',
-                            'label' => $module->l('Coupon validity in days'),
-                            'default' => '30',
-                        ],
-                        'max_winners' => [
-                            'type' => 'number',
-                            'label' => $module->l('Maximum winners (0 for unlimited)'),
-                            'default' => '0',
-                        ],
-                        'coupon_type' => [
-                            'type' => 'select',
-                            'label' => $module->l('Discount type'),
-                            'default' => 'percent',
-                            'choices' => [
-                                'percent' => $module->l('Percent'),
-                                'amount' => $module->l('Amount'),
-                            ],
-                        ],
                         'padding_left' => [
                             'type' => 'text',
                             'label' => $module->l('Padding left (Please specify the unit of measurement)'),
@@ -4879,6 +4850,35 @@ class EverblockPrettyBlocks extends ObjectModel
                             'type' => 'text',
                             'label' => $module->l('Discount value'),
                             'default' => '10',
+                        ],
+                        'coupon_name' => [
+                            'type' => 'text',
+                            'label' => $module->l('Coupon name'),
+                            'default' => $module->l('Wheel reward'),
+                        ],
+                        'coupon_prefix' => [
+                            'type' => 'text',
+                            'label' => $module->l('Coupon code prefix'),
+                            'default' => 'WHEEL',
+                        ],
+                        'coupon_validity' => [
+                            'type' => 'number',
+                            'label' => $module->l('Coupon validity in days'),
+                            'default' => '30',
+                        ],
+                        'max_winners' => [
+                            'type' => 'number',
+                            'label' => $module->l('Maximum winners for this segment (0 for unlimited)'),
+                            'default' => '0',
+                        ],
+                        'coupon_type' => [
+                            'type' => 'select',
+                            'label' => $module->l('Discount type'),
+                            'default' => 'percent',
+                            'choices' => [
+                                'percent' => $module->l('Percent'),
+                                'amount' => $module->l('Amount'),
+                            ],
                         ],
                         'id_categories' => [
                             'type' => 'selector',
