@@ -155,6 +155,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_game_play` (
         `id_everblock_game_play` int(10) unsigned NOT NULL auto_increment,
         `id_prettyblocks` int(10) unsigned NOT NULL,
         `id_customer` int(10) unsigned NOT NULL,
+        `ip_address` varchar(45) DEFAULT NULL,
         `result` varchar(255) DEFAULT NULL,
         `is_winner` TINYINT(1) NOT NULL DEFAULT 0,
         `date_add` DATETIME DEFAULT NULL,
