@@ -97,14 +97,62 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 'message' => $this->module->l('No segments available', 'wheel'),
             ]));
         }
-        $prefix = isset($settings['coupon_prefix']) ? preg_replace('/[^A-Z0-9]/', '', Tools::strtoupper($settings['coupon_prefix'])) : 'WHEEL';
-        $validity = (int) ($settings['coupon_validity'] ?? 30);
-        $validity = max(1, min($validity, 365));
-        $discountType = in_array($settings['coupon_type'] ?? '', ['amount', 'percent']) ? $settings['coupon_type'] : 'percent';
-        $couponName = isset($settings['coupon_name']) ? $settings['coupon_name'] : 'Wheel reward';
-        $maxWinners = (int) ($settings['max_winners'] ?? 0);
-        if ($maxWinners < 0) {
-            $maxWinners = 0;
+        $defaultCouponName = 'Wheel reward';
+        if (array_key_exists('coupon_name', $settings)) {
+            $defaultCouponNameValue = $this->extractSegmentValue($settings['coupon_name']);
+            if (is_array($defaultCouponNameValue)) {
+                $defaultCouponNameValue = reset($defaultCouponNameValue);
+            }
+            if ($defaultCouponNameValue !== null) {
+                $defaultCouponName = (string) $defaultCouponNameValue;
+            } else {
+                $defaultCouponName = '';
+            }
+        }
+        $defaultPrefix = 'WHEEL';
+        if (array_key_exists('coupon_prefix', $settings)) {
+            $defaultPrefixValue = $this->extractSegmentValue($settings['coupon_prefix']);
+            if (is_array($defaultPrefixValue)) {
+                $defaultPrefixValue = reset($defaultPrefixValue);
+            }
+            $defaultPrefix = preg_replace('/[^A-Z0-9]/', '', Tools::strtoupper((string) $defaultPrefixValue));
+            if ($defaultPrefix === null) {
+                $defaultPrefix = '';
+            }
+        }
+        $defaultValidity = 30;
+        if (array_key_exists('coupon_validity', $settings)) {
+            $rawDefaultValidity = $this->extractSegmentValue($settings['coupon_validity']);
+            if (is_array($rawDefaultValidity)) {
+                $rawDefaultValidity = reset($rawDefaultValidity);
+            }
+            if ($rawDefaultValidity !== null) {
+                $defaultValidity = (int) $rawDefaultValidity;
+            }
+        }
+        $defaultValidity = max(1, min($defaultValidity, 365));
+        $defaultDiscountType = 'percent';
+        if (array_key_exists('coupon_type', $settings)) {
+            $rawDefaultDiscountType = $this->extractSegmentValue($settings['coupon_type']);
+            if (is_array($rawDefaultDiscountType)) {
+                $rawDefaultDiscountType = reset($rawDefaultDiscountType);
+            }
+            if (in_array($rawDefaultDiscountType, ['amount', 'percent'])) {
+                $defaultDiscountType = $rawDefaultDiscountType;
+            }
+        }
+        $defaultMaxWinners = 0;
+        if (array_key_exists('max_winners', $settings)) {
+            $rawDefaultMaxWinners = $this->extractSegmentValue($settings['max_winners']);
+            if (is_array($rawDefaultMaxWinners)) {
+                $rawDefaultMaxWinners = reset($rawDefaultMaxWinners);
+            }
+            if ($rawDefaultMaxWinners !== null) {
+                $defaultMaxWinners = (int) $rawDefaultMaxWinners;
+            }
+        }
+        if ($defaultMaxWinners < 0) {
+            $defaultMaxWinners = 0;
         }
         $total = 0;
         foreach ($segments as &$segment) {
@@ -144,13 +192,88 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 $resultLabel = (string) $result['label'];
             }
         }
+        $segmentCouponName = $defaultCouponName;
+        if (array_key_exists('coupon_name', $result)) {
+            $segmentCouponNameValue = $this->extractSegmentValue($result['coupon_name']);
+            if (is_array($segmentCouponNameValue)) {
+                $segmentCouponNameValue = reset($segmentCouponNameValue);
+            }
+            if ($segmentCouponNameValue !== null) {
+                $segmentCouponName = $segmentCouponNameValue;
+            }
+        }
+        $segmentCouponName = (string) $segmentCouponName;
+        $segmentPrefix = $defaultPrefix;
+        if (array_key_exists('coupon_prefix', $result)) {
+            $segmentPrefixValue = $this->extractSegmentValue($result['coupon_prefix']);
+            if (is_array($segmentPrefixValue)) {
+                $segmentPrefixValue = reset($segmentPrefixValue);
+            }
+            $segmentPrefix = preg_replace('/[^A-Z0-9]/', '', Tools::strtoupper((string) $segmentPrefixValue));
+            if ($segmentPrefix === null) {
+                $segmentPrefix = '';
+            }
+        }
+        $segmentValidity = $defaultValidity;
+        if (array_key_exists('coupon_validity', $result)) {
+            $segmentValidityValue = $this->extractSegmentValue($result['coupon_validity']);
+            if (is_array($segmentValidityValue)) {
+                $segmentValidityValue = reset($segmentValidityValue);
+            }
+            if ($segmentValidityValue !== null) {
+                $segmentValidity = (int) $segmentValidityValue;
+            }
+        }
+        $segmentValidity = max(1, min($segmentValidity, 365));
+        $segmentDiscountType = $defaultDiscountType;
+        if (array_key_exists('coupon_type', $result)) {
+            $segmentDiscountTypeValue = $this->extractSegmentValue($result['coupon_type']);
+            if (is_array($segmentDiscountTypeValue)) {
+                $segmentDiscountTypeValue = reset($segmentDiscountTypeValue);
+            }
+            if (in_array($segmentDiscountTypeValue, ['amount', 'percent'])) {
+                $segmentDiscountType = $segmentDiscountTypeValue;
+            }
+        }
+        $segmentMaxWinners = null;
+        if (array_key_exists('max_winners', $result)) {
+            $segmentMaxWinnersValue = $this->extractSegmentValue($result['max_winners']);
+            if (is_array($segmentMaxWinnersValue)) {
+                $segmentMaxWinnersValue = reset($segmentMaxWinnersValue);
+            }
+            if ($segmentMaxWinnersValue !== null) {
+                $segmentMaxWinners = (int) $segmentMaxWinnersValue;
+            } else {
+                $segmentMaxWinners = 0;
+            }
+            if ($segmentMaxWinners < 0) {
+                $segmentMaxWinners = 0;
+            }
+        }
+        $useSegmentLimit = $segmentMaxWinners !== null;
+        $maxWinners = $useSegmentLimit ? $segmentMaxWinners : $defaultMaxWinners;
+        if ($maxWinners < 0) {
+            $maxWinners = 0;
+        }
+        $couponName = (string) $segmentCouponName;
+        $prefix = (string) $segmentPrefix;
+        $validity = $segmentValidity;
+        $discountType = $segmentDiscountType;
         $isWinning = filter_var($result['isWinning'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $rewardsDepleted = false;
         if ($isWinning && $maxWinners > 0) {
-            $totalWinners = (int) Db::getInstance()->getValue(
-                'SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'everblock_game_play '
-                . 'WHERE id_prettyblocks = ' . (int) $idBlock . ' AND is_winner = 1'
-            );
+            if ($useSegmentLimit) {
+                $totalWinners = (int) Db::getInstance()->getValue(
+                    'SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'everblock_game_play '
+                    . 'WHERE id_prettyblocks = ' . (int) $idBlock
+                    . " AND is_winner = 1 AND result = '" . pSQL($resultLabel) . "'"
+                );
+            } else {
+                $totalWinners = (int) Db::getInstance()->getValue(
+                    'SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'everblock_game_play '
+                    . 'WHERE id_prettyblocks = ' . (int) $idBlock . ' AND is_winner = 1'
+                );
+            }
             if ($totalWinners >= $maxWinners) {
                 $isWinning = false;
                 $rewardsDepleted = true;

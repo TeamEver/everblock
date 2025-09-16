@@ -31,6 +31,8 @@ This module is compatible with the Pretty Blocks page builder. [Find this free m
 ### Wheel of fortune segments
 Segments for the wheel now accept an array of category IDs through the `id_categories` field. Use this to restrict generated coupons to one or more categories. The former `id_category` field is deprecated.
 
+Each segment also includes its own promo-code settings (name, prefix, validity, discount type and winner cap). Legacy blocks that only defined these values at the block level keep working because the segment settings fall back to the parent configuration when left empty.
+
 In the PrettyBlocks cover block, you can choose Bootstrap button classes, including outline variants:
 
 <button type="button" class="btn btn-outline-primary">Primary</button> 
