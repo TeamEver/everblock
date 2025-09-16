@@ -90,6 +90,13 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 'message' => $this->module->l('No segments available', 'wheel'),
             ]));
         }
+        $segments = $this->normalizeSegments($segments);
+        if (empty($segments)) {
+            die(json_encode([
+                'status' => false,
+                'message' => $this->module->l('No segments available', 'wheel'),
+            ]));
+        }
         $prefix = isset($settings['coupon_prefix']) ? preg_replace('/[^A-Z0-9]/', '', Tools::strtoupper($settings['coupon_prefix'])) : 'WHEEL';
         $validity = (int) ($settings['coupon_validity'] ?? 30);
         $validity = max(1, min($validity, 365));
@@ -229,5 +236,42 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             'message' => $message,
             'categories_message' => $categoriesMessage,
         ]));
+    }
+
+    private function normalizeSegments(array $segments)
+    {
+        foreach ($segments as $key => $segment) {
+            if (is_array($segment)) {
+                $segments[$key] = $this->normalizeSegmentValues($segment);
+            } else {
+                unset($segments[$key]);
+            }
+        }
+
+        return $segments;
+    }
+
+    private function normalizeSegmentValues(array $segment)
+    {
+        foreach ($segment as $key => $value) {
+            $segment[$key] = $this->extractSegmentValue($value);
+        }
+
+        return $segment;
+    }
+
+    private function extractSegmentValue($value)
+    {
+        if (is_array($value)) {
+            if (array_key_exists('value', $value)) {
+                return $this->extractSegmentValue($value['value']);
+            }
+
+            foreach ($value as $subKey => $subValue) {
+                $value[$subKey] = $this->extractSegmentValue($subValue);
+            }
+        }
+
+        return $value;
     }
 }
