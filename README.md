@@ -155,7 +155,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[category id="8" nb="8"]`: Display products from category ID 8. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
 - `[manufacturer id="2" nb="8"]`: Display products from manufacturer ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
 - `[brands nb="8" carousel=true]`: Display brand names with logos. Required parameter: `nb`. Optional parameter: `carousel`.
- - `[storelocator]`: Show a store locator on any CMS page when a Google Maps API key is configured. Opening and holiday hours accept patterns such as "10h - 12h / 14h - 18h" or "10h / 16h".
+- `[storelocator]`: Show a store locator on any CMS page when a Google Maps API key is configured. Opening and holiday hours accept patterns such as "10h - 12h / 14h - 18h" (simple hyphen) or "10h – 12h / 14h – 18h" (en dash), as well as "10h / 16h".
 - `[evermap]`: Display a Google Map centered on the shop address when a Google Maps API key is configured.
 - `[subcategories id="2" nb="8"]`: Display subcategories of category 2. Parameters `id` and `nb` are required.
 - `[last-products nb="4" carousel=true]`: Display the last products listed in the store. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
