@@ -40,7 +40,9 @@
                     <canvas class="ever-wheel-canvas"></canvas>
                     <div class="ever-wheel-arrow"></div>
                 </div>
-                <button class="btn btn-primary ever-wheel-spin">{$block.settings.button_label|escape:'htmlall':'UTF-8'}</button>
+                <div class="ever-wheel-spin-container">
+                    <button class="btn btn-primary ever-wheel-spin">{$block.settings.button_label|escape:'htmlall':'UTF-8'}</button>
+                </div>
                 {if $block.settings.bottom_text}<div class="ever-wheel-bottom-text">{$block.settings.bottom_text nofilter}</div>{/if}
             {else}
                 {if $block.settings.top_text}<div class="ever-wheel-top-text mb-4">{$block.settings.top_text nofilter}</div>{/if}
@@ -48,7 +50,9 @@
                     <canvas class="ever-wheel-canvas"></canvas>
                     <div class="ever-wheel-arrow"></div>
                 </div>
-                <button class="btn btn-primary ever-wheel-login-btn">{l s='Connectez-vous pour jouer' mod='everblock'}</button>
+                <div class="ever-wheel-spin-container">
+                    <button class="btn btn-primary ever-wheel-login-btn">{l s='Connectez-vous pour jouer' mod='everblock'}</button>
+                </div>
                 {if $block.settings.bottom_text}<div class="ever-wheel-bottom-text">{$block.settings.bottom_text nofilter}</div>{/if}
                 <div class="modal fade" id="everWheelLoginModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
