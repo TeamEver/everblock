@@ -49,14 +49,34 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 'message' => $this->module->l('Invalid configuration', 'wheel'),
             ]));
         }
-        $already = Db::getInstance()->getValue('SELECT id_everblock_game_play FROM ' . _DB_PREFIX_ . 'everblock_game_play WHERE id_customer = ' . $idCustomer . ' AND id_prettyblocks = ' . $idBlock);
+        $ipAddress = Tools::getRemoteAddr();
+        if (!is_string($ipAddress)) {
+            $ipAddress = '';
+        } else {
+            $ipAddress = Tools::substr($ipAddress, 0, 45);
+        }
+        $already = Db::getInstance()->getValue(
+            'SELECT id_everblock_game_play FROM ' . _DB_PREFIX_ . 'everblock_game_play WHERE id_customer = ' . $idCustomer
+            . ' AND id_prettyblocks = ' . $idBlock
+        );
+        $ipAlready = false;
+        if ($ipAddress !== '') {
+            $ipAlready = Db::getInstance()->getValue(
+                'SELECT id_everblock_game_play FROM ' . _DB_PREFIX_ . 'everblock_game_play WHERE id_prettyblocks = '
+                . $idBlock . " AND ip_address = '" . pSQL($ipAddress) . "'"
+            );
+        }
+        $refusalMessage = $this->module->l(
+            'You have already played. The game can only be played once per household.',
+            'wheel'
+        );
         $checkOnly = (bool) Tools::getValue('check');
         if ($checkOnly) {
-            if ($already) {
+            if ($already || $ipAlready) {
                 die(json_encode([
                     'status' => false,
                     'played' => true,
-                    'message' => $this->module->l('You have already played', 'wheel'),
+                    'message' => $refusalMessage,
                 ]));
             }
             die(json_encode([
@@ -64,10 +84,10 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
                 'played' => false,
             ]));
         }
-        if ($already) {
+        if ($already || $ipAlready) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('You have already played', 'wheel'),
+                'message' => $refusalMessage,
             ]));
         }
         $idShop = (int) $this->context->shop->id;
@@ -390,6 +410,7 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         Db::getInstance()->insert('everblock_game_play', [
             'id_prettyblocks' => $idBlock,
             'id_customer' => $idCustomer,
+            'ip_address' => pSQL($ipAddress),
             'result' => pSQL($resultLabel),
             'is_winner' => $isWinning ? 1 : 0,
             'date_add' => date('Y-m-d H:i:s'),
