@@ -625,6 +625,53 @@ $(document).ready(function(){
                 ctx.clearRect(0, 0, dimension, dimension);
                 var size = dimension / 2;
                 var start = 0;
+                function wrapWheelText(text, maxWidth, fontSize) {
+                    if (!text) {
+                        return [''];
+                    }
+                    ctx.font = fontSize + 'px sans-serif';
+                    var words = text.split(/\s+/).filter(function (word) {
+                        return word.length;
+                    });
+                    if (!words.length) {
+                        return [''];
+                    }
+                    var lines = [];
+                    var currentLine = words.shift();
+                    words.forEach(function (word) {
+                        var testLine = currentLine ? currentLine + ' ' + word : word;
+                        if (ctx.measureText(testLine).width <= maxWidth) {
+                            currentLine = testLine;
+                        } else {
+                            lines.push(currentLine);
+                            currentLine = word;
+                        }
+                    });
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+                    var adjustedLines = [];
+                    lines.forEach(function (line) {
+                        if (ctx.measureText(line).width <= maxWidth || line.length <= 1) {
+                            adjustedLines.push(line);
+                            return;
+                        }
+                        var buffer = '';
+                        line.split('').forEach(function (char) {
+                            var testBuffer = buffer + char;
+                            if (!buffer || ctx.measureText(testBuffer).width <= maxWidth) {
+                                buffer = testBuffer;
+                            } else {
+                                adjustedLines.push(buffer);
+                                buffer = char;
+                            }
+                        });
+                        if (buffer) {
+                            adjustedLines.push(buffer);
+                        }
+                    });
+                    return adjustedLines.length ? adjustedLines : [''];
+                }
                 var totalProb = segments.reduce(function (sum, seg) {
                     var p = parseFloat(seg.probability);
                     return sum + (isNaN(p) ? 0 : p);
@@ -652,24 +699,46 @@ $(document).ready(function(){
                     var textY = size + Math.sin(textAngle) * textRadius;
                     ctx.save();
                     ctx.fillStyle = seg.text_color || '#ffffff';
-                    var fontSize = Math.max(12, size / 10);
-                    ctx.font = fontSize + 'px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
+                    var baseFontSize = Math.max(12, size / 12);
                     var label = seg.label;
                     if (typeof label === 'object') {
                         label = Object.values(label)[0] || '';
                     }
-                    label = label || '';
-                    ctx.translate(textX, textY);
-                    var letters = label.split('');
-                    if (letters.length) {
-                        var lineHeight = fontSize * 1.1;
-                        var startY = -((letters.length - 1) * lineHeight) / 2;
-                        letters.forEach(function (ch, idx) {
-                            ctx.fillText(ch, 0, startY + idx * lineHeight);
+                    label = (label || '').toString();
+                    var maxTextWidth = size * 0.7;
+                    var lines = wrapWheelText(label, maxTextWidth, baseFontSize);
+                    var fontSize = baseFontSize;
+                    var attempt = 0;
+                    while (attempt < 10) {
+                        ctx.font = fontSize + 'px sans-serif';
+                        var tooWide = lines.some(function (line) {
+                            return ctx.measureText(line).width > maxTextWidth;
                         });
+                        if (!tooWide && lines.length <= 3) {
+                            break;
+                        }
+                        fontSize = Math.max(10, fontSize - 1);
+                        lines = wrapWheelText(label, maxTextWidth, fontSize);
+                        attempt += 1;
                     }
+                    ctx.font = fontSize + 'px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.translate(textX, textY);
+                    var rotation = textAngle - Math.PI / 2;
+                    var fullCircle = 2 * Math.PI;
+                    rotation = ((rotation + Math.PI) % fullCircle + fullCircle) % fullCircle - Math.PI;
+                    if (rotation > Math.PI / 2) {
+                        rotation -= Math.PI;
+                    } else if (rotation < -Math.PI / 2) {
+                        rotation += Math.PI;
+                    }
+                    ctx.rotate(rotation);
+                    var lineHeight = fontSize * 1.1;
+                    var offset = -((lines.length - 1) * lineHeight) / 2;
+                    lines.forEach(function (line, idx) {
+                        ctx.fillText(line, 0, offset + idx * lineHeight);
+                    });
                     ctx.restore();
                     segmentCenters[i] = textAngle * 180 / Math.PI;
                     start += step;
