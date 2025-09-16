@@ -95,6 +95,10 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         $validity = max(1, min($validity, 365));
         $discountType = in_array($settings['coupon_type'] ?? '', ['amount', 'percent']) ? $settings['coupon_type'] : 'percent';
         $couponName = isset($settings['coupon_name']) ? $settings['coupon_name'] : 'Wheel reward';
+        $maxWinners = (int) ($settings['max_winners'] ?? 0);
+        if ($maxWinners < 0) {
+            $maxWinners = 0;
+        }
         $total = 0;
         foreach ($segments as &$segment) {
             $prob = isset($segment['probability']) ? (float) $segment['probability'] : 1;
@@ -134,7 +138,20 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             }
         }
         $isWinning = filter_var($result['isWinning'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $rewardsDepleted = false;
+        if ($isWinning && $maxWinners > 0) {
+            $totalWinners = (int) Db::getInstance()->getValue(
+                'SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'everblock_game_play '
+                . 'WHERE id_prettyblocks = ' . (int) $idBlock . ' AND is_winner = 1'
+            );
+            if ($totalWinners >= $maxWinners) {
+                $isWinning = false;
+                $rewardsDepleted = true;
+            }
+        }
+        $result['isWinning'] = $isWinning;
         $code = null;
+        $categoryNames = [];
         if ($isWinning) {
             $code = $prefix . Tools::strtoupper(Tools::passwdGen(8));
             $voucher = new CartRule();
@@ -190,11 +207,16 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
             'id_prettyblocks' => $idBlock,
             'id_customer' => $idCustomer,
             'result' => pSQL($resultLabel),
+            'is_winner' => $isWinning ? 1 : 0,
             'date_add' => date('Y-m-d H:i:s'),
         ]);
-        $message = $isWinning
-            ? $this->module->l('You won:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code
-            : $this->module->l('You lost:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
+        if ($rewardsDepleted) {
+            $message = $this->module->l('All rewards have already been distributed.', 'wheel');
+        } else {
+            $message = $isWinning
+                ? $this->module->l('You won:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'wheel') . ' ' . $code
+                : $this->module->l('You lost:', 'wheel') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
+        }
         $categoriesMessage = '';
         if (!empty($categoryNames)) {
             $categoriesMessage = $this->module->l('Valid for categories:', 'wheel') . ' ' . implode(', ', $categoryNames);

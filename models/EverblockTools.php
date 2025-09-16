@@ -4110,6 +4110,25 @@ class EverblockTools extends ObjectModel
                 }
             }
         }
+        // Ajoute les colonnes manquantes à la table everblock_game_play
+        $columnsToAdd = [
+            'id_prettyblocks' => 'int(10) unsigned NOT NULL',
+            'id_customer' => 'int(10) unsigned NOT NULL',
+            'result' => 'varchar(255) DEFAULT NULL',
+            'is_winner' => 'TINYINT(1) NOT NULL DEFAULT 0',
+            'date_add' => 'DATETIME DEFAULT NULL',
+        ];
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_game_play` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_game_play` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block game play database');
+                }
+            }
+        }
         static::cleanObsoleteFiles();
     }
 
