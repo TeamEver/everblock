@@ -618,6 +618,75 @@ $(document).ready(function(){
             }
             var currentRotation = 0;
             var segmentCenters = [];
+
+            function clampChannel(value) {
+                return Math.max(0, Math.min(255, value));
+            }
+
+            function parseColor(color) {
+                if (typeof color !== 'string') {
+                    return null;
+                }
+                var str = color.trim();
+                if (!str) {
+                    return null;
+                }
+                var hexMatch = str.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+                if (hexMatch) {
+                    var hex = hexMatch[1];
+                    if (hex.length === 3) {
+                        hex = hex.split('').map(function (char) {
+                            return char + char;
+                        }).join('');
+                    }
+                    var intValue = parseInt(hex, 16);
+                    if (isNaN(intValue)) {
+                        return null;
+                    }
+                    return {
+                        r: (intValue >> 16) & 255,
+                        g: (intValue >> 8) & 255,
+                        b: intValue & 255,
+                        a: 1
+                    };
+                }
+                var rgbMatch = str.match(/^rgba?\((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*(\d*\.?\d+))?\)$/i);
+                if (rgbMatch) {
+                    var r = parseInt(rgbMatch[1], 10);
+                    var g = parseInt(rgbMatch[2], 10);
+                    var b = parseInt(rgbMatch[3], 10);
+                    if (isNaN(r) || isNaN(g) || isNaN(b)) {
+                        return null;
+                    }
+                    var a = typeof rgbMatch[4] !== 'undefined' ? parseFloat(rgbMatch[4]) : 1;
+                    if (isNaN(a)) {
+                        a = 1;
+                    }
+                    return {
+                        r: clampChannel(r),
+                        g: clampChannel(g),
+                        b: clampChannel(b),
+                        a: Math.max(0, Math.min(1, a))
+                    };
+                }
+                return null;
+            }
+
+            function lightenColor(color, factor) {
+                var parsed = parseColor(color);
+                if (!parsed) {
+                    return null;
+                }
+                var safeFactor = Math.max(0, Math.min(1, factor || 0));
+                var r = Math.round(parsed.r + (255 - parsed.r) * safeFactor);
+                var g = Math.round(parsed.g + (255 - parsed.g) * safeFactor);
+                var b = Math.round(parsed.b + (255 - parsed.b) * safeFactor);
+                if (parsed.a < 1) {
+                    return 'rgba(' + clampChannel(r) + ', ' + clampChannel(g) + ', ' + clampChannel(b) + ', ' + parsed.a + ')';
+                }
+                return 'rgb(' + clampChannel(r) + ', ' + clampChannel(g) + ', ' + clampChannel(b) + ')';
+            }
+
             function drawWheel() {
                 var dimension = Math.min($container.width(), $(window).height());
                 $canvas.attr('width', dimension).attr('height', dimension);
@@ -679,7 +748,16 @@ $(document).ready(function(){
                     var end = start + stepAngle;
                     ctx.beginPath();
                     ctx.moveTo(size, size);
-                    ctx.fillStyle = seg.color || '#' + Math.floor(Math.random() * 16777215).toString(16);
+                    var baseColor = seg.color || '#' + Math.floor(Math.random() * 16777215).toString(16);
+                    var gradientColor = lightenColor(baseColor, 0.2);
+                    if (gradientColor) {
+                        var gradient = ctx.createRadialGradient(size, size, 0, size, size, size);
+                        gradient.addColorStop(0, gradientColor);
+                        gradient.addColorStop(1, baseColor);
+                        ctx.fillStyle = gradient;
+                    } else {
+                        ctx.fillStyle = baseColor;
+                    }
                     ctx.arc(size, size, size, start, end);
                     ctx.lineTo(size, size);
                     ctx.fill();
