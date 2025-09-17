@@ -1209,20 +1209,8 @@ $(document).ready(function(){
                                 if (!isNaN(parsedIndex)) {
                                     if (parsedIndex >= 0 && parsedIndex < segments.length) {
                                         idx = parsedIndex;
-                                        if (normalizedSegments[idx] !== normalizedResult) {
-                                            if (parsedIndex > 0 && normalizedSegments[parsedIndex - 1] === normalizedResult) {
-                                                idx = parsedIndex - 1;
-                                            } else if (parsedIndex + 1 < normalizedSegments.length && normalizedSegments[parsedIndex + 1] === normalizedResult) {
-                                                idx = parsedIndex + 1;
-                                            } else {
-                                                idx = -1;
-                                            }
-                                        }
                                     } else if (parsedIndex > 0 && parsedIndex <= segments.length) {
-                                        var zeroBased = parsedIndex - 1;
-                                        if (normalizedSegments[zeroBased] === normalizedResult) {
-                                            idx = zeroBased;
-                                        }
+                                        idx = parsedIndex - 1;
                                     }
                                 }
                             }
