@@ -1230,8 +1230,12 @@ $(document).ready(function(){
                             var idx = -1;
                             if (typeof res.index !== 'undefined') {
                                 var parsedIndex = parseInt(res.index, 10);
-                                if (!isNaN(parsedIndex) && parsedIndex >= 0 && parsedIndex < segments.length) {
-                                    idx = parsedIndex;
+                                if (!isNaN(parsedIndex)) {
+                                    if (parsedIndex >= 0 && parsedIndex < segments.length) {
+                                        idx = parsedIndex;
+                                    } else if (parsedIndex === segments.length) {
+                                        idx = 0; // correction off-by-one
+                                    }
                                 }
                             }
                             if (idx === -1 && normalizedResult) {
