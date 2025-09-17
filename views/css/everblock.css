@@ -849,3 +849,114 @@
 .ever-wheel-countdown-label {
     margin-right: 0.35rem;
 }
+
+.ever-scratch-card-block {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.ever-scratch-status-message {
+    margin-bottom: 1rem;
+}
+
+.ever-scratch-card-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.ever-scratch-card {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 3 / 2;
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1e1f26, #3b3f5c);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    margin: 0 auto;
+}
+
+.ever-scratch-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(125deg, rgba(255, 255, 255, 0.35), rgba(140, 140, 140, 0.35));
+    mix-blend-mode: screen;
+    pointer-events: none;
+}
+
+.ever-scratch-result {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    text-align: center;
+    color: #ffffff;
+    z-index: 1;
+}
+
+.ever-scratch-result-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.ever-scratch-result-image img {
+    max-width: 100%;
+    max-height: 140px;
+    object-fit: contain;
+}
+
+.ever-scratch-result-label {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.ever-scratch-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #d9d9d9, #b0b0b0);
+    cursor: grab;
+    touch-action: none;
+    z-index: 2;
+}
+
+.ever-scratch-card-disabled .ever-scratch-overlay {
+    filter: grayscale(100%);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.ever-scratch-card--revealed .ever-scratch-overlay {
+    pointer-events: none;
+    opacity: 0;
+}
+
+.ever-scratch-instructions {
+    font-size: 1rem;
+}
+
+.ever-scratch-login {
+    margin-top: 1rem;
+}
+
+@media (max-width: 480px) {
+    .ever-scratch-card-block {
+        max-width: 100%;
+    }
+
+    .ever-scratch-card {
+        max-width: 280px;
+    }
+
+    .ever-scratch-result-label {
+        font-size: 1.1rem;
+    }
+}
