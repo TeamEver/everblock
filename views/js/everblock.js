@@ -896,11 +896,26 @@ $(document).ready(function(){
             }
             wheelInitialized = true;
             var currentRotation = 0;
-            var POINTER_ANGLE = parseInt($container.data('pointer-angle'), 10);
-            if (isNaN(POINTER_ANGLE)) {
-                POINTER_ANGLE = 270;
+            var POINTER_ANGLE = 270;
+            var pointerAngleAttr = $container.data('pointer-angle');
+            if (typeof pointerAngleAttr !== 'undefined') {
+                var parsedPointerAngle = parseInt(pointerAngleAttr, 10);
+                if (!isNaN(parsedPointerAngle)) {
+                    POINTER_ANGLE = parsedPointerAngle;
+                }
+            } else {
+                var $pointer = $container.find('.ever-wheel-arrow');
+                if ($pointer.hasClass('arrow-top')) {
+                    POINTER_ANGLE = 270;
+                } else if ($pointer.hasClass('arrow-right')) {
+                    POINTER_ANGLE = 0;
+                } else if ($pointer.hasClass('arrow-bottom')) {
+                    POINTER_ANGLE = 90;
+                } else if ($pointer.hasClass('arrow-left')) {
+                    POINTER_ANGLE = 180;
+                }
             }
-            console.log('[Wheel Debug] Pointer angle used:', POINTER_ANGLE);
+            console.log('[Wheel Debug] Using pointer angle:', POINTER_ANGLE);
             var segmentCenters = [];
 
             function normalizeSegmentForComparison(value) {
