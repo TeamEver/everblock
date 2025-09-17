@@ -1753,31 +1753,68 @@ $(document).ready(function(){
             }
         }
 
-        $canvas.on('mousedown touchstart', function (event) {
+        var supportsPointerEvents = window.PointerEvent && typeof window.PointerEvent === 'function';
+
+        function handleScratchStart(event) {
             if (!scratchEnabled || revealTriggered) {
+                return;
+            }
+            if (event.type === 'pointerdown') {
+                if (event.pointerType === 'mouse' && event.button !== 0) {
+                    return;
+                }
+                if (canvas.setPointerCapture && typeof event.pointerId !== 'undefined') {
+                    try {
+                        canvas.setPointerCapture(event.pointerId);
+                    } catch (captureErr) {
+                        console.warn('[Scratch Debug] Unable to capture pointer', captureErr);
+                    }
+                }
+            } else if (event.type === 'mousedown' && event.which !== 1) {
                 return;
             }
             event.preventDefault();
             isPointerDown = true;
             var pos = getPointerPosition(event);
             scratchAt(pos.x, pos.y);
-        });
+        }
 
-        $canvas.on('mousemove touchmove', function (event) {
+        function handleScratchMove(event) {
             if (!scratchEnabled || revealTriggered) {
                 return;
             }
-            if (event.type === 'mousemove' && !isPointerDown) {
+            if (event.type === 'pointermove') {
+                if (event.pointerType === 'mouse' && (!isPointerDown || (typeof event.buttons !== 'undefined' && event.buttons === 0))) {
+                    return;
+                }
+            } else if (event.type === 'mousemove' && !isPointerDown) {
                 return;
             }
             event.preventDefault();
             var pos = getPointerPosition(event);
             scratchAt(pos.x, pos.y);
-        });
+        }
 
-        $canvas.on('mouseup mouseleave touchend touchcancel', function () {
+        function handleScratchEnd(event) {
+            if (event && event.type === 'pointerup' && canvas.releasePointerCapture && typeof event.pointerId !== 'undefined') {
+                try {
+                    canvas.releasePointerCapture(event.pointerId);
+                } catch (releaseErr) {
+                    console.warn('[Scratch Debug] Unable to release pointer capture', releaseErr);
+                }
+            }
             isPointerDown = false;
-        });
+        }
+
+        if (supportsPointerEvents) {
+            $canvas.on('pointerdown', handleScratchStart);
+            $canvas.on('pointermove', handleScratchMove);
+            $canvas.on('pointerup pointerleave pointercancel', handleScratchEnd);
+        } else {
+            $canvas.on('mousedown touchstart', handleScratchStart);
+            $canvas.on('mousemove touchmove', handleScratchMove);
+            $canvas.on('mouseup mouseleave touchend touchcancel', handleScratchEnd);
+        }
 
         $(window).on('resize', function () {
             if (!scratchEnabled || revealTriggered) {
