@@ -897,13 +897,17 @@ $(document).ready(function(){
             wheelInitialized = true;
             var currentRotation = 0;
             var POINTER_ANGLE = 270;
-            var pointerAngleAttr = $container.data('pointer-angle');
-            if (typeof pointerAngleAttr !== 'undefined') {
+            var pointerAngleAttr = $container.attr('data-pointer-angle');
+            var allowedPointerAngles = [0, 90, 180, 270];
+            var pointerAngleResolved = false;
+            if (typeof pointerAngleAttr !== 'undefined' && pointerAngleAttr !== null && pointerAngleAttr !== '') {
                 var parsedPointerAngle = parseInt(pointerAngleAttr, 10);
-                if (!isNaN(parsedPointerAngle)) {
+                if (!isNaN(parsedPointerAngle) && allowedPointerAngles.indexOf(parsedPointerAngle) !== -1) {
                     POINTER_ANGLE = parsedPointerAngle;
+                    pointerAngleResolved = true;
                 }
-            } else {
+            }
+            if (!pointerAngleResolved) {
                 var $pointer = $container.find('.ever-wheel-arrow');
                 if ($pointer.hasClass('arrow-top')) {
                     POINTER_ANGLE = 270;
