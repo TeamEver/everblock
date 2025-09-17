@@ -1250,7 +1250,7 @@ $(document).ready(function(){
                                 center = 0;
                             }
                             var normalizedRotation = ((currentRotation % 360) + 360) % 360;
-                            var desiredAlignment = (POINTER_ANGLE - center + 360) % 360;
+                            var desiredAlignment = (POINTER_ANGLE - center - 90 + 360) % 360;
                             console.log('[Wheel Debug] Desired alignment:', desiredAlignment, 'Pointer angle:', POINTER_ANGLE);
                             var rotationDelta = (desiredAlignment - normalizedRotation + 360) % 360;
                             currentRotation += 360 * 5 + rotationDelta;
