@@ -98,6 +98,10 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         $defaultPreStartMessage = $this->module->l('The game has not started yet.', 'wheel');
         $defaultPostEndMessage = $this->module->l('The game is over.', 'wheel');
         $employeeLogged = $this->isAdmin();
+        if ($employeeLogged) {
+            $already = false;
+            $ipAlready = false;
+        }
         $now = time();
         $startTimestamp = $this->parseDateTime($startDateValue);
         $endTimestamp = $this->parseDateTime($endDateValue);
