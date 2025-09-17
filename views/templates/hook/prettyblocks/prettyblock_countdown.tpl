@@ -26,23 +26,30 @@
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-        <div class="everblock-countdown d-flex justify-content-center {if $block.settings.css_class}{$block.settings.css_class|escape:'htmlall':'UTF-8'}{/if}" data-target="{$block.settings.target_date|escape:'htmlall':'UTF-8'}">
-            <div class="mx-2 text-center">
-                <span class="everblock-countdown-value" data-type="days">00</span>
-                <span class="everblock-countdown-label">{l s='Days' mod='everblock'}</span>
+        <div class="everblock-countdown-wrapper">
+            <div class="everblock-countdown d-flex justify-content-center {if $block.settings.css_class}{$block.settings.css_class|escape:'htmlall':'UTF-8'}{/if}" data-target="{$block.settings.target_date|escape:'htmlall':'UTF-8'}">
+                <div class="mx-2 text-center">
+                    <span class="everblock-countdown-value" data-type="days">00</span>
+                    <span class="everblock-countdown-label">{l s='Days' mod='everblock'}</span>
+                </div>
+                <div class="mx-2 text-center">
+                    <span class="everblock-countdown-value" data-type="hours">00</span>
+                    <span class="everblock-countdown-label">{l s='Hours' mod='everblock'}</span>
+                </div>
+                <div class="mx-2 text-center">
+                    <span class="everblock-countdown-value" data-type="minutes">00</span>
+                    <span class="everblock-countdown-label">{l s='Minutes' mod='everblock'}</span>
+                </div>
+                <div class="mx-2 text-center">
+                    <span class="everblock-countdown-value" data-type="seconds">00</span>
+                    <span class="everblock-countdown-label">{l s='Seconds' mod='everblock'}</span>
+                </div>
             </div>
-            <div class="mx-2 text-center">
-                <span class="everblock-countdown-value" data-type="hours">00</span>
-                <span class="everblock-countdown-label">{l s='Hours' mod='everblock'}</span>
-            </div>
-            <div class="mx-2 text-center">
-                <span class="everblock-countdown-value" data-type="minutes">00</span>
-                <span class="everblock-countdown-label">{l s='Minutes' mod='everblock'}</span>
-            </div>
-            <div class="mx-2 text-center">
-                <span class="everblock-countdown-value" data-type="seconds">00</span>
-                <span class="everblock-countdown-label">{l s='Seconds' mod='everblock'}</span>
-            </div>
+            {if $block.settings.completion_message}
+                <div class="everblock-countdown-finished-message d-none">
+                    {$block.settings.completion_message nofilter}
+                </div>
+            {/if}
         </div>
     {if $block.settings.default.container}
         </div>

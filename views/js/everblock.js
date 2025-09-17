@@ -546,12 +546,52 @@ $(document).ready(function(){
         if (!target) {
             return;
         }
-        function updateCountdown() {
-            var distance = new Date(target).getTime() - new Date().getTime();
-            if (distance <= 0) {
-                $block.find('.everblock-countdown-value').text('00');
+        var targetDate = new Date(target);
+        if (isNaN(targetDate.getTime())) {
+            return;
+        }
+        var $wrapper = $block.closest('.everblock-countdown-wrapper');
+        var $message = $wrapper.length ? $wrapper.find('.everblock-countdown-finished-message') : $();
+        var timerId = null;
+        var completionShown = false;
+
+        function showCompletion() {
+            if (completionShown) {
                 return;
             }
+            completionShown = true;
+            if ($message.length) {
+                $block.hide();
+                $message.removeClass('d-none').show();
+            }
+        }
+
+        function hideCompletion() {
+            if ($message.length) {
+                $block.show();
+                $message.addClass('d-none').hide();
+            }
+            completionShown = false;
+        }
+
+        function updateCountdown() {
+            var now = new Date();
+            var distance = targetDate.getTime() - now.getTime();
+            if (distance <= 0) {
+                $block.find('[data-type="days"]').text('00');
+                $block.find('[data-type="hours"]').text('00');
+                $block.find('[data-type="minutes"]').text('00');
+                $block.find('[data-type="seconds"]').text('00');
+                if (timerId !== null) {
+                    clearInterval(timerId);
+                    timerId = null;
+                }
+                showCompletion();
+                return false;
+            }
+
+            hideCompletion();
+
             var days = Math.floor(distance / (1000 * 60 * 60 * 24));
             var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -560,9 +600,14 @@ $(document).ready(function(){
             $block.find('[data-type="hours"]').text(('0' + hours).slice(-2));
             $block.find('[data-type="minutes"]').text(('0' + minutes).slice(-2));
             $block.find('[data-type="seconds"]').text(('0' + seconds).slice(-2));
+
+            return true;
         }
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
+
+        var shouldContinue = updateCountdown();
+        if (shouldContinue !== false) {
+            timerId = setInterval(updateCountdown, 1000);
+        }
     });
 
     // Podcasts player

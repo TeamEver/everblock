@@ -3665,6 +3665,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Target date (YYYY-MM-DD HH:MM:SS)'),
                             'default' => '',
                         ],
+                        'completion_message' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Message displayed when the countdown ends'),
+                            'default' => '',
+                        ],
                         'css_class' => [
                             'type' => 'text',
                             'label' => $module->l('Custom CSS class'),
