@@ -1189,12 +1189,18 @@ $(document).ready(function(){
                                     idx = 0;
                                 }
                             }
-                            var center = segmentCenters[idx] || 0;
-                            var targetAngle = -90 - center;
-                            if (targetAngle < 0) {
-                                targetAngle += 360;
+                            var center = segmentCenters[idx];
+                            if (typeof center !== 'number' && segments.length) {
+                                var fallbackStep = 360 / segments.length;
+                                center = fallbackStep * idx + fallbackStep / 2;
                             }
-                            currentRotation += 360 * 5 + targetAngle;
+                            if (typeof center !== 'number') {
+                                center = 0;
+                            }
+                            var normalizedRotation = ((currentRotation % 360) + 360) % 360;
+                            var targetRotation = (center + 90) % 360;
+                            var rotationDelta = (targetRotation - normalizedRotation + 360) % 360;
+                            currentRotation += 360 * 5 + rotationDelta;
                             $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
                             $canvas.one('transitionend', function () {
                                 var isWinning = res.result && (res.result.isWinning || res.result.is_winning);
