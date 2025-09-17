@@ -1232,6 +1232,10 @@ $(document).ready(function(){
                             var desiredAlignment = (270 - center + 360) % 360;
                             var rotationDelta = (desiredAlignment - normalizedRotation + 360) % 360;
                             currentRotation += 360 * 5 + rotationDelta;
+                            console.log('[Wheel Debug] PHP index:', res.index);
+                            console.log('[Wheel Debug] JS idx:', idx);
+                            console.log('[Wheel Debug] Segment center:', segmentCenters[idx]);
+                            console.log('[Wheel Debug] Final rotation:', currentRotation);
                             $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
                             $canvas.one('transitionend', function () {
                                 var isWinning = res.result && (res.result.isWinning || res.result.is_winning);
