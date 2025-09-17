@@ -960,3 +960,106 @@
         font-size: 1.1rem;
     }
 }
+
+/* Mystery boxes */
+.ever-mystery-boxes {
+    position: relative;
+}
+
+.ever-mystery-status-message {
+    margin-bottom: 1rem;
+}
+
+.ever-mystery-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.ever-mystery-box {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    border: 2px solid rgba(13, 110, 253, 0.25);
+    background: #f8f9fa;
+    color: #212529;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    overflow: hidden;
+}
+
+.ever-mystery-box:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.35);
+}
+
+.ever-mystery-box:not(.ever-mystery-box--disabled):hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.ever-mystery-box--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.ever-mystery-box-front,
+.ever-mystery-box-back {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    padding: 0.5rem;
+    line-height: 1.4;
+}
+
+.ever-mystery-box-back {
+    display: none;
+}
+
+.ever-mystery-box--revealed .ever-mystery-box-front {
+    display: none;
+}
+
+.ever-mystery-box--revealed .ever-mystery-box-back {
+    display: flex;
+}
+
+.ever-mystery-box-result-label {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.35rem;
+}
+
+.ever-mystery-box-result-message {
+    font-size: 0.9rem;
+}
+
+.ever-mystery-box-result-image {
+    margin-bottom: 0.5rem;
+}
+
+.ever-mystery-box-result-image img {
+    max-width: 64px;
+    max-height: 64px;
+}
+
+.ever-mystery-reveal-message {
+    margin-top: 1.5rem;
+    font-weight: 500;
+}
+
+.ever-mystery-empty {
+    margin: 2rem 0;
+}

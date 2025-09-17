@@ -311,6 +311,19 @@ $(document).ready(function(){
             form.reset();
         }
     });
+    $(document).on('click', '.ever-mystery-login-btn', function(e){
+        e.preventDefault();
+        var target = $(this).data('target');
+        if (typeof target === 'string' && target.length) {
+            $(target).modal('show');
+        }
+    });
+    $(document).on('hidden.bs.modal', '.ever-mystery-login-modal', function(){
+        var form = $(this).find('form')[0];
+        if(form){
+            form.reset();
+        }
+    });
     // Sélectionner tous les éléments avec la classe "ever-slide"
     let sliders = $('.ever-slide');
     // Parcourir chaque élément slider
@@ -1862,6 +1875,341 @@ $(document).ready(function(){
             disableScratch('No segments available.');
             return;
         }
+
+        requestInitialStatus();
+    });
+
+    $('.ever-mystery-boxes').each(function () {
+        var $container = $(this);
+        var configB64 = $container.data('config');
+        var config = {};
+        if (typeof configB64 === 'string') {
+            try {
+                config = JSON.parse(atob(configB64));
+            } catch (e) {
+                config = {};
+            }
+        }
+        var boxesData = config.boxes || config.segments || [];
+        var boxes = Array.isArray(boxesData) ? boxesData : Object.values(boxesData);
+        var playUrl = config.playUrl || config.spinUrl || '';
+        var token = config.token || '';
+        var blockId = parseInt($container.data('block-id'), 10) || 0;
+        var isLogged = typeof prestashop !== 'undefined' && prestashop.customer && prestashop.customer.is_logged;
+        var isEmployee = !!config.isEmployee;
+        if (!isEmployee && typeof everblock_is_employee !== 'undefined') {
+            isEmployee = !!everblock_is_employee;
+        }
+        if (!isLogged && !isEmployee) {
+            return;
+        }
+        var langId = parseInt(config.langId, 10);
+        if (!langId && typeof prestashop !== 'undefined' && prestashop.language && prestashop.language.id) {
+            langId = parseInt(prestashop.language.id, 10) || 0;
+        }
+        var $statusMessage = $container.find('.ever-mystery-status-message');
+        var $statusText = $statusMessage.find('.ever-mystery-status-text');
+        var $content = $container.find('.ever-mystery-content');
+        var $grid = $container.find('.ever-mystery-grid');
+        var $boxes = $grid.find('.ever-mystery-box');
+        var $revealMessage = $container.find('.ever-mystery-reveal-message');
+        var emptyStatusMessage = $container.data('empty-status');
+        if (typeof emptyStatusMessage !== 'string') {
+            emptyStatusMessage = '';
+        }
+        if (!$grid.length || !$boxes.length || !boxes.length) {
+            if (!boxes.length) {
+                var message = emptyStatusMessage || 'No boxes available.';
+                $statusText.html(message);
+                $statusMessage.show();
+            }
+            return;
+        }
+        var closedLabel = typeof config.closedLabel === 'string' && config.closedLabel.length
+            ? config.closedLabel
+            : ($grid.data('closed-label') || '?');
+        var requestInProgress = false;
+        var gameLocked = false;
+
+        function extractValue(value) {
+            if (value === null || typeof value === 'undefined') {
+                return '';
+            }
+            if (typeof value === 'string') {
+                return value;
+            }
+            if (typeof value === 'number' || typeof value === 'boolean') {
+                return value.toString();
+            }
+            if (Array.isArray(value)) {
+                for (var i = 0; i < value.length; i++) {
+                    var nested = extractValue(value[i]);
+                    if (nested) {
+                        return nested;
+                    }
+                }
+                return '';
+            }
+            if (typeof value === 'object') {
+                if (langId && Object.prototype.hasOwnProperty.call(value, langId)) {
+                    var langVal = extractValue(value[langId]);
+                    if (langVal) {
+                        return langVal;
+                    }
+                }
+                if (typeof prestashop !== 'undefined' && prestashop.language && prestashop.language.id) {
+                    var psLangId = parseInt(prestashop.language.id, 10) || 0;
+                    if (psLangId && Object.prototype.hasOwnProperty.call(value, psLangId)) {
+                        var psLangVal = extractValue(value[psLangId]);
+                        if (psLangVal) {
+                            return psLangVal;
+                        }
+                    }
+                }
+                for (var key in value) {
+                    if (!Object.prototype.hasOwnProperty.call(value, key)) {
+                        continue;
+                    }
+                    var nestedVal = extractValue(value[key]);
+                    if (nestedVal) {
+                        return nestedVal;
+                    }
+                }
+            }
+            return '';
+        }
+
+        function resolveImage(imageData) {
+            if (!imageData) {
+                return '';
+            }
+            if (typeof imageData === 'string') {
+                return imageData;
+            }
+            if (Array.isArray(imageData)) {
+                for (var i = 0; i < imageData.length; i++) {
+                    var nested = resolveImage(imageData[i]);
+                    if (nested) {
+                        return nested;
+                    }
+                }
+                return '';
+            }
+            if (typeof imageData === 'object') {
+                if (typeof imageData.url === 'string' && imageData.url.length) {
+                    return imageData.url;
+                }
+                if (typeof imageData.src === 'string' && imageData.src.length) {
+                    return imageData.src;
+                }
+                for (var key in imageData) {
+                    if (!Object.prototype.hasOwnProperty.call(imageData, key)) {
+                        continue;
+                    }
+                    var nestedValue = resolveImage(imageData[key]);
+                    if (nestedValue) {
+                        return nestedValue;
+                    }
+                }
+            }
+            return '';
+        }
+
+        function showStatus(message, visible) {
+            if (visible && typeof message === 'string' && message.trim().length) {
+                $statusText.html(message);
+                $statusMessage.show();
+            } else {
+                $statusText.empty();
+                $statusMessage.hide();
+            }
+        }
+
+        function setBoxesDisabled(disabled) {
+            $boxes.prop('disabled', !!disabled);
+            $boxes.toggleClass('ever-mystery-box--disabled', !!disabled);
+        }
+
+        function disableBoxes(message, permanent) {
+            if (permanent) {
+                gameLocked = true;
+            }
+            setBoxesDisabled(true);
+            var text = message;
+            if (typeof text !== 'string' || !text.trim().length) {
+                text = emptyStatusMessage || '';
+            }
+            showStatus(text, !!text);
+        }
+
+        function enableBoxes() {
+            if (gameLocked) {
+                return;
+            }
+            setBoxesDisabled(false);
+            showStatus('', false);
+        }
+
+        function applyResult($box, result, response) {
+            if (!$box || !$box.length) {
+                return;
+            }
+            gameLocked = true;
+            setBoxesDisabled(true);
+            $box.removeClass('ever-mystery-box--disabled');
+            $box.addClass('ever-mystery-box--revealed');
+            var labelText = extractValue(result && result.label);
+            var messageHtml = extractValue(result && result.message);
+            var $label = $box.find('.ever-mystery-box-result-label');
+            var $message = $box.find('.ever-mystery-box-result-message');
+            var $imageWrapper = $box.find('.ever-mystery-box-result-image');
+            var $image = $imageWrapper.find('img');
+            $label.text(labelText || '');
+            if (messageHtml) {
+                $message.html(messageHtml);
+            } else {
+                $message.empty();
+            }
+            var textColor = result && result.text_color ? result.text_color : '';
+            var backgroundColor = result && result.color ? result.color : '';
+            if (backgroundColor) {
+                $box.css('background-color', backgroundColor);
+            }
+            if (textColor) {
+                $box.find('.ever-mystery-box-back').css('color', textColor);
+            }
+            var imageUrl = resolveImage(result && result.image);
+            if (imageUrl) {
+                $image.attr('src', imageUrl);
+                $image.attr('alt', labelText || '');
+                $imageWrapper.show();
+            } else {
+                $image.attr('src', '').attr('alt', '');
+                $imageWrapper.hide();
+            }
+            $box.attr('aria-live', 'polite');
+            var modalDetails = [];
+            if (response && response.categories_message) {
+                modalDetails.push(response.categories_message);
+            }
+            if (response && response.minimum_purchase_message) {
+                modalDetails.push(response.minimum_purchase_message);
+            }
+            var isWinning = response && response.result && (response.result.isWinning || response.result.is_winning);
+            var code = isWinning && response ? (response.code || '') : '';
+            var modalMessage = response && typeof response.message === 'string' ? response.message : labelText;
+            if ($revealMessage.length) {
+                if (modalMessage) {
+                    $revealMessage.html(modalMessage).show();
+                } else {
+                    $revealMessage.empty().hide();
+                }
+            }
+            everblockShowGameModal(modalMessage || '', code, modalDetails);
+        }
+
+        function handleResultResponse($box, res) {
+            if (res && res.played && !res.status) {
+                disableBoxes(res.message || '', true);
+                return;
+            }
+            if (res && res.playable === false && !isEmployee) {
+                disableBoxes(res.message || '', true);
+                return;
+            }
+            if (res && res.reason && (res.reason === 'before_start' || res.reason === 'after_end') && !isEmployee) {
+                disableBoxes(res.message || '', true);
+                return;
+            }
+            if (res && res.result) {
+                applyResult($box, res.result, res);
+                return;
+            }
+            if (res && res.message) {
+                showStatus(res.message, true);
+            } else {
+                showStatus('', false);
+            }
+            if (!gameLocked) {
+                enableBoxes();
+            }
+        }
+
+        function sendPlayRequest($box) {
+            if (!$box || !$box.length || requestInProgress || gameLocked) {
+                return;
+            }
+            requestInProgress = true;
+            setBoxesDisabled(true);
+            if (!playUrl) {
+                requestInProgress = false;
+                applyResult($box, boxes[0] || null, {});
+                return;
+            }
+            $.ajax({
+                url: playUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    id_block: blockId,
+                    token: token,
+                    box_index: parseInt($box.data('box-index'), 10) || 0
+                },
+                success: function (res) {
+                    requestInProgress = false;
+                    handleResultResponse($box, res || {});
+                },
+                error: function () {
+                    requestInProgress = false;
+                    gameLocked = false;
+                    enableBoxes();
+                    showStatus('An error occurred.', true);
+                }
+            });
+        }
+
+        function requestInitialStatus() {
+            if (!playUrl) {
+                enableBoxes();
+                return;
+            }
+            setBoxesDisabled(true);
+            $.ajax({
+                url: playUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    id_block: blockId,
+                    token: token,
+                    check: 1
+                },
+                success: function (res) {
+                    if (res && res.played) {
+                        disableBoxes(res.message || '', true);
+                        return;
+                    }
+                    if (res && res.playable === false && !isEmployee) {
+                        disableBoxes(res.message || '', true);
+                        return;
+                    }
+                    if (res && res.reason && (res.reason === 'before_start' || res.reason === 'after_end') && !isEmployee) {
+                        disableBoxes(res.message || '', true);
+                        return;
+                    }
+                    gameLocked = false;
+                    enableBoxes();
+                },
+                error: function () {
+                    gameLocked = false;
+                    enableBoxes();
+                }
+            });
+        }
+
+        $boxes.on('click', function (event) {
+            event.preventDefault();
+            sendPlayRequest($(this));
+        });
 
         requestInitialStatus();
     });
