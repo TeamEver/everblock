@@ -24,6 +24,85 @@ $(document).ready(function(){
             $wheelCatSelects.chosen();
         }
     }
+    function everblockShowGameModal(message, code, details) {
+        var safeMessage = typeof message === 'string' ? message : '';
+        var couponCode = typeof code === 'string' ? code : '';
+        var infoDetails = [];
+        if (Array.isArray(details)) {
+            infoDetails = details.filter(function (item) {
+                return typeof item === 'string' && item.trim().length;
+            });
+        } else if (typeof details === 'string' && details.trim().length) {
+            infoDetails = [details];
+        }
+        var codeHtml = '';
+        if (couponCode) {
+            codeHtml = '<div class="ever-wheel-code-wrapper">'
+                + '<span class="ever-wheel-code">' + couponCode + '</span>'
+                + '<button type="button" class="btn btn-secondary btn-sm ms-2 ever-wheel-copy">Copier</button>'
+                + '<span class="ever-wheel-copy-feedback ms-2 text-success" style="display:none;"></span>'
+                + '</div>';
+        }
+        var detailsHtml = '';
+        if (infoDetails.length) {
+            detailsHtml = infoDetails.map(function (item) {
+                return '<p class="ever-wheel-detail">' + item + '</p>';
+            }).join('');
+        }
+        $('#everWheelModal').remove();
+        var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
+            + '<div class="modal-dialog" role="document">'
+            + '<div class="modal-content">'
+            + '<div class="modal-header border-0">'
+            + '<button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">'
+            + '<span aria-hidden="true">&times;</span>'
+            + '</button>'
+            + '</div>'
+            + '<div class="modal-body text-center">'
+            + '<p>' + safeMessage + '</p>' + codeHtml + detailsHtml
+            + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal" data-bs-dismiss="modal">OK</button>'
+            + '</div></div></div></div>';
+        $('body').append(modal);
+        var $modal = $('#everWheelModal');
+        $modal.modal('show');
+        if (couponCode) {
+            $modal.find('.ever-wheel-copy').on('click', function () {
+                var $feedback = $modal.find('.ever-wheel-copy-feedback');
+                function showFeedback(text, isSuccess) {
+                    $feedback.text(text).toggleClass('text-success', !!isSuccess).toggleClass('text-danger', !isSuccess).show();
+                    setTimeout(function () {
+                        $feedback.fadeOut();
+                    }, 2000);
+                }
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    navigator.clipboard.writeText(couponCode).then(function () {
+                        showFeedback('Code copied!', true);
+                    }).catch(function () {
+                        showFeedback('Unable to copy the code', false);
+                    });
+                } else {
+                    var $temp = $('<input type="text" class="d-none" />');
+                    $('body').append($temp);
+                    $temp.val(couponCode).trigger('focus').select();
+                    var copied = false;
+                    try {
+                        copied = document.execCommand('copy');
+                    } catch (err) {
+                        copied = false;
+                    }
+                    $temp.remove();
+                    if (copied) {
+                        showFeedback('Code copied!', true);
+                    } else {
+                        showFeedback('Unable to copy the code', false);
+                    }
+                }
+            });
+        }
+        $modal.on('hidden.bs.modal', function () {
+            $(this).remove();
+        });
+    }
     function makeLoopUrl(url) {
         if (!url) {
             return url;
@@ -217,6 +296,16 @@ $(document).ready(function(){
         $('#everWheelLoginModal').modal('show');
     });
     $(document).on('hidden.bs.modal', '#everWheelLoginModal', function(){
+        var form = $(this).find('form')[0];
+        if(form){
+            form.reset();
+        }
+    });
+    $(document).on('click', '.ever-scratch-login-btn', function(e){
+        e.preventDefault();
+        $('#everScratchLoginModal').modal('show');
+    });
+    $(document).on('hidden.bs.modal', '#everScratchLoginModal', function(){
         var form = $(this).find('form')[0];
         if(form){
             form.reset();
@@ -1190,60 +1279,6 @@ $(document).ready(function(){
                 return;
             }
 
-            function showWheelModal(msg, code, details) {
-                var codeHtml = '';
-                if (code) {
-                    codeHtml = '<div class="ever-wheel-code-wrapper">'
-                        + '<span class="ever-wheel-code">' + code + '</span>'
-                        + '<button type="button" class="btn btn-secondary btn-sm ms-2 ever-wheel-copy">Copier</button>'
-                        + '<span class="ever-wheel-copy-feedback ms-2 text-success" style="display:none;"></span>'
-                        + '</div>';
-                }
-                var detailsHtml = '';
-                if (Array.isArray(details)) {
-                    var filteredDetails = details.filter(function (item) {
-                        return typeof item === 'string' && item.trim().length;
-                    });
-                    if (filteredDetails.length) {
-                        detailsHtml = filteredDetails.map(function (item) {
-                            return '<p class="ever-wheel-detail">' + item + '</p>';
-                        }).join('');
-                    }
-                } else if (details) {
-                    detailsHtml = '<p class="ever-wheel-detail">' + details + '</p>';
-                }
-                $('#everWheelModal').remove();
-                var modal = '<div class="modal fade" id="everWheelModal" tabindex="-1" role="dialog">'
-                    + '<div class="modal-dialog" role="document">'
-                    + '<div class="modal-content">'
-                    + '<div class="modal-header border-0">'
-                    + '<button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">'
-                    + '<span aria-hidden="true">&times;</span>'
-                    + '</button>'
-                    + '</div>'
-                    + '<div class="modal-body text-center">'
-                    + '<p>' + msg + '</p>' + codeHtml + detailsHtml
-                    + '<button type="button" class="btn btn-primary mt-3" data-dismiss="modal" data-bs-dismiss="modal">OK</button>'
-                    + '</div></div></div></div>';
-                $('body').append(modal);
-                var $modal = $('#everWheelModal');
-                $modal.modal('show');
-                if (code) {
-                    $modal.find('.ever-wheel-copy').on('click', function () {
-                        navigator.clipboard.writeText(code).then(function () {
-                            var $feedback = $modal.find('.ever-wheel-copy-feedback');
-                            $feedback.text('Code copié !').show();
-                            setTimeout(function () {
-                                $feedback.fadeOut();
-                            }, 2000);
-                        });
-                    });
-                }
-                $modal.on('hidden.bs.modal', function () {
-                    $(this).remove();
-                });
-            }
-
             $container.find('.ever-wheel-spin').on('click', function () {
                 var $btn = $(this);
                 $btn.prop('disabled', true);
@@ -1314,7 +1349,7 @@ $(document).ready(function(){
                                         details.push(res.minimum_purchase_message);
                                     }
                                 }
-                                showWheelModal(msg, code, details);
+                                everblockShowGameModal(msg, code, details);
                                 $btn.prop('disabled', false);
                             });
                         } else {
@@ -1329,7 +1364,7 @@ $(document).ready(function(){
                                     details.push(res.minimum_purchase_message);
                                 }
                             }
-                            showWheelModal(msg, code, details);
+                            everblockShowGameModal(msg, code, details);
                             $btn.prop('disabled', false);
                         }
                     },
@@ -1341,6 +1376,457 @@ $(document).ready(function(){
         }
 
         updateStatus();
+    });
+
+    $('.ever-scratch-card-block').each(function () {
+        var $container = $(this);
+        var configB64 = $container.data('config');
+        var config = {};
+        if (typeof configB64 === 'string') {
+            try {
+                config = JSON.parse(atob(configB64));
+            } catch (e) {
+                config = {};
+            }
+        }
+        var segmentsData = config.segments || [];
+        var segments = Array.isArray(segmentsData) ? segmentsData : Object.values(segmentsData);
+        var spinUrl = config.spinUrl || '';
+        var token = config.token || '';
+        var blockId = parseInt($container.data('block-id'), 10) || 0;
+        var isLogged = typeof prestashop !== 'undefined' && prestashop.customer && prestashop.customer.is_logged;
+        var isEmployee = !!config.isEmployee;
+        if (!isEmployee && typeof everblock_is_employee !== 'undefined') {
+            isEmployee = !!everblock_is_employee;
+        }
+        if (!isLogged && !isEmployee) {
+            return;
+        }
+        var $statusMessage = $container.find('.ever-scratch-status-message');
+        var $statusText = $statusMessage.find('.ever-scratch-status-text');
+        var $content = $container.find('.ever-scratch-content');
+        var $card = $container.find('.ever-scratch-card').first();
+        var $canvas = $card.find('.ever-scratch-overlay');
+        var $resultLabel = $card.find('.ever-scratch-result-label');
+        var $resultImageWrapper = $card.find('.ever-scratch-result-image');
+        var $resultImage = $resultImageWrapper.find('img');
+        if (!$canvas.length || !$card.length) {
+            return;
+        }
+        var canvas = $canvas[0];
+        var ctx = canvas.getContext ? canvas.getContext('2d') : null;
+        if (!ctx) {
+            return;
+        }
+        var scratchEnabled = false;
+        var revealTriggered = false;
+        var ajaxTriggered = false;
+        var isPointerDown = false;
+        var revealThreshold = 0.5;
+        var lastLoggedRatio = 0;
+        var revealCheckScheduled = false;
+        var defaultBackground = $card.css('background');
+        var defaultTextColor = $resultLabel.css('color');
+
+        function showStatus(message, visible) {
+            if (visible && typeof message === 'string' && message.trim().length) {
+                $statusText.html(message);
+                $statusMessage.show();
+            } else {
+                $statusMessage.hide();
+                $statusText.empty();
+            }
+        }
+
+        function disableScratch(message) {
+            scratchEnabled = false;
+            if (!$card.hasClass('ever-scratch-card-disabled')) {
+                $card.addClass('ever-scratch-card-disabled');
+            }
+            $canvas.css('pointer-events', 'none');
+            showStatus(message || '', !!message);
+        }
+
+        function resetResultDisplay() {
+            revealTriggered = false;
+            ajaxTriggered = false;
+            isPointerDown = false;
+            lastLoggedRatio = 0;
+            if ($card.hasClass('ever-scratch-card--revealed')) {
+                $card.removeClass('ever-scratch-card--revealed');
+            }
+            if (typeof defaultBackground === 'string') {
+                $card.css('background', defaultBackground);
+            }
+            if (typeof defaultTextColor === 'string') {
+                $resultLabel.css('color', defaultTextColor);
+            }
+            $card.find('.ever-scratch-result').attr('aria-hidden', 'true');
+            $resultLabel.text('');
+            $resultImageWrapper.hide();
+            $resultImage.attr('src', '').attr('alt', '');
+        }
+
+        function enableScratch() {
+            scratchEnabled = true;
+            $card.removeClass('ever-scratch-card-disabled');
+            $canvas.css('pointer-events', '');
+            showStatus('', false);
+            resetResultDisplay();
+            window.requestAnimationFrame(prepareCanvas);
+        }
+
+        function resolveImageUrl(imageData) {
+            if (!imageData) {
+                return '';
+            }
+            if (typeof imageData === 'string') {
+                return imageData;
+            }
+            if (Array.isArray(imageData)) {
+                for (var i = 0; i < imageData.length; i++) {
+                    var nested = resolveImageUrl(imageData[i]);
+                    if (nested) {
+                        return nested;
+                    }
+                }
+            }
+            if (typeof imageData === 'object') {
+                if (typeof imageData.url === 'string' && imageData.url.length) {
+                    return imageData.url;
+                }
+                if (typeof imageData.src === 'string' && imageData.src.length) {
+                    return imageData.src;
+                }
+            }
+
+            return '';
+        }
+
+        function applyResult(result) {
+            if (!result || typeof result !== 'object') {
+                return;
+            }
+            var labelValue = result.label;
+            if (labelValue && typeof labelValue === 'object') {
+                if (typeof labelValue.value !== 'undefined') {
+                    labelValue = labelValue.value;
+                } else {
+                    var labelCandidates = Array.isArray(labelValue) ? labelValue : Object.values(labelValue);
+                    labelValue = '';
+                    for (var i = 0; i < labelCandidates.length; i++) {
+                        var candidate = labelCandidates[i];
+                        if (typeof candidate === 'string' && candidate.trim().length) {
+                            labelValue = candidate;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (typeof labelValue !== 'string') {
+                labelValue = '';
+            }
+            var backgroundColorValue = result.color;
+            if (backgroundColorValue && typeof backgroundColorValue === 'object' && typeof backgroundColorValue.value !== 'undefined') {
+                backgroundColorValue = backgroundColorValue.value;
+            }
+            var textColorValue = result.text_color;
+            if (textColorValue && typeof textColorValue === 'object' && typeof textColorValue.value !== 'undefined') {
+                textColorValue = textColorValue.value;
+            }
+            if (!textColorValue && result.textColor && typeof result.textColor === 'object' && typeof result.textColor.value !== 'undefined') {
+                textColorValue = result.textColor.value;
+            } else if (!textColorValue && typeof result.textColor === 'string') {
+                textColorValue = result.textColor;
+            }
+            var label = labelValue;
+            var backgroundColor = typeof backgroundColorValue === 'string' ? backgroundColorValue : '';
+            var textColor = typeof textColorValue === 'string' ? textColorValue : '';
+            if (backgroundColor) {
+                $card.css('background', backgroundColor);
+            }
+            if (textColor) {
+                $resultLabel.css('color', textColor);
+            } else if (typeof defaultTextColor === 'string') {
+                $resultLabel.css('color', defaultTextColor);
+            }
+            $resultLabel.text(label);
+            $card.find('.ever-scratch-result').attr('aria-hidden', 'false');
+            var imageUrl = resolveImageUrl(result.image || result.picture);
+            if (imageUrl) {
+                $resultImage.attr('src', imageUrl);
+                $resultImage.attr('alt', label);
+                $resultImageWrapper.show();
+            } else {
+                $resultImageWrapper.hide();
+                $resultImage.attr('src', '').attr('alt', '');
+            }
+        }
+
+        function resizeCanvas() {
+            if (!canvas) {
+                return;
+            }
+            var width = Math.round($card.innerWidth());
+            if (width <= 0) {
+                return;
+            }
+            var height = Math.round($card.innerHeight());
+            if (height <= 0) {
+                height = Math.round(width / 1.5);
+            }
+            if (canvas.width !== width || canvas.height !== height) {
+                canvas.width = width;
+                canvas.height = height;
+            }
+        }
+
+        function drawOverlay() {
+            if (!ctx) {
+                return;
+            }
+            ctx.save();
+            ctx.globalCompositeOperation = 'source-over';
+            var gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#f7f7f7');
+            gradient.addColorStop(0.5, '#c8c8c8');
+            gradient.addColorStop(1, '#9f9f9f');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            for (var offset = -canvas.height; offset < canvas.width; offset += 16) {
+                ctx.beginPath();
+                ctx.moveTo(offset, 0);
+                ctx.lineTo(offset + canvas.height, canvas.height);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function prepareCanvas() {
+            if (!scratchEnabled || revealTriggered) {
+                return;
+            }
+            resizeCanvas();
+            drawOverlay();
+        }
+
+        function getPointerPosition(event) {
+            var original = event.originalEvent || event;
+            var clientX;
+            var clientY;
+            if (original.touches && original.touches.length) {
+                clientX = original.touches[0].clientX;
+                clientY = original.touches[0].clientY;
+            } else if (original.changedTouches && original.changedTouches.length) {
+                clientX = original.changedTouches[0].clientX;
+                clientY = original.changedTouches[0].clientY;
+            } else {
+                clientX = original.clientX;
+                clientY = original.clientY;
+            }
+            var rect = canvas.getBoundingClientRect();
+            var x = ((clientX - rect.left) / rect.width) * canvas.width;
+            var y = ((clientY - rect.top) / rect.height) * canvas.height;
+            return {
+                x: x,
+                y: y
+            };
+        }
+
+        function scratchAt(x, y) {
+            if (!ctx || !scratchEnabled || revealTriggered) {
+                return;
+            }
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-out';
+            var brushSize = Math.max(canvas.width, canvas.height) * 0.08;
+            ctx.beginPath();
+            ctx.arc(x, y, brushSize, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            scheduleRevealCheck();
+        }
+
+        function scheduleRevealCheck() {
+            if (revealCheckScheduled) {
+                return;
+            }
+            revealCheckScheduled = true;
+            window.requestAnimationFrame(function () {
+                revealCheckScheduled = false;
+                checkRevealProgress();
+            });
+        }
+
+        function checkRevealProgress() {
+            if (!ctx || revealTriggered) {
+                return;
+            }
+            try {
+                var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                var data = imageData.data;
+                var transparentPixels = 0;
+                var totalPixels = data.length / 4;
+                for (var i = 3; i < data.length; i += 4) {
+                    if (data[i] < 128) {
+                        transparentPixels++;
+                    }
+                }
+                if (totalPixels === 0) {
+                    return;
+                }
+                var ratio = transparentPixels / totalPixels;
+                if (Math.abs(ratio - lastLoggedRatio) >= 0.05) {
+                    console.log('[Scratch Debug] Reveal ratio:', ratio.toFixed(2));
+                    lastLoggedRatio = ratio;
+                }
+                if (ratio >= revealThreshold) {
+                    console.log('[Scratch Debug] Threshold reached, clearing overlay.');
+                    finalizeReveal();
+                }
+            } catch (err) {
+                console.warn('[Scratch Debug] Unable to evaluate reveal ratio', err);
+            }
+        }
+
+        function finalizeReveal() {
+            if (revealTriggered) {
+                return;
+            }
+            revealTriggered = true;
+            scratchEnabled = false;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            $card.addClass('ever-scratch-card--revealed');
+            triggerResultRequest();
+        }
+
+        function triggerResultRequest() {
+            if (ajaxTriggered) {
+                return;
+            }
+            ajaxTriggered = true;
+            if (!spinUrl) {
+                applyResult(segments.length ? segments[0] : null);
+                everblockShowGameModal('', '', []);
+                return;
+            }
+            $.ajax({
+                url: spinUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    id_block: blockId,
+                    token: token
+                },
+                success: function (res) {
+                    handleResultResponse(res);
+                },
+                error: function () {
+                    everblockShowGameModal('An error occurred.', '', []);
+                }
+            });
+        }
+
+        function handleResultResponse(res) {
+            if (res && res.result) {
+                applyResult(res.result);
+            }
+            var details = [];
+            var isWinning = res && res.result && (res.result.isWinning || res.result.is_winning);
+            if (res && res.categories_message) {
+                details.push(res.categories_message);
+            }
+            if (res && res.minimum_purchase_message) {
+                details.push(res.minimum_purchase_message);
+            }
+            var code = isWinning && res ? (res.code || '') : '';
+            var message = res && typeof res.message === 'string' ? res.message : '';
+            everblockShowGameModal(message, code, details);
+            if (res && res.status === false && res.message) {
+                showStatus(res.message, true);
+            }
+        }
+
+        $canvas.on('mousedown touchstart', function (event) {
+            if (!scratchEnabled || revealTriggered) {
+                return;
+            }
+            event.preventDefault();
+            isPointerDown = true;
+            var pos = getPointerPosition(event);
+            scratchAt(pos.x, pos.y);
+        });
+
+        $canvas.on('mousemove touchmove', function (event) {
+            if (!scratchEnabled || revealTriggered) {
+                return;
+            }
+            if (event.type === 'mousemove' && !isPointerDown) {
+                return;
+            }
+            event.preventDefault();
+            var pos = getPointerPosition(event);
+            scratchAt(pos.x, pos.y);
+        });
+
+        $canvas.on('mouseup mouseleave touchend touchcancel', function () {
+            isPointerDown = false;
+        });
+
+        $(window).on('resize', function () {
+            if (!scratchEnabled || revealTriggered) {
+                return;
+            }
+            window.requestAnimationFrame(prepareCanvas);
+        });
+
+        function requestInitialStatus() {
+            if (!spinUrl) {
+                enableScratch();
+                return;
+            }
+            $.ajax({
+                url: spinUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    id_block: blockId,
+                    token: token,
+                    check: 1
+                },
+                success: function (res) {
+                    if (res && res.played) {
+                        disableScratch(res.message || '');
+                        return;
+                    }
+                    if (res && res.playable === false && !isEmployee) {
+                        if (res.reason === 'before_start' || res.reason === 'after_end') {
+                            disableScratch(res.message || '');
+                        } else {
+                            disableScratch(res ? res.message : '');
+                        }
+                        return;
+                    }
+                    enableScratch();
+                },
+                error: function () {
+                    enableScratch();
+                }
+            });
+        }
+
+        if (!segments.length) {
+            disableScratch('No segments available.');
+            return;
+        }
+
+        requestInitialStatus();
     });
 
     // Exit intent modal
