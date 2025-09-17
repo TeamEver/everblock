@@ -1063,3 +1063,165 @@
 .ever-mystery-empty {
     margin: 2rem 0;
 }
+
+/* Slot machine */
+.ever-slot-machine {
+    position: relative;
+    text-align: center;
+}
+
+.ever-slot-status-message {
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.ever-slot-status-text {
+    font-size: 1rem;
+}
+
+.ever-slot-countdown {
+    display: none;
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+.ever-slot-countdown-value {
+    margin-left: 0.35rem;
+}
+
+.ever-slot-reels {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.ever-slot-reel {
+    width: 110px;
+    height: 110px;
+    border-radius: 16px;
+    border: 3px solid rgba(13, 110, 253, 0.2);
+    background: linear-gradient(180deg, #ffffff 0%, #f0f3ff 100%);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ever-slot-reel--spinning {
+    animation: ever-slot-spin 0.6s linear infinite;
+}
+
+@keyframes ever-slot-spin {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-12%);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.ever-slot-symbol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.ever-slot-symbol-image {
+    max-width: 70px;
+    max-height: 70px;
+    object-fit: contain;
+}
+
+.ever-slot-symbol-label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #212529;
+}
+
+.ever-slot-reels--disabled .ever-slot-reel {
+    filter: grayscale(100%);
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+.ever-slot-instructions {
+    font-size: 1rem;
+}
+
+.ever-slot-actions {
+    margin-top: 1.5rem;
+}
+
+.ever-slot-result {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.ever-slot-result-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.ever-slot-result-message {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.ever-slot-result-details p {
+    margin: 0 0 0.35rem;
+}
+
+.ever-slot-coupon {
+    margin-top: 1rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px dashed rgba(13, 110, 253, 0.45);
+    background: #ffffff;
+}
+
+.ever-slot-coupon-code {
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-size: 1.1rem;
+}
+
+.ever-slot-login {
+    margin-top: 1.5rem;
+}
+
+.ever-slot-login-message {
+    font-size: 0.95rem;
+}
+
+@media (max-width: 576px) {
+    .ever-slot-reels {
+        gap: 0.75rem;
+    }
+
+    .ever-slot-reel {
+        width: 88px;
+        height: 88px;
+    }
+
+    .ever-slot-symbol-image {
+        max-width: 56px;
+        max-height: 56px;
+    }
+}
