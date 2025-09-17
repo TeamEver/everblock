@@ -1231,11 +1231,7 @@ $(document).ready(function(){
                             if (typeof res.index !== 'undefined') {
                                 var parsedIndex = parseInt(res.index, 10);
                                 if (!isNaN(parsedIndex)) {
-                                    if (parsedIndex >= 0 && parsedIndex < segments.length) {
-                                        idx = parsedIndex;
-                                    } else if (parsedIndex === segments.length) {
-                                        idx = 0; // correction off-by-one
-                                    }
+                                    idx = parsedIndex;
                                 }
                             }
                             if (idx === -1 && normalizedResult) {
@@ -1244,7 +1240,7 @@ $(document).ready(function(){
                             if (idx === -1) {
                                 idx = 0;
                             }
-                            console.log('[Wheel Debug] Corrected idx:', idx, 'PHP index:', res.index, 'Segments total:', segments.length);
+                            console.log('[Wheel Debug] PHP index:', res.index, 'JS idx:', idx, 'Segments total:', segments.length);
                             var center = segmentCenters[idx];
                             if (typeof center !== 'number' && segments.length) {
                                 var fallbackStep = 360 / segments.length;
@@ -1258,8 +1254,6 @@ $(document).ready(function(){
                             console.log('[Wheel Debug] Desired alignment:', desiredAlignment, 'Pointer angle:', POINTER_ANGLE);
                             var rotationDelta = (desiredAlignment - normalizedRotation + 360) % 360;
                             currentRotation += 360 * 5 + rotationDelta;
-                            console.log('[Wheel Debug] PHP index:', res.index);
-                            console.log('[Wheel Debug] JS idx:', idx);
                             console.log('[Wheel Debug] Segment center:', segmentCenters[idx]);
                             console.log('[Wheel Debug] Final rotation:', currentRotation);
                             $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
