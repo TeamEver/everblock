@@ -898,6 +898,28 @@ $(document).ready(function(){
             var currentRotation = 0;
             var segmentCenters = [];
 
+            function normalizeSegmentForComparison(value) {
+                if (value === null || typeof value === 'undefined') {
+                    return '';
+                }
+                if (Array.isArray(value)) {
+                    return '[' + value.map(normalizeSegmentForComparison).join('|') + ']';
+                }
+                if (typeof value === 'object') {
+                    var keys = Object.keys(value).sort();
+                    return '{' + keys.map(function (key) {
+                        return key + ':' + normalizeSegmentForComparison(value[key]);
+                    }).join('|') + '}';
+                }
+                if (typeof value === 'boolean') {
+                    return value ? '1' : '0';
+                }
+
+                return String(value);
+            }
+
+            var normalizedSegments = segments.map(normalizeSegmentForComparison);
+
             function clampChannel(value) {
                 return Math.max(0, Math.min(255, value));
             }
@@ -1180,14 +1202,35 @@ $(document).ready(function(){
                         }
                         var msg = res.message || '';
                         if (res && res.status && res.result) {
-                            var idx = typeof res.index !== 'undefined' ? res.index : -1;
-                            if (idx === -1) {
-                                idx = segments.findIndex(function (seg) {
-                                    return JSON.stringify(seg) === JSON.stringify(res.result);
-                                });
-                                if (idx === -1) {
-                                    idx = 0;
+                            var normalizedResult = normalizeSegmentForComparison(res.result);
+                            var idx = -1;
+                            if (typeof res.index !== 'undefined') {
+                                var parsedIndex = parseInt(res.index, 10);
+                                if (!isNaN(parsedIndex)) {
+                                    if (parsedIndex >= 0 && parsedIndex < segments.length) {
+                                        idx = parsedIndex;
+                                        if (normalizedSegments[idx] !== normalizedResult) {
+                                            if (parsedIndex > 0 && normalizedSegments[parsedIndex - 1] === normalizedResult) {
+                                                idx = parsedIndex - 1;
+                                            } else if (parsedIndex + 1 < normalizedSegments.length && normalizedSegments[parsedIndex + 1] === normalizedResult) {
+                                                idx = parsedIndex + 1;
+                                            } else {
+                                                idx = -1;
+                                            }
+                                        }
+                                    } else if (parsedIndex > 0 && parsedIndex <= segments.length) {
+                                        var zeroBased = parsedIndex - 1;
+                                        if (normalizedSegments[zeroBased] === normalizedResult) {
+                                            idx = zeroBased;
+                                        }
+                                    }
                                 }
+                            }
+                            if (idx === -1 && normalizedResult) {
+                                idx = normalizedSegments.indexOf(normalizedResult);
+                            }
+                            if (idx === -1) {
+                                idx = 0;
                             }
                             var center = segmentCenters[idx];
                             if (typeof center !== 'number' && segments.length) {
