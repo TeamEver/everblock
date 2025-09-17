@@ -1198,8 +1198,8 @@ $(document).ready(function(){
                                 center = 0;
                             }
                             var normalizedRotation = ((currentRotation % 360) + 360) % 360;
-                            var targetRotation = (center + 90) % 360;
-                            var rotationDelta = (targetRotation - normalizedRotation + 360) % 360;
+                            var desiredAlignment = (270 - center + 360) % 360;
+                            var rotationDelta = (desiredAlignment - normalizedRotation + 360) % 360;
                             currentRotation += 360 * 5 + rotationDelta;
                             $canvas.css('transform', 'rotate(' + currentRotation + 'deg)');
                             $canvas.one('transitionend', function () {
