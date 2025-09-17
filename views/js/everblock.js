@@ -896,7 +896,11 @@ $(document).ready(function(){
             }
             wheelInitialized = true;
             var currentRotation = 0;
-            var POINTER_ANGLE = 270;
+            var POINTER_ANGLE = parseInt($container.data('pointer-angle'), 10);
+            if (isNaN(POINTER_ANGLE)) {
+                POINTER_ANGLE = 270;
+            }
+            console.log('[Wheel Debug] Pointer angle used:', POINTER_ANGLE);
             var segmentCenters = [];
 
             function normalizeSegmentForComparison(value) {
