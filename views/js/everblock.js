@@ -1211,12 +1211,8 @@ $(document).ready(function(){
                             var idx = -1;
                             if (typeof res.index !== 'undefined') {
                                 var parsedIndex = parseInt(res.index, 10);
-                                if (!isNaN(parsedIndex)) {
-                                    if (parsedIndex >= 0 && parsedIndex < segments.length) {
-                                        idx = parsedIndex;
-                                    } else if (parsedIndex > 0 && parsedIndex <= segments.length) {
-                                        idx = parsedIndex - 1;
-                                    }
+                                if (!isNaN(parsedIndex) && parsedIndex >= 0 && parsedIndex < segments.length) {
+                                    idx = parsedIndex;
                                 }
                             }
                             if (idx === -1 && normalizedResult) {
@@ -1225,6 +1221,7 @@ $(document).ready(function(){
                             if (idx === -1) {
                                 idx = 0;
                             }
+                            console.log('[Wheel Debug] Corrected idx:', idx, 'PHP index:', res.index, 'Segments total:', segments.length);
                             var center = segmentCenters[idx];
                             if (typeof center !== 'number' && segments.length) {
                                 var fallbackStep = 360 / segments.length;
