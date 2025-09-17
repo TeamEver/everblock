@@ -896,6 +896,7 @@ $(document).ready(function(){
             }
             wheelInitialized = true;
             var currentRotation = 0;
+            var POINTER_ANGLE = 270;
             var segmentCenters = [];
 
             function normalizeSegmentForComparison(value) {
@@ -1229,7 +1230,8 @@ $(document).ready(function(){
                                 center = 0;
                             }
                             var normalizedRotation = ((currentRotation % 360) + 360) % 360;
-                            var desiredAlignment = (270 - center + 360) % 360;
+                            var desiredAlignment = (POINTER_ANGLE - center + 360) % 360;
+                            console.log('[Wheel Debug] Desired alignment:', desiredAlignment, 'Pointer angle:', POINTER_ANGLE);
                             var rotationDelta = (desiredAlignment - normalizedRotation + 360) % 360;
                             currentRotation += 360 * 5 + rotationDelta;
                             console.log('[Wheel Debug] PHP index:', res.index);
