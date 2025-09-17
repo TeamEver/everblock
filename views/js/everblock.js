@@ -324,6 +324,58 @@ $(document).ready(function(){
             form.reset();
         }
     });
+    $(document).on('click', '.ever-slot-login-btn', function(e){
+        e.preventDefault();
+        var target = $(this).data('target');
+        if (typeof target === 'string' && target.length) {
+            $(target).modal('show');
+        }
+    });
+    $(document).on('hidden.bs.modal', '.ever-slot-login-modal', function(){
+        var form = $(this).find('form')[0];
+        if(form){
+            form.reset();
+        }
+    });
+    $(document).on('click', '.ever-slot-copy', function(){
+        var $btn = $(this);
+        var $container = $btn.closest('.ever-slot-coupon');
+        var code = ($container.find('.ever-slot-coupon-code').text() || '').trim();
+        var $feedback = $container.find('.ever-slot-copy-feedback');
+        function showFeedback(text, success) {
+            $feedback.text(text).toggleClass('text-success', !!success).toggleClass('text-danger', !success).show();
+            setTimeout(function(){
+                $feedback.fadeOut();
+            }, 2000);
+        }
+        if (!code) {
+            showFeedback('Unable to copy the code', false);
+            return;
+        }
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(code).then(function(){
+                showFeedback('Code copied!', true);
+            }).catch(function(){
+                showFeedback('Unable to copy the code', false);
+            });
+        } else {
+            var $temp = $('<input type="text" class="d-none" />');
+            $('body').append($temp);
+            $temp.val(code).trigger('focus').select();
+            var copied = false;
+            try {
+                copied = document.execCommand('copy');
+            } catch (err) {
+                copied = false;
+            }
+            $temp.remove();
+            if (copied) {
+                showFeedback('Code copied!', true);
+            } else {
+                showFeedback('Unable to copy the code', false);
+            }
+        }
+    });
     // Sélectionner tous les éléments avec la classe "ever-slide"
     let sliders = $('.ever-slide');
     // Parcourir chaque élément slider
@@ -2212,6 +2264,407 @@ $(document).ready(function(){
         });
 
         requestInitialStatus();
+    });
+
+    $('.ever-slot-machine').each(function(){
+        var $machine = $(this);
+        var configB64 = $machine.data('config');
+        var config = {};
+        if (typeof configB64 === 'string') {
+            try {
+                config = JSON.parse(atob(configB64));
+            } catch (error) {
+                config = {};
+            }
+        }
+        var blockId = parseInt($machine.data('block-id'), 10) || 0;
+        var spinUrl = config.spinUrl || '';
+        var token = config.token || '';
+        var isEmployee = !!config.isEmployee;
+        if (!isEmployee && typeof everblock_is_employee !== 'undefined') {
+            isEmployee = !!everblock_is_employee;
+        }
+        var startDate = parseDate(config.startDate);
+        var endDate = parseDate(config.endDate);
+        var preStartMessage = typeof config.preStartMessage === 'string' ? config.preStartMessage : '';
+        var postEndMessage = typeof config.postEndMessage === 'string' ? config.postEndMessage : '';
+        var defaultPreStartMessage = typeof config.defaultPreStartMessage === 'string' ? config.defaultPreStartMessage : '';
+        var defaultPostEndMessage = typeof config.defaultPostEndMessage === 'string' ? config.defaultPostEndMessage : '';
+        var countdownLabelText = typeof config.countdownLabel === 'string' ? config.countdownLabel : '';
+        var $statusMessage = $machine.find('.ever-slot-status-message');
+        var $statusText = $statusMessage.find('.ever-slot-status-text');
+        var $countdownWrapper = $statusMessage.find('.ever-slot-countdown');
+        var $countdownLabel = $countdownWrapper.find('.ever-slot-countdown-label');
+        var $countdownValue = $countdownWrapper.find('.ever-slot-countdown-value');
+        var $content = $machine.find('.ever-slot-content');
+        var $reels = $machine.find('.ever-slot-reel');
+        var $spinButton = $machine.find('.ever-slot-spin');
+        var $resultMessage = $machine.find('.ever-slot-result-message');
+        var $resultDetails = $machine.find('.ever-slot-result-details');
+        var $couponWrapper = $machine.find('.ever-slot-coupon');
+        var $couponCode = $machine.find('.ever-slot-coupon-code');
+        var statusData = null;
+        var countdownTimer = null;
+        var spinInProgress = false;
+        if (countdownLabelText) {
+            $countdownLabel.text(countdownLabelText);
+        }
+
+        function parseDate(value) {
+            if (typeof value !== 'string') {
+                return null;
+            }
+            var trimmed = value.trim();
+            if (!trimmed.length) {
+                return null;
+            }
+            var normalized = trimmed.replace('T', ' ');
+            var parts = normalized.split(/\s+/);
+            var dateParts = parts[0] ? parts[0].split('-') : [];
+            if (dateParts.length < 3) {
+                return null;
+            }
+            var year = parseInt(dateParts[0], 10);
+            var month = parseInt(dateParts[1], 10) - 1;
+            var day = parseInt(dateParts[2], 10);
+            var timeParts = parts[1] ? parts[1].split(':') : [];
+            var hour = parseInt(timeParts[0] || 0, 10);
+            var minute = parseInt(timeParts[1] || 0, 10);
+            var second = parseInt(timeParts[2] || 0, 10);
+            if ([year, month, day, hour, minute, second].some(function(v){ return isNaN(v); })) {
+                return null;
+            }
+            return new Date(year, month, day, hour, minute, second);
+        }
+
+        function startCountdown(targetDate) {
+            stopCountdown();
+            if (!(targetDate instanceof Date)) {
+                return;
+            }
+            countdownTimer = setInterval(function(){
+                var now = new Date();
+                var distance = targetDate.getTime() - now.getTime();
+                if (distance <= 0) {
+                    stopCountdown();
+                    updateStatus();
+                    return;
+                }
+                var totalSeconds = Math.floor(distance / 1000);
+                var hours = Math.floor(totalSeconds / 3600);
+                var minutes = Math.floor((totalSeconds % 3600) / 60);
+                var seconds = totalSeconds % 60;
+                $countdownValue.text(('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2));
+            }, 1000);
+            $countdownWrapper.show();
+        }
+
+        function stopCountdown() {
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+            $countdownWrapper.hide();
+            $countdownValue.text('');
+        }
+
+        function setSpinEnabled(enabled) {
+            if (!$spinButton.length) {
+                return;
+            }
+            $spinButton.prop('disabled', !enabled);
+        }
+
+        function setStatus(message, visible) {
+            if (visible && typeof message === 'string' && message.trim().length) {
+                $statusText.html(message);
+                $statusMessage.show();
+            } else {
+                $statusText.empty();
+                $statusMessage.hide();
+            }
+        }
+
+        function evaluateStatus() {
+            var result = {
+                playable: true,
+                beforeStart: false,
+                afterEnd: false,
+                message: '',
+                countdownTarget: null,
+                disable: false
+            };
+            var now = new Date();
+            if (statusData) {
+                if (statusData.played && !isEmployee) {
+                    result.playable = false;
+                    result.disable = true;
+                    result.message = typeof statusData.message === 'string' ? statusData.message : '';
+                    return result;
+                }
+                if (statusData.playable === false && !isEmployee) {
+                    result.playable = false;
+                    result.disable = true;
+                    result.message = typeof statusData.message === 'string' ? statusData.message : '';
+                    if (statusData.reason === 'before_start') {
+                        result.beforeStart = true;
+                        result.disable = true;
+                        result.countdownTarget = statusData.start_timestamp ? new Date(parseInt(statusData.start_timestamp, 10) * 1000) : null;
+                    }
+                    if (statusData.reason === 'after_end') {
+                        result.afterEnd = true;
+                    }
+                    return result;
+                }
+                if (statusData.reason === 'before_start' && !isEmployee) {
+                    result.beforeStart = true;
+                    result.playable = false;
+                    result.disable = true;
+                    result.message = typeof statusData.message === 'string' && statusData.message.length
+                        ? statusData.message
+                        : (preStartMessage || defaultPreStartMessage);
+                    result.countdownTarget = statusData.start_timestamp ? new Date(parseInt(statusData.start_timestamp, 10) * 1000) : null;
+                    return result;
+                }
+                if (statusData.reason === 'after_end' && !isEmployee) {
+                    result.afterEnd = true;
+                    result.playable = false;
+                    result.disable = true;
+                    result.message = typeof statusData.message === 'string' && statusData.message.length
+                        ? statusData.message
+                        : (postEndMessage || defaultPostEndMessage);
+                    return result;
+                }
+            }
+            if (startDate instanceof Date && now < startDate && !isEmployee) {
+                result.beforeStart = true;
+                result.playable = false;
+                result.disable = true;
+                result.countdownTarget = startDate;
+                result.message = preStartMessage || defaultPreStartMessage;
+                return result;
+            }
+            if (endDate instanceof Date && now > endDate && !isEmployee) {
+                result.afterEnd = true;
+                result.playable = false;
+                result.disable = true;
+                result.message = postEndMessage || defaultPostEndMessage;
+                return result;
+            }
+
+            return result;
+        }
+
+        function updateStatus() {
+            var status = evaluateStatus();
+            if (status.beforeStart) {
+                if (status.countdownTarget instanceof Date) {
+                    startCountdown(status.countdownTarget);
+                } else {
+                    stopCountdown();
+                }
+                setStatus(status.message || preStartMessage || defaultPreStartMessage, true);
+                if (!isEmployee) {
+                    $content.hide();
+                    setSpinEnabled(false);
+                } else {
+                    $content.show();
+                    setSpinEnabled(true);
+                }
+                return;
+            }
+            if (status.afterEnd) {
+                stopCountdown();
+                setStatus(status.message || postEndMessage || defaultPostEndMessage, true);
+                if (!isEmployee) {
+                    $content.hide();
+                    setSpinEnabled(false);
+                } else {
+                    $content.show();
+                    setSpinEnabled(true);
+                }
+                return;
+            }
+            stopCountdown();
+            if (!status.playable && status.disable && !isEmployee) {
+                setStatus(status.message, true);
+                setSpinEnabled(false);
+                return;
+            }
+            setStatus('', false);
+            $content.show();
+            setSpinEnabled(!spinInProgress);
+        }
+
+        function renderSymbols(symbols) {
+            $reels.each(function(index){
+                var $reel = $(this);
+                $reel.removeClass('ever-slot-reel--spinning');
+                $reel.empty();
+                var symbol = Array.isArray(symbols) ? symbols[index] : null;
+                if (!symbol) {
+                    $reel.text('-');
+                    return;
+                }
+                var $wrapper = $('<div class="ever-slot-symbol"></div>');
+                if (symbol.image) {
+                    var $img = $('<img class="ever-slot-symbol-image" />');
+                    $img.attr('src', symbol.image);
+                    $img.attr('alt', symbol.alt_text || symbol.label || '');
+                    $wrapper.append($img);
+                }
+                var textContent = symbol.label || '';
+                if (!textContent && !symbol.image && symbol.symbol_key) {
+                    textContent = symbol.symbol_key;
+                }
+                if (textContent) {
+                    var $text = $('<span class="ever-slot-symbol-label"></span>');
+                    $text.text(textContent);
+                    $wrapper.append($text);
+                }
+                if (symbol.description) {
+                    var descriptionText = '';
+                    if (typeof symbol.description === 'string') {
+                        descriptionText = $('<div/>').html(symbol.description).text().trim() || symbol.description;
+                    } else {
+                        descriptionText = symbol.description;
+                    }
+                    var $desc = $('<span class="ever-slot-symbol-description visually-hidden"></span>');
+                    $desc.text(descriptionText);
+                    $wrapper.append($desc);
+                }
+                $reel.append($wrapper);
+            });
+        }
+
+        function resetResultArea() {
+            $resultMessage.empty();
+            $resultDetails.empty();
+            $couponWrapper.hide();
+            $couponCode.text('');
+            $machine.find('.ever-slot-copy-feedback').hide();
+        }
+
+        function applyResult(response) {
+            if (!response) {
+                return;
+            }
+            var delay = 1200;
+            setTimeout(function(){
+                renderSymbols(response.symbols || []);
+                if (typeof response.message === 'string') {
+                    $resultMessage.html(response.message);
+                }
+                var details = [];
+                if (typeof response.categories_message === 'string' && response.categories_message.trim().length) {
+                    details.push(response.categories_message);
+                }
+                if (typeof response.minimum_purchase_message === 'string' && response.minimum_purchase_message.trim().length) {
+                    details.push(response.minimum_purchase_message);
+                }
+                $resultDetails.empty();
+                if (details.length) {
+                    details.forEach(function(detail){
+                        $('<p></p>').text(detail).appendTo($resultDetails);
+                    });
+                }
+                if (typeof response.code === 'string' && response.code.trim().length) {
+                    $couponCode.text(response.code.trim());
+                    $couponWrapper.show();
+                }
+            }, delay);
+        }
+
+        function showError(message) {
+            setStatus(message, true);
+        }
+
+        function requestStatus() {
+            if (!spinUrl) {
+                updateStatus();
+                return;
+            }
+            $.ajax({
+                url: spinUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    id_block: blockId,
+                    token: token,
+                    check: 1
+                },
+                success: function(res){
+                    if (res && typeof res === 'object') {
+                        statusData = res;
+                    } else {
+                        statusData = null;
+                    }
+                    updateStatus();
+                },
+                error: function(){
+                    statusData = null;
+                    updateStatus();
+                }
+            });
+        }
+
+        if (!$spinButton.length) {
+            updateStatus();
+            return;
+        }
+
+        $spinButton.on('click', function(e){
+            e.preventDefault();
+            if (spinInProgress) {
+                return;
+            }
+            if (!spinUrl) {
+                showError('');
+                return;
+            }
+            resetResultArea();
+            spinInProgress = true;
+            setSpinEnabled(false);
+            $reels.addClass('ever-slot-reel--spinning');
+            $.ajax({
+                url: spinUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    id_block: blockId,
+                    token: token
+                },
+                success: function(res){
+                    spinInProgress = false;
+                    setSpinEnabled(isEmployee);
+                    if (!res || typeof res !== 'object') {
+                        showError('');
+                        renderSymbols([]);
+                        return;
+                    }
+                    if (res.status === false) {
+                        statusData = res;
+                        updateStatus();
+                        showError(typeof res.message === 'string' ? res.message : '');
+                        renderSymbols([]);
+                        return;
+                    }
+                    if (!isEmployee) {
+                        statusData = { played: true, message: res.message };
+                        updateStatus();
+                    }
+                    applyResult(res);
+                },
+                error: function(){
+                    spinInProgress = false;
+                    setSpinEnabled(true);
+                    showError('');
+                    $reels.removeClass('ever-slot-reel--spinning');
+                }
+            });
+        });
+
+        requestStatus();
     });
 
     // Exit intent modal
