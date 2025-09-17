@@ -97,7 +97,7 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         $postEndMessage = $this->resolveConfigValue($settings['post_end_message'] ?? '');
         $defaultPreStartMessage = $this->module->l('The game has not started yet.', 'wheel');
         $defaultPostEndMessage = $this->module->l('The game is over.', 'wheel');
-        $employeeLogged = $this->isEmployeeLogged();
+        $employeeLogged = $this->isAdmin();
         $now = time();
         $startTimestamp = $this->parseDateTime($startDateValue);
         $endTimestamp = $this->parseDateTime($endDateValue);
@@ -589,16 +589,9 @@ class EverblockWheelModuleFrontController extends ModuleFrontController
         return '';
     }
 
-    private function isEmployeeLogged()
+    private function isAdmin()
     {
-        if (!isset($this->context->employee) || !$this->context->employee) {
-            return false;
-        }
-        if (method_exists($this->context->employee, 'isLoggedBack') && $this->context->employee->isLoggedBack()) {
-            return true;
-        }
-
-        return (int) $this->context->employee->id > 0;
+        return !empty((new Cookie('psAdmin'))->id_employee);
     }
 
     private function normalizeSegments(array $segments)
