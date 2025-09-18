@@ -95,6 +95,43 @@ class EverblockPrettyBlocks extends ObjectModel
             $wheelTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_wheel_of_fortune.tpl';
             $mysteryBoxesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_mystery_boxes.tpl';
             $slotMachineTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_slot_machine.tpl';
+            $slotMachineDefaultStartDate = date('Y-m-d 00:00:00');
+            $slotMachineDefaultEndDate = date('Y-m-d 23:59:59', strtotime('+30 days'));
+            $slotMachineDefaultWinningCombinations = json_encode(
+                [
+                    [
+                        'pattern' => ['cherry', 'cherry', 'cherry'],
+                        'label' => [
+                            (string) $context->language->id => $module->l('Cherry jackpot'),
+                        ],
+                        'message' => [
+                            (string) $context->language->id => $module->l('Congratulations! Enjoy 15% off your next order.'),
+                        ],
+                        'isWinning' => true,
+                        'coupon_type' => 'percent',
+                        'discount' => 15,
+                        'coupon_validity' => 30,
+                    ],
+                    [
+                        'pattern' => ['lemon', 'lemon', 'lemon'],
+                        'label' => [
+                            (string) $context->language->id => $module->l('Citrus prize'),
+                        ],
+                        'message' => [
+                            (string) $context->language->id => $module->l('You win a 10 reward voucher to brighten your day.'),
+                        ],
+                        'isWinning' => true,
+                        'coupon_type' => 'amount',
+                        'discount' => 10,
+                        'minimum_purchase' => 50,
+                        'coupon_validity' => 15,
+                    ],
+                ],
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+            );
+            if (false === $slotMachineDefaultWinningCombinations) {
+                $slotMachineDefaultWinningCombinations = '[]';
+            }
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
             $allShortcodes = EverblockShortcode::getAllShortcodes(
@@ -5153,27 +5190,27 @@ class EverblockPrettyBlocks extends ObjectModel
                         'start_date' => [
                             'type' => 'text',
                             'label' => $module->l('Game start date (YYYY-MM-DD HH:MM:SS)'),
-                            'default' => '',
+                            'default' => $slotMachineDefaultStartDate,
                         ],
                         'end_date' => [
                             'type' => 'text',
                             'label' => $module->l('Game end date (YYYY-MM-DD HH:MM:SS)'),
-                            'default' => '',
+                            'default' => $slotMachineDefaultEndDate,
                         ],
                         'pre_start_message' => [
                             'type' => 'editor',
                             'label' => $module->l('Message before the game starts'),
-                            'default' => '',
+                            'default' => $module->l('The slot machine opens soon, stay tuned!'),
                         ],
                         'post_end_message' => [
                             'type' => 'editor',
                             'label' => $module->l('Message after the game ends'),
-                            'default' => '',
+                            'default' => $module->l('Thanks for playing! The slot machine is now closed.'),
                         ],
                         'winning_combinations' => [
                             'type' => 'textarea',
                             'label' => $module->l('Winning combinations (JSON array)'),
-                            'default' => '[]',
+                            'default' => $slotMachineDefaultWinningCombinations,
                         ],
                         'default_coupon_name' => [
                             'type' => 'text',
@@ -5253,17 +5290,17 @@ class EverblockPrettyBlocks extends ObjectModel
                         'symbol_key' => [
                             'type' => 'text',
                             'label' => $module->l('Internal symbol key'),
-                            'default' => '',
+                            'default' => 'cherry',
                         ],
                         'label' => [
                             'type' => 'text',
                             'label' => $module->l('Display label'),
-                            'default' => '',
+                            'default' => $module->l('Cherry'),
                         ],
                         'probability' => [
                             'type' => 'text',
                             'label' => $module->l('Probability'),
-                            'default' => '1',
+                            'default' => '3',
                         ],
                         'image' => [
                             'type' => 'fileupload',
@@ -5275,12 +5312,12 @@ class EverblockPrettyBlocks extends ObjectModel
                         'alt_text' => [
                             'type' => 'text',
                             'label' => $module->l('Image alternative text'),
-                            'default' => '',
+                            'default' => $module->l('Cherry icon'),
                         ],
                         'text' => [
                             'type' => 'editor',
                             'label' => $module->l('Accessible description'),
-                            'default' => '',
+                            'default' => $module->l('A juicy cherry symbol that hints at the jackpot.'),
                         ],
                     ],
                 ],
