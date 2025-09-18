@@ -73,7 +73,17 @@
                         <div class="ever-mystery-grid" data-closed-label="{$closedLabel|escape:'htmlall':'UTF-8'}">
                             {foreach from=$mysteryBoxes item=box name=mystery}
                                 <button type="button" class="ever-mystery-box" data-box-index="{$smarty.foreach.mystery.iteration-1}" aria-label="{l s='Mystery box %s' sprintf=[$smarty.foreach.mystery.iteration] mod='everblock'}">
-                                    <span class="ever-mystery-box-front">{$closedLabel|escape:'htmlall':'UTF-8'}</span>
+                                    <span class="ever-mystery-box-front">
+                                        <span class="ever-mystery-chest" aria-hidden="true">
+                                            <span class="ever-mystery-chest-lid"></span>
+                                            <span class="ever-mystery-chest-body">
+                                                <span class="ever-mystery-chest-band ever-mystery-chest-band--vertical"></span>
+                                                <span class="ever-mystery-chest-lock"></span>
+                                            </span>
+                                            <span class="ever-mystery-chest-shadow"></span>
+                                        </span>
+                                        <span class="ever-mystery-box-front-label">{$closedLabel|escape:'htmlall':'UTF-8'}</span>
+                                    </span>
                                     <span class="ever-mystery-box-back">
                                         <span class="ever-mystery-box-result-image" style="display:none;"><img src="" alt="" /></span>
                                         <span class="ever-mystery-box-result-label"></span>
@@ -92,7 +102,17 @@
                         <div class="ever-mystery-grid ever-mystery-grid--disabled" data-closed-label="{$closedLabel|escape:'htmlall':'UTF-8'}">
                             {foreach from=$mysteryBoxes item=box name=mysteryDisabled}
                                 <button type="button" class="ever-mystery-box ever-mystery-box--disabled" disabled aria-label="{l s='Mystery box %s' sprintf=[$smarty.foreach.mysteryDisabled.iteration] mod='everblock'}">
-                                    <span class="ever-mystery-box-front">{$closedLabel|escape:'htmlall':'UTF-8'}</span>
+                                    <span class="ever-mystery-box-front">
+                                        <span class="ever-mystery-chest" aria-hidden="true">
+                                            <span class="ever-mystery-chest-lid"></span>
+                                            <span class="ever-mystery-chest-body">
+                                                <span class="ever-mystery-chest-band ever-mystery-chest-band--vertical"></span>
+                                                <span class="ever-mystery-chest-lock"></span>
+                                            </span>
+                                            <span class="ever-mystery-chest-shadow"></span>
+                                        </span>
+                                        <span class="ever-mystery-box-front-label">{$closedLabel|escape:'htmlall':'UTF-8'}</span>
+                                    </span>
                                 </button>
                             {/foreach}
                         </div>
