@@ -360,6 +360,13 @@ class AdminEverBlockController extends ModuleAdminController
         $fields_form[] = [
             'form' => [
                 'tinymce' => true,
+                'tabs' => [
+                    'general' => $this->l('General'),
+                    'targeting' => $this->l('Targeting'),
+                    'display' => $this->l('Display'),
+                    'modal' => $this->l('Modal'),
+                    'schedule' => $this->l('Schedule'),
+                ],
                 'submit' => [
                     'name' => 'save',
                     'title' => $this->l('Save'),
@@ -378,6 +385,7 @@ class AdminEverBlockController extends ModuleAdminController
                     [
                         'type' => 'hidden',
                         'name' => $this->identifier,
+                        'tab' => 'general',
                     ],
                     [
                         'type' => 'text',
@@ -387,6 +395,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'required' => true,
                         'name' => 'name',
                         'lang' => false,
+                        'tab' => 'general',
                     ],
                     [
                         'type' => 'textarea',
@@ -397,7 +406,8 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'content',
                         'lang' => true,
                         'autoload_rte' => true,
-                        'class' => 'evertranslatable'
+                        'class' => 'evertranslatable',
+                        'tab' => 'general',
                     ],
                     [
                         'type' => 'select',
@@ -412,6 +422,18 @@ class AdminEverBlockController extends ModuleAdminController
                             'id' => 'id_hook',
                             'name' => 'evername',
                         ],
+                        'tab' => 'general',
+                    ],
+                    [
+                        'type' => 'textarea',
+                        'label' => $this->l('Custom code'),
+                        'desc' => $this->l('Please set here custom code, such as css or js'),
+                        'hint' => $this->l('Custom code will be rendered before block content'),
+                        'required' => false,
+                        'name' => 'custom_code',
+                        'lang' => true,
+                        'autoload_rte' => false,
+                        'tab' => 'general',
                     ],
                     [
                         'type' => 'select',
@@ -425,6 +447,7 @@ class AdminEverBlockController extends ModuleAdminController
                             'id' => 'id_device',
                             'name' => 'name',
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'group',
@@ -434,6 +457,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'desc' => $this->l('Block will be shown to these groups'),
                         'hint' => $this->l('Please select at least one customer group'),
                         'required' => true,
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'switch',
@@ -455,6 +479,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'switch',
@@ -476,6 +501,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'switch',
@@ -497,6 +523,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'select',
@@ -512,6 +539,7 @@ class AdminEverBlockController extends ModuleAdminController
                             'id' => 'id_category',
                             'name' => 'name',
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'switch',
@@ -533,6 +561,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'select',
@@ -548,6 +577,7 @@ class AdminEverBlockController extends ModuleAdminController
                             'id' => 'id',
                             'name' => 'name',
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'switch',
@@ -569,6 +599,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'select',
@@ -584,6 +615,7 @@ class AdminEverBlockController extends ModuleAdminController
                             'id' => 'id',
                             'name' => 'name',
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'switch',
@@ -605,6 +637,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'select',
@@ -620,6 +653,7 @@ class AdminEverBlockController extends ModuleAdminController
                             'id' => 'id_cms_category',
                             'name' => 'name',
                         ],
+                        'tab' => 'targeting',
                     ],
                     [
                         'type' => 'switch',
@@ -641,6 +675,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'display',
                     ],
                     [
                         'type' => 'switch',
@@ -662,6 +697,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'display',
                     ],
                     [
                         'type' => 'switch',
@@ -683,6 +719,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'display',
                     ],
                     [
                         'type' => 'color',
@@ -692,6 +729,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'required' => false,
                         'name' => 'background',
                         'lang' => false,
+                        'tab' => 'display',
                     ],
                     [
                         'type' => 'text',
@@ -701,6 +739,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'required' => false,
                         'name' => 'css_class',
                         'lang' => false,
+                        'tab' => 'display',
                     ],
                     [
                         'type' => 'text',
@@ -710,6 +749,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'required' => false,
                         'name' => 'data_attribute',
                         'lang' => false,
+                        'tab' => 'display',
                     ],
                     [
                         'type' => 'select',
@@ -724,16 +764,7 @@ class AdminEverBlockController extends ModuleAdminController
                             'id' => 'id_bootstrap',
                             'name' => 'size',
                         ],
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => $this->l('Custom code'),
-                        'desc' => $this->l('Please set here custom code, such as css or js'),
-                        'hint' => $this->l('Custom code will be rendered before block content'),
-                        'required' => false,
-                        'name' => 'custom_code',
-                        'lang' => true,
-                        'autoload_rte' => false,
+                        'tab' => 'display',
                     ],
                     [
                         'type' => 'text',
@@ -743,6 +774,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'required' => true,
                         'name' => 'position',
                         'lang' => false,
+                        'tab' => 'display',
                     ],
                     [
                         'type' => 'switch',
@@ -764,6 +796,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'modal',
                     ],
                     [
                         'type' => 'text',
@@ -773,6 +806,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'delay',
                         'required' => false,
                         'lang' => false,
+                        'tab' => 'modal',
                     ],
                     [
                         'type' => 'text',
@@ -782,6 +816,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'timeout',
                         'required' => false,
                         'lang' => false,
+                        'tab' => 'modal',
                     ],
                     [
                         'type' => 'datetime',
@@ -789,6 +824,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'desc' => $this->l('Date block will start to appear'),
                         'hint' => $this->l('Leave empty for no use'),
                         'name' => 'date_start',
+                        'tab' => 'schedule',
                     ],
                     [
                         'type' => 'datetime',
@@ -796,6 +832,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'desc' => $this->l('Date block will end'),
                         'hint' => $this->l('Leave empty for no use'),
                         'name' => 'date_end',
+                        'tab' => 'schedule',
                     ],
                     [
                         'type' => 'switch',
@@ -817,6 +854,7 @@ class AdminEverBlockController extends ModuleAdminController
                                 'label' => $this->l('Desactivate'),
                             ],
                         ],
+                        'tab' => 'schedule',
                     ],
                 ],
             ],
