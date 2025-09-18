@@ -83,6 +83,11 @@ class ExecuteAction extends Command
             'description' => 'Renews the Instagram token and clears the related cache.',
             'parameters' => [],
         ],
+        'fetchinstagramimages' => [
+            'label' => 'Download Instagram medias',
+            'description' => 'Downloads configured Instagram media files and stores them locally.',
+            'parameters' => [],
+        ],
         'securewithapache' => [
             'label' => 'Protect module folders',
             'description' => 'Adds Apache rules to protect the module folders.',
@@ -91,6 +96,11 @@ class ExecuteAction extends Command
         'saveproducts' => [
             'label' => 'Resave all products',
             'description' => 'Re-saves every product in the shop.',
+            'parameters' => ['idshop (optional)'],
+        ],
+        'generateproducts' => [
+            'label' => 'Generate demo products',
+            'description' => 'Creates dummy products with images for the selected shop.',
             'parameters' => ['idshop (optional)'],
         ],
         'webpprettyblock' => [
@@ -113,6 +123,26 @@ class ExecuteAction extends Command
             'description' => 'Fetches the configured WordPress posts.',
             'parameters' => [],
         ],
+        'checkdatabase' => [
+            'label' => 'Check module database',
+            'description' => 'Installs missing tables and columns, removes obsolete files.',
+            'parameters' => [],
+        ],
+        'dropunusedlangs' => [
+            'label' => 'Drop unused languages',
+            'description' => 'Removes orphan translations from core multilingual tables.',
+            'parameters' => [],
+        ],
+        'clearcache' => [
+            'label' => 'Clear PrestaShop cache',
+            'description' => 'Flushes all native caches (Smarty, XML, filesystem).',
+            'parameters' => [],
+        ],
+        'warmup' => [
+            'label' => 'Warm front-office pages',
+            'description' => 'Preloads the storefront for every active language.',
+            'parameters' => ['--url (optional)'],
+        ],
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -129,6 +159,7 @@ class ExecuteAction extends Command
         $this->addArgument('idshop id', InputArgument::OPTIONAL, 'Shop ID');
         $this->addArgument('fromlang id', InputArgument::OPTIONAL, 'Source language ID');
         $this->addArgument('tolang id', InputArgument::OPTIONAL, 'Target language ID');
+        $this->addOption('url', null, InputOption::VALUE_REQUIRED, 'Override the base URL used by actions such as warmup.');
         $help = "Use the --list option to display the available actions.\n";
         foreach ($this->allowedActions as $name => $action) {
             $parameters = empty($action['parameters']) ? 'no parameter' : implode(', ', $action['parameters']);
@@ -160,6 +191,7 @@ class ExecuteAction extends Command
         $idShop = $input->getArgument('idshop id');
         $idLangFrom = $input->getArgument('fromlang id');
         $idLangTo = $input->getArgument('tolang id');
+        $baseUrlOverride = $input->getOption('url');
 
         if (!$action) {
             $output->writeln('<warning>No action provided. Use the --list option to display available actions.</warning>');
@@ -229,6 +261,14 @@ class ExecuteAction extends Command
                     );
                 }
             }
+            return self::SUCCESS;
+        }
+        if ($action === 'fetchinstagramimages') {
+            $output->writeln('<comment>Fetching Instagram medias…</comment>');
+            $images = EverblockTools::fetchInstagramImages();
+            $count = is_array($images) ? count($images) : 0;
+            $output->writeln(sprintf('<success>%d media files processed</success>', $count));
+
             return self::SUCCESS;
         }
         if ($action === 'saveblocks') {
@@ -351,6 +391,19 @@ class ExecuteAction extends Command
 
             $output->writeln('<comment>All products have been processed</comment>');
             return self::SUCCESS;
+        }
+        if ($action === 'generateproducts') {
+            $output->writeln('<comment>Generating demo products for shop ' . (int) $shop->id . '</comment>');
+            $generated = EverblockTools::generateProducts((int) $shop->id);
+            if ($generated) {
+                $output->writeln('<success>Demo products created successfully</success>');
+
+                return self::SUCCESS;
+            }
+
+            $output->writeln('<warning>Failed to generate demo products</warning>');
+
+            return self::FAILURE;
         }
         if ($action === 'duplicateblockslang') {
             if (!$idLangFrom || !$idLangTo) {
@@ -477,6 +530,44 @@ class ExecuteAction extends Command
         if ($action === 'fetchwordpressposts') {
             EverblockTools::fetchWordpressPosts();
             $output->writeln('<comment>WordPress posts fetched</comment>');
+            return self::SUCCESS;
+        }
+        if ($action === 'checkdatabase') {
+            EverblockTools::checkAndFixDatabase();
+            $output->writeln('<success>Database schema verified successfully</success>');
+
+            return self::SUCCESS;
+        }
+        if ($action === 'dropunusedlangs') {
+            $output->writeln('<comment>Removing orphan translations…</comment>');
+            $result = EverblockTools::dropUnusedLangs();
+            $hasErrors = false;
+            if (!empty($result['querySuccess'])) {
+                foreach ($result['querySuccess'] as $message) {
+                    $output->writeln('<success>' . $message . '</success>');
+                }
+            }
+            if (!empty($result['postErrors'])) {
+                $hasErrors = true;
+                foreach ($result['postErrors'] as $error) {
+                    $output->writeln('<warning>' . $error . '</warning>');
+                }
+            }
+
+            return $hasErrors ? self::FAILURE : self::SUCCESS;
+        }
+        if ($action === 'clearcache') {
+            \Tools::clearAllCache();
+            $output->writeln('<success>All PrestaShop caches cleared</success>');
+
+            return self::SUCCESS;
+        }
+        if ($action === 'warmup') {
+            $baseUrl = $baseUrlOverride ?: \Tools::getShopDomainSsl(true) . __PS_BASE_URI__;
+            $output->writeln('<comment>Warming up front-office pages from ' . $baseUrl . '</comment>');
+            EverblockTools::warmup($baseUrl);
+            $output->writeln('<success>Warmup requests dispatched</success>');
+
             return self::SUCCESS;
         }
         return self::ABORTED;
