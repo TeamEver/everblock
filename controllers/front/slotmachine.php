@@ -290,6 +290,10 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
                 $segmentMaxWinners = 0;
             }
             $segmentCouponName = (string) ($matchedCombination['coupon_name'] ?? $defaultCouponName);
+            $segmentCouponName = trim($segmentCouponName);
+            if ($segmentCouponName === '') {
+                $segmentCouponName = $defaultCouponName;
+            }
             $segmentCouponPrefix = (string) ($matchedCombination['coupon_prefix'] ?? $defaultCouponPrefix);
             $segmentCouponPrefix = preg_replace('/[^A-Z0-9]/', '', Tools::strtoupper($segmentCouponPrefix));
             if ($segmentCouponPrefix === null) {
