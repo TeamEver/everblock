@@ -37,8 +37,10 @@ use PrestaShop\PrestaShop\Adapter\LegacyContext as ContextAdapter;
 use Product;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Validate;
@@ -51,18 +53,66 @@ class ExecuteAction extends Command
     public const ABORTED = 3;
 
     private $allowedActions = [
-        'getrandomcomment',
-        'saveblocks',
-        'restoreblocks',
-        'removeinlinecsstags',
-        'droplogs',
-        'refreshtokens',
-        'securewithapache',
-        'saveproducts',
-        'webpprettyblock',
-        'removehn',
-        'duplicateblockslang',
-        'fetchwordpressposts',
+        'getrandomcomment' => [
+            'label' => 'Random console comment',
+            'description' => 'Displays a formatted humorous message in the console.',
+            'parameters' => [],
+        ],
+        'saveblocks' => [
+            'label' => 'Backup Everblock data',
+            'description' => 'Exports module tables and backs up CSS/JS assets.',
+            'parameters' => ['idshop (optional)'],
+        ],
+        'restoreblocks' => [
+            'label' => 'Restore Everblock data',
+            'description' => 'Restores module tables and assets from a backup.',
+            'parameters' => [],
+        ],
+        'removeinlinecsstags' => [
+            'label' => 'Strip inline CSS',
+            'description' => 'Removes inline style attributes from product descriptions.',
+            'parameters' => ['idshop (optional)'],
+        ],
+        'droplogs' => [
+            'label' => 'Purge PrestaShop logs',
+            'description' => 'Clears the native PrestaShop logs table.',
+            'parameters' => [],
+        ],
+        'refreshtokens' => [
+            'label' => 'Refresh Instagram token',
+            'description' => 'Renews the Instagram token and clears the related cache.',
+            'parameters' => [],
+        ],
+        'securewithapache' => [
+            'label' => 'Protect module folders',
+            'description' => 'Adds Apache rules to protect the module folders.',
+            'parameters' => [],
+        ],
+        'saveproducts' => [
+            'label' => 'Resave all products',
+            'description' => 'Re-saves every product in the shop.',
+            'parameters' => ['idshop (optional)'],
+        ],
+        'webpprettyblock' => [
+            'label' => 'Convert Prettyblocks images to WebP',
+            'description' => 'Converts every Prettyblock image to WebP.',
+            'parameters' => [],
+        ],
+        'removehn' => [
+            'label' => 'Replace Hn tags',
+            'description' => 'Replaces Hn tags with paragraph elements carrying CSS classes.',
+            'parameters' => ['idshop (optional)'],
+        ],
+        'duplicateblockslang' => [
+            'label' => 'Duplicate blocks between languages',
+            'description' => 'Copies block content and custom code from one language to another.',
+            'parameters' => ['idshop (optional)', 'fromlang (required)', 'tolang (required)'],
+        ],
+        'fetchwordpressposts' => [
+            'label' => 'Fetch WordPress posts',
+            'description' => 'Fetches the configured WordPress posts.',
+            'parameters' => [],
+        ],
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -73,22 +123,49 @@ class ExecuteAction extends Command
     protected function configure()
     {
         $this->setName('everblock:tools:execute');
-        $this->setDescription('Execute action');
-        $this->addArgument('action', InputArgument::REQUIRED, sprintf('Action to execute (Allowed actions: %s).', implode(' / ', $this->allowedActions)));
+        $this->setDescription('Execute action (use --list to display the available actions)');
+        $this->addArgument('action', InputArgument::OPTIONAL, sprintf('Action to execute (Allowed actions: %s).', implode(' / ', array_keys($this->allowedActions))));
+        $this->addOption('list', null, InputOption::VALUE_NONE, 'List available actions and exit.');
         $this->addArgument('idshop id', InputArgument::OPTIONAL, 'Shop ID');
         $this->addArgument('fromlang id', InputArgument::OPTIONAL, 'Source language ID');
         $this->addArgument('tolang id', InputArgument::OPTIONAL, 'Target language ID');
-        $help = sprintf("Allowed actions: %s\n", implode(' / ', $this->allowedActions));
+        $help = "Use the --list option to display the available actions.\n";
+        foreach ($this->allowedActions as $name => $action) {
+            $parameters = empty($action['parameters']) ? 'no parameter' : implode(', ', $action['parameters']);
+            $help .= sprintf('- %s: %s (%s)\n', $name, $action['description'], $parameters);
+        }
         $this->setHelp($help);
         $this->module = Module::getInstanceByName('everblock');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        if ($input->getOption('list')) {
+            $table = new Table($output);
+            $table->setHeaders(['Action', 'Description', 'Parameters']);
+            foreach ($this->allowedActions as $name => $action) {
+                $parameters = empty($action['parameters']) ? '—' : implode(', ', $action['parameters']);
+                $table->addRow([
+                    $name,
+                    sprintf('%s — %s', $action['label'], $action['description']),
+                    $parameters,
+                ]);
+            }
+            $table->render();
+
+            return self::SUCCESS;
+        }
+
         $action = $input->getArgument('action');
         $idShop = $input->getArgument('idshop id');
         $idLangFrom = $input->getArgument('fromlang id');
         $idLangTo = $input->getArgument('tolang id');
+
+        if (!$action) {
+            $output->writeln('<warning>No action provided. Use the --list option to display available actions.</warning>');
+
+            return self::ABORTED;
+        }
         $context = (new ContextAdapter())->getContext();
         $context->employee = new \Employee(1);
         $context->currency = new Currency(
@@ -108,8 +185,8 @@ class ExecuteAction extends Command
                 $shop = new \Shop((int) \Configuration::get('PS_SHOP_DEFAULT'));
             }
         }
-        if (!in_array($action, $this->allowedActions)) {
-            $output->writeln('<warning>Unkown action</warning>');
+        if (!array_key_exists($action, $this->allowedActions)) {
+            $output->writeln(sprintf('<warning>Unknown action "%s". Use the --list option to display available actions.</warning>', $action));
             return self::ABORTED;
         }
         if ($action === 'getrandomcomment') {
