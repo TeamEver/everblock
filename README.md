@@ -142,6 +142,25 @@ This module is compatible with the QCD ACF module developed by the 410 Gone agen
 - `$urls.js_url`: URL of your theme's JavaScript files (e.g., /themes/yourtheme/assets/js).
 - `$urls.pic_url`: URL of the /upload directory.
 
+## Console tools
+
+Run `php bin/console everblock:tools:execute --list` to display the maintenance actions shipped with the module.
+
+| Action | Label | Description | Parameters |
+| --- | --- | --- | --- |
+| `getrandomcomment` | Random console comment | Displays a formatted humorous message in the console. | — |
+| `saveblocks` | Backup Everblock data | Exports module tables and backs up CSS/JS assets. | `idshop` (optional) |
+| `restoreblocks` | Restore Everblock data | Restores module tables and assets from a backup. | — |
+| `removeinlinecsstags` | Strip inline CSS | Removes inline style attributes from product descriptions. | `idshop` (optional) |
+| `droplogs` | Purge PrestaShop logs | Clears the native PrestaShop logs table. | — |
+| `refreshtokens` | Refresh Instagram token | Renews the Instagram token and clears the related cache. | — |
+| `securewithapache` | Protect module folders | Adds Apache rules to protect the module folders. | — |
+| `saveproducts` | Resave all products | Re-saves every product in the shop. | `idshop` (optional) |
+| `webpprettyblock` | Convert Prettyblocks images to WebP | Converts every Prettyblock image to WebP. | — |
+| `removehn` | Replace Hn tags | Replaces Hn tags with paragraph elements carrying CSS classes. | `idshop` (optional) |
+| `duplicateblockslang` | Duplicate blocks between languages | Copies block content and custom code from one language to another. | `idshop` (optional), `fromlang` (required), `tolang` (required) |
+| `fetchwordpressposts` | Fetch WordPress posts | Fetches the configured WordPress posts. | — |
+
 ## Shortcodes
 The module allows you to use many shortcodes anywhere in your store. However, restrictions may be in place, such as not allowing a hook shortcode or store locator to be used in a modal.
 
@@ -436,6 +455,25 @@ Ce module est compatible avec le module QCD ACF développé par l'agence 410 Gon
 - `$urls.js_url` : URL des fichiers JavaScript du thème
 - `$urls.pic_url` : URL du dossier /upload
 
+## Outils console
+
+Exécutez `php bin/console everblock:tools:execute --list` pour afficher les actions de maintenance fournies par le module.
+
+| Action | Libellé | Description | Paramètres |
+| --- | --- | --- | --- |
+| `getrandomcomment` | Commentaire console aléatoire | Affiche un message humoristique formaté dans la console. | — |
+| `saveblocks` | Sauvegarder les blocs Everblock | Exporte les tables du module et sauvegarde les assets CSS/JS. | `idshop` (optionnel) |
+| `restoreblocks` | Restaurer les blocs Everblock | Restaure les tables et fichiers du module depuis une sauvegarde. | — |
+| `removeinlinecsstags` | Nettoyer le CSS inline | Supprime les attributs style des descriptions produit. | `idshop` (optionnel) |
+| `droplogs` | Purger les logs PrestaShop | Vide la table native des logs PrestaShop. | — |
+| `refreshtokens` | Rafraîchir le jeton Instagram | Renouvelle le jeton Instagram et vide le cache associé. | — |
+| `securewithapache` | Protéger les dossiers du module | Ajoute des règles Apache pour sécuriser les dossiers du module. | — |
+| `saveproducts` | Réenregistrer tous les produits | Réenregistre chaque produit de la boutique. | `idshop` (optionnel) |
+| `webpprettyblock` | Convertir les images Prettyblocks en WebP | Convertit toutes les images Prettyblock en WebP. | — |
+| `removehn` | Remplacer les balises Hn | Remplace les balises Hn par des paragraphes avec classes CSS. | `idshop` (optionnel) |
+| `duplicateblockslang` | Dupliquer les blocs entre langues | Copie le contenu et le code personnalisé d'une langue à l'autre. | `idshop` (optionnel), `fromlang` (obligatoire), `tolang` (obligatoire) |
+| `fetchwordpressposts` | Récupérer les articles WordPress | Récupère les articles WordPress configurés. | — |
+
 ## Shortcodes
 Le module vous permet d'utiliser de nombreux shortcodes partout dans votre boutique. Certaines restrictions peuvent s'appliquer, par exemple un hook ou un store locator ne peuvent pas être utilisés dans une modale.
 
@@ -636,6 +674,25 @@ Este módulo es compatible con el módulo QCD ACF desarrollado por la agencia 41
 - `$urls.js_url`: URL de los archivos JavaScript del tema
 - `$urls.pic_url`: URL del directorio /upload
 
+## Herramientas de consola
+
+Ejecuta `php bin/console everblock:tools:execute --list` para mostrar las acciones de mantenimiento incluidas en el módulo.
+
+| Acción | Título | Descripción | Parámetros |
+| --- | --- | --- | --- |
+| `getrandomcomment` | Comentario aleatorio en consola | Muestra un mensaje humorístico formateado en la consola. | — |
+| `saveblocks` | Guardar bloques Everblock | Exporta las tablas del módulo y guarda los assets CSS/JS. | `idshop` (opcional) |
+| `restoreblocks` | Restaurar bloques Everblock | Restaura las tablas y archivos del módulo desde una copia de seguridad. | — |
+| `removeinlinecsstags` | Limpiar CSS inline | Elimina los atributos style de las descripciones de producto. | `idshop` (opcional) |
+| `droplogs` | Purgar logs de PrestaShop | Vacía la tabla nativa de logs de PrestaShop. | — |
+| `refreshtokens` | Renovar token de Instagram | Renueva el token de Instagram y limpia la caché relacionada. | — |
+| `securewithapache` | Proteger carpetas del módulo | Añade reglas de Apache para proteger las carpetas del módulo. | — |
+| `saveproducts` | Volver a guardar todos los productos | Vuelve a guardar cada producto de la tienda. | `idshop` (opcional) |
+| `webpprettyblock` | Convertir imágenes Prettyblocks a WebP | Convierte todas las imágenes Prettyblock a WebP. | — |
+| `removehn` | Sustituir etiquetas Hn | Sustituye las etiquetas Hn por párrafos con clases CSS. | `idshop` (opcional) |
+| `duplicateblockslang` | Duplicar bloques entre idiomas | Copia el contenido y el código personalizado de un idioma a otro. | `idshop` (opcional), `fromlang` (obligatorio), `tolang` (obligatorio) |
+| `fetchwordpressposts` | Obtener entradas de WordPress | Recupera las entradas de WordPress configuradas. | — |
+
 ## Shortcodes
 El módulo permite usar muchos shortcodes en cualquier lugar de la tienda. Pueden existir restricciones, por ejemplo un hook o un store locator no pueden usarse en una modal.
 
@@ -834,6 +891,25 @@ Questo modulo è compatibile con il modulo QCD ACF sviluppato dall'agenzia 410 G
 - `$urls.css_url`: URL dei file CSS del tema
 - `$urls.js_url`: URL dei file JavaScript del tema
 - `$urls.pic_url`: URL della cartella /upload
+
+## Strumenti da console
+
+Esegui `php bin/console everblock:tools:execute --list` per visualizzare le azioni di manutenzione fornite dal modulo.
+
+| Azione | Titolo | Descrizione | Parametri |
+| --- | --- | --- | --- |
+| `getrandomcomment` | Commento casuale in console | Mostra un messaggio umoristico formattato in console. | — |
+| `saveblocks` | Salvare i blocchi Everblock | Esporta le tabelle del modulo e salva gli asset CSS/JS. | `idshop` (opzionale) |
+| `restoreblocks` | Ripristinare i blocchi Everblock | Ripristina tabelle e file del modulo da un backup. | — |
+| `removeinlinecsstags` | Pulire il CSS inline | Rimuove gli attributi style dalle descrizioni prodotto. | `idshop` (opzionale) |
+| `droplogs` | Svuotare i log di PrestaShop | Svuota la tabella nativa dei log di PrestaShop. | — |
+| `refreshtokens` | Rinnovare il token Instagram | Rinnova il token Instagram e svuota la cache collegata. | — |
+| `securewithapache` | Proteggere le cartelle del modulo | Aggiunge regole Apache per proteggere le cartelle del modulo. | — |
+| `saveproducts` | Risalvare tutti i prodotti | Riesegue il salvataggio di ogni prodotto del negozio. | `idshop` (opzionale) |
+| `webpprettyblock` | Convertire immagini Prettyblocks in WebP | Converte tutte le immagini Prettyblock in WebP. | — |
+| `removehn` | Sostituire i tag Hn | Sostituisce i tag Hn con paragrafi dotati di classi CSS. | `idshop` (opzionale) |
+| `duplicateblockslang` | Duplicare blocchi tra lingue | Copia contenuto e codice personalizzato da una lingua all'altra. | `idshop` (opzionale), `fromlang` (obbligatorio), `tolang` (obbligatorio) |
+| `fetchwordpressposts` | Recuperare articoli WordPress | Recupera gli articoli WordPress configurati. | — |
 
 ## Shortcode
 Il modulo consente di utilizzare molti shortcode in qualsiasi parte del negozio. Possono esserci restrizioni, ad esempio un hook o uno store locator non possono essere usati in una modale.
