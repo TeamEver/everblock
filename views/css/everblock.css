@@ -982,15 +982,15 @@
     width: 140px;
     height: 140px;
     border-radius: 12px;
-    border: 2px solid rgba(13, 110, 253, 0.25);
-    background: #f8f9fa;
+    border: 2px solid rgba(13, 110, 253, 0.15);
+    background: transparent;
     color: #212529;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
 }
 
@@ -1024,6 +1024,10 @@
     line-height: 1.4;
 }
 
+.ever-mystery-box-front {
+    gap: 0.75rem;
+}
+
 .ever-mystery-box-back {
     display: none;
 }
@@ -1048,6 +1052,149 @@
 
 .ever-mystery-box-result-image {
     margin-bottom: 0.5rem;
+}
+
+.ever-mystery-box-front-label {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #5a3a10;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+}
+
+.ever-mystery-chest {
+    position: relative;
+    width: 100%;
+    max-width: 110px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ever-mystery-chest-lid {
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(180deg, #f8c784 0%, #d0822a 100%);
+    border: 3px solid #7a4b14;
+    border-bottom: none;
+    border-radius: 18px 18px 6px 6px;
+    position: relative;
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+}
+
+.ever-mystery-chest-lid::before {
+    content: '';
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    top: 20%;
+    height: 25%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+    border-radius: 50px;
+}
+
+.ever-mystery-chest-body {
+    width: 100%;
+    flex: 1;
+    background: linear-gradient(180deg, #f7b55d 0%, #d27a1e 100%);
+    border: 3px solid #7a4b14;
+    border-top: none;
+    border-radius: 6px 6px 16px 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.2);
+}
+
+.ever-mystery-chest-body::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 18px;
+    transform: translateY(-50%);
+    background: linear-gradient(180deg, rgba(255, 219, 139, 0.9), rgba(219, 156, 47, 0.9));
+    border-top: 2px solid rgba(255, 255, 255, 0.5);
+    border-bottom: 2px solid rgba(106, 66, 14, 0.45);
+    z-index: 1;
+    border-radius: 6px;
+}
+
+.ever-mystery-chest-band--vertical {
+    position: absolute;
+    top: -40%;
+    bottom: -4px;
+    left: 50%;
+    width: 18%;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #f2d083 0%, #c7922e 100%);
+    border: 2px solid rgba(106, 66, 14, 0.55);
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-radius: 10px;
+    z-index: 2;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.ever-mystery-chest-lock {
+    position: relative;
+    width: 28px;
+    height: 32px;
+    background: linear-gradient(180deg, #f2d083 0%, #c7922e 100%);
+    border: 2px solid #a46a1e;
+    border-radius: 6px 6px 12px 12px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+}
+
+.ever-mystery-chest-lock::before {
+    content: '';
+    position: absolute;
+    top: -16px;
+    width: 28px;
+    height: 18px;
+    border: 3px solid #a46a1e;
+    border-bottom: none;
+    border-radius: 50% 50% 0 0 / 70% 70% 0 0;
+    background: rgba(247, 214, 142, 0.3);
+}
+
+.ever-mystery-chest-lock::after {
+    content: '';
+    width: 6px;
+    height: 10px;
+    border-radius: 3px;
+    background: #5a3a10;
+}
+
+.ever-mystery-chest-shadow {
+    width: 75%;
+    height: 14px;
+    margin-top: 8px;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+    border-radius: 50%;
+}
+
+.ever-mystery-box:not(.ever-mystery-box--disabled):hover .ever-mystery-chest,
+.ever-mystery-box:focus .ever-mystery-chest {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.18);
+}
+
+.ever-mystery-box--disabled .ever-mystery-chest {
+    filter: grayscale(25%) brightness(0.95);
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
 }
 
 .ever-mystery-box-result-image img {
