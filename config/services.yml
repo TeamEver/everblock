@@ -45,13 +45,3 @@ services:
         tags:
             - { name: 'console.command' }
 
-    everblock.prettyblocks.block_registry:
-        class: Everblock\PrettyBlocks\BlockRegistry
-        factory: ['Everblock\PrettyBlocks\BlockRegistryFactory', 'createDefaultRegistry']
-        public: true
-
-    everblock.shortcode.registry:
-        class: Everblock\Shortcode\ShortcodeHandlerRegistry
-        factory: ['Everblock\Shortcode\ShortcodeHandlerRegistryFactory', 'createDefaultRegistry']
-        public: true
-
