@@ -490,6 +490,11 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
+                        'text_color' => [
+                            'type' => 'color',
+                            'label' => $module->l('Text color'),
+                            'default' => '',
+                        ],
                         'padding_left' => [
                             'type' => 'text',
                             'label' => $module->l('Padding left (Please specify the unit of measurement)'),
