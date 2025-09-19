@@ -771,6 +771,7 @@ class Everblock extends Module
         return $helper->generateForm($this->getConfigForm());
     }
 
+
     protected function getConfigForm()
     {
         $step_position = [
@@ -790,679 +791,681 @@ class Everblock extends Module
         $features = Feature::getFeatures(
             (int) $this->context->language->id
         );
-        $formFields = [];
-        $formFields[] = [
+
+        $form = [
             'form' => [
-                'legend' => [
-                    'title' => $this->l('Tools'),
-                    'icon' => 'icon-smile',
-                ],
-                'input' => [
-                    [
-                        'type' => 'html',
-                        'name' => 'anchor_everblock_tools',
-                        'html_content' => '<span id="everblock_tools"></span>',
+                'tabs' => [
+                    'tools' => [
+                        'title' => $this->l('Tools'),
+                        'icon' => 'icon-smile',
+                    ],
+                    'settings' => [
+                        'title' => $this->l('Settings'),
+                        'icon' => 'icon-smile',
+                    ],
+                    'imports' => [
+                        'title' => $this->l('Imports'),
+                        'icon' => 'icon-cloud-upload',
+                    ],
+                    'design' => [
+                        'title' => $this->l('Design'),
+                        'icon' => 'icon-palette',
+                    ],
+                    'advanced' => [
+                        'title' => $this->l('Advanced'),
+                        'icon' => 'icon-cogs',
                     ],
                 ],
-                'buttons' => [
-                    'emptyCache' => [
-                        'name' => 'submitEmptyCache',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Empty cache'),
-                    ],
-                    'emptyLogs' => [
-                        'name' => 'submitEmptyLogs',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Empty logs'),
-                    ],
-                    'dropUnusedLangs' => [
-                        'name' => 'submitDropUnusedLangs',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Drop unused langs'),
-                    ],
-                    'secureModuleFoldersWithApache' => [
-                        'name' => 'submitSecureModuleFoldersWithApache',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Secure all modules folders using Apache'),
-                    ],
-                    'backupBlocks' => [
-                        'name' => 'submitBackupBlocks',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Backup all blocks'),
-                    ],
-                    'restoreBackup' => [
-                        'name' => 'submitRestoreBackup',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Restore backup'),
-                    ],
-                ],
-            ],
-        ];
-        $formFields[] = [
-            'form' => [
-                'legend' => [
-                    'title' => $this->l('Settings'),
-                    'icon' => 'icon-smile',
-                ],
-                'input' => [
-                    [
-                        'type' => 'html',
-                        'name' => 'anchor_everblock_settings',
-                        'html_content' => '<span id="everblock_settings"></span>',
-                    ],
-                    [
-                        'type' => 'text',
-                        'lang' => true,
-                        'label' => $this->l('New order step title'),
-                        'desc' => $this->l('Please specify new order step title'),
-                        'hint' => $this->l('If not set, new order step won\'t be shown'),
-                        'name' => 'EVEROPTIONS_TITLE',
-                        'required' => true,
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => $this->l('New order step position'),
-                        'desc' => $this->l('Please select new order step position'),
-                        'hint' => $this->l('Will impact position of the new order step'),
-                        'name' => 'EVEROPTIONS_POSITION',
-                        'options' => [
-                            'query' => $step_position,
-                            'id' => 'id_position',
-                            'name' => 'name',
-                        ],
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Maintenance password'),
-                        'desc' => $this->l('If entered, you will have a password entry form on the maintenance page'),
-                        'hint' => $this->l('People with the password will be able to access the store in maintenance mode'),
-                        'name' => 'EVERBLOCK_MAINTENANCE_PSSWD',
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Instagram access token'),
-                        'desc' => $this->l('Add here your Instagram access token'),
-                        'hint' => $this->l('Without access token, you wont be able to show Instagram slider'),
-                        'name' => 'EVERINSTA_ACCESS_TOKEN',
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('WordPress API URL'),
-                        'desc' => $this->l('Full REST API endpoint for posts'),
-                        'hint' => $this->l('Example: https://example.com/wp-json/wp/v2/posts'),
-                        'name' => 'EVERWP_API_URL',
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('WordPress API user'),
-                        'name' => 'EVERWP_API_USER',
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('WordPress API password'),
-                        'name' => 'EVERWP_API_PWD',
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Number of blog posts to display'),
-                        'name' => 'EVERWP_POST_NBR',
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Google Map API key (CMS page only)'),
-                        'desc' => $this->l('Add here your Google Map API key'),
-                        'hint' => $this->l('Without API key, auto complete wont work'),
-                        'name' => 'EVERBLOCK_GMAP_KEY',
-                    ],
-                    [
-                        'type' => 'file',
-                        'label' => $this->l('Store locator marker icon'),
-                        'desc' => $this->l('Upload an SVG icon used as the Google Maps marker'),
-                        'hint' => $this->l('Only SVG files are allowed'),
-                        'name' => 'EVERBLOCK_MARKER_ICON',
-                        'display_image' => true,
-                        'image' => Configuration::get('EVERBLOCK_MARKER_ICON')
-                            ? $this->context->link->getBaseLink(null, null) . 'modules/' . $this->name . '/views/img/' . Configuration::get('EVERBLOCK_MARKER_ICON')
-                            : false,
-                        'delete_url' => $this->context->link->getAdminLink('AdminModules')
-                            . '&configure=' . $this->name . '&deleteEVERBLOCK_MARKER_ICON=1',
-                    ],
-                    [
-                        'type' => 'switch',
-                        'label' => $this->l('Empty cache on saving ?'),
-                        'desc' => $this->l('Set yes to empty cache on saving'),
-                        'hint' => $this->l('Else cache will not be emptied'),
-                        'name' => 'EVERPSCSS_CACHE',
-                        'is_bool' => true,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => true,
-                                'label' => $this->l('Yes'),
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => false,
-                                'label' => $this->l('No'),
-                            ],
-                        ],
-                    ],
-                    [
-                        'type' => 'switch',
-                        'label' => $this->l('Use module cache system instead of Prestashop native cache ?'),
-                        'desc' => $this->l('Set yes to use module cache, this will generate cache files on your server'),
-                        'hint' => $this->l('Else Prestashop native cache will be used'),
-                        'name' => 'EVERBLOCK_CACHE',
-                        'is_bool' => true,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => true,
-                                'label' => $this->l('Yes'),
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => false,
-                                'label' => $this->l('No'),
-                            ],
-                        ],
-                    ],
-                    [
-                        'type' => 'switch',
-                        'label' => $this->l('Enable front-office script for obfuscation ?'),
-                        'desc' => $this->l('Will load JS file to manage obfuscated links'),
-                        'hint' => $this->l('Leave it to "No" if you already have a script that manages obfuscated links'),
-                        'name' => 'EVERBLOCK_USE_OBF',
-                        'is_bool' => true,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => 1,
-                                'label' => $this->l('Enabled'),
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => 0,
-                                'label' => $this->l('Disabled'),
-                            ],
-                        ],
-                    ],
-                    [
-                        'type' => 'switch',
-                        'label' => $this->l('Enable slick slider scripts ?'),
-                        'desc' => $this->l('Set yes to enable slick scripts for carousels'),
-                        'hint' => $this->l('Else carousels wont work'),
-                        'name' => 'EVERBLOCK_USE_SLICK',
-                        'is_bool' => true,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => true,
-                                'label' => $this->l('Yes'),
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => false,
-                                'label' => $this->l('No'),
-                            ],
-                        ],
-                    ],
-                    [
-                        'type' => 'switch',
-                        'label' => $this->l('Extends TinyMCE on blocks management ?'),
-                        'desc' => $this->l('Set yes to extends TinyMCE on blocs management'),
-                        'hint' => $this->l('Else TinyMCE will be default'),
-                        'name' => 'EVERBLOCK_TINYMCE',
-                        'is_bool' => true,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => true,
-                                'label' => $this->l('Yes'),
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => false,
-                                'label' => $this->l('No'),
-                            ],
-                        ],
-                    ],
-                    [
-                        'type' => 'switch',
-                        'label' => $this->l('Disable automatic conversion of images to webp format'),
-                        'desc' => $this->l('Will disable automatic conversion of images to webp format in HTML blocks'),
-                        'hint' => $this->l('If the setting is changed to no, images will not be converted to webp format'),
-                        'name' => 'EVERBLOCK_DISABLE_WEBP',
-                        'is_bool' => true,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => 1,
-                                'label' => $this->l('Enabled'),
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => 0,
-                                'label' => $this->l('Disabled'),
-                            ],
-                        ],
-                    ],
-                    [
-                        'type' => 'switch',
-                        'label' => $this->l('Show Sold out flag'),
-                        'desc' => $this->l('Display a Sold out flag when product stock is empty and orders are not allowed'),
-                        'hint' => $this->l('Combinations and stock settings will be checked'),
-                        'name' => 'EVERBLOCK_SOLDOUT_FLAG',
-                        'is_bool' => true,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => 1,
-                                'label' => $this->l('Enabled'),
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => 0,
-                                'label' => $this->l('Disabled'),
-                            ],
-                        ],
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => $this->l('Custom CSS'),
-                        'desc' => $this->l('Add here your custom CSS rules'),
-                        'hint' => $this->l('Webdesigners here can manage CSS rules'),
-                        'name' => 'EVERPSCSS',
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => $this->l('Custom Javascript'),
-                        'desc' => $this->l('Add here your custom Javascript rules'),
-                        'hint' => $this->l('Webdesigners here can manage Javascript rules'),
-                        'name' => 'EVERPSJS',
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => $this->l('Custom CSS links'),
-                        'desc' => $this->l('Add here your custom CSS links, one per line'),
-                        'hint' => $this->l('Add one link per line, must be CSS'),
-                        'name' => 'EVERPSCSS_LINKS',
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => $this->l('Custom JS links'),
-                        'desc' => $this->l('Add here your custom JS links, one per line'),
-                        'hint' => $this->l('Add one link per line, must be JS'),
-                        'name' => 'EVERPSJS_LINKS',
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => $this->l('Header scripts'),
-                        'desc' => $this->l('Add here your custom header scripts'),
-                        'hint' => $this->l('Header scripts like Clarity can be added here'),
-                        'name' => 'EVERPS_HEADER_SCRIPTS',
-                    ],
-                    [
-                        'type' => 'select',
-                        'class' => 'chosen',
-                        'multiple' => true,
-                        'label' => $this->l('Features as flags'),
-                        'desc' => $this->l('Please select features used for flags'),
-                        'hint' => $this->l('The selected features will be converted into product flags'),
-                        'name' => 'EVERPS_FEATURES_AS_FLAGS[]',
-                        'required' => false,
-                        'options' => [
-                            'query' => $features,
-                            'id' => 'id_feature',
-                            'name' => 'name',
-                        ],
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Number of fictitious products to create during product generation'),
-                        'desc' => $this->l('Will generate this number of dummy products when generating'),
-                        'hint' => $this->l('Default will be 5'),
-                        'name' => 'EVERPS_DUMMY_NBR',
-                        'lang' => false,
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Default number of paragraphs when [llorem] shortcode is detected'),
-                        'desc' => $this->l('Will generate this number of paragraphs when the [llorem] shortcode is detected'),
-                        'hint' => $this->l('Leaving this value blank will generate five paragraphs'),
-                        'name' => 'EVERPSCSS_P_LLOREM_NUMBER',
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Default number of sentences per paragraphs when [llorem] shortcode is detected'),
-                        'desc' => $this->l('Will generate this number of sentences per paragraphs when the [llorem] shortcode is detected'),
-                        'hint' => $this->l('Leaving this value blank will generate five sentences per paragraphs'),
-                        'name' => 'EVERPSCSS_S_LLOREM_NUMBER',
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Migration : Old URL'),
-                        'desc' => $this->l('If an old URL and a new one are entered, the module will be able to change the old URL to the new one in the database.'),
-                        'hint' => $this->l('Leave empty for no use'),
-                        'name' => 'EVERPS_OLD_URL',
-                        'lang' => false,
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Migration : New URL'),
-                        'desc' => $this->l('If an old URL and a new one are entered, the module will be able to change the old URL to the new one in the database.'),
-                        'hint' => $this->l('Leave empty for no use'),
-                        'name' => 'EVERPS_NEW_URL',
-                        'lang' => false,
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Number of flags for products'),
-                        'desc' => $this->l('Specify here the number of flags you want to have on products'),
-                        'hint' => $this->l('The default value is 1 and cannot be less than 1'),
-                        'name' => 'EVERPS_FLAG_NB',
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Number of tabs for the product page'),
-                        'desc' => $this->l('Specify here the number of tabs you want to have on the product page'),
-                        'hint' => $this->l('The default value is 1 and cannot be less than 1'),
-                        'name' => 'EVERPS_TAB_NB',
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => $this->l('Title for global catalog tab'),
-                        'desc' => $this->l('This text will be your global catalog tab title'),
-                        'hint' => $this->l('Leaving empty will hide tab'),
-                        'name' => 'EVER_TAB_TITLE',
-                        'lang' => true,
-                        'required' => true,
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => $this->l('Text shown on global catalog tab'),
-                        'desc' => $this->l('This text will be show on all products'),
-                        'hint' => $this->l('Leaving empty will hide tab'),
-                        'name' => 'EVER_TAB_CONTENT',
-                        'lang' => true,
-                        'required' => true,
-                        'autoload_rte' => true,
-                    ],
-                ],
-                'buttons' => [
-                    'migrateUrls' => [
-                        'name' => 'submitMigrateUrls',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Migrate URLS'),
-                    ],
-                    'createProducts' => [
-                        'name' => 'submitCreateProduct',
-                        'type' => 'submit',
-                        'class' => 'btn btn-light',
-                        'icon' => 'process-icon-refresh',
-                        'title' => $this->l('Create fake products'),
-                    ],
-                ],
+                'input' => [],
+                'buttons' => [],
                 'submit' => [
                     'title' => $this->l('Save'),
                 ],
             ],
         ];
 
-        if (Configuration::get('EVERINSTA_ACCESS_TOKEN')) {
-            $formFields[] = [
-                'form' => [
-                    'legend' => [
-                        'title' => $this->l('Instagram'),
-                        'icon' => 'icon-smile',
-                    ],
-                    'input' => [
-                        [
-                            'type' => 'html',
-                            'name' => 'anchor_everblock_instagram',
-                            'html_content' => '<span id="everblock_instagram"></span>',
-                        ],
-                        [
-                            'type' => 'text',
-                            'label' => $this->l('Instagram profile link'),
-                            'desc' => $this->l('Add here your Instagram profile URL'),
-                            'hint' => $this->l('This will set a custom link to your Instagram profile'),
-                            'name' => 'EVERINSTA_LINK',
-                        ],
-                        [
-                            'type' => 'switch',
-                            'label' => $this->l('Display Instagram post text'),
-                            'desc' => $this->l('Show caption text below images'),
-                            'name' => 'EVERINSTA_SHOW_CAPTION',
-                            'is_bool' => true,
-                            'values' => [
-                                [
-                                    'id' => 'active_on',
-                                    'value' => 1,
-                                    'label' => $this->l('Enabled'),
-                                ],
-                                [
-                                    'id' => 'active_off',
-                                    'value' => 0,
-                                    'label' => $this->l('Disabled'),
-                                ],
-                            ],
-                        ],
-                    ],
-                    'submit' => [
-                        'title' => $this->l('Save'),
-                    ],
-                ],
-            ];
+        $form['form']['input'][] = [
+            'type' => 'html',
+            'name' => 'anchor_everblock_tools',
+            'html_content' => '<span id="everblock_tools"></span>',
+            'tab' => 'tools',
+        ];
+
+        $toolButtons = [
+            [
+                'name' => 'submitEmptyCache',
+                'type' => 'submit',
+                'class' => 'btn btn-light',
+                'icon' => 'process-icon-refresh',
+                'title' => $this->l('Empty cache'),
+            ],
+            [
+                'name' => 'submitEmptyLogs',
+                'type' => 'submit',
+                'class' => 'btn btn-light',
+                'icon' => 'process-icon-refresh',
+                'title' => $this->l('Empty logs'),
+            ],
+            [
+                'name' => 'submitDropUnusedLangs',
+                'type' => 'submit',
+                'class' => 'btn btn-light',
+                'icon' => 'process-icon-refresh',
+                'title' => $this->l('Drop unused langs'),
+            ],
+            [
+                'name' => 'submitSecureModuleFoldersWithApache',
+                'type' => 'submit',
+                'class' => 'btn btn-light',
+                'icon' => 'process-icon-refresh',
+                'title' => $this->l('Secure all modules folders using Apache'),
+            ],
+            [
+                'name' => 'submitBackupBlocks',
+                'type' => 'submit',
+                'class' => 'btn btn-light',
+                'icon' => 'process-icon-refresh',
+                'title' => $this->l('Backup all blocks'),
+            ],
+            [
+                'name' => 'submitRestoreBackup',
+                'type' => 'submit',
+                'class' => 'btn btn-light',
+                'icon' => 'process-icon-refresh',
+                'title' => $this->l('Restore backup'),
+            ],
+        ];
+
+        foreach ($toolButtons as $button) {
+            $button['tab'] = 'tools';
+            $form['form']['buttons'][] = $button;
         }
-        $formFields[] = [
-            'form' => [
-                'legend' => [
-                    'title' => $this->l('File management'),
-                    'icon' => 'icon-smile',
+
+        $settingsInputs = [
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_settings',
+                'html_content' => '<span id="everblock_settings"></span>',
+            ],
+            [
+                'type' => 'text',
+                'lang' => true,
+                'label' => $this->l('New order step title'),
+                'desc' => $this->l('Please specify new order step title'),
+                'hint' => $this->l('If not set, new order step won\'t be shown'),
+                'name' => 'EVEROPTIONS_TITLE',
+                'required' => true,
+            ],
+            [
+                'type' => 'select',
+                'label' => $this->l('New order step position'),
+                'desc' => $this->l('Please select new order step position'),
+                'hint' => $this->l('Will impact position of the new order step'),
+                'name' => 'EVEROPTIONS_POSITION',
+                'options' => [
+                    'query' => $step_position,
+                    'id' => 'id_position',
+                    'name' => 'name',
                 ],
-                'input' => [
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Maintenance password'),
+                'desc' => $this->l('If entered, you will have a password entry form on the maintenance page'),
+                'hint' => $this->l('People with the password will be able to access the store in maintenance mode'),
+                'name' => 'EVERBLOCK_MAINTENANCE_PSSWD',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Instagram access token'),
+                'desc' => $this->l('Add here your Instagram access token'),
+                'hint' => $this->l('Without access token, you wont be able to show Instagram slider'),
+                'name' => 'EVERINSTA_ACCESS_TOKEN',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('WordPress API URL'),
+                'desc' => $this->l('Full REST API endpoint for posts'),
+                'hint' => $this->l('Example: https://example.com/wp-json/wp/v2/posts'),
+                'name' => 'EVERWP_API_URL',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('WordPress API user'),
+                'name' => 'EVERWP_API_USER',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('WordPress API password'),
+                'name' => 'EVERWP_API_PWD',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Number of blog posts to display'),
+                'name' => 'EVERWP_POST_NBR',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Google Map API key (CMS page only)'),
+                'desc' => $this->l('Add here your Google Map API key'),
+                'hint' => $this->l('Without API key, auto complete wont work'),
+                'name' => 'EVERBLOCK_GMAP_KEY',
+            ],
+            [
+                'type' => 'file',
+                'label' => $this->l('Store locator marker icon'),
+                'desc' => $this->l('Upload an SVG icon used as the Google Maps marker'),
+                'hint' => $this->l('Only SVG files are allowed'),
+                'name' => 'EVERBLOCK_MARKER_ICON',
+                'display_image' => true,
+                'image' => Configuration::get('EVERBLOCK_MARKER_ICON')
+                    ? $this->context->link->getBaseLink(null, null) . 'modules/' . $this->name . '/views/img/' . Configuration::get('EVERBLOCK_MARKER_ICON')
+                    : false,
+                'delete_url' => $this->context->link->getAdminLink('AdminModules')
+                    . '&configure=' . $this->name . '&deleteEVERBLOCK_MARKER_ICON=1',
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Empty cache on saving ?'),
+                'desc' => $this->l('Set yes to empty cache on saving'),
+                'hint' => $this->l('Else cache will not be emptied'),
+                'name' => 'EVERPSCSS_CACHE',
+                'is_bool' => true,
+                'values' => [
                     [
-                        'type' => 'html',
-                        'name' => 'anchor_everblock_file_management',
-                        'html_content' => '<span id="everblock_file_management"></span>',
+                        'id' => 'active_on',
+                        'value' => true,
+                        'label' => $this->l('Yes'),
                     ],
                     [
-                        'type' => 'file',
-                        'label' => $this->l('Upload Excel tabs file'),
-                        'desc' => $this->l('Will upload Excel tabs file and import datas into this module'),
-                        'hint' => $this->l('You can then import this file in order to set up your tabs in bulk on the product sheets'),
-                        'name' => 'TABS_FILE',
-                        'display_image' => false,
-                        'required' => false,
+                        'id' => 'active_off',
+                        'value' => false,
+                        'label' => $this->l('No'),
                     ],
                 ],
-                'buttons' => [
-                    'import' => [
-                        'name' => 'submitUploadTabsFile',
-                        'type' => 'submit',
-                        'class' => 'btn btn-default pull-right',
-                        'icon' => 'process-icon-download',
-                        'title' => $this->l('Upload file'),
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Use module cache system instead of Prestashop native cache ?'),
+                'desc' => $this->l('Set yes to use module cache, this will generate cache files on your server'),
+                'hint' => $this->l('Else Prestashop native cache will be used'),
+                'name' => 'EVERBLOCK_CACHE',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'active_on',
+                        'value' => true,
+                        'label' => $this->l('Yes'),
+                    ],
+                    [
+                        'id' => 'active_off',
+                        'value' => false,
+                        'label' => $this->l('No'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Enable front-office script for obfuscation ?'),
+                'desc' => $this->l('Will load JS file to manage obfuscated links'),
+                'hint' => $this->l('Leave it to "No" if you already have a script that manages obfuscated links'),
+                'name' => 'EVERBLOCK_USE_OBF',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Enabled'),
+                    ],
+                    [
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('Disabled'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Enable slick slider scripts ?'),
+                'desc' => $this->l('Set yes to enable slick scripts for carousels'),
+                'hint' => $this->l('Else carousels wont work'),
+                'name' => 'EVERBLOCK_USE_SLICK',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'active_on',
+                        'value' => true,
+                        'label' => $this->l('Yes'),
+                    ],
+                    [
+                        'id' => 'active_off',
+                        'value' => false,
+                        'label' => $this->l('No'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Extends TinyMCE on blocks management ?'),
+                'desc' => $this->l('Set yes to extends TinyMCE on blocs management'),
+                'hint' => $this->l('Else TinyMCE will be default'),
+                'name' => 'EVERBLOCK_TINYMCE',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'active_on',
+                        'value' => true,
+                        'label' => $this->l('Yes'),
+                    ],
+                    [
+                        'id' => 'active_off',
+                        'value' => false,
+                        'label' => $this->l('No'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Disable automatic conversion of images to webp format'),
+                'desc' => $this->l('Will disable automatic conversion of images to webp format in HTML blocks'),
+                'hint' => $this->l('If the setting is changed to no, images will not be converted to webp format'),
+                'name' => 'EVERBLOCK_DISABLE_WEBP',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Enabled'),
+                    ],
+                    [
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('Disabled'),
                     ],
                 ],
             ],
         ];
-        $formFields[] = [
-            'form' => [
-                'legend' => [
-                    'title' => $this->l('Import HTML blocks'),
-                    'icon' => 'icon-smile',
-                ],
-                'input' => [
+
+        foreach ($settingsInputs as $input) {
+            $input['tab'] = 'settings';
+            $form['form']['input'][] = $input;
+        }
+
+        $designInputs = [
+            [
+                'type' => 'switch',
+                'label' => $this->l('Show Sold out flag'),
+                'desc' => $this->l('Display a Sold out flag when product stock is empty and orders are not allowed'),
+                'hint' => $this->l('Combinations and stock settings will be checked'),
+                'name' => 'EVERBLOCK_SOLDOUT_FLAG',
+                'is_bool' => true,
+                'values' => [
                     [
-                        'type' => 'html',
-                        'name' => 'anchor_everblock_import_html',
-                        'html_content' => '<span id="everblock_import_html"></span>',
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Enabled'),
                     ],
                     [
-                        'type' => 'file',
-                        'label' => $this->l('Upload Excel blocks file'),
-                        'desc' => $this->l('Upload an Excel file to create HTML blocks with all settings'),
-                        'hint' => $this->l('This file must contain the same columns as the export command'),
-                        'name' => 'BLOCKS_FILE',
-                        'display_image' => false,
-                        'required' => false,
-                    ],
-                ],
-                'buttons' => [
-                    'import' => [
-                        'name' => 'submitUploadBlocksFile',
-                        'type' => 'submit',
-                        'class' => 'btn btn-default pull-right',
-                        'icon' => 'process-icon-download',
-                        'title' => $this->l('Upload file'),
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('Disabled'),
                     ],
                 ],
             ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Custom CSS'),
+                'desc' => $this->l('Add here your custom CSS rules'),
+                'hint' => $this->l('Webdesigners here can manage CSS rules'),
+                'name' => 'EVERPSCSS',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Custom Javascript'),
+                'desc' => $this->l('Add here your custom Javascript rules'),
+                'hint' => $this->l('Webdesigners here can manage Javascript rules'),
+                'name' => 'EVERPSJS',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Custom CSS links'),
+                'desc' => $this->l('Add here your custom CSS links, one per line'),
+                'hint' => $this->l('Add one link per line, must be CSS'),
+                'name' => 'EVERPSCSS_LINKS',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Custom JS links'),
+                'desc' => $this->l('Add here your custom JS links, one per line'),
+                'hint' => $this->l('Add one link per line, must be JS'),
+                'name' => 'EVERPSJS_LINKS',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Header scripts'),
+                'desc' => $this->l('Add here your custom header scripts'),
+                'hint' => $this->l('Header scripts like Clarity can be added here'),
+                'name' => 'EVERPS_HEADER_SCRIPTS',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Title for global catalog tab'),
+                'desc' => $this->l('This text will be your global catalog tab title'),
+                'hint' => $this->l('Leaving empty will hide tab'),
+                'name' => 'EVER_TAB_TITLE',
+                'lang' => true,
+                'required' => true,
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Text shown on global catalog tab'),
+                'desc' => $this->l('This text will be show on all products'),
+                'hint' => $this->l('Leaving empty will hide tab'),
+                'name' => 'EVER_TAB_CONTENT',
+                'lang' => true,
+                'required' => true,
+                'autoload_rte' => true,
+            ],
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_feature_colors',
+                'html_content' => '<span id="everblock_feature_colors"></span>',
+            ],
         ];
+
+        foreach ($designInputs as $input) {
+            $input['tab'] = 'design';
+            $form['form']['input'][] = $input;
+        }
+
         $bannedFeatures = json_decode(Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
         if (!is_array($bannedFeatures)) {
             $bannedFeatures = [];
         }
-        $bannedFeaturesColors = [];
+
         foreach ($bannedFeatures as $bannedFeature) {
-            $bannedFeaturesColors[] = [
-                'feature_id' => (int) $bannedFeature,
-                'color' => Configuration::get('EVERPS_FEATURE_COLOR_' . (int) $bannedFeature),
-            ];
-        }
-
-        // Ajouter les couleurs au formulaire
-        $formFields[] = [
-            'form' => [
-                'legend' => [
-                    'title' => $this->l('Features as flags Colors'),
-                    'icon' => 'icon-palette',
-                ],
-                'input' => [
-                    [
-                        'type' => 'html',
-                        'name' => 'anchor_everblock_feature_colors',
-                        'html_content' => '<span id="everblock_feature_colors"></span>',
-                    ],
-                ],
-                'submit' => [
-                    'title' => $this->l('Save'),
-                ],
-            ],
-        ];
-
-        // Ajouter un champ par feature bannie
-        foreach ($bannedFeaturesColors as $bannedFeatureColor) {
-            $featureId = $bannedFeatureColor['feature_id'];
+            $featureId = (int) $bannedFeature;
             $feature = new Feature((int) $featureId);
             $idLang = (int) Context::getContext()->language->id;
             $featureName = isset($feature->name[$idLang]) ? $feature->name[$idLang] : $this->l('Unnamed feature');
 
-            // Couleur de fond
-            $formFields[count($formFields) - 1]['form']['input'][] = [
+            $form['form']['input'][] = [
                 'type' => 'color',
                 'label' => $this->l('Background color for Feature: ') . $featureName,
                 'name' => 'EVERPS_FEATURE_COLOR_' . $featureId,
                 'size' => 20,
                 'required' => false,
+                'tab' => 'design',
             ];
 
-            // Couleur du texte
-            $formFields[count($formFields) - 1]['form']['input'][] = [
+            $form['form']['input'][] = [
                 'type' => 'color',
                 'label' => $this->l('Text color for Feature: ') . $featureName,
                 'name' => 'EVERPS_FEATURE_TEXTCOLOR_' . $featureId,
                 'size' => 20,
                 'required' => false,
+                'tab' => 'design',
             ];
         }
 
-        $formFields[] = [
-            'form' => [
-                'legend' => [
-                    'title' => $this->l('Sold out flag Colors'),
-                    'icon' => 'icon-palette',
-                ],
-                'input' => [
-                    [
-                        'type' => 'html',
-                        'name' => 'anchor_everblock_soldout_colors',
-                        'html_content' => '<span id="everblock_soldout_colors"></span>',
-                    ],
-                    [
-                        'type' => 'color',
-                        'label' => $this->l('Background color for Sold out flag'),
-                        'name' => 'EVER_SOLDOUT_COLOR',
-                        'size' => 20,
-                        'required' => false,
-                    ],
-                    [
-                        'type' => 'color',
-                        'label' => $this->l('Text color for Sold out flag'),
-                        'name' => 'EVER_SOLDOUT_TEXTCOLOR',
-                        'size' => 20,
-                        'required' => false,
-                    ],
-                ],
-                'submit' => [
-                    'title' => $this->l('Save'),
-                ],
-            ],
+        $form['form']['input'][] = [
+            'type' => 'html',
+            'name' => 'anchor_everblock_soldout_colors',
+            'html_content' => '<span id="everblock_soldout_colors"></span>',
+            'tab' => 'design',
         ];
+
+        $form['form']['input'][] = [
+            'type' => 'color',
+            'label' => $this->l('Background color for Sold out flag'),
+            'name' => 'EVER_SOLDOUT_COLOR',
+            'size' => 20,
+            'required' => false,
+            'tab' => 'design',
+        ];
+
+        $form['form']['input'][] = [
+            'type' => 'color',
+            'label' => $this->l('Text color for Sold out flag'),
+            'name' => 'EVER_SOLDOUT_TEXTCOLOR',
+            'size' => 20,
+            'required' => false,
+            'tab' => 'design',
+        ];
+
+        if (Configuration::get('EVERINSTA_ACCESS_TOKEN')) {
+            $instagramInputs = [
+                [
+                    'type' => 'html',
+                    'name' => 'anchor_everblock_instagram',
+                    'html_content' => '<span id="everblock_instagram"></span>',
+                ],
+                [
+                    'type' => 'text',
+                    'label' => $this->l('Instagram profile link'),
+                    'desc' => $this->l('Add here your Instagram profile URL'),
+                    'hint' => $this->l('This will set a custom link to your Instagram profile'),
+                    'name' => 'EVERINSTA_LINK',
+                ],
+                [
+                    'type' => 'switch',
+                    'label' => $this->l('Display Instagram post text'),
+                    'desc' => $this->l('Show caption text below images'),
+                    'name' => 'EVERINSTA_SHOW_CAPTION',
+                    'is_bool' => true,
+                    'values' => [
+                        [
+                            'id' => 'active_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled'),
+                        ],
+                        [
+                            'id' => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled'),
+                        ],
+                    ],
+                ],
+            ];
+
+            foreach ($instagramInputs as $input) {
+                $input['tab'] = 'design';
+                $form['form']['input'][] = $input;
+            }
+        }
+
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
             && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
         ) {
-            $formFields[] = [
-                'form' => [
-                    'legend' => [
-                        'title' => $this->l('PrettyBlocks'),
-                        'icon' => 'icon-smile',
-                    ],
-                    'input' => [
-                        [
-                            'type' => 'html',
-                            'name' => 'anchor_everblock_prettyblocks',
-                            'html_content' => '<span id="everblock_prettyblocks"></span>',
-                        ],
-                        [
-                            'type' => 'file',
-                            'label' => $this->l('Upload custom SVG'),
-                            'desc' => $this->l('Upload your own SVG icon for PrettyBlocks'),
-                            'hint' => $this->l('Only SVG files are allowed'),
-                            'name' => 'CUSTOM_SVG',
-                            'display_image' => false,
-                            'required' => false,
-                        ],
-                    ],
-                    'buttons' => [
-                        'import' => [
-                            'name' => 'submitUploadSvg',
-                            'type' => 'submit',
-                            'class' => 'btn btn-default pull-right',
-                            'icon' => 'process-icon-download',
-                            'title' => $this->l('Upload SVG'),
-                        ],
-                    ],
+            $prettyBlocksInputs = [
+                [
+                    'type' => 'html',
+                    'name' => 'anchor_everblock_prettyblocks',
+                    'html_content' => '<span id="everblock_prettyblocks"></span>',
+                ],
+                [
+                    'type' => 'file',
+                    'label' => $this->l('Upload custom SVG'),
+                    'desc' => $this->l('Upload your own SVG icon for PrettyBlocks'),
+                    'hint' => $this->l('Only SVG files are allowed'),
+                    'name' => 'CUSTOM_SVG',
+                    'display_image' => false,
+                    'required' => false,
                 ],
             ];
+
+            foreach ($prettyBlocksInputs as $input) {
+                $input['tab'] = 'design';
+                $form['form']['input'][] = $input;
+            }
+
+            $form['form']['buttons'][] = [
+                'name' => 'submitUploadSvg',
+                'type' => 'submit',
+                'class' => 'btn btn-default pull-right',
+                'icon' => 'process-icon-download',
+                'title' => $this->l('Upload SVG'),
+                'tab' => 'design',
+            ];
         }
+
+        $importInputs = [
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_file_management',
+                'html_content' => '<span id="everblock_file_management"></span>',
+            ],
+            [
+                'type' => 'file',
+                'label' => $this->l('Upload Excel tabs file'),
+                'desc' => $this->l('Will upload Excel tabs file and import datas into this module'),
+                'hint' => $this->l('You can then import this file in order to set up your tabs in bulk on the product sheets'),
+                'name' => 'TABS_FILE',
+                'display_image' => false,
+                'required' => false,
+            ],
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_import_html',
+                'html_content' => '<span id="everblock_import_html"></span>',
+            ],
+            [
+                'type' => 'file',
+                'label' => $this->l('Upload Excel blocks file'),
+                'desc' => $this->l('Upload an Excel file to create HTML blocks with all settings'),
+                'hint' => $this->l('This file must contain the same columns as the export command'),
+                'name' => 'BLOCKS_FILE',
+                'display_image' => false,
+                'required' => false,
+            ],
+        ];
+
+        foreach ($importInputs as $input) {
+            $input['tab'] = 'imports';
+            $form['form']['input'][] = $input;
+        }
+
+        $importButtons = [
+            [
+                'name' => 'submitUploadTabsFile',
+                'type' => 'submit',
+                'class' => 'btn btn-default pull-right',
+                'icon' => 'process-icon-download',
+                'title' => $this->l('Upload file'),
+            ],
+            [
+                'name' => 'submitUploadBlocksFile',
+                'type' => 'submit',
+                'class' => 'btn btn-default pull-right',
+                'icon' => 'process-icon-download',
+                'title' => $this->l('Upload file'),
+            ],
+        ];
+
+        foreach ($importButtons as $button) {
+            $button['tab'] = 'imports';
+            $form['form']['buttons'][] = $button;
+        }
+
+        $advancedInputs = [
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_advanced',
+                'html_content' => '<span id="everblock_advanced"></span>',
+            ],
+            [
+                'type' => 'select',
+                'class' => 'chosen',
+                'multiple' => true,
+                'label' => $this->l('Features as flags'),
+                'desc' => $this->l('Please select features used for flags'),
+                'hint' => $this->l('The selected features will be converted into product flags'),
+                'name' => 'EVERPS_FEATURES_AS_FLAGS[]',
+                'required' => false,
+                'options' => [
+                    'query' => $features,
+                    'id' => 'id_feature',
+                    'name' => 'name',
+                ],
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Number of fictitious products to create during product generation'),
+                'desc' => $this->l('Will generate this number of dummy products when generating'),
+                'hint' => $this->l('Default will be 5'),
+                'name' => 'EVERPS_DUMMY_NBR',
+                'lang' => false,
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Default number of paragraphs when [llorem] shortcode is detected'),
+                'desc' => $this->l('Will generate this number of paragraphs when the [llorem] shortcode is detected'),
+                'hint' => $this->l('Leaving this value blank will generate five paragraphs'),
+                'name' => 'EVERPSCSS_P_LLOREM_NUMBER',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Default number of sentences per paragraphs when [llorem] shortcode is detected'),
+                'desc' => $this->l('Will generate this number of sentences per paragraphs when the [llorem] shortcode is detected'),
+                'hint' => $this->l('Leaving this value blank will generate five sentences per paragraphs'),
+                'name' => 'EVERPSCSS_S_LLOREM_NUMBER',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Migration : Old URL'),
+                'desc' => $this->l('If an old URL and a new one are entered, the module will be able to change the old URL to the new one in the database.'),
+                'hint' => $this->l('Leave empty for no use'),
+                'name' => 'EVERPS_OLD_URL',
+                'lang' => false,
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Migration : New URL'),
+                'desc' => $this->l('If an old URL and a new one are entered, the module will be able to change the old URL to the new one in the database.'),
+                'hint' => $this->l('Leave empty for no use'),
+                'name' => 'EVERPS_NEW_URL',
+                'lang' => false,
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Number of flags for products'),
+                'desc' => $this->l('Specify here the number of flags you want to have on products'),
+                'hint' => $this->l('The default value is 1 and cannot be less than 1'),
+                'name' => 'EVERPS_FLAG_NB',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Number of tabs for the product page'),
+                'desc' => $this->l('Specify here the number of tabs you want to have on the product page'),
+                'hint' => $this->l('The default value is 1 and cannot be less than 1'),
+                'name' => 'EVERPS_TAB_NB',
+            ],
+        ];
+
+        foreach ($advancedInputs as $input) {
+            $input['tab'] = 'advanced';
+            $form['form']['input'][] = $input;
+        }
+
+        $form['form']['buttons'][] = [
+            'name' => 'submitMigrateUrls',
+            'type' => 'submit',
+            'class' => 'btn btn-light',
+            'icon' => 'process-icon-refresh',
+            'title' => $this->l('Migrate URLS'),
+            'tab' => 'advanced',
+        ];
+
+        $form['form']['buttons'][] = [
+            'name' => 'submitCreateProduct',
+            'type' => 'submit',
+            'class' => 'btn btn-light',
+            'icon' => 'process-icon-refresh',
+            'title' => $this->l('Create fake products'),
+            'tab' => 'advanced',
+        ];
+
         $stores = Store::getStores((int) $this->context->language->id);
         $holidayInputs = [];
         if (!empty($stores)) {
@@ -1487,20 +1490,13 @@ class Everblock extends Module
                 'name' => 'anchor_everblock_holiday',
                 'html_content' => '<span id="everblock_holiday"></span>',
             ]);
-            $formFields[] = [
-                'form' => [
-                    'legend' => [
-                        'title' => $this->l('Holiday opening hours by store'),
-                        'icon' => 'icon-calendar',
-                    ],
-                    'input' => $holidayInputs,
-                    'submit' => [
-                        'title' => $this->l('Save'),
-                    ],
-                ],
-            ];
+            foreach ($holidayInputs as $input) {
+                $input['tab'] = 'advanced';
+                $form['form']['input'][] = $input;
+            }
         }
-        return $formFields;
+
+        return [$form];
     }
 
     protected function getConfigFormValues()
