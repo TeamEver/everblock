@@ -7,6 +7,4 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Everblock\\Tools\\' => array($baseDir . '/src'),
-    'Everblock\\Shortcode\\' => array($baseDir . '/src/Shortcode'),
-    'Everblock\\PrettyBlocks\\' => array($baseDir . '/src/PrettyBlocks'),
 );
