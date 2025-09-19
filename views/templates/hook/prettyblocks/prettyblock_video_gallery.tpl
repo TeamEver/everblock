@@ -31,7 +31,16 @@
         {foreach from=$block.states item=state key=key}
           <div class="col mb-4 col-md-4" style="{if isset($state.padding_left) && $state.padding_left}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}{if isset($state.padding_right) && $state.padding_right}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}{if isset($state.padding_top) && $state.padding_top}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}{if isset($state.padding_bottom) && $state.padding_bottom}padding-bottom:{$state.padding_bottom|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_left) && $state.margin_left}margin-left:{$state.margin_left|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_right) && $state.margin_right}margin-right:{$state.margin_right|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_top) && $state.margin_top}margin-top:{$state.margin_top|escape:'htmlall':'UTF-8'};{/if}{if isset($state.margin_bottom) && $state.margin_bottom}margin-bottom:{$state.margin_bottom|escape:'htmlall':'UTF-8'};{/if}{if isset($state.default.bg_color) && $state.default.bg_color}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
             <div class="card {if isset($state.css_class) && $state.css_class}{$state.css_class|escape:'htmlall':'UTF-8'}{/if}">
-              <img src="{$state.thumbnail.url|replace:'.webp':'.jpg'}" class="img-fluid cursor-pointer" alt="{$state.title}" title="{$state.title}" loading="lazy" data-block="{$block.id_prettyblocks}" data-video-url="{$state.video_url|escape:'htmlall':'UTF-8'}" data-description="{$state.description|escape:'htmlall':'UTF-8'}" data-bs-toggle="modal" data-bs-target="#videoModal-{$block.id_prettyblocks}">
+              <div class="everblock-video-thumbnail position-relative">
+                <img src="{$state.thumbnail.url|replace:'.webp':'.jpg'}" class="img-fluid cursor-pointer" alt="{$state.title}" title="{$state.title}" loading="lazy" data-block="{$block.id_prettyblocks}" data-video-url="{$state.video_url|escape:'htmlall':'UTF-8'}" data-description="{$state.description|escape:'htmlall':'UTF-8'}" data-bs-toggle="modal" data-bs-target="#videoModal-{$block.id_prettyblocks}">
+                <span class="everblock-video-play-icon" aria-hidden="true">
+                  <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+                    <circle cx="32" cy="32" r="31" />
+                    <polygon points="27,20 46,32 27,44" />
+                  </svg>
+                </span>
+                <span class="visually-hidden">{l s='Play video' mod='everblock'}</span>
+              </div>
               {if $state.title || $state.description}
               <div class="card-body">
                 {if $state.title}<h5 class="card-title">{$state.title}</h5>{/if}

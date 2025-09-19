@@ -738,6 +738,32 @@
 .everblock-video-gallery img {
     cursor: pointer;
 }
+.everblock-video-thumbnail {
+    display: inline-block;
+}
+.everblock-video-thumbnail img {
+    display: block;
+}
+.everblock-video-thumbnail .everblock-video-play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+.everblock-video-thumbnail .everblock-video-play-icon svg circle {
+    fill: rgba(0, 0, 0, 0.55);
+}
+.everblock-video-thumbnail .everblock-video-play-icon svg polygon {
+    fill: #fff;
+}
+.everblock-video-thumbnail:hover .everblock-video-play-icon {
+    transform: translate(-50%, -50%) scale(1.05);
+}
 .everblock-video-gallery .video-description {
     margin-top: 0.5rem;
 }
