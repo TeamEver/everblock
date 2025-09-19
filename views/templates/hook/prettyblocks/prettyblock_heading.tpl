@@ -26,7 +26,7 @@
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-        <{$block.settings.level|default:'h2'} id="{$block.id_prettyblocks}" class="everblock everblock-heading {$block.settings.css_class|escape:'htmlall':'UTF-8'}">{$block.settings.title|escape:'htmlall':'UTF-8'}</{$block.settings.level|default:'h2'}>
+        <{$block.settings.level|default:'h2'} id="{$block.id_prettyblocks}" class="everblock everblock-heading {$block.settings.css_class|escape:'htmlall':'UTF-8'}"{if isset($block.settings.text_color) && $block.settings.text_color} style="color:{$block.settings.text_color|escape:'htmlall':'UTF-8'};"{/if}>{$block.settings.title|escape:'htmlall':'UTF-8'}</{$block.settings.level|default:'h2'}>
     {if $block.settings.default.container}
         </div>
     {/if}
