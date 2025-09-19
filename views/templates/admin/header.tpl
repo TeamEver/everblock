@@ -25,17 +25,19 @@
             <img id="everlogotop" class="img-fluid" src="{$everblock_dir|escape:'htmlall':'UTF-8'}logo.png" alt="{l s='Ever Block logo' mod='everblock'}" style="max-width: 120px;" />
         </a>
         <p class="mt-2">{l s='Thanks for using Team Ever\'s modules' mod='everblock'}<br /></p>
-        {if isset($modules_list_link)}
-            <div class="everblock-anchor-links mt-2">
-                <a href="#everblock_tools" class="btn btn-default btn-sm">{l s='Tools' mod='everblock'}</a>
-                <a href="#everblock_settings" class="btn btn-default btn-sm">{l s='Settings' mod='everblock'}</a>
-                <a href="#everblock_instagram" class="btn btn-default btn-sm">{l s='Instagram' mod='everblock'}</a>
-                <a href="#everblock_file_management" class="btn btn-default btn-sm">{l s='File management' mod='everblock'}</a>
-                <a href="#everblock_import_html" class="btn btn-default btn-sm">{l s='Import HTML blocks' mod='everblock'}</a>
-                <a href="#everblock_feature_colors" class="btn btn-default btn-sm">{l s='Features colors' mod='everblock'}</a>
-                <a href="#everblock_soldout_colors" class="btn btn-default btn-sm">{l s='Sold out colors' mod='everblock'}</a>
-                <a href="#everblock_holiday" class="btn btn-default btn-sm">{l s='Holiday hours' mod='everblock'}</a>
-            </div>
+        {if isset($everblock_tabs) && $everblock_tabs}
+            <ul class="nav nav-tabs everblock-config-nav mt-2" role="tablist">
+                {foreach from=$everblock_tabs key=tabId item=tab name=everblockTabs}
+                    <li class="nav-item">
+                        <a class="nav-link{if $smarty.foreach.everblockTabs.first} active{/if}" data-toggle="tab" role="tab" href="#{$tabId|escape:'htmlall':'UTF-8'}">
+                            {if isset($tab.icon) && $tab.icon}
+                                <i class="{$tab.icon|escape:'htmlall':'UTF-8'}"></i>
+                            {/if}
+                            {$tab.title|escape:'htmlall':'UTF-8'}
+                        </a>
+                    </li>
+                {/foreach}
+            </ul>
         {/if}
     </div>
     <div class="col-md-4 text-right mt-3">
@@ -71,3 +73,49 @@
         {/if}
     </div>
 </div>
+{if isset($everblock_tabs) && $everblock_tabs}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var headerLinks = Array.prototype.slice.call(document.querySelectorAll('.everblock-config-nav .nav-link'));
+        if (!headerLinks.length) {
+            return;
+        }
+
+        function setActiveLink(target) {
+            headerLinks.forEach(function (link) {
+                if (link.getAttribute('href') === target) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        headerLinks.forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                var target = this.getAttribute('href');
+                var helperLink = document.querySelector('#configuration_form .nav-tabs a[href="' + target + '"]');
+                if (helperLink) {
+                    helperLink.click();
+                }
+                setActiveLink(target);
+            });
+        });
+
+        var helperTabs = Array.prototype.slice.call(document.querySelectorAll('#configuration_form .nav-tabs a'));
+        helperTabs.forEach(function (link) {
+            link.addEventListener('click', function () {
+                setActiveLink(this.getAttribute('href'));
+            });
+        });
+
+        var activeHelper = document.querySelector('#configuration_form .nav-tabs li.active a');
+        if (activeHelper) {
+            setActiveLink(activeHelper.getAttribute('href'));
+        } else {
+            setActiveLink(headerLinks[0].getAttribute('href'));
+        }
+    });
+</script>
+{/if}
