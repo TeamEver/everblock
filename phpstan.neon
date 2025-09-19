@@ -6,5 +6,5 @@ parameters:
         - models
         - everblock.php
         - index.php
-    autoload_files:
+    bootstrapFiles:
         - vendor/autoload.php
