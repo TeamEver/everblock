@@ -282,11 +282,12 @@ class AdminEverBlockFaqController extends ModuleAdminController
             $everblock_obj->active = (int) Tools::getValue('active');
             $everblock_obj->id_shop = (int) $this->context->shop->id;
             foreach (Language::getLanguages(false) as $language) {
-                if (!Tools::getValue('content_' . $language['id_lang'])) {
+                $contentKey = 'content_' . $language['id_lang'];
+                $contentValue = Tools::getValue($contentKey);
+                if (!is_string($contentValue) || $contentValue === '') {
                     $this->errors[] = $this->l('Content is missing for lang ') . $language['id_lang'];
                 } else {
-                    $originalContent = Tools::getValue($contentKey);
-                    $convertedContent = EverblockTools::convertImagesToWebP($originalContent);
+                    $convertedContent = EverblockTools::convertImagesToWebP($contentValue);
                     $everblock_obj->content[$language['id_lang']] = $convertedContent;
                 }
                 if (!Tools::getValue('title_' . $language['id_lang'])) {
