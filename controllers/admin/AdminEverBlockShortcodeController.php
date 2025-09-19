@@ -222,7 +222,7 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
                  $this->errors[] = $this->l('Title is not valid or missing');
             }
             $everblock_obj = new EverblockShortcode(
-                (int) $this->identifier
+                (int) Tools::getValue($this->identifier)
             );
             $everblock_obj->title = Tools::getValue('title');
             $everblock_obj->shortcode = Tools::getValue('shortcode');
