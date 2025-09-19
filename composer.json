@@ -10,7 +10,9 @@
   ],
   "autoload": {
     "psr-4": {
-      "Everblock\\Tools\\": "src/"
+      "Everblock\\Tools\\": "src/",
+      "Everblock\\PrettyBlocks\\": "src/PrettyBlocks/",
+      "Everblock\\Shortcode\\": "src/Shortcode/"
     },
     "exclude-from-classmap": []
   },

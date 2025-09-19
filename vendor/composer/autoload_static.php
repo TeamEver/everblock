@@ -10,6 +10,8 @@ class ComposerStaticInitc44e5ac729cb9f81a689ee15bff0603d
         'E' => 
         array (
             'Everblock\\Tools\\' => 16,
+            'Everblock\\Shortcode\\' => 20,
+            'Everblock\\PrettyBlocks\\' => 23,
         ),
     );
 
@@ -17,6 +19,14 @@ class ComposerStaticInitc44e5ac729cb9f81a689ee15bff0603d
         'Everblock\\Tools\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
+        ),
+        'Everblock\\Shortcode\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src/Shortcode',
+        ),
+        'Everblock\\PrettyBlocks\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src/PrettyBlocks',
         ),
     );
 
