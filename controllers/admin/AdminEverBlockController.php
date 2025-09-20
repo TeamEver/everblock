@@ -1019,7 +1019,7 @@ class AdminEverBlockController extends ModuleAdminController
             }
             foreach ($groups as $group) {
                 $formValues[] = [
-                    'groupBox_' . $group['id_group'] => Tools::getValue('groupBox_' . $group['id_group'], false)
+                    'groupBox_' . $group['id_group'] => Tools::getValue('groupBox_' . $group['id_group'], true)
                 ];
             }
             $formValues[] = [
