@@ -786,22 +786,13 @@ class Everblock extends Module
         );
 
         $tabs = [
-            'settings' => [
-                'title' => $this->l('Réglages'),
-                'icon' => 'icon-cogs',
-            ],
-            'tools' => [
-                'title' => $this->l('Outils'),
-                'icon' => 'icon-wrench',
-            ],
-            'files' => [
-                'title' => $this->l('Gestionnaire de fichiers'),
-                'icon' => 'icon-folder-open',
-            ],
-            'flags' => [
-                'title' => $this->l('Flags'),
-                'icon' => 'icon-flag',
-            ],
+            'settings' => $this->l('Réglages'),
+            'wordpress' => $this->l('WordPress'),
+            'google_maps' => $this->l('Google Maps'),
+            'migration' => $this->l('Migration des URL'),
+            'tools' => $this->l('Outils'),
+            'files' => $this->l('Gestionnaire de fichiers'),
+            'flags' => $this->l('Flags'),
         ];
 
         $isPrettyBlocksEnabled = (bool) Module::isInstalled('prettyblocks') === true
@@ -809,21 +800,12 @@ class Everblock extends Module
             && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true;
 
         if ($isPrettyBlocksEnabled) {
-            $tabs['prettyblock'] = [
-                'title' => $this->l('Prettyblock'),
-                'icon' => 'icon-picture',
-            ];
+            $tabs['prettyblock'] = $this->l('Prettyblock');
         }
 
-        $tabs['holiday'] = [
-            'title' => $this->l('Holiday opening hours by store'),
-            'icon' => 'icon-calendar',
-        ];
+        $tabs['holiday'] = $this->l('Holiday opening hours by store');
 
-        $tabs['cron'] = [
-            'title' => $this->l('Tâches crons'),
-            'icon' => 'icon-time',
-        ];
+        $tabs['cron'] = $this->l('Tâches crons');
 
         $form = [
             'form' => [
@@ -933,48 +915,6 @@ class Everblock extends Module
                 'desc' => $this->l('Add here your Instagram access token'),
                 'hint' => $this->l('Without access token, you wont be able to show Instagram slider'),
                 'name' => 'EVERINSTA_ACCESS_TOKEN',
-            ],
-            [
-                'type' => 'text',
-                'label' => $this->l('WordPress API URL'),
-                'desc' => $this->l('Full REST API endpoint for posts'),
-                'hint' => $this->l('Example: https://example.com/wp-json/wp/v2/posts'),
-                'name' => 'EVERWP_API_URL',
-            ],
-            [
-                'type' => 'text',
-                'label' => $this->l('WordPress API user'),
-                'name' => 'EVERWP_API_USER',
-            ],
-            [
-                'type' => 'text',
-                'label' => $this->l('WordPress API password'),
-                'name' => 'EVERWP_API_PWD',
-            ],
-            [
-                'type' => 'text',
-                'label' => $this->l('Number of blog posts to display'),
-                'name' => 'EVERWP_POST_NBR',
-            ],
-            [
-                'type' => 'text',
-                'label' => $this->l('Google Map API key (CMS page only)'),
-                'desc' => $this->l('Add here your Google Map API key'),
-                'hint' => $this->l('Without API key, auto complete wont work'),
-                'name' => 'EVERBLOCK_GMAP_KEY',
-            ],
-            [
-                'type' => 'file',
-                'label' => $this->l('Store locator marker icon'),
-                'desc' => $this->l('Upload an SVG icon used as the Google Maps marker'),
-                'hint' => $this->l('Only SVG files are allowed'),
-                'name' => 'EVERBLOCK_MARKER_ICON',
-                'display_image' => true,
-                'image' => Configuration::get('EVERBLOCK_MARKER_ICON')
-                    ? $this->context->link->getBaseLink(null, null) . 'modules/' . $this->name . '/views/img/' . Configuration::get('EVERBLOCK_MARKER_ICON')
-                    : false,
-                'delete_url' => $this->context->link->getAdminLink('AdminModules')
-                    . '&configure=' . $this->name . '&deleteEVERBLOCK_MARKER_ICON=1',
             ],
             [
                 'type' => 'switch',
@@ -1100,6 +1040,75 @@ class Everblock extends Module
 
         foreach ($settingsInputs as $input) {
             $input['tab'] = 'settings';
+            $form['form']['input'][] = $input;
+        }
+
+        $wordpressInputs = [
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_wordpress',
+                'html_content' => '<span id="everblock_wordpress"></span>',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('WordPress API URL'),
+                'desc' => $this->l('Full REST API endpoint for posts'),
+                'hint' => $this->l('Example: https://example.com/wp-json/wp/v2/posts'),
+                'name' => 'EVERWP_API_URL',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('WordPress API user'),
+                'name' => 'EVERWP_API_USER',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('WordPress API password'),
+                'name' => 'EVERWP_API_PWD',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Number of blog posts to display'),
+                'name' => 'EVERWP_POST_NBR',
+            ],
+        ];
+
+        foreach ($wordpressInputs as $input) {
+            $input['tab'] = 'wordpress';
+            $form['form']['input'][] = $input;
+        }
+
+        $markerIcon = Configuration::get('EVERBLOCK_MARKER_ICON');
+        $googleMapsInputs = [
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_google_maps',
+                'html_content' => '<span id="everblock_google_maps"></span>',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Google Map API key (CMS page only)'),
+                'desc' => $this->l('Add here your Google Map API key'),
+                'hint' => $this->l('Without API key, auto complete wont work'),
+                'name' => 'EVERBLOCK_GMAP_KEY',
+            ],
+            [
+                'type' => 'file',
+                'label' => $this->l('Store locator marker icon'),
+                'desc' => $this->l('Upload an SVG icon used as the Google Maps marker'),
+                'hint' => $this->l('Only SVG files are allowed'),
+                'name' => 'EVERBLOCK_MARKER_ICON',
+                'display_image' => true,
+                'image' => $markerIcon
+                    ? $this->context->link->getBaseLink(null, null) . 'modules/' . $this->name . '/views/img/' . $markerIcon
+                    : false,
+                'delete_url' => $this->context->link->getAdminLink('AdminModules')
+                    . '&configure=' . $this->name . '&deleteEVERBLOCK_MARKER_ICON=1',
+            ],
+        ];
+
+        foreach ($googleMapsInputs as $input) {
+            $input['tab'] = 'google_maps';
             $form['form']['input'][] = $input;
         }
 
@@ -1405,22 +1414,6 @@ class Everblock extends Module
             ],
             [
                 'type' => 'text',
-                'label' => $this->l('Migration : Old URL'),
-                'desc' => $this->l('If an old URL and a new one are entered, the module will be able to change the old URL to the new one in the database.'),
-                'hint' => $this->l('Leave empty for no use'),
-                'name' => 'EVERPS_OLD_URL',
-                'lang' => false,
-            ],
-            [
-                'type' => 'text',
-                'label' => $this->l('Migration : New URL'),
-                'desc' => $this->l('If an old URL and a new one are entered, the module will be able to change the old URL to the new one in the database.'),
-                'hint' => $this->l('Leave empty for no use'),
-                'name' => 'EVERPS_NEW_URL',
-                'lang' => false,
-            ],
-            [
-                'type' => 'text',
                 'label' => $this->l('Number of flags for products'),
                 'desc' => $this->l('Specify here the number of flags you want to have on products'),
                 'hint' => $this->l('The default value is 1 and cannot be less than 1'),
@@ -1446,13 +1439,42 @@ class Everblock extends Module
             $form['form']['input'][] = $input;
         }
 
+        $migrationInputs = [
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_migration',
+                'html_content' => '<span id="everblock_migration"></span>',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Migration : Old URL'),
+                'desc' => $this->l('If an old URL and a new one are entered, the module will be able to change the old URL to the new one in the database.'),
+                'hint' => $this->l('Leave empty for no use'),
+                'name' => 'EVERPS_OLD_URL',
+                'lang' => false,
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Migration : New URL'),
+                'desc' => $this->l('If an old URL and a new one are entered, the module will be able to change the old URL to the new one in the database.'),
+                'hint' => $this->l('Leave empty for no use'),
+                'name' => 'EVERPS_NEW_URL',
+                'lang' => false,
+            ],
+        ];
+
+        foreach ($migrationInputs as $input) {
+            $input['tab'] = 'migration';
+            $form['form']['input'][] = $input;
+        }
+
         $form['form']['buttons'][] = [
             'name' => 'submitMigrateUrls',
             'type' => 'submit',
             'class' => 'btn btn-light',
             'icon' => 'process-icon-refresh',
             'title' => $this->l('Migrate URLS'),
-            'tab' => 'settings',
+            'tab' => 'migration',
         ];
 
         $form['form']['buttons'][] = [
