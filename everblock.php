@@ -1135,41 +1135,6 @@ class Everblock extends Module
             ],
             [
                 'type' => 'textarea',
-                'label' => $this->l('Custom CSS'),
-                'desc' => $this->l('Add here your custom CSS rules'),
-                'hint' => $this->l('Webdesigners here can manage CSS rules'),
-                'name' => 'EVERPSCSS',
-            ],
-            [
-                'type' => 'textarea',
-                'label' => $this->l('Custom Javascript'),
-                'desc' => $this->l('Add here your custom Javascript rules'),
-                'hint' => $this->l('Webdesigners here can manage Javascript rules'),
-                'name' => 'EVERPSJS',
-            ],
-            [
-                'type' => 'textarea',
-                'label' => $this->l('Custom CSS links'),
-                'desc' => $this->l('Add here your custom CSS links, one per line'),
-                'hint' => $this->l('Add one link per line, must be CSS'),
-                'name' => 'EVERPSCSS_LINKS',
-            ],
-            [
-                'type' => 'textarea',
-                'label' => $this->l('Custom JS links'),
-                'desc' => $this->l('Add here your custom JS links, one per line'),
-                'hint' => $this->l('Add one link per line, must be JS'),
-                'name' => 'EVERPSJS_LINKS',
-            ],
-            [
-                'type' => 'textarea',
-                'label' => $this->l('Header scripts'),
-                'desc' => $this->l('Add here your custom header scripts'),
-                'hint' => $this->l('Header scripts like Clarity can be added here'),
-                'name' => 'EVERPS_HEADER_SCRIPTS',
-            ],
-            [
-                'type' => 'textarea',
                 'label' => $this->l('Title for global catalog tab'),
                 'desc' => $this->l('This text will be your global catalog tab title'),
                 'hint' => $this->l('Leaving empty will hide tab'),
@@ -1194,12 +1159,55 @@ class Everblock extends Module
             ],
         ];
 
+        $toolsInputs = [
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Code CSS personnalisé'),
+                'desc' => $this->l('Add here your custom CSS rules'),
+                'hint' => $this->l('Webdesigners here can manage CSS rules'),
+                'name' => 'EVERPSCSS',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Javascript / jQuery personnalisé'),
+                'desc' => $this->l('Add here your custom Javascript rules'),
+                'hint' => $this->l('Webdesigners here can manage Javascript rules'),
+                'name' => 'EVERPSJS',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Liens CSS personnalisés'),
+                'desc' => $this->l('Add here your custom CSS links, one per line'),
+                'hint' => $this->l('Add one link per line, must be CSS'),
+                'name' => 'EVERPSCSS_LINKS',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Liens javascript personnalisés'),
+                'desc' => $this->l('Add here your custom JS links, one per line'),
+                'hint' => $this->l('Add one link per line, must be JS'),
+                'name' => 'EVERPSJS_LINKS',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Header scripts'),
+                'desc' => $this->l('Add here your custom header scripts'),
+                'hint' => $this->l('Header scripts like Clarity can be added here'),
+                'name' => 'EVERPS_HEADER_SCRIPTS',
+            ],
+        ];
+
         foreach ($designInputs as $input) {
             if ($input['name'] === 'anchor_everblock_feature_colors') {
                 $input['tab'] = 'flags';
             } else {
                 $input['tab'] = 'settings';
             }
+            $form['form']['input'][] = $input;
+        }
+
+        foreach ($toolsInputs as $input) {
+            $input['tab'] = 'tools';
             $form['form']['input'][] = $input;
         }
 
