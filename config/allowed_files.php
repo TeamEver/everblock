@@ -144,7 +144,6 @@ return [
     'views/index.php',
     'views/js/admin.js',
     'views/js/adminTinyMce.js',
-    'views/js/controller.js',
     'views/js/custom.js',
     'views/js/everblock-obfuscation.js',
     'views/js/everblock.js',
