@@ -30,6 +30,37 @@ class EverblockPrettyBlocks extends ObjectModel
         return PrettyBlocksModel::registerBlockToZone($zone_name, $code, $id_lang, $id_shop);
     }
 
+    private static function appendSpacingFields(array $groups, Module $module): array
+    {
+        return array_merge($groups, static::getSpacingFields($module));
+    }
+
+    private static function getSpacingFields(Module $module): array
+    {
+        $labels = [
+            'padding_left' => 'Padding left (Please specify the unit of measurement)',
+            'padding_right' => 'Padding right (Please specify the unit of measurement)',
+            'padding_top' => 'Padding top (Please specify the unit of measurement)',
+            'padding_bottom' => 'Padding bottom (Please specify the unit of measurement)',
+            'margin_left' => 'Margin left (Please specify the unit of measurement)',
+            'margin_right' => 'Margin right (Please specify the unit of measurement)',
+            'margin_top' => 'Margin top (Please specify the unit of measurement)',
+            'margin_bottom' => 'Margin bottom (Please specify the unit of measurement)',
+        ];
+
+        $fields = [];
+
+        foreach ($labels as $name => $label) {
+            $fields[$name] = [
+                'type' => 'text',
+                'label' => $module->l($label),
+                'default' => '',
+            ];
+        }
+
+        return $fields;
+    }
+
     public static function getEverPrettyBlocks($context)
     {
         $cacheId = 'EverblockPrettyBlocks_getEverPrettyBlocks_'
@@ -551,7 +582,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Everblock',
                     'nameFrom' => 'id_everblock',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'id_everblock' => [
                             'type' => 'select',
                             'label' => $module->l('Select an Everblock'),
@@ -575,47 +606,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -675,7 +666,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Tab',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Tab title',
@@ -691,47 +682,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -747,7 +698,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Accordeon',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Accordeon title',
@@ -775,47 +726,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -831,7 +742,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Tab',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Block title',
@@ -859,47 +770,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -924,7 +795,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Reassurances',
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'image' => [
                             'type' => 'fileupload',
                             'label' => $module->l('Upload image'),
@@ -965,47 +836,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1021,7 +852,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'CTA',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'editor',
                             'label' => 'Title',
@@ -1091,47 +922,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1147,7 +938,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Video',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'iframe_link' => [
                             'type' => 'text',
                             'label' => $module->l('Iframe embed code (like https://www.youtube.com/embed/jfKfPfyJRdk)'),
@@ -1179,47 +970,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1235,7 +986,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Video',
                     'nameFrom' => 'video_url',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'video_url' => [
                             'type' => 'text',
                             'label' => $module->l('Video URL'),
@@ -1298,47 +1049,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1354,7 +1065,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Menu',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Layout title',
@@ -1424,47 +1135,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1497,7 +1168,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Menu',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Featured category title',
@@ -1572,46 +1243,6 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
                         'margin_left_mobile' => [
                             'type' => 'text',
                             'label' => $module->l('Mobile margin left (Please specify the unit of measurement)'),
@@ -1632,7 +1263,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Mobile margin bottom (Please specify the unit of measurement)'),
                             'default' => '',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1648,7 +1279,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Category',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'category' => [
                             'type' => 'selector',
                             'label' => $module->l('Category'),
@@ -1674,47 +1305,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1730,7 +1321,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => $module->l('Modal title'),
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Modal title',
@@ -1777,47 +1368,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1876,7 +1427,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => $module->l('Shortcode title'),
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Shortcode title',
@@ -1888,47 +1439,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'default' => '',
                             'choices' => $prettyBlocksShortcodes
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1958,7 +1469,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => $module->l('Image title'),
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Image title',
@@ -2013,47 +1524,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2069,7 +1540,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Menu',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Row title',
@@ -2080,47 +1551,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2136,7 +1567,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Menu',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Block title',
@@ -2225,47 +1656,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2281,7 +1672,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Image name',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Image title',
@@ -2299,47 +1690,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2355,7 +1706,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Image name',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Image title',
@@ -2388,47 +1739,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2444,7 +1755,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Video',
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'thumbnail' => [
                             'type' => 'fileupload',
                             'label' => $module->l('Thumbnail'),
@@ -2472,47 +1783,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2528,7 +1799,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Video',
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'thumbnail' => [
                             'type' => 'fileupload',
                             'label' => $module->l('Thumbnail'),
@@ -2561,47 +1832,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2617,7 +1848,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Message name',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Message title',
@@ -2648,47 +1879,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2704,7 +1895,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Tab',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'testimonial title',
@@ -2722,47 +1913,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => 'Tab content',
                             'default' => '[llorem]',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2778,7 +1929,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Slide',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'testimonial title',
@@ -2796,47 +1947,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => 'Tab content',
                             'default' => '[llorem]',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2852,7 +1963,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Tab',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Button title',
@@ -2894,47 +2005,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -3011,7 +2082,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Image',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'image' => [
                             'type' => 'fileupload',
                             'label' => 'Layout image',
@@ -3039,47 +2110,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Open in new tab (only if not obfuscated)'),
                             'default' => '0',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -3104,7 +2135,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Link',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => $module->l('Link text'),
@@ -3125,47 +2156,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
 
@@ -3587,7 +2578,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Category',
                     'nameFrom' => 'name',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'name' => [
                             'type' => 'text',
                             'label' => 'Tab title',
@@ -3611,47 +2602,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -3784,7 +2735,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Card',
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Card title'),
@@ -3833,47 +2784,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -4356,7 +3267,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Event',
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'editor',
                             'label' => 'Title',
@@ -4406,47 +3317,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -4535,7 +3406,7 @@ class EverblockPrettyBlocks extends ObjectModel
                 'repeater' => [
                     'name' => 'Category',
                     'nameFrom' => 'category',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'image' => [
                             'type' => 'fileupload',
                             'label' => $module->l('Upload image'),
@@ -4582,47 +3453,7 @@ class EverblockPrettyBlocks extends ObjectModel
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'padding_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'padding_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Padding bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
