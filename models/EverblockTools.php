@@ -36,149 +36,72 @@ class EverblockTools extends ObjectModel
             'modulefront',
         ];
         $txt = static::getEverShortcodes($txt, $context);
-        if (strpos($txt, '[alert') !== false) {
-            $txt = static::getAlertShortcode($txt);
-        }
-        if (strpos($txt, '[everfaq') !== false) {
-            $txt = static::getFaqShortcodes($txt, $context, $module);
-        }
-        if (strpos($txt, '[everinstagram]') !== false) {
-            $txt = static::getInstagramShortcodes($txt, $context, $module);
-        }
-        if (strpos($txt, '[product') !== false) {
-            $txt = static::getProductShortcodes($txt, $context, $module);
-        }
-        if (strpos($txt, '[product_image') !== false) {
-            $txt = static::getProductImageShortcodes($txt, $context, $module);
-        }
-        if (strpos($txt, '[productfeature') !== false) {
-            $txt = static::getFeatureProductShortcodes($txt, $context, $module);
-        }
-        if (strpos($txt, '[productfeaturevalue') !== false) {
-            $txt = static::getFeatureValueProductShortcodes($txt, $context, $module);
-        }
-        if (strpos($txt, '[category') !== false) {
-            $txt = static::getCategoryShortcodes($txt, $context, $module);
-        }
-        if (strpos($txt, '[manufacturer') !== false) {
-            $txt = static::getManufacturerShortcodes($txt, $context, $module);
-        }
-        if (strpos($txt, '[brands') !== false) {
-            $txt = static::getBrandsShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[storelocator]') !== false) {
-            $txt = static::generateGoogleMap($txt, $context, $module);
-        }
-        if (strpos($txt, '[evermap]') !== false) {
-            $txt = static::getEverMapShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '{hook h=') !== false) {
-            $txt = static::replaceHook($txt);
-        }
-        if (strpos($txt, '[llorem]') !== false) {
-            $txt = static::generateLoremIpsum($txt, $context);
-        }
-        if (strpos($txt, '[everblock') !== false) {
-            $txt = static::getEverBlockShortcode($txt, $context);
-        }
-        if (strpos($txt, '[subcategories') !== false) {
-            $txt = static::getSubcategoriesShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[everstore') !== false) {
-            $txt = static::getStoreShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[video') !== false) {
-            $txt = static::getVideoShortcode($txt);
-        }
-        if (strpos($txt, '[qcdacf') !== false) {
-            $txt = static::getQcdAcfCode($txt, $context);
-        }
-        if (strpos($txt, '[displayQcdSvg') !== false) {
-            $txt = static::getQcdSvgCode($txt, $context);
-        }
-        if (strpos($txt, '[everimg') !== false) {
-            $txt = static::getEverImgShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[wordpress-posts]') !== false) {
-            $txt = static::getWordpressPostsShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[best-sales') !== false) {
-            $txt = static::getBestSalesShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[categorybestsales') !== false) {
-            $txt = static::getCategoryBestSalesShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[brandbestsales') !== false) {
-            $txt = static::getBrandBestSalesShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[featurebestsales') !== false) {
-            $txt = static::getFeatureBestSalesShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[featurevaluebestsales') !== false) {
-            $txt = static::getFeatureValueBestSalesShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[last-products') !== false) {
-            $txt = static::getLastProductsShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[recently_viewed') !== false) {
-            $txt = static::getRecentlyViewedShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[promo-products') !== false) {
-            $txt = static::getPromoProductsShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[products_by_tag') !== false) {
-            $txt = static::getProductsByTagShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[low_stock') !== false) {
-            $txt = static::getLowStockShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[evercart]') !== false) {
-            $txt = static::getCartShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[cart_total]') !== false) {
-            $txt = static::getCartTotalShortcode($txt, $context);
-        }
-        if (strpos($txt, '[cart_quantity]') !== false) {
-            $txt = static::getCartQuantityShortcode($txt, $context);
-        }
-        if (strpos($txt, '[shop_logo]') !== false) {
-            $txt = static::getShopLogoShortcode($txt, $context);
-        }
-        if (strpos($txt, '[newsletter_form]') !== false) {
-            $txt = static::getNewsletterFormShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[nativecontact]') !== false) {
-            $txt = static::getNativeContactShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[evercontactform_open]') !== false) {
-            $txt = static::getFormShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[everorderform_open]') !== false) {
-            $txt = static::getOrderFormShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[random_product') !== false) {
-            $txt = static::getRandomProductsShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[accessories') !== false) {
-            $txt = static::getAccessoriesShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[linkedproducts') !== false) {
-            $txt = static::getLinkedProductsShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[crosselling') !== false) {
-            $txt = static::getCrossSellingShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[widget') !== false) {
-            $txt = $txt = static::getWidgetShortcode($txt);
-        }
-        if (strpos($txt, '[prettyblocks') !== false) {
-            $txt = static::getPrettyblocksShortcodes($txt, $context, $module);
-        }
-        if (strpos($txt, '[everaddtocart') !== false) {
-            $txt = static::getAddToCartShortcode($txt, $context, $module);
-        }
-        if (strpos($txt, '[cms') !== false) {
-            $txt = static::getCmsShortcode($txt, $context);
+        $shortcodeHandlers = [
+            '[alert' => 'getAlertShortcode',
+            '[everfaq' => ['method' => 'getFaqShortcodes', 'args' => ['context', 'module']],
+            '[everinstagram]' => ['method' => 'getInstagramShortcodes', 'args' => ['context', 'module']],
+            '[product' => ['method' => 'getProductShortcodes', 'args' => ['context', 'module']],
+            '[product_image' => ['method' => 'getProductImageShortcodes', 'args' => ['context', 'module']],
+            '[productfeature' => ['method' => 'getFeatureProductShortcodes', 'args' => ['context', 'module']],
+            '[productfeaturevalue' => ['method' => 'getFeatureValueProductShortcodes', 'args' => ['context', 'module']],
+            '[category' => ['method' => 'getCategoryShortcodes', 'args' => ['context', 'module']],
+            '[manufacturer' => ['method' => 'getManufacturerShortcodes', 'args' => ['context', 'module']],
+            '[brands' => ['method' => 'getBrandsShortcode', 'args' => ['context', 'module']],
+            '[storelocator]' => ['method' => 'generateGoogleMap', 'args' => ['context', 'module']],
+            '[evermap]' => ['method' => 'getEverMapShortcode', 'args' => ['context', 'module']],
+            '{hook h=' => 'replaceHook',
+            '[llorem]' => ['method' => 'generateLoremIpsum', 'args' => ['context']],
+            '[everblock' => ['method' => 'getEverBlockShortcode', 'args' => ['context']],
+            '[subcategories' => ['method' => 'getSubcategoriesShortcode', 'args' => ['context', 'module']],
+            '[everstore' => ['method' => 'getStoreShortcode', 'args' => ['context', 'module']],
+            '[video' => 'getVideoShortcode',
+            '[qcdacf' => ['method' => 'getQcdAcfCode', 'args' => ['context']],
+            '[displayQcdSvg' => ['method' => 'getQcdSvgCode', 'args' => ['context']],
+            '[everimg' => ['method' => 'getEverImgShortcode', 'args' => ['context', 'module']],
+            '[wordpress-posts]' => ['method' => 'getWordpressPostsShortcode', 'args' => ['context', 'module']],
+            '[best-sales' => ['method' => 'getBestSalesShortcode', 'args' => ['context', 'module']],
+            '[categorybestsales' => ['method' => 'getCategoryBestSalesShortcode', 'args' => ['context', 'module']],
+            '[brandbestsales' => ['method' => 'getBrandBestSalesShortcode', 'args' => ['context', 'module']],
+            '[featurebestsales' => ['method' => 'getFeatureBestSalesShortcode', 'args' => ['context', 'module']],
+            '[featurevaluebestsales' => ['method' => 'getFeatureValueBestSalesShortcode', 'args' => ['context', 'module']],
+            '[last-products' => ['method' => 'getLastProductsShortcode', 'args' => ['context', 'module']],
+            '[recently_viewed' => ['method' => 'getRecentlyViewedShortcode', 'args' => ['context', 'module']],
+            '[promo-products' => ['method' => 'getPromoProductsShortcode', 'args' => ['context', 'module']],
+            '[products_by_tag' => ['method' => 'getProductsByTagShortcode', 'args' => ['context', 'module']],
+            '[low_stock' => ['method' => 'getLowStockShortcode', 'args' => ['context', 'module']],
+            '[evercart]' => ['method' => 'getCartShortcode', 'args' => ['context', 'module']],
+            '[cart_total]' => ['method' => 'getCartTotalShortcode', 'args' => ['context']],
+            '[cart_quantity]' => ['method' => 'getCartQuantityShortcode', 'args' => ['context']],
+            '[shop_logo]' => ['method' => 'getShopLogoShortcode', 'args' => ['context']],
+            '[newsletter_form]' => ['method' => 'getNewsletterFormShortcode', 'args' => ['context', 'module']],
+            '[nativecontact]' => ['method' => 'getNativeContactShortcode', 'args' => ['context', 'module']],
+            '[evercontactform_open]' => ['method' => 'getFormShortcode', 'args' => ['context', 'module']],
+            '[everorderform_open]' => ['method' => 'getOrderFormShortcode', 'args' => ['context', 'module']],
+            '[random_product' => ['method' => 'getRandomProductsShortcode', 'args' => ['context', 'module']],
+            '[accessories' => ['method' => 'getAccessoriesShortcode', 'args' => ['context', 'module']],
+            '[linkedproducts' => ['method' => 'getLinkedProductsShortcode', 'args' => ['context', 'module']],
+            '[crosselling' => ['method' => 'getCrossSellingShortcode', 'args' => ['context', 'module']],
+            '[widget' => 'getWidgetShortcode',
+            '[prettyblocks' => ['method' => 'getPrettyblocksShortcodes', 'args' => ['context', 'module']],
+            '[everaddtocart' => ['method' => 'getAddToCartShortcode', 'args' => ['context', 'module']],
+            '[cms' => ['method' => 'getCmsShortcode', 'args' => ['context']],
+        ];
+
+        foreach ($shortcodeHandlers as $needle => $handler) {
+            if (strpos($txt, $needle) === false) {
+                continue;
+            }
+
+            if (is_string($handler)) {
+                $method = $handler;
+                $args = [];
+            } else {
+                $method = $handler['method'];
+                $args = $handler['args'] ?? [];
+            }
+
+            $callArgs = array_merge([$txt], static::resolveShortcodeArgs($args, $context, $module));
+            $txt = forward_static_call_array([static::class, $method], $callArgs);
         }
         if (in_array($context->controller->controller_type, $controllerTypes)) {
             $txt = static::getCustomerShortcodes($txt, $context);
@@ -210,6 +133,31 @@ class EverblockTools extends ObjectModel
         }
 
         return $attrs;
+    }
+
+    /**
+     * Build the argument list for a shortcode handler based on configuration values.
+     *
+     * @param array<int, string> $args
+     *
+     * @return array<int, mixed>
+     */
+    protected static function resolveShortcodeArgs(array $args, Context $context, Everblock $module): array
+    {
+        $resolved = [];
+
+        foreach ($args as $arg) {
+            switch ($arg) {
+                case 'context':
+                    $resolved[] = $context;
+                    break;
+                case 'module':
+                    $resolved[] = $module;
+                    break;
+            }
+        }
+
+        return $resolved;
     }
 
     /**
