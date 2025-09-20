@@ -2098,7 +2098,6 @@ class Everblock extends Module
                 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/mode/javascript/javascript.min.js',
                 'all'
             );
-            $this->context->controller->addJs($this->_path . 'views/js/controller.js');
             if (Tools::getValue('configure') == $this->name) {
                 $this->context->controller->addJs($this->_path . 'views/js/admin.js');
             }
