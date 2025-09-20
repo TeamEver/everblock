@@ -16,7 +16,21 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
-<div class="alert alert-info">
+{include file='module:everblock/views/templates/admin/header.tpl'}
+
+{if isset($everblock_notifications) && $everblock_notifications}
+    {$everblock_notifications nofilter}
+{/if}
+
+{if isset($display_upgrade) && $display_upgrade}
+    {include file='module:everblock/views/templates/admin/upgrade.tpl'}
+{/if}
+
+{if isset($everblock_form)}
+    {$everblock_form nofilter}
+{/if}
+
+<div class="alert alert-info mt-4">
     <button class="btn btn-primary btn-lg mb-2" type="button" data-toggle="collapse" data-target="#instructionsContent" aria-expanded="false" aria-controls="instructionsContent">
         <i class="icon-info-circle"></i> {l s='Instructions' mod='everblock'}
     </button>
@@ -291,3 +305,5 @@
     <p>{l s='If you don\'t see your content or your content hasn\'t changed, make sure to clear your store\'s cache.' mod='everblock'}</p>
     <br>
 </div>
+
+{include file='module:everblock/views/templates/admin/footer.tpl'}

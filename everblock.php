@@ -721,6 +721,9 @@ class Everblock extends Module
                 ]
             );
         }
+        $displayUpgrade = $this->checkLatestEverModuleVersion();
+        $notifications = $this->html;
+        $this->html = '';
         $this->context->smarty->assign([
             'module_name' => $this->displayName,
             $this->name . '_version' => $this->version,
@@ -732,23 +735,13 @@ class Everblock extends Module
             'cron_links' => $cronLinks,
             'modules_list_link' => $this->context->link->getAdminLink('AdminModules'),
             'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
+            'everblock_notifications' => $notifications,
+            'everblock_form' => $this->renderForm(),
+            'display_upgrade' => $displayUpgrade,
         ]);
-        $this->html .= $this->context->smarty->fetch(
-            $this->local_path . 'views/templates/admin/header.tpl'
-        );
-        if ($this->checkLatestEverModuleVersion()) {
-            $this->html .= $this->context->smarty->fetch(
-                $this->local_path . 'views/templates/admin/upgrade.tpl'
-            );
-        }
-        $this->html .= $this->renderForm();
-        $this->html .= $this->context->smarty->fetch(
+        return $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/configure.tpl'
         );
-        $this->html .= $this->context->smarty->fetch(
-            $this->local_path . 'views/templates/admin/footer.tpl'
-        );
-        return $this->html;
     }
 
     protected function renderForm()
@@ -792,30 +785,49 @@ class Everblock extends Module
             (int) $this->context->language->id
         );
 
+        $tabs = [
+            'settings' => [
+                'title' => $this->l('Réglages'),
+                'icon' => 'icon-cogs',
+            ],
+            'tools' => [
+                'title' => $this->l('Outils'),
+                'icon' => 'icon-wrench',
+            ],
+            'files' => [
+                'title' => $this->l('Gestionnaire de fichiers'),
+                'icon' => 'icon-folder-open',
+            ],
+            'flags' => [
+                'title' => $this->l('Flags'),
+                'icon' => 'icon-flag',
+            ],
+        ];
+
+        $isPrettyBlocksEnabled = (bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+
+        if ($isPrettyBlocksEnabled) {
+            $tabs['prettyblock'] = [
+                'title' => $this->l('Prettyblock'),
+                'icon' => 'icon-picture',
+            ];
+        }
+
+        $tabs['holiday'] = [
+            'title' => $this->l('Holiday opening hours by store'),
+            'icon' => 'icon-calendar',
+        ];
+
+        $tabs['cron'] = [
+            'title' => $this->l('Tâches crons'),
+            'icon' => 'icon-time',
+        ];
+
         $form = [
             'form' => [
-                'tabs' => [
-                    'tools' => [
-                        'title' => $this->l('Tools'),
-                        'icon' => 'icon-smile',
-                    ],
-                    'settings' => [
-                        'title' => $this->l('Settings'),
-                        'icon' => 'icon-smile',
-                    ],
-                    'imports' => [
-                        'title' => $this->l('Imports'),
-                        'icon' => 'icon-cloud-upload',
-                    ],
-                    'design' => [
-                        'title' => $this->l('Design'),
-                        'icon' => 'icon-palette',
-                    ],
-                    'advanced' => [
-                        'title' => $this->l('Advanced'),
-                        'icon' => 'icon-cogs',
-                    ],
-                ],
+                'tabs' => $tabs,
                 'input' => [],
                 'buttons' => [],
                 'submit' => [
@@ -1174,7 +1186,11 @@ class Everblock extends Module
         ];
 
         foreach ($designInputs as $input) {
-            $input['tab'] = 'design';
+            if ($input['name'] === 'anchor_everblock_feature_colors') {
+                $input['tab'] = 'flags';
+            } else {
+                $input['tab'] = 'settings';
+            }
             $form['form']['input'][] = $input;
         }
 
@@ -1195,7 +1211,7 @@ class Everblock extends Module
                 'name' => 'EVERPS_FEATURE_COLOR_' . $featureId,
                 'size' => 20,
                 'required' => false,
-                'tab' => 'design',
+                'tab' => 'flags',
             ];
 
             $form['form']['input'][] = [
@@ -1204,7 +1220,7 @@ class Everblock extends Module
                 'name' => 'EVERPS_FEATURE_TEXTCOLOR_' . $featureId,
                 'size' => 20,
                 'required' => false,
-                'tab' => 'design',
+                'tab' => 'flags',
             ];
         }
 
@@ -1212,7 +1228,7 @@ class Everblock extends Module
             'type' => 'html',
             'name' => 'anchor_everblock_soldout_colors',
             'html_content' => '<span id="everblock_soldout_colors"></span>',
-            'tab' => 'design',
+            'tab' => 'flags',
         ];
 
         $form['form']['input'][] = [
@@ -1221,7 +1237,7 @@ class Everblock extends Module
             'name' => 'EVER_SOLDOUT_COLOR',
             'size' => 20,
             'required' => false,
-            'tab' => 'design',
+            'tab' => 'flags',
         ];
 
         $form['form']['input'][] = [
@@ -1230,7 +1246,7 @@ class Everblock extends Module
             'name' => 'EVER_SOLDOUT_TEXTCOLOR',
             'size' => 20,
             'required' => false,
-            'tab' => 'design',
+            'tab' => 'flags',
         ];
 
         if (Configuration::get('EVERINSTA_ACCESS_TOKEN')) {
@@ -1269,15 +1285,12 @@ class Everblock extends Module
             ];
 
             foreach ($instagramInputs as $input) {
-                $input['tab'] = 'design';
+                $input['tab'] = 'settings';
                 $form['form']['input'][] = $input;
             }
         }
 
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
+        if ($isPrettyBlocksEnabled) {
             $prettyBlocksInputs = [
                 [
                     'type' => 'html',
@@ -1296,7 +1309,7 @@ class Everblock extends Module
             ];
 
             foreach ($prettyBlocksInputs as $input) {
-                $input['tab'] = 'design';
+                $input['tab'] = 'prettyblock';
                 $form['form']['input'][] = $input;
             }
 
@@ -1306,7 +1319,7 @@ class Everblock extends Module
                 'class' => 'btn btn-default pull-right',
                 'icon' => 'process-icon-download',
                 'title' => $this->l('Upload SVG'),
-                'tab' => 'design',
+                'tab' => 'prettyblock',
             ];
         }
 
@@ -1325,24 +1338,10 @@ class Everblock extends Module
                 'display_image' => false,
                 'required' => false,
             ],
-            [
-                'type' => 'html',
-                'name' => 'anchor_everblock_import_html',
-                'html_content' => '<span id="everblock_import_html"></span>',
-            ],
-            [
-                'type' => 'file',
-                'label' => $this->l('Upload Excel blocks file'),
-                'desc' => $this->l('Upload an Excel file to create HTML blocks with all settings'),
-                'hint' => $this->l('This file must contain the same columns as the export command'),
-                'name' => 'BLOCKS_FILE',
-                'display_image' => false,
-                'required' => false,
-            ],
         ];
 
         foreach ($importInputs as $input) {
-            $input['tab'] = 'imports';
+            $input['tab'] = 'files';
             $form['form']['input'][] = $input;
         }
 
@@ -1354,17 +1353,10 @@ class Everblock extends Module
                 'icon' => 'process-icon-download',
                 'title' => $this->l('Upload file'),
             ],
-            [
-                'name' => 'submitUploadBlocksFile',
-                'type' => 'submit',
-                'class' => 'btn btn-default pull-right',
-                'icon' => 'process-icon-download',
-                'title' => $this->l('Upload file'),
-            ],
         ];
 
         foreach ($importButtons as $button) {
-            $button['tab'] = 'imports';
+            $button['tab'] = 'files';
             $form['form']['buttons'][] = $button;
         }
 
@@ -1444,7 +1436,13 @@ class Everblock extends Module
         ];
 
         foreach ($advancedInputs as $input) {
-            $input['tab'] = 'advanced';
+            if ($input['name'] === 'EVERPS_FEATURES_AS_FLAGS[]'
+                || $input['name'] === 'EVERPS_FLAG_NB'
+            ) {
+                $input['tab'] = 'flags';
+            } else {
+                $input['tab'] = 'settings';
+            }
             $form['form']['input'][] = $input;
         }
 
@@ -1454,7 +1452,7 @@ class Everblock extends Module
             'class' => 'btn btn-light',
             'icon' => 'process-icon-refresh',
             'title' => $this->l('Migrate URLS'),
-            'tab' => 'advanced',
+            'tab' => 'settings',
         ];
 
         $form['form']['buttons'][] = [
@@ -1463,7 +1461,7 @@ class Everblock extends Module
             'class' => 'btn btn-light',
             'icon' => 'process-icon-refresh',
             'title' => $this->l('Create fake products'),
-            'tab' => 'advanced',
+            'tab' => 'settings',
         ];
 
         $stores = Store::getStores((int) $this->context->language->id);
@@ -1491,9 +1489,40 @@ class Everblock extends Module
                 'html_content' => '<span id="everblock_holiday"></span>',
             ]);
             foreach ($holidayInputs as $input) {
-                $input['tab'] = 'advanced';
+                $input['tab'] = 'holiday';
                 $form['form']['input'][] = $input;
             }
+        }
+
+        $cronLinks = [];
+        $cronToken = $this->encrypt($this->name . '/evercron');
+        foreach ($this->allowedActions as $action) {
+            $cronLinks[$action] = $this->context->link->getModuleLink(
+                $this->name,
+                'cron',
+                [
+                    'action' => $action,
+                    'evertoken' => $cronToken,
+                ]
+            );
+        }
+
+        if (!empty($cronLinks)) {
+            $cronHtml = '<div class="everblock-cron-links">';
+            foreach ($cronLinks as $action => $link) {
+                $cronHtml .= '<p><a class="btn btn-info" target="_blank" rel="noopener noreferrer" href="' .
+                    htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '">' .
+                    htmlspecialchars($this->l('Cron for'), ENT_QUOTES, 'UTF-8') . ' ' .
+                    htmlspecialchars($action, ENT_QUOTES, 'UTF-8') . '</a></p>';
+            }
+            $cronHtml .= '</div>';
+
+            $form['form']['input'][] = [
+                'type' => 'html',
+                'name' => 'everblock_cron_links',
+                'html_content' => $cronHtml,
+                'tab' => 'cron',
+            ];
         }
 
         return [$form];
