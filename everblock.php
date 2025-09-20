@@ -1330,12 +1330,14 @@ class Everblock extends Module
                 $form['form']['input'][] = $input;
             }
 
-            $form['form']['buttons'][] = [
-                'name' => 'submitUploadSvg',
-                'type' => 'submit',
-                'class' => 'btn btn-default pull-right',
-                'icon' => 'process-icon-download',
-                'title' => $this->l('Upload SVG'),
+            $form['form']['input'][] = [
+                'type' => 'html',
+                'name' => 'submitUploadSvgButton',
+                'html_content' => sprintf(
+                    '<button type="submit" name="%s" class="btn btn-default pull-right"><i class="process-icon-download"></i> %s</button>',
+                    'submitUploadSvg',
+                    htmlspecialchars($this->l('Upload SVG'), ENT_QUOTES, 'UTF-8')
+                ),
                 'tab' => 'prettyblock',
             ];
         }
@@ -1362,20 +1364,16 @@ class Everblock extends Module
             $form['form']['input'][] = $input;
         }
 
-        $importButtons = [
-            [
-                'name' => 'submitUploadTabsFile',
-                'type' => 'submit',
-                'class' => 'btn btn-default pull-right',
-                'icon' => 'process-icon-download',
-                'title' => $this->l('Upload file'),
-            ],
+        $form['form']['input'][] = [
+            'type' => 'html',
+            'name' => 'submitUploadTabsFileButton',
+            'html_content' => sprintf(
+                '<button type="submit" name="%s" class="btn btn-default pull-right"><i class="process-icon-download"></i> %s</button>',
+                'submitUploadTabsFile',
+                htmlspecialchars($this->l('Upload file'), ENT_QUOTES, 'UTF-8')
+            ),
+            'tab' => 'files',
         ];
-
-        foreach ($importButtons as $button) {
-            $button['tab'] = 'files';
-            $form['form']['buttons'][] = $button;
-        }
 
         $advancedInputs = [
             [
