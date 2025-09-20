@@ -436,6 +436,28 @@ class AdminEverBlockController extends ModuleAdminController
                         'tab' => 'general',
                     ],
                     [
+                        'type' => 'switch',
+                        'label' => $this->l('Active'),
+                        'desc' => $this->l('Enable this block ?'),
+                        'hint' => $this->l('Only active blocks will be shown'),
+                        'name' => 'active',
+                        'bool' => true,
+                        'lang' => false,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Activate'),
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Desactivate'),
+                            ],
+                        ],
+                        'tab' => 'general',
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('Devices management'),
                         'desc' => $this->l('Please specify the device on which the block should be displayed'),
@@ -456,7 +478,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'values' => Group::getGroups($this->context->language->id),
                         'desc' => $this->l('Block will be shown to these groups'),
                         'hint' => $this->l('Please select at least one customer group'),
-                        'required' => true,
+                        'required' => false,
                         'tab' => 'targeting',
                     ],
                     [
@@ -771,7 +793,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'label' => $this->l('Block position'),
                         'desc' => $this->l('Enter block position number'),
                         'hint' => $this->l('Blocks will be ordered using this number'),
-                        'required' => true,
+                        'required' => false,
                         'name' => 'position',
                         'lang' => false,
                         'tab' => 'display',
@@ -832,28 +854,6 @@ class AdminEverBlockController extends ModuleAdminController
                         'desc' => $this->l('Date block will end'),
                         'hint' => $this->l('Leave empty for no use'),
                         'name' => 'date_end',
-                        'tab' => 'schedule',
-                    ],
-                    [
-                        'type' => 'switch',
-                        'label' => $this->l('Active'),
-                        'desc' => $this->l('Enable this block ?'),
-                        'hint' => $this->l('Only active blocks will be shown'),
-                        'name' => 'active',
-                        'bool' => true,
-                        'lang' => false,
-                        'values' => [
-                            [
-                                'id' => 'active_on',
-                                'value' => 1,
-                                'label' => $this->l('Activate'),
-                            ],
-                            [
-                                'id' => 'active_off',
-                                'value' => 0,
-                                'label' => $this->l('Desactivate'),
-                            ],
-                        ],
                         'tab' => 'schedule',
                     ],
                 ],
@@ -963,7 +963,7 @@ class AdminEverBlockController extends ModuleAdminController
                 'obfuscate_link' => (!empty(Tools::getValue('obfuscate_link')))
                 ? Tools::getValue('obfuscate_link')
                 : $obj->obfuscate_link,
-                'add_container' => (!empty(Tools::getValue('add_container')))
+                'add_container' => (Tools::getValue('add_container') !== '')
                 ? Tools::getValue('add_container')
                 : $obj->add_container,
                 'lazyload' => (!empty(Tools::getValue('lazyload')))
@@ -1071,9 +1071,9 @@ class AdminEverBlockController extends ModuleAdminController
                 'obfuscate_link' => (!empty(Tools::getValue('obfuscate_link')))
                 ? Tools::getValue('obfuscate_link')
                 : '',
-                'add_container' => (!empty(Tools::getValue('add_container')))
+                'add_container' => (Tools::getValue('add_container') !== '')
                 ? Tools::getValue('add_container')
-                : '',
+                : '1',
                 'lazyload' => (!empty(Tools::getValue('lazyload')))
                 ? Tools::getValue('lazyload')
                 : '',
