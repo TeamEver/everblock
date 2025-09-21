@@ -29,7 +29,7 @@ use Currency;
 use Db;
 use DbQuery;
 use Everblock\Tools\Service\ImportFile;
-use EverblockCache;
+use Everblock\Tools\Service\EverblockCache;
 use EverblockTools;
 use Language;
 use Module;

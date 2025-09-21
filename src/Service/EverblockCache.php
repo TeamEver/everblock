@@ -17,11 +17,21 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
+namespace Everblock\Tools\Service;
+
+use Cache;
+use Configuration;
+use Context;
+use Exception;
+use PrestaShopLogger;
+use Tools;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class EverblockCache extends ObjectModel
+class EverblockCache
 {
     protected const TTL = 86400; // 24 hours
     protected static function useNativeCache(): bool
