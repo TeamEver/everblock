@@ -110,6 +110,17 @@ class Everblock extends Module
         Configuration::updateValue('EVER_SOLDOUT_COLOR', '#ff0000');
         Configuration::updateValue('EVER_SOLDOUT_TEXTCOLOR', '#ffffff');
         Configuration::updateValue('EVERINSTA_SHOW_CAPTION', 0);
+        Configuration::updateValue('EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE', 2097152);
+        Configuration::updateValue(
+            'EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS',
+            json_encode(['pdf', 'jpg', 'jpeg', 'png']),
+            true
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES',
+            json_encode(['application/pdf', 'image/jpeg', 'image/png']),
+            true
+        );
         Configuration::updateValue(
             'EVERPS_FEATURES_AS_FLAGS',
             json_encode([1]),
@@ -207,6 +218,9 @@ class Everblock extends Module
         Configuration::deleteByName('EVER_SOLDOUT_TEXTCOLOR');
         Configuration::deleteByName('EVERBLOCK_SOLDOUT_FLAG');
         Configuration::deleteByName('EVERINSTA_SHOW_CAPTION');
+        Configuration::deleteByName('EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE');
+        Configuration::deleteByName('EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS');
+        Configuration::deleteByName('EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES');
         Configuration::deleteByName('EVERBLOCK_LOW_STOCK_THRESHOLD');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
