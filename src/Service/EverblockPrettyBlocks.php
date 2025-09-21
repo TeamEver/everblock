@@ -17,13 +17,24 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
+namespace Everblock\Tools\Service;
+
+use Configuration;
+use EverBlockClass;
 use Everblock\Tools\Service\EverblockCache;
+use EverblockShortcode;
+use EverblockTools;
+use Hook;
+use Module;
+use PrettyBlocksModel;
+use Tools;
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class EverblockPrettyBlocks extends ObjectModel
+class EverblockPrettyBlocks
 {
     private const MEDIA_PATH = '$/img/cms/prettyblocks/';
 

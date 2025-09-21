@@ -73,7 +73,7 @@ return [
     'models/EverblockFaq.php',
     'models/EverblockFlagsClass.php',
     'models/EverblockModal.php',
-    'models/EverblockPrettyBlocks.php',
+    'src/Service/EverblockPrettyBlocks.php',
     'models/EverblockShortcode.php',
     'models/EverblockTabsClass.php',
     'models/EverblockTools.php',

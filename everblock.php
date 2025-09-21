@@ -28,11 +28,11 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTabsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPrettyBlocks.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockCheckoutStep.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\ImportFile;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
