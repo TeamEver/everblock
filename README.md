@@ -148,7 +148,7 @@ Run `php bin/console everblock:tools:execute --list` to display the maintenance 
 
 ## Media directory hygiene
 
-Only image and media assets should be stored inside `views/img/`. The automated clean-up run by `EverblockTools::cleanObsoleteFiles()` will remove any executable files (such as `.php`, `.phtml` or `.phar`) that are found there, even if they match patterns from `.gitignore`.
+Only image and media assets should be stored inside `views/img/`. The automated clean-up run by `EverblockTools::cleanObsoleteFiles()` will remove any executable files (such as `.php`, `.phtml` or `.phar`) that are found there, even if they match patterns from `.gitignore`, while preserving placeholder `index.php` files.
 
 | Action | Label | Description | Parameters |
 | --- | --- | --- | --- |

@@ -4681,6 +4681,9 @@ class EverblockTools extends ObjectModel
             $relativePath = str_replace('\\', '/', substr($fileInfo->getPathname(), strlen($moduleDir)));
             $extension = strtolower((string) pathinfo($relativePath, PATHINFO_EXTENSION));
             if (in_array($extension, $executableExtensions, true)) {
+                if (basename($relativePath) === 'index.php') {
+                    continue;
+                }
                 if (!isset($allowed[$relativePath])) {
                     @unlink($fileInfo->getPathname());
                 }
