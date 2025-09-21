@@ -68,7 +68,7 @@ return [
     'mails/uk/evercontact.txt',
     'mails/uk/index.php',
     'src/Service/EverblockCache.php',
-    'models/EverblockCheckoutStep.php',
+    'src/Checkout/EverblockCheckoutStep.php',
     'models/EverblockClass.php',
     'models/EverblockFaq.php',
     'models/EverblockFlagsClass.php',

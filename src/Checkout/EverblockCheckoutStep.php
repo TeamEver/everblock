@@ -1,8 +1,5 @@
 <?php
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
 /**
  * 2019-2025 Team Ever
  *
@@ -21,7 +18,18 @@ if (!defined('_PS_VERSION_')) {
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
+namespace Everblock\Tools\Checkout;
+
+use Context;
+use Configuration;
+use Everblock;
+use Hook;
+use PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep;
 use Symfony\Component\Translation\TranslatorInterface;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 class EverblockCheckoutStep extends AbstractCheckoutStep
 {
