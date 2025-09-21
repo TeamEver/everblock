@@ -4672,11 +4672,24 @@ class EverblockTools extends ObjectModel
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($moduleDir, RecursiveDirectoryIterator::SKIP_DOTS)
         );
+        $executableExtensions = ['php', 'phtml', 'phar'];
+
         foreach ($iterator as $fileInfo) {
             if ($fileInfo->isDir()) {
                 continue;
             }
             $relativePath = str_replace('\\', '/', substr($fileInfo->getPathname(), strlen($moduleDir)));
+            $extension = strtolower((string) pathinfo($relativePath, PATHINFO_EXTENSION));
+            if (in_array($extension, $executableExtensions, true)) {
+                if (basename($relativePath) === 'index.php') {
+                    continue;
+                }
+                if (!isset($allowed[$relativePath])) {
+                    @unlink($fileInfo->getPathname());
+                }
+
+                continue;
+            }
             $skip = false;
             foreach ($ignorePatterns as $pattern) {
                 if (fnmatch($pattern, $relativePath)) {
