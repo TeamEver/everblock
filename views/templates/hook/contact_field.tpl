@@ -25,7 +25,9 @@
 {assign var="class" value=$field.class}
 
 {if $type == 'sento'}
-  <input type="hidden" name="everHide" value="{$label|base64_encode}">
+  {assign var="secureValue" value=$field.secure_value|default:''}
+  {assign var="rawLabel" value=$field.raw_label|default:''}
+  <input type="hidden" name="everHide" value="{if $secureValue}{$secureValue|escape:'htmlall':'UTF-8'}{else}{$rawLabel|base64_encode}{/if}">
 {elseif in_array($type, ['password','tel','email','datetime-local','date','text','number'])}
   <div class="form-group mb-4{if $class} {$class|escape:'htmlall':'UTF-8'}{/if}">
     <label for="{$id}" class="d-none">{$label nofilter}</label>

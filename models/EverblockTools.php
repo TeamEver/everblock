@@ -1812,9 +1812,11 @@ class EverblockTools extends ObjectModel
         }
 
         $uid = ++$uniqueIdentifier;
+        $rawLabel = isset($attributes['label']) ? $attributes['label'] : '';
         $field = [
             'type' => htmlspecialchars($attributes['type'], ENT_QUOTES),
-            'label' => htmlspecialchars($attributes['label'], ENT_QUOTES),
+            'label' => htmlspecialchars($rawLabel, ENT_QUOTES),
+            'raw_label' => $rawLabel,
             'value' => $attributes['value'] ?? null,
             'values' => isset($attributes['values']) ? explode(',', $attributes['values']) : [],
             'required' => isset($attributes['required']) && strtolower($attributes['required']) === 'true',
@@ -1822,6 +1824,24 @@ class EverblockTools extends ObjectModel
             'unique' => $uid,
             'id' => 'everfield_' . $uid,
         ];
+
+        if ($field['type'] === 'sento') {
+            $emailCandidates = array_filter(array_map('trim', explode(',', (string) $rawLabel)));
+            $validEmails = [];
+
+            foreach ($emailCandidates as $candidate) {
+                if (Validate::isEmail($candidate)) {
+                    $validEmails[] = $candidate;
+                }
+            }
+
+            if (!empty($validEmails)) {
+                $emailString = implode(',', $validEmails);
+                $encodedEmails = base64_encode($emailString);
+                $signature = Tools::encrypt($emailString . '|' . (int) $context->shop->id);
+                $field['secure_value'] = $encodedEmails . '::' . $signature;
+            }
+        }
 
         $context->smarty->assign('field', $field);
         $templatePath = static::getTemplatePath('hook/contact_field.tpl', $module);

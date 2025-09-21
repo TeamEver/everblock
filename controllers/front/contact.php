@@ -110,11 +110,27 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
         $mailRecipient = Configuration::get('PS_SHOP_EMAIL');
 
         if ($everHideValue = Tools::getValue('everHide')) {
-            $formMail = base64_decode($everHideValue);
-            $mailList = array_map('trim', explode(',', $formMail));
-            $validMails = array_filter($mailList, function($email) {
+            $mailList = [];
+
+            if (strpos($everHideValue, '::') !== false) {
+                list($encodedRecipients, $signature) = explode('::', $everHideValue, 2);
+                $decodedRecipients = base64_decode($encodedRecipients, true);
+
+                if ($decodedRecipients !== false && $signature !== '') {
+                    $expectedSignature = Tools::encrypt($decodedRecipients . '|' . (int) $this->context->shop->id);
+
+                    if ($expectedSignature
+                        && Tools::strlen($expectedSignature) === Tools::strlen($signature)
+                        && hash_equals($expectedSignature, $signature)
+                    ) {
+                        $mailList = array_filter(array_map('trim', explode(',', $decodedRecipients)));
+                    }
+                }
+            }
+
+            $validMails = array_values(array_unique(array_filter($mailList, function ($email) {
                 return Validate::isEmail($email);
-            });
+            })));
 
             if (!empty($validMails)) {
                 $mailRecipient = $validMails;
