@@ -832,6 +832,37 @@ class Everblock extends Module
             ],
         ];
 
+        $docTemplates = [
+            'settings' => 'settings.tpl',
+            'wordpress' => 'wordpress.tpl',
+            'google_maps' => 'google_maps.tpl',
+            'migration' => 'migration.tpl',
+            'tools' => 'tools.tpl',
+            'files' => 'files.tpl',
+            'flags' => 'flags.tpl',
+            'holiday' => 'holiday.tpl',
+            'cron' => 'cron.tpl',
+        ];
+
+        if ($isPrettyBlocksEnabled) {
+            $docTemplates['prettyblock'] = 'prettyblock.tpl';
+        }
+
+        foreach ($docTemplates as $tab => $template) {
+            $docPath = $this->local_path . 'views/templates/admin/config/docs/' . $template;
+
+            if (!Tools::file_exists_cache($docPath)) {
+                continue;
+            }
+
+            $form['form']['input'][] = [
+                'type' => 'html',
+                'name' => 'documentation_' . $tab,
+                'tab' => $tab,
+                'html_content' => $this->context->smarty->fetch($docPath),
+            ];
+        }
+
         $form['form']['input'][] = [
             'type' => 'html',
             'name' => 'anchor_everblock_tools',
