@@ -356,6 +356,31 @@ class AdminEverBlockController extends ModuleAdminController
         $everblock_obj = $this->loadObject(true);
         $everblock_obj->categories = json_decode($everblock_obj->categories);
 
+        $docTemplates = [
+            'general' => 'general.tpl',
+            'targeting' => 'targeting.tpl',
+            'display' => 'display.tpl',
+            'modal' => 'modal.tpl',
+            'schedule' => 'schedule.tpl',
+        ];
+
+        $docInputs = [];
+
+        foreach ($docTemplates as $tab => $template) {
+            $docPath = _PS_MODULE_DIR_ . 'everblock/views/templates/admin/block/docs/' . $template;
+
+            if (!Tools::file_exists_cache($docPath)) {
+                continue;
+            }
+
+            $docInputs[] = [
+                'type' => 'html',
+                'name' => 'documentation_' . $tab,
+                'tab' => $tab,
+                'html_content' => $this->context->smarty->fetch($docPath),
+            ];
+        }
+
         // Building the Add/Edit form
         $fields_form[] = [
             'form' => [
@@ -381,7 +406,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'title' => $this->l('Save & stay'),
                     ],
                 ],
-                'input' => [
+                'input' => array_merge($docInputs, [
                     [
                         'type' => 'hidden',
                         'name' => $this->identifier,
@@ -856,7 +881,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'date_end',
                         'tab' => 'schedule',
                     ],
-                ],
+                ]),
             ],
         ];
         $helper = new HelperForm();
