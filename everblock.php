@@ -128,6 +128,7 @@ class Everblock extends Module
         );
         Configuration::updateValue('EVERBLOCK_SOLDOUT_FLAG', 0);
         Configuration::updateValue('EVERBLOCK_LOW_STOCK_THRESHOLD', 5);
+        Configuration::updateValue('EVERBLOCK_STORELOCATOR_TOGGLE', 0);
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -222,6 +223,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS');
         Configuration::deleteByName('EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES');
         Configuration::deleteByName('EVERBLOCK_LOW_STOCK_THRESHOLD');
+        Configuration::deleteByName('EVERBLOCK_STORELOCATOR_TOGGLE');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlock')
@@ -1150,6 +1152,25 @@ class Everblock extends Module
                 'delete_url' => $this->context->link->getAdminLink('AdminModules')
                     . '&configure=' . $this->name . '&deleteEVERBLOCK_MARKER_ICON=1',
             ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Display map toggle button'),
+                'desc' => $this->l('Add a button next to the store search to hide or show the map.'),
+                'name' => 'EVERBLOCK_STORELOCATOR_TOGGLE',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'everblock_storelocator_toggle_on',
+                        'value' => 1,
+                        'label' => $this->l('Enabled'),
+                    ],
+                    [
+                        'id' => 'everblock_storelocator_toggle_off',
+                        'value' => 0,
+                        'label' => $this->l('Disabled'),
+                    ],
+                ],
+            ],
         ];
 
         foreach ($googleMapsInputs as $input) {
@@ -1644,6 +1665,7 @@ class Everblock extends Module
             'EVERWP_POST_NBR' => Configuration::get('EVERWP_POST_NBR'),
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERBLOCK_MARKER_ICON' => Configuration::get('EVERBLOCK_MARKER_ICON'),
+            'EVERBLOCK_STORELOCATOR_TOGGLE' => Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
@@ -1916,6 +1938,10 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_GMAP_KEY',
             Tools::getValue('EVERBLOCK_GMAP_KEY')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_STORELOCATOR_TOGGLE',
+            Tools::getValue('EVERBLOCK_STORELOCATOR_TOGGLE')
         );
         if (isset($_FILES['EVERBLOCK_MARKER_ICON'])
             && isset($_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'])
