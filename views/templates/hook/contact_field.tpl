@@ -30,17 +30,17 @@
   <input type="hidden" name="everHide" value="{if $secureValue}{$secureValue|escape:'htmlall':'UTF-8'}{else}{$rawLabel|base64_encode}{/if}">
 {elseif in_array($type, ['password','tel','email','datetime-local','date','text','number'])}
   <div class="form-group mb-4{if $class} {$class|escape:'htmlall':'UTF-8'}{/if}">
-    <label for="{$id}" class="d-none">{$label nofilter}</label>
+    <label for="{$id}" class="visually-hidden">{$label nofilter}</label>
     <input type="{$type}" class="form-control" name="{$label}" id="{$id}" placeholder="{$label}"{if $value} value="{$value|escape:'htmlall':'UTF-8'}"{/if}{if $required} required{/if}>
   </div>
 {elseif $type == 'textarea'}
   <div class="form-group mb-4{if $class} {$class|escape:'htmlall':'UTF-8'}{/if}">
-    <label for="{$id}" class="d-none">{$label nofilter}</label>
+    <label for="{$id}" class="visually-hidden">{$label nofilter}</label>
     <textarea class="form-control" name="{$label}" id="{$id}" placeholder="{$label}"{if $required} required{/if}>{$value|escape:'htmlall':'UTF-8'}</textarea>
   </div>
 {elseif $type == 'select'}
   <div class="form-group mb-4{if $class} {$class|escape:'htmlall':'UTF-8'}{/if}">
-    <label for="{$id}" class="d-none">{$label nofilter}</label>
+    <label for="{$id}" class="visually-hidden">{$label nofilter}</label>
     <select class="form-control" name="{$label}" id="{$id}"{if $required} required{/if}>
       <option value="" disabled selected>{$label}</option>
       {foreach from=$values item=val}
@@ -51,7 +51,7 @@
   </div>
 {elseif $type == 'multiselect'}
   <div class="form-group mb-4{if $class} {$class|escape:'htmlall':'UTF-8'}{/if}">
-    <label for="{$id}" class="d-none">{$label nofilter}</label>
+    <label for="{$id}" class="visually-hidden">{$label nofilter}</label>
     {assign var='selectedValues' value=","|explode:$value}
     <select class="form-control" name="{$label}[]" id="{$id}" multiple{if $required} required{/if}>
       {foreach from=$values item=val}
@@ -62,36 +62,40 @@
   </div>
 {elseif $type == 'radio'}
   <div class="form-group mb-4{if $class} {$class|escape:'htmlall':'UTF-8'}{/if}">
-    <label>{$label nofilter}</label>
-    <div class="form-check">
-      {foreach from=$values item=val}
-        {assign var='trimmed' value=$val|trim}
-        {assign var='radioId' value="radio_`$unique`_`$trimmed`"}
-        <div class="form-check-inline">
-          <input type="radio" class="form-check-input" name="{$label}" value="{$trimmed}" id="{$radioId}"{if $value == $trimmed} checked{/if}{if $required} required{/if}>
-          <label class="form-check-label" for="{$radioId}">{$trimmed}</label>
-        </div>
-      {/foreach}
-    </div>
+    <fieldset class="form-group border-0 p-0 m-0">
+      <legend class="col-form-label pt-0 mb-2">{$label nofilter}</legend>
+      <div class="form-check">
+        {foreach from=$values item=val}
+          {assign var='trimmed' value=$val|trim}
+          {assign var='radioId' value="radio_`$unique`_`$trimmed`"}
+          <div class="form-check-inline">
+            <input type="radio" class="form-check-input" name="{$label}" value="{$trimmed}" id="{$radioId}"{if $value == $trimmed} checked{/if}{if $required} required{/if}>
+            <label class="form-check-label" for="{$radioId}">{$trimmed}</label>
+          </div>
+        {/foreach}
+      </div>
+    </fieldset>
   </div>
 {elseif $type == 'checkbox'}
   <div class="form-group mb-4{if $class} {$class|escape:'htmlall':'UTF-8'}{/if}">
-    <label class="d-none">{$label nofilter}</label>
-    <div class="form-check">
-      {assign var='checkedValues' value=","|explode:$value}
-      {foreach from=$values item=val}
-        {assign var='trimmed' value=$val|trim}
-        {assign var='checkboxId' value="checkbox_`$unique`_`$trimmed`"}
-        <div class="form-check-inline">
-          <input type="checkbox" class="form-check-input" name="{$label}[]" value="{$trimmed}" id="{$checkboxId}"{if in_array($trimmed,$checkedValues)} checked{/if}{if $required} required{/if}>
-          <label class="form-check-label" for="{$checkboxId}">{$trimmed}</label>
-        </div>
-      {/foreach}
-    </div>
+    <fieldset class="form-group border-0 p-0 m-0">
+      <legend class="col-form-label pt-0 mb-2">{$label nofilter}</legend>
+      <div class="form-check">
+        {assign var='checkedValues' value=","|explode:$value}
+        {foreach from=$values item=val}
+          {assign var='trimmed' value=$val|trim}
+          {assign var='checkboxId' value="checkbox_`$unique`_`$trimmed`"}
+          <div class="form-check-inline">
+            <input type="checkbox" class="form-check-input" name="{$label}[]" value="{$trimmed}" id="{$checkboxId}"{if in_array($trimmed,$checkedValues)} checked{/if}{if $required} required{/if}>
+            <label class="form-check-label" for="{$checkboxId}">{$trimmed}</label>
+          </div>
+        {/foreach}
+      </div>
+    </fieldset>
   </div>
 {elseif $type == 'file'}
   <div class="form-group mb-4{if $class} {$class|escape:'htmlall':'UTF-8'}{/if}">
-    <label for="{$id}" class="d-none">{$label nofilter}</label>
+    <label for="{$id}" class="visually-hidden">{$label nofilter}</label>
     <input type="file" class="form-control-file" name="{$label}" id="{$id}"{if $required} required{/if}>
   </div>
 {elseif $type == 'submit'}
