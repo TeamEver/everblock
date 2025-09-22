@@ -605,6 +605,19 @@
     border: 1px solid #4d1e168a;
 }
 
+#everblock-storelocator-wrapper.map-hidden #pane-map {
+    display: none !important;
+}
+
+#everblock-storelocator-wrapper.map-hidden #pane-list {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+#everblock-storelocator-wrapper.map-hidden #storeLocatorTabs {
+    display: none !important;
+}
+
 @media (min-width: 768px) {
     #everblock-storelocator {
         /*    width: 50%!important;*/

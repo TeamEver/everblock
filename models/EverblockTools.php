@@ -3328,6 +3328,7 @@ class EverblockTools extends ObjectModel
             $smarty->assign([
                 'everblock_stores' => $stores,
                 'has_prettyblocks' => $hasPrettyblocks,
+                'everblock_show_map_toggle' => (bool) Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
             ]);
             $storeLocatorContent = $smarty->fetch($templatePath);
             $txt = str_replace('[storelocator]', $storeLocatorContent, $txt);
@@ -3538,6 +3539,75 @@ class EverblockTools extends ObjectModel
                                     infoWindow.open(map, markerObj);
                                 }
                             }
+                        });
+                    }
+
+                    var mapToggleBtn = document.getElementById("store_toggle_map");
+                    if (mapToggleBtn) {
+                        var wrapper = document.getElementById("everblock-storelocator-wrapper");
+                        var mapPane = document.getElementById("pane-map");
+                        var listPane = document.getElementById("pane-list");
+                        var tabs = document.getElementById("storeLocatorTabs");
+                        var navMapBtn = document.getElementById("tab-map");
+                        var navListBtn = document.getElementById("tab-list");
+                        var hideLabel = mapToggleBtn.getAttribute("data-label-hide") || "";
+                        var showLabel = mapToggleBtn.getAttribute("data-label-show") || "";
+
+                        function setMapVisibility(visible) {
+                            if (!wrapper || !mapPane || !listPane) {
+                                return;
+                            }
+                            if (visible) {
+                                wrapper.classList.remove("map-hidden");
+                                if (hideLabel) {
+                                    mapToggleBtn.textContent = hideLabel;
+                                }
+                                mapToggleBtn.setAttribute("aria-expanded", "true");
+                                mapToggleBtn.dataset.state = "visible";
+                                if (tabs) {
+                                    tabs.classList.remove("d-none");
+                                }
+                                if (mapPane.classList.contains("fade")) {
+                                    mapPane.classList.add("show", "active");
+                                    listPane.classList.remove("show", "active");
+                                }
+                                if (navMapBtn && navListBtn) {
+                                    navMapBtn.classList.add("active");
+                                    navMapBtn.setAttribute("aria-selected", "true");
+                                    navListBtn.classList.remove("active");
+                                    navListBtn.setAttribute("aria-selected", "false");
+                                }
+                                if (typeof google !== "undefined" && map) {
+                                    setTimeout(function () {
+                                        google.maps.event.trigger(map, "resize");
+                                    }, 50);
+                                }
+                            } else {
+                                wrapper.classList.add("map-hidden");
+                                if (showLabel) {
+                                    mapToggleBtn.textContent = showLabel;
+                                }
+                                mapToggleBtn.setAttribute("aria-expanded", "false");
+                                mapToggleBtn.dataset.state = "hidden";
+                                if (tabs) {
+                                    tabs.classList.add("d-none");
+                                }
+                                if (mapPane.classList.contains("fade")) {
+                                    mapPane.classList.remove("show", "active");
+                                    listPane.classList.add("show", "active");
+                                }
+                                if (navMapBtn && navListBtn) {
+                                    navMapBtn.classList.remove("active");
+                                    navMapBtn.setAttribute("aria-selected", "false");
+                                    navListBtn.classList.add("active");
+                                    navListBtn.setAttribute("aria-selected", "true");
+                                }
+                            }
+                        }
+
+                        mapToggleBtn.addEventListener("click", function () {
+                            var isVisible = mapToggleBtn.dataset.state !== "hidden";
+                            setMapVisibility(!isVisible);
                         });
                     }
                 });

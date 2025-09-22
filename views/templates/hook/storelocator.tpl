@@ -18,9 +18,22 @@
 <div id="store-search-block" class="mb-3 text-center mx-auto" style="max-width:800px;">
   <div class="d-flex flex-column flex-md-row align-items-center justify-content-center">
     <label for="store_search" class="me-md-2 mb-2 mb-md-0 fw-bold text-nowrap">{l s='Find a store' mod='everblock'}</label>
-    <div class="input-group mb-2 mb-md-0 w-100">
-      <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
-      <button type="button" class="btn btn-primary rounded-5 ms-3" id="store_search_btn">{l s='Search' mod='everblock'}</button>
+    <div class="d-flex flex-column flex-md-row align-items-stretch w-100">
+      <div class="input-group mb-2 mb-md-0 w-100 flex-grow-1">
+        <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
+        <button type="button" class="btn btn-primary rounded-5 ms-3" id="store_search_btn">{l s='Search' mod='everblock'}</button>
+      </div>
+      {if $everblock_show_map_toggle}
+        <button type="button"
+                id="store_toggle_map"
+                class="btn btn-outline-secondary w-100 w-md-auto mt-2 mt-md-0 ms-md-3"
+                data-state="visible"
+                data-label-hide="{l s='Hide map' mod='everblock'}"
+                data-label-show="{l s='Show map' mod='everblock'}"
+                aria-expanded="true">
+          {l s='Hide map' mod='everblock'}
+        </button>
+      {/if}
     </div>
   </div>
 </div>
