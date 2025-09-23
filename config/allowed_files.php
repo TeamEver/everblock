@@ -158,7 +158,7 @@ return [
     'views/templates/admin/config/docs/prettyblock.tpl',
     'views/templates/admin/config/docs/settings.tpl',
     'views/templates/admin/config/docs/tools.tpl',
-    'views/templates/admin/config/docs/wordpress.tpl',
+    'views/templates/admin/config/docs/meta_tools.tpl',
     'views/templates/admin/block/docs/display.tpl',
     'views/templates/admin/block/docs/general.tpl',
     'views/templates/admin/block/docs/modal.tpl',
