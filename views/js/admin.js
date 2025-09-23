@@ -29,4 +29,24 @@ $(document).ready(function() {
     theme: "dracula",
     lineNumbers: true
   });
+
+  // Ensure documentation cards are displayed at the bottom of each tab in the
+  // module configuration form. HelperForm renders documentation inputs as
+  // ``type => html`` fields wrapped in a ``form-group`` element. We move that
+  // wrapper to the end of the tab content so that tips are displayed after all
+  // configuration fields, which matches the expected layout.
+  $('.tab-content .tab-pane').each(function() {
+    const $wrapper = $(this).find('.form-wrapper');
+
+    if (!$wrapper.length) {
+      return;
+    }
+
+    $wrapper
+      .find('.form-group')
+      .filter(function() {
+        return $(this).find('.everblock-doc').length > 0;
+      })
+      .appendTo($wrapper);
+  });
 });
