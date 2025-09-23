@@ -127,8 +127,6 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
 
     public function renderList()
     {
-        $this->html = '';
-
         $this->addRowAction('edit');
         $this->addRowAction('delete');
         $this->toolbar_title = $this->l('Registered shortcodes');
@@ -141,16 +139,38 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
         }
         $lists = parent::renderList();
 
+        $moduleInstance = Module::getInstanceByName('everblock');
+        $displayUpgrade = $moduleInstance->checkLatestEverModuleVersion();
+
+        $notifications = '';
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
-                $this->html .= Tools::displayError($error);
+                $notifications .= Tools::displayError($error);
             }
         }
-        $this->html .= $lists;
-        $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/configure.tpl');
-        $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/footer.tpl');
+        if (is_array($this->confirmations) && count($this->confirmations)) {
+            foreach ($this->confirmations as $confirmation) {
+                $notifications .= $this->displayConfirmation($confirmation);
+            }
+        }
 
-        return $this->html;
+        $this->context->smarty->assign([
+            'everblock_notifications' => $notifications,
+            'everblock_form' => $lists,
+            'display_upgrade' => $displayUpgrade,
+        ]);
+
+        $content = $this->context->smarty->fetch(
+            _PS_MODULE_DIR_ . '/everblock/views/templates/admin/header.tpl'
+        );
+        $content .= $this->context->smarty->fetch(
+            _PS_MODULE_DIR_ . '/everblock/views/templates/admin/configure.tpl'
+        );
+        $content .= $this->context->smarty->fetch(
+            _PS_MODULE_DIR_ . '/everblock/views/templates/admin/footer.tpl'
+        );
+
+        return $content;
     }
 
     public function renderForm()
