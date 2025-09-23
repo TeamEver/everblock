@@ -755,9 +755,17 @@ class Everblock extends Module
             'everblock_form' => $this->renderForm(),
             'display_upgrade' => $displayUpgrade,
         ]);
-        return $this->context->smarty->fetch(
+        $output = $this->context->smarty->fetch(
+            $this->local_path . 'views/templates/admin/header.tpl'
+        );
+        $output .= $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/configure.tpl'
         );
+        $output .= $this->context->smarty->fetch(
+            $this->local_path . 'views/templates/admin/footer.tpl'
+        );
+
+        return $output;
     }
 
     protected function renderForm()

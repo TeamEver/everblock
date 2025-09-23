@@ -16,8 +16,6 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
-{include file='module:everblock/views/templates/admin/header.tpl'}
-
 {if isset($everblock_notifications) && $everblock_notifications}
     {$everblock_notifications nofilter}
 {/if}
@@ -29,5 +27,3 @@
 {if isset($everblock_form)}
     {$everblock_form nofilter}
 {/if}
-
-{include file='module:everblock/views/templates/admin/footer.tpl'}
