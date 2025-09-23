@@ -1,9 +1,9 @@
-{assign var='prettyblock_visibility' value=$block.settings.default.display_on|default:'all'}
+{assign var='prettyblock_visibility' value=$block.settings.display_on|default:'Mobile and desktop'}
 {assign var='prettyblock_visibility_class' value='' scope='parent'}
-{if $prettyblock_visibility === 'mobile'}
+{if $prettyblock_visibility === 'Mobile only'}
   {assign var='prettyblock_visibility_class' value=' everblock-visibility-mobile' scope='parent'}
-{elseif $prettyblock_visibility === 'desktop'}
+{elseif $prettyblock_visibility === 'Desktop only'}
   {assign var='prettyblock_visibility_class' value=' everblock-visibility-desktop' scope='parent'}
-{elseif $prettyblock_visibility === 'none'}
+{elseif $prettyblock_visibility === 'Nowhere'}
   {assign var='prettyblock_visibility_class' value=' everblock-visibility-none' scope='parent'}
 {/if}
