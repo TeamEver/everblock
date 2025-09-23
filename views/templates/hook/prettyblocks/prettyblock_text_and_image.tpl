@@ -2,7 +2,9 @@
  * 2019-2025 Team Ever
  * LICENSE INFO
 *}
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}">
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}">
   {if $block.settings.default.force_full_width}
     <div class="row gx-0 no-gutters">
   {elseif $block.settings.default.container}

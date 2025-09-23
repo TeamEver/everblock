@@ -15,6 +15,8 @@
  * @copyright 2019-2025 Team Ever
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+
 {assign var=mysteryBoxes value=$block.states|default:[]}
 {assign var=isEmployee value=false}
 {if isset($everblock_is_employee) && $everblock_is_employee}
@@ -50,7 +52,7 @@
 {elseif $block.settings.default.container}
     {assign var=containerClass value='container'}
 {/if}
-<div id="block-{$block.id_prettyblocks}" class="{$containerClass}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+<div id="block-{$block.id_prettyblocks}" class="{$containerClass}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
   {if $block.settings.default.force_full_width}
     <div class="row gx-0 no-gutters">
   {elseif $block.settings.default.container}

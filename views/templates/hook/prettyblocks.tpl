@@ -15,4 +15,21 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+<style>
+.everblock-visibility-none {
+  display: none !important;
+}
+
+@media (min-width: 992px) {
+  .everblock-visibility-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .everblock-visibility-desktop {
+    display: none !important;
+  }
+}
+</style>
 {widget name="prettyblocks" zone_name="{$zone}{$objectName}{$idObj}"}

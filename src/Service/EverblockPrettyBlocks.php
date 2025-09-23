@@ -4372,11 +4372,47 @@ class EverblockPrettyBlocks
                     ],
                 ],
             ];
+            $blocks = self::addDisplaySettings($blocks, $module);
             $blocks = self::applyFileUploadPath($blocks);
             EverblockCache::cacheStore($cacheId, $blocks);
             return $blocks;
         }
         return EverblockCache::cacheRetrieve($cacheId);
+    }
+
+    private static function addDisplaySettings(array $blocks, Module $module): array
+    {
+        foreach ($blocks as &$block) {
+            if (!isset($block['config']) || !is_array($block['config'])) {
+                $block['config'] = [];
+            }
+
+            if (!isset($block['config']['fields']) || !is_array($block['config']['fields'])) {
+                $block['config']['fields'] = [];
+            }
+
+            if (isset($block['config']['fields']['display_on'])) {
+                continue;
+            }
+
+            $displayField = [
+                'display_on' => [
+                    'type' => 'select',
+                    'label' => $module->l('Display on'),
+                    'default' => 'all',
+                    'choices' => [
+                        'all' => $module->l('Mobile and desktop'),
+                        'mobile' => $module->l('Mobile only'),
+                        'desktop' => $module->l('Desktop only'),
+                        'none' => $module->l('Nowhere'),
+                    ],
+                ],
+            ];
+
+            $block['config']['fields'] = array_merge($displayField, $block['config']['fields']);
+        }
+
+        return $blocks;
     }
 
     private static function applyFileUploadPath(array $blocks): array
