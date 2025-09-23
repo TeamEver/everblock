@@ -197,6 +197,7 @@ return [
     'views/templates/hook/pdf.tpl',
     'views/templates/hook/prettyblocks.tpl',
     'views/templates/hook/prettyblocks/index.php',
+    'views/templates/hook/prettyblocks/_partials/visibility_class.tpl',
     'views/templates/hook/prettyblocks/prettyblock_accordeon.tpl',
     'views/templates/hook/prettyblocks/prettyblock_alert.tpl',
     'views/templates/hook/prettyblocks/prettyblock_button.tpl',

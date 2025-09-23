@@ -15,7 +15,9 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
   {if isset($block.states) && $block.states}
     <div class="{if $block.settings.center_cards}px-2 px-md-0 pb-2{else}overflow-auto px-2 px-md-0 pb-2{/if}">
       <div class="d-flex gap-3 pe-1{if $block.settings.center_cards} flex-wrap justify-content-center{else} flex-nowrap{/if}">

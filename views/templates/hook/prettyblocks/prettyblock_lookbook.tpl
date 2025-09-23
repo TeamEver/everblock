@@ -15,8 +15,10 @@
  * @copyright 2019-2025 Team Ever
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+
 {assign var=columns value=$block.settings.columns|default:'1'}
-<div class="prettyblock-lookbook columns-{$columns}">
+<div class="prettyblock-lookbook columns-{$columns}{$prettyblock_visibility_class}">
   <div class="lookbook-item">
     {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-before"}
   </div>
