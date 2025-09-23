@@ -65,14 +65,17 @@
             </a>
           {/if}
         </div>
-        {if $state.margin_left_mobile || $state.margin_right_mobile || $state.margin_top_mobile || $state.margin_bottom_mobile}
+        {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
+            (isset($state.margin_right_mobile) && $state.margin_right_mobile) ||
+            (isset($state.margin_top_mobile) && $state.margin_top_mobile) ||
+            (isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile)}
           <style>
             @media (max-width: 767px) {
               #block-{$block.id_prettyblocks}-{$key} {
-                {if $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall':'UTF-8'};{/if}
+                {if isset($state.margin_left_mobile) && $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall':'UTF-8'};{/if}
+                {if isset($state.margin_right_mobile) && $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall':'UTF-8'};{/if}
+                {if isset($state.margin_top_mobile) && $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall':'UTF-8'};{/if}
+                {if isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall':'UTF-8'};{/if}
               }
             }
           </style>
@@ -121,14 +124,17 @@
             </a>
           {/if}
         </div>
-        {if $state.margin_left_mobile || $state.margin_right_mobile || $state.margin_top_mobile || $state.margin_bottom_mobile}
+        {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
+            (isset($state.margin_right_mobile) && $state.margin_right_mobile) ||
+            (isset($state.margin_top_mobile) && $state.margin_top_mobile) ||
+            (isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile)}
           <style>
             @media (max-width: 767px) {
               #block-{$block.id_prettyblocks}-{$key} {
-                {if $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall':'UTF-8'};{/if}
+                {if isset($state.margin_left_mobile) && $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall':'UTF-8'};{/if}
+                {if isset($state.margin_right_mobile) && $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall':'UTF-8'};{/if}
+                {if isset($state.margin_top_mobile) && $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall':'UTF-8'};{/if}
+                {if isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall':'UTF-8'};{/if}
               }
             }
           </style>
