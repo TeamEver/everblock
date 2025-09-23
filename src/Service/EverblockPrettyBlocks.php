@@ -74,6 +74,18 @@ class EverblockPrettyBlocks
         return $fields;
     }
 
+    private static function getColumnChoices(Module $module): array
+    {
+        return [
+            '1' => $module->l('1 column'),
+            '2' => $module->l('2 columns'),
+            '3' => $module->l('3 columns'),
+            '4' => $module->l('4 columns'),
+            '5' => $module->l('5 columns'),
+            '6' => $module->l('6 columns'),
+        ];
+    }
+
     public static function getEverPrettyBlocks($context)
     {
         $cacheId = 'EverblockPrettyBlocks_getEverPrettyBlocks_'
@@ -1558,6 +1570,24 @@ class EverblockPrettyBlocks
                             'type' => 'text',
                             'label' => 'Row title',
                             'default' => '',
+                        ],
+                        'columns_mobile' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on mobile'),
+                            'default' => '1',
+                            'choices' => static::getColumnChoices($module),
+                        ],
+                        'columns_tablet' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on tablet'),
+                            'default' => '2',
+                            'choices' => static::getColumnChoices($module),
+                        ],
+                        'columns_desktop' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on desktop'),
+                            'default' => '3',
+                            'choices' => static::getColumnChoices($module),
                         ],
                         'css_class' => [
                             'type' => 'text',
