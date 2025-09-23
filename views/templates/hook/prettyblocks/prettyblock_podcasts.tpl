@@ -16,8 +16,16 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$block.settings assign='prettyblock_spacing_style'}
+{capture name='prettyblock_podcasts_wrapper_style'}
+  {$prettyblock_spacing_style}
+  {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}
+    background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};
+  {/if}
+{/capture}
+{assign var='prettyblock_podcasts_wrapper_style' value=$smarty.capture.prettyblock_podcasts_wrapper_style|trim}
 
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if $prettyblock_podcasts_wrapper_style} style="{$prettyblock_podcasts_wrapper_style}"{/if}>
   {if $block.settings.default.force_full_width}
     <div class="row gx-0 no-gutters">
   {elseif $block.settings.default.container}
@@ -29,7 +37,12 @@
   {if isset($block.states) && $block.states}
     <div class="everblock-podcasts">
       {foreach from=$block.states item=state}
-        <div class="podcast-item">
+        {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_podcast_state_spacing_style'}
+        {capture name='prettyblock_podcast_state_style'}
+          {$prettyblock_podcast_state_spacing_style}
+        {/capture}
+        {assign var='prettyblock_podcast_state_style' value=$smarty.capture.prettyblock_podcast_state_style|trim}
+        <div class="podcast-item"{if $prettyblock_podcast_state_style} style="{$prettyblock_podcast_state_style}"{/if}>
           {if isset($state.cover_image.url) && $state.cover_image.url}
             <img src="{$state.cover_image.url|escape:'htmlall'}" alt="{$state.episode_title|escape:'htmlall'}" class="podcast-cover" loading="lazy" />
           {/if}
