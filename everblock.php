@@ -803,7 +803,7 @@ class Everblock extends Module
 
         $tabs = [
             'settings' => $this->l('Réglages'),
-            'wordpress' => $this->l('WordPress'),
+            'meta_tools' => $this->l('Meta Tools'),
             'google_maps' => $this->l('Google Maps'),
             'migration' => $this->l('Migration des URL'),
             'tools' => $this->l('Outils'),
@@ -836,7 +836,7 @@ class Everblock extends Module
 
         $docTemplates = [
             'settings' => 'settings.tpl',
-            'wordpress' => 'wordpress.tpl',
+            'meta_tools' => 'meta_tools.tpl',
             'google_maps' => 'google_maps.tpl',
             'migration' => 'migration.tpl',
             'tools' => 'tools.tpl',
@@ -955,13 +955,6 @@ class Everblock extends Module
                 'desc' => $this->l('If entered, you will have a password entry form on the maintenance page'),
                 'hint' => $this->l('People with the password will be able to access the store in maintenance mode'),
                 'name' => 'EVERBLOCK_MAINTENANCE_PSSWD',
-            ],
-            [
-                'type' => 'text',
-                'label' => $this->l('Instagram access token'),
-                'desc' => $this->l('Add here your Instagram access token'),
-                'hint' => $this->l('Without access token, you wont be able to show Instagram slider'),
-                'name' => 'EVERINSTA_ACCESS_TOKEN',
             ],
             [
                 'type' => 'switch',
@@ -1090,6 +1083,26 @@ class Everblock extends Module
             $form['form']['input'][] = $input;
         }
 
+        $metaToolsInputs = [
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_meta_tools',
+                'html_content' => '<span id="everblock_meta_tools"></span>',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Instagram access token'),
+                'desc' => $this->l('Add here your Instagram access token'),
+                'hint' => $this->l('Without access token, you wont be able to show Instagram slider'),
+                'name' => 'EVERINSTA_ACCESS_TOKEN',
+            ],
+        ];
+
+        foreach ($metaToolsInputs as $input) {
+            $input['tab'] = 'meta_tools';
+            $form['form']['input'][] = $input;
+        }
+
         $wordpressInputs = [
             [
                 'type' => 'html',
@@ -1121,7 +1134,7 @@ class Everblock extends Module
         ];
 
         foreach ($wordpressInputs as $input) {
-            $input['tab'] = 'wordpress';
+            $input['tab'] = 'meta_tools';
             $form['form']['input'][] = $input;
         }
 
@@ -1368,7 +1381,7 @@ class Everblock extends Module
             ];
 
             foreach ($instagramInputs as $input) {
-                $input['tab'] = 'settings';
+                $input['tab'] = 'meta_tools';
                 $form['form']['input'][] = $input;
             }
         }
