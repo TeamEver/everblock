@@ -278,6 +278,76 @@ class AdminEverBlockController extends ModuleAdminController
         return $this->html;
     }
 
+    private function moveDocumentationToTabEnd(array $inputs)
+    {
+        $documentationByTab = [];
+        $orphanDocumentation = [];
+        $nonDocumentationInputs = [];
+
+        foreach ($inputs as $input) {
+            if (!isset($input['name']) || strpos($input['name'], 'documentation_') !== 0) {
+                $nonDocumentationInputs[] = $input;
+                continue;
+            }
+
+            if (isset($input['tab'])) {
+                $documentationByTab[$input['tab']][] = $input;
+            } else {
+                $orphanDocumentation[] = $input;
+            }
+        }
+
+        if (empty($documentationByTab) && empty($orphanDocumentation)) {
+            return $inputs;
+        }
+
+        $orderedInputs = [];
+        $countNonDocumentation = count($nonDocumentationInputs);
+
+        foreach ($nonDocumentationInputs as $index => $input) {
+            $orderedInputs[] = $input;
+
+            if (!isset($input['tab'])) {
+                continue;
+            }
+
+            $tab = $input['tab'];
+
+            if (empty($documentationByTab[$tab])) {
+                continue;
+            }
+
+            $isLastForTab = true;
+
+            for ($nextIndex = $index + 1; $nextIndex < $countNonDocumentation; $nextIndex++) {
+                if (isset($nonDocumentationInputs[$nextIndex]['tab'])
+                    && $nonDocumentationInputs[$nextIndex]['tab'] === $tab) {
+                    $isLastForTab = false;
+                    break;
+                }
+            }
+
+            if ($isLastForTab) {
+                foreach ($documentationByTab[$tab] as $documentationInput) {
+                    $orderedInputs[] = $documentationInput;
+                }
+                unset($documentationByTab[$tab]);
+            }
+        }
+
+        foreach ($documentationByTab as $documentationInputs) {
+            foreach ($documentationInputs as $documentationInput) {
+                $orderedInputs[] = $documentationInput;
+            }
+        }
+
+        foreach ($orphanDocumentation as $documentationInput) {
+            $orderedInputs[] = $documentationInput;
+        }
+
+        return $orderedInputs;
+    }
+
     public function renderForm()
     {
         if (Context::getContext()->shop->getContext() != Shop::CONTEXT_SHOP && Shop::isFeatureActive()) {
@@ -884,6 +954,10 @@ class AdminEverBlockController extends ModuleAdminController
                 ], $docInputs),
             ],
         ];
+        $lastFormIndex = count($fields_form) - 1;
+        $fields_form[$lastFormIndex]['form']['input'] = $this->moveDocumentationToTabEnd(
+            $fields_form[$lastFormIndex]['form']['input']
+        );
         $helper = new HelperForm();
         $helper->show_toolbar = false;
         $helper->module = $this;
