@@ -406,7 +406,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'title' => $this->l('Save & stay'),
                     ],
                 ],
-                'input' => array_merge($docInputs, [
+                'input' => array_merge([
                     [
                         'type' => 'hidden',
                         'name' => $this->identifier,
@@ -881,7 +881,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'date_end',
                         'tab' => 'schedule',
                     ],
-                ]),
+                ], $docInputs),
             ],
         ];
         $helper = new HelperForm();
