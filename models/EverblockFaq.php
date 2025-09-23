@@ -57,7 +57,8 @@ class EverblockFaq extends ObjectModel
                 'type' => self::TYPE_INT,
                 'lang' => false,
                 'validate' => 'isUnsignedInt',
-                'required' => true,
+                'required' => false,
+                'default' => 0,
             ],
             'active' => [
                 'type' => self::TYPE_BOOL,
@@ -69,7 +70,7 @@ class EverblockFaq extends ObjectModel
                 'type' => self::TYPE_STRING,
                 'lang' => true,
                 'validate' => 'isString',
-                'required' => true,
+                'required' => false,
             ],
             'content' => [
                 'type' => self::TYPE_HTML,

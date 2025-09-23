@@ -215,7 +215,7 @@ class AdminEverBlockFaqController extends ModuleAdminController
                     'label' => $this->l('FAQ element title'),
                     'desc' => $this->l('This title will be the title of the FAQ tab'),
                     'hint' => $this->l('Leaving blank will not display the FAQ'),
-                    'required' => true,
+                    'required' => false,
                     'name' => 'title',
                     'lang' => true,
                 ],
@@ -224,7 +224,7 @@ class AdminEverBlockFaqController extends ModuleAdminController
                     'label' => $this->l('FAQ element content'),
                     'desc' => $this->l('This content will be displayed under the FAQ title'),
                     'hint' => $this->l('Leaving blank will not display the FAQ'),
-                    'required' => true,
+                    'required' => false,
                     'name' => 'content',
                     'autoload_rte' => true,
                     'lang' => true,
@@ -234,7 +234,7 @@ class AdminEverBlockFaqController extends ModuleAdminController
                     'label' => $this->l('FAQ position'),
                     'desc' => $this->l('Enter FAQ position number'),
                     'hint' => $this->l('FAQs will be ordered using this number'),
-                    'required' => true,
+                    'required' => false,
                     'name' => 'position',
                     'lang' => false,
                 ],
@@ -281,20 +281,46 @@ class AdminEverBlockFaqController extends ModuleAdminController
             $everblock_obj->position = (int) Tools::getValue('position');
             $everblock_obj->active = (int) Tools::getValue('active');
             $everblock_obj->id_shop = (int) $this->context->shop->id;
+
+            $defaultLanguageId = (int) Configuration::get('PS_LANG_DEFAULT');
+            $hasDefaultTitle = false;
+            $hasDefaultContent = false;
+
             foreach (Language::getLanguages(false) as $language) {
-                $contentKey = 'content_' . $language['id_lang'];
-                $contentValue = Tools::getValue($contentKey);
-                if (!is_string($contentValue) || $contentValue === '') {
-                    $this->errors[] = $this->l('Content is missing for lang ') . $language['id_lang'];
-                } else {
+                $langId = (int) $language['id_lang'];
+
+                $titleValue = Tools::getValue('title_' . $langId, '');
+                if ($titleValue === false) {
+                    $titleValue = '';
+                }
+                if ($titleValue !== '') {
+                    $everblock_obj->title[$langId] = $titleValue;
+                }
+                if ($langId === $defaultLanguageId && $titleValue !== '') {
+                    $hasDefaultTitle = true;
+                }
+
+                $contentKey = 'content_' . $langId;
+                $contentValue = Tools::getValue($contentKey, '');
+                if (is_string($contentValue) && $contentValue !== '') {
                     $convertedContent = EverblockTools::convertImagesToWebP($contentValue);
-                    $everblock_obj->content[$language['id_lang']] = $convertedContent;
+                    $everblock_obj->content[$langId] = $convertedContent;
                 }
-                if (!Tools::getValue('title_' . $language['id_lang'])) {
-                    $this->errors[] = $this->l('Title is missing for lang ') . $language['id_lang'];
-                } else {
-                    $everblock_obj->title[$language['id_lang']] = Tools::getValue('title_' . $language['id_lang']);
+                if ($langId === $defaultLanguageId && is_string($contentValue) && $contentValue !== '') {
+                    $hasDefaultContent = true;
                 }
+            }
+
+            if (!$hasDefaultTitle) {
+                $this->errors[] = $this->l('Title is required for the default language.');
+            }
+
+            if (!$hasDefaultContent) {
+                $this->errors[] = $this->l('Content is required for the default language.');
+            }
+
+            if (!Tools::getValue('position')) {
+                $everblock_obj->position = 0;
             }
             if (!count($this->errors)) {
                 if ($everblock_obj->save()) {
