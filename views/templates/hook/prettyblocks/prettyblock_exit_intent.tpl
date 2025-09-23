@@ -15,21 +15,23 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-{foreach from=$block.states item=state key=key}
-  <div class="modal fade ever-exit-intent-modal" id="everExitIntent-{$block.id_prettyblocks}-{$key}" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-body text-center">
-          {if $state.image.url}
-            <img src="{$state.image.url}" class="img-fluid mb-3" alt="" />
-          {/if}
-          {if $state.title}<h4>{$state.title}</h4>{/if}
-          {if $state.message}<p>{$state.message}</p>{/if}
-          {if $state.cta_label}
-            <a href="{$state.cta_url}" class="btn btn-primary">{$state.cta_label}</a>
-          {/if}
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+  {foreach from=$block.states item=state key=key}
+    <div class="modal fade ever-exit-intent-modal" id="everExitIntent-{$block.id_prettyblocks}-{$key}" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body text-center">
+            {if $state.image.url}
+              <img src="{$state.image.url}" class="img-fluid mb-3" alt="" />
+            {/if}
+            {if $state.title}<h4>{$state.title}</h4>{/if}
+            {if $state.message}<p>{$state.message}</p>{/if}
+            {if $state.cta_label}
+              <a href="{$state.cta_url}" class="btn btn-primary">{$state.cta_label}</a>
+            {/if}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-{/foreach}
+  {/foreach}
+</div>

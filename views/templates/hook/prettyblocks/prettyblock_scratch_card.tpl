@@ -26,7 +26,7 @@
 {assign var=endDate value=$block.settings.end_date|default:''}
 {capture assign=defaultPreStartMessage}{l s='The game has not started yet.' mod='everblock'}{/capture}
 {capture assign=defaultPostEndMessage}{l s='The game is over.' mod='everblock'}{/capture}
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}">
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
   {if $block.settings.default.force_full_width}
     <div class="row gx-0 no-gutters">
   {elseif $block.settings.default.container}
