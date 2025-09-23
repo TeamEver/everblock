@@ -294,7 +294,7 @@ class EverblockPrettyBlocks
                     'default' => $spacerTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'space_top' => [
                             'type' => 'text',
                             'label' => $module->l('Space top (rem)'),
@@ -310,7 +310,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -895,7 +895,7 @@ class EverblockPrettyBlocks
                     'default' => $featuredCategoryTemplate
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'desktop_columns' => [
                             'type' => 'select',
                             'label' => $module->l('Desktop columns'),
@@ -909,7 +909,7 @@ class EverblockPrettyBlocks
                                 '6' => '6',
                             ],
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Menu',
@@ -1130,7 +1130,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => $module->l('Offer'),
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Title'),
@@ -1158,7 +1158,7 @@ class EverblockPrettyBlocks
                                 'url' => '',
                             ],
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -1199,7 +1199,7 @@ class EverblockPrettyBlocks
                     'default' => $imgTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'slider' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Enable slider'),
@@ -1210,7 +1210,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Number of images in slider'),
                             'default' => 3,
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => $module->l('Image title'),
@@ -1848,13 +1848,13 @@ class EverblockPrettyBlocks
                     'default' => $linkListTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Block title'),
                             'default' => $module->l('Links'),
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Link',
@@ -1895,18 +1895,18 @@ class EverblockPrettyBlocks
                     'default' => $downloadsTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Block title'),
                             'default' => $module->l('Downloads'),
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Download',
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Title'),
@@ -1930,7 +1930,7 @@ class EverblockPrettyBlocks
                             'choices' => EverblockTools::getAvailableSvgIcons(),
                             'default' => 'file.svg',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
 
@@ -1945,18 +1945,18 @@ class EverblockPrettyBlocks
                     'default' => $podcastsTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Block title'),
                             'default' => $module->l('Podcasts'),
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Podcast',
                     'nameFrom' => 'episode_title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'cover_image' => [
                             'type' => 'fileupload',
                             'label' => $module->l('Cover image'),
@@ -1984,7 +1984,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Description'),
                             'default' => '',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
 
@@ -2019,18 +2019,18 @@ class EverblockPrettyBlocks
                     'default' => $socialLinksTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'icon_color' => [
                             'type' => 'color',
                             'label' => $module->l('Icon color'),
                             'default' => '',
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Social link',
                     'nameFrom' => 'url',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'url' => [
                             'type' => 'text',
                             'label' => $module->l('Link URL'),
@@ -2042,7 +2042,7 @@ class EverblockPrettyBlocks
                             'choices' => EverblockTools::getAvailableSvgIcons(),
                             'default' => 'facebook.svg',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2079,7 +2079,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Brand',
                     'nameFrom' => 'brand',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'brand' => [
                             'type' => 'selector',
                             'label' => $module->l('Choose a brand'),
@@ -2087,7 +2087,7 @@ class EverblockPrettyBlocks
                             'selector' => '{id} - {name}',
                             'default' => '',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2181,7 +2181,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Counter',
                     'nameFrom' => 'label',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'icon' => [
                             'type' => 'select',
                             'label' => $module->l('Select an icon'),
@@ -2203,7 +2203,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Animation speed (ms)'),
                             'default' => '2000',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2247,13 +2247,13 @@ class EverblockPrettyBlocks
                     'default' => $cardTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'center_cards' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Center cards in container'),
                             'default' => 0,
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Card',
@@ -2321,18 +2321,18 @@ class EverblockPrettyBlocks
                     'default' => $coverTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'slider' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Cover',
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Title'),
@@ -2471,47 +2471,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
-                        'margin_left' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom' => [
-                            'type' => 'text',
-                            'label' => $module->l('Margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_left_mobile' => [
-                            'type' => 'text',
-                            'label' => $module->l('Mobile margin left (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_right_mobile' => [
-                            'type' => 'text',
-                            'label' => $module->l('Mobile margin right (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_top_mobile' => [
-                            'type' => 'text',
-                            'label' => $module->l('Mobile margin top (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                        'margin_bottom_mobile' => [
-                            'type' => 'text',
-                            'label' => $module->l('Mobile margin bottom (Please specify the unit of measurement)'),
-                            'default' => '',
-                        ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2525,18 +2485,18 @@ class EverblockPrettyBlocks
                     'default' => $tocTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Summary title'),
                             'default' => $module->l('Summary'),
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Section',
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'anchor' => [
                             'type' => 'text',
                             'label' => $module->l('Anchor ID'),
@@ -2562,7 +2522,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Content'),
                             'default' => '[llorem]',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2609,7 +2569,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Marker',
                     'nameFrom' => 'label',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'label' => [
                             'type' => 'text',
                             'label' => $module->l('Marker label'),
@@ -2625,7 +2585,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Left position (e.g., 50%)'),
                             'default' => '0%',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2650,7 +2610,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Product',
                     'nameFrom' => 'product',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'product' => [
                             'type' => 'selector',
                             'label' => $module->l('Choose a product'),
@@ -2658,7 +2618,7 @@ class EverblockPrettyBlocks
                             'selector' => '{id} - {name}',
                             'default' => '',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2672,18 +2632,18 @@ class EverblockPrettyBlocks
                     'default' => $guidedSelectorTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'fallback_shortcode' => [
                             'type' => 'editor',
                             'label' => $module->l('Fallback content (shortcodes allowed)'),
                             'default' => '[evercontactform_open][evercontact type="text" label="' . $module->l('Your name') . '"][evercontact type="email" label="' . $module->l('Your email') . '"][evercontact type="textarea" label="' . $module->l('Message') . '"][evercontact type="submit" label="' . $module->l('Send') . '"][evercontactform_close]',
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Question',
                     'nameFrom' => 'question',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'question' => [
                             'type' => 'text',
                             'label' => $module->l('Question'),
@@ -2694,7 +2654,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Answers (one per line: "Answer label|Answer link")'),
                             'default' => '',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2785,7 +2745,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Deal',
                     'nameFrom' => 'product',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'product' => [
                             'type' => 'selector',
                             'label' => $module->l('Choose a product'),
@@ -2793,7 +2753,7 @@ class EverblockPrettyBlocks
                             'selector' => '{id} - {name}',
                             'default' => '',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2892,7 +2852,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Plan',
                     'nameFrom' => 'title',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Plan title'),
@@ -2923,7 +2883,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Highlight'),
                             'default' => 0,
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -2937,7 +2897,7 @@ class EverblockPrettyBlocks
                     'default' => $lookbookTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => static::appendSpacingFields([
                         'title' => [
                             'type' => 'text',
                             'label' => $module->l('Look title'),
@@ -2960,12 +2920,12 @@ class EverblockPrettyBlocks
                                 '3' => '3',
                             ],
                         ],
-                    ],
+                    ], $module),
                 ],
                 'repeater' => [
                     'name' => 'Product',
                     'nameFrom' => 'product',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'product' => [
                             'type' => 'selector',
                             'label' => $module->l('Choose a product'),
@@ -2983,7 +2943,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Left position (e.g., 50%)'),
                             'default' => '0%',
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -3048,7 +3008,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Segment',
                     'nameFrom' => 'label',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'label' => [
                             'type' => 'text',
                             'label' => $module->l('Label'),
@@ -3121,7 +3081,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Winning segment'),
                             'default' => false,
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -3176,7 +3136,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Mystery box',
                     'nameFrom' => 'label',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'label' => [
                             'type' => 'text',
                             'label' => $module->l('Label'),
@@ -3261,7 +3221,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Winning box'),
                             'default' => false,
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks[] = [
@@ -3365,7 +3325,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Symbol',
                     'nameFrom' => 'label',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'symbol_key' => [
                             'type' => 'text',
                             'label' => $module->l('Internal symbol key'),
@@ -3398,7 +3358,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Accessible description'),
                             'default' => $module->l('A juicy cherry symbol that hints at the jackpot.'),
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $scratchTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_scratch_card.tpl';
@@ -3449,7 +3409,7 @@ class EverblockPrettyBlocks
                 'repeater' => [
                     'name' => 'Scratch case',
                     'nameFrom' => 'label',
-                    'groups' => [
+                    'groups' => static::appendSpacingFields([
                         'label' => [
                             'type' => 'text',
                             'label' => $module->l('Label'),
@@ -3529,7 +3489,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Winning scratch'),
                             'default' => false,
                         ],
-                    ],
+                    ], $module),
                 ],
             ];
             $blocks = self::addDisplaySettings($blocks, $module);

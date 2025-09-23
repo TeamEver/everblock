@@ -16,13 +16,27 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$block.settings assign='prettyblock_spacing_style'}
+{capture name='prettyblock_card_wrapper_style'}
+  {$prettyblock_spacing_style}
+  {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}
+    background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};
+  {/if}
+{/capture}
+{assign var='prettyblock_card_wrapper_style' value=$smarty.capture.prettyblock_card_wrapper_style|trim}
 
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if $prettyblock_card_wrapper_style} style="{$prettyblock_card_wrapper_style}"{/if}>
   {if isset($block.states) && $block.states}
     <div class="{if $block.settings.center_cards}px-2 px-md-0 pb-2{else}overflow-auto px-2 px-md-0 pb-2{/if}">
       <div class="d-flex gap-3 pe-1{if $block.settings.center_cards} flex-wrap justify-content-center{else} flex-nowrap{/if}">
         {foreach from=$block.states item=state}
-          <div class="flex-shrink-0 prettyblocks-card-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="width:90%;max-width:90%;">
+          {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_card_state_spacing_style'}
+          {capture name='prettyblock_card_state_style'}
+            width:90%;max-width:90%;
+            {$prettyblock_card_state_spacing_style}
+          {/capture}
+          {assign var='prettyblock_card_state_style' value=$smarty.capture.prettyblock_card_state_style|trim}
+          <div class="flex-shrink-0 prettyblocks-card-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}"{if $prettyblock_card_state_style} style="{$prettyblock_card_state_style}"{/if}>
             <div class="card h-100 mb-3 border border-light-subtle rounded-4 shadow-sm">
               <div class="card-body d-flex flex-column h-100 p-4">
                 {if isset($state.image.url) && $state.image.url}

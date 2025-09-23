@@ -16,14 +16,25 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$block.settings assign='prettyblock_spacing_style'}
+{capture name='prettyblock_lookbook_wrapper_style'}
+  {$prettyblock_spacing_style}
+{/capture}
+{assign var='prettyblock_lookbook_wrapper_style' value=$smarty.capture.prettyblock_lookbook_wrapper_style|trim}
 
 {assign var=columns value=$block.settings.columns|default:'1'}
-<div class="prettyblock-lookbook columns-{$columns}{$prettyblock_visibility_class}">
+<div class="prettyblock-lookbook columns-{$columns}{$prettyblock_visibility_class}"{if $prettyblock_lookbook_wrapper_style} style="{$prettyblock_lookbook_wrapper_style}"{/if}>
   <div class="lookbook-item">
     {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-before"}
   </div>
   <div class="lookbook-item">
-    <div id="block-{$block.id_prettyblocks}" data-lookbook-url="{$link->getModuleLink('everblock', 'lookbook', ['token' => $static_token])|escape:'html':'UTF-8'}" class="{if $block.settings.default.force_full_width|default:false}container-fluid px-0 mx-0{elseif $block.settings.default.container|default:false}container{/if}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+    {capture name='prettyblock_lookbook_inner_style'}
+      {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}
+        background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};
+      {/if}
+    {/capture}
+    {assign var='prettyblock_lookbook_inner_style' value=$smarty.capture.prettyblock_lookbook_inner_style|trim}
+    <div id="block-{$block.id_prettyblocks}" data-lookbook-url="{$link->getModuleLink('everblock', 'lookbook', ['token' => $static_token])|escape:'html':'UTF-8'}" class="{if $block.settings.default.force_full_width|default:false}container-fluid px-0 mx-0{elseif $block.settings.default.container|default:false}container{/if}"{if $prettyblock_lookbook_inner_style} style="{$prettyblock_lookbook_inner_style}"{/if}>
       {if $block.settings.default.force_full_width|default:false}
         <div class="row gx-0 no-gutters">
       {elseif $block.settings.default.container|default:false}

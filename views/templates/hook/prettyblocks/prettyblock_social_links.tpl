@@ -16,9 +16,17 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$block.settings assign='prettyblock_spacing_style'}
+{capture name='prettyblock_social_links_wrapper_style'}
+  {$prettyblock_spacing_style}
+  {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}
+    background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};
+  {/if}
+{/capture}
+{assign var='prettyblock_social_links_wrapper_style' value=$smarty.capture.prettyblock_social_links_wrapper_style|trim}
 
 <!-- Module Ever Block -->
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if $prettyblock_social_links_wrapper_style} style="{$prettyblock_social_links_wrapper_style}"{/if}>
   {if $block.settings.default.force_full_width}
     <div class="row gx-0 no-gutters">
   {elseif $block.settings.default.container}
@@ -44,7 +52,12 @@
               {/if}
 
               {* ✅ Chaque icône dans un wrapper séparé *}
-              <span class="everblock-social-link">
+              {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_social_link_style'}
+              {capture name='prettyblock_social_link_style_attr'}
+                {$prettyblock_social_link_style}
+              {/capture}
+              {assign var='prettyblock_social_link_style_attr' value=$smarty.capture.prettyblock_social_link_style_attr|trim}
+              <span class="everblock-social-link"{if $prettyblock_social_link_style_attr} style="{$prettyblock_social_link_style_attr}"{/if}>
                 <a href="{$state.url|escape:'htmlall'}"
                    title="{$state.url|escape:'htmlall'}"
                    target="_blank"
