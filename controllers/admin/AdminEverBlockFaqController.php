@@ -74,6 +74,7 @@ class AdminEverBlockFaqController extends ModuleAdminController
                 'title' => $this->l('Content'),
                 'align' => 'left',
                 'width' => 'auto',
+                'callback' => 'renderContentWithoutHtml',
             ],
             'position' => [
                 'title' => $this->l('Position'),
@@ -173,6 +174,17 @@ class AdminEverBlockFaqController extends ModuleAdminController
         $this->html .= $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/admin/footer.tpl');
 
         return $this->html;
+    }
+
+    public function renderContentWithoutHtml($value, $row)
+    {
+        $cleanContent = trim(strip_tags($value));
+
+        if (Tools::strlen($cleanContent) > 120) {
+            $cleanContent = Tools::substr($cleanContent, 0, 117) . '...';
+        }
+
+        return $cleanContent;
     }
 
     public function renderForm()
