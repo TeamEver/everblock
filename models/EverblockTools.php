@@ -17,6 +17,7 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+use Everblock\Tools\Service\CaptchaService;
 use Everblock\Tools\Service\EverblockCache;
 
 if (!defined('_PS_VERSION_')) {
@@ -1858,11 +1859,15 @@ class EverblockTools extends ObjectModel
             $txt
         );
 
-        // Remplace [evercontactform_close] par input token + fermeture du form
+        // Remplace [evercontactform_close] par captcha + input token + fermeture du form
         $token = Tools::getToken();
-        $txt = str_replace(
-            '[evercontactform_close]',
-            '<input type="hidden" name="token" value="' . $token . '"></form></div>',
+        $txt = preg_replace_callback(
+            '/\[evercontactform_close\]/',
+            function () use ($context, $module, $token) {
+                $captchaHtml = CaptchaService::renderCaptchaField($context, $module);
+
+                return $captchaHtml . '<input type="hidden" name="token" value="' . $token . '"></form></div>';
+            },
             $txt
         );
 
