@@ -4504,22 +4504,37 @@ class Everblock extends Module
 
     public function hookDisplayReassurance($params)
     {
-        if (empty($params['product']['id_product'])) {
+        if (!Tools::getValue('id_product')) {
             return;
         }
+
         $modal = EverblockModal::getByProductId(
-            (int) $params['product']['id_product'],
+            (int) Tools::getValue('id_product'),
             (int) $this->context->shop->id
         );
-        if (
-            !Validate::isLoadedObject($modal)
-            || empty($modal->content[$this->context->language->id])
-        ) {
+
+        // Vérifie si objet chargé
+        if (!Validate::isLoadedObject($modal)) {
             return;
         }
+        $idLang = (int) $this->context->language->id;
+
+        // Cas 1 : contenu texte dispo
+        $hasContent = !empty($modal->content[$idLang]);
+
+        // Cas 2 : fichier image dispo
+        $hasFile = !empty($modal->file);
+
+        if (!$hasContent && !$hasFile) {
+            return;
+        }
+
         $this->smarty->assign([
             'everblock_modal_id' => (int) $modal->id_everblock_modal,
+            'everblock_modal_file' => $modal->file,
+            'everblock_modal_content' => $modal->content[$idLang] ?? '',
         ]);
+
         return $this->fetch('module:everblock/views/templates/hook/modal.tpl');
     }
 
