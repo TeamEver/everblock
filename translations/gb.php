@@ -17,6 +17,7 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 */
+$_MODULE['<{everblock}prestashop>admineverblockconfigurationcontroller_254f642527b45bc260048e30704edb39'] = 'Configuration';
 $_MODULE['<{everblock}prestashop>everblock_da3b1fba450fdb0bc71ccb8231f075d6'] = 'Number of brands per slide';
 $_MODULE['<{everblock}prestashop>everblock_5a007b1257a85c32e4c435c60cbad339'] = 'Plan title';
 $_MODULE['<{everblock}prestashop>everblock_1d89b70bf1410131de72cef713ef3d20'] = 'Plan price';

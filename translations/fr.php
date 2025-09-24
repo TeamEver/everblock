@@ -194,6 +194,7 @@ $_MODULE['<{everblock}prestashop>admineverblockhookcontroller_4d3d769b812b6faa6b
 $_MODULE['<{everblock}prestashop>admineverblockhookcontroller_f05697e8558532fc1a7c1ca0556ea2eb'] = 'Ajouter un élément';
 $_MODULE['<{everblock}prestashop>admineverblockhookcontroller_79c0d6cba080dc90b01c887064c9fc2f'] = 'Vider le cache';
 $_MODULE['<{everblock}prestashop>admineverblockhookcontroller_254f642527b45bc260048e30704edb39'] = 'Configuration';
+$_MODULE['<{everblock}prestashop>admineverblockconfigurationcontroller_254f642527b45bc260048e30704edb39'] = 'Configuration';
 $_MODULE['<{everblock}prestashop>admineverblockhookcontroller_6f8d052cd848658c2ab9ec9ae4c0783d'] = 'Télécharger le fichier Excel exemple pour les onglets';
 $_MODULE['<{everblock}prestashop>admineverblockhookcontroller_761602a271b3e0dd17b0c135f448b786'] = 'Gestion des hooks';
 $_MODULE['<{everblock}prestashop>admineverblockhookcontroller_f152dcef37ff8deb5127c5228b0c36b3'] = 'Le cache a été vidé';
