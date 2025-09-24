@@ -537,7 +537,9 @@ class EverblockTools extends ObjectModel
 
                 if (!empty($rows)) {
                     if ($by === 'product') {
-                        $ids = array_map(static fn($row) => (int) $row['id_product'], $rows);
+                        $ids = array_map(static function ($row) {
+                            return (int) $row['id_product'];
+                        }, $rows);
                         $products = static::everPresentProducts($ids, $context);
                     } else {
                         $assembler = new ProductAssembler($context);
@@ -646,7 +648,9 @@ class EverblockTools extends ObjectModel
 
             $cartIds = [];
             if ($context->cart && $context->cart->id) {
-                $cartIds = array_map(fn ($p) => (int) $p['id_product'], $context->cart->getProducts());
+                $cartIds = array_map(function ($p) {
+                    return (int) $p['id_product'];
+                }, $context->cart->getProducts());
             }
 
             if (empty($cartIds)) {
@@ -1574,7 +1578,9 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(function ($row) {
+                return (int) $row['product_id'];
+            }, $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -1615,7 +1621,9 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(function ($row) {
+                return (int) $row['product_id'];
+            }, $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -1656,7 +1664,9 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(function ($row) {
+                return (int) $row['product_id'];
+            }, $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -1697,7 +1707,9 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(function ($row) {
+                return (int) $row['product_id'];
+            }, $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -1738,7 +1750,9 @@ class EverblockTools extends ObjectModel
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(fn ($row) => (int) $row['product_id'], $rows);
+            $ids = array_map(function ($row) {
+                return (int) $row['product_id'];
+            }, $rows);
             EverblockCache::cacheStore($cacheId, $ids);
             return $ids;
         }
@@ -2289,7 +2303,9 @@ class EverblockTools extends ObjectModel
                 $productIds = EverblockCache::cacheRetrieve($cacheId);
             }
             if (!empty($productIds)) {
-                $productIdsArray = array_map(fn ($row) => (int)$row['product_id'], $productIds);
+                $productIdsArray = array_map(function ($row) {
+                    return (int) $row['product_id'];
+                }, $productIds);
                 $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
 
                 if (!empty($everPresentProducts)) {
@@ -2591,7 +2607,9 @@ class EverblockTools extends ObjectModel
             }
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(fn ($row) => (int) $row['id_product'], $productIds);
+                $productIdsArray = array_map(function ($row) {
+                    return (int) $row['id_product'];
+                }, $productIds);
                 $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
 
                 if (!empty($everPresentProducts)) {
@@ -2677,7 +2695,9 @@ class EverblockTools extends ObjectModel
             }
 
             if (!empty($productIds)) {
-                $productIdsArray = array_map(fn ($row) => (int) $row['id_product'], $productIds);
+                $productIdsArray = array_map(function ($row) {
+                    return (int) $row['id_product'];
+                }, $productIds);
                 $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
 
                 if (!empty($everPresentProducts)) {
