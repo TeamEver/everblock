@@ -41,6 +41,15 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             return $this->terminateWithResponse($this->module->l('Invalid security token.'));
         }
 
+        if (!\Everblock\Tools\Service\CaptchaService::validateResponse(
+            Tools::getValue('evercaptcha_token'),
+            Tools::getValue('evercaptcha_answer')
+        )) {
+            return $this->terminateWithResponse(
+                $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl')
+            );
+        }
+
         // ➕ Récupération du formulaire
         $formData = Tools::getAllValues();
 
@@ -60,7 +69,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
 
         // ➕ Contenu du message HTML
         $messageContent = '';
-        $excludedKeys = ['token', 'everHide', 'submit', 'action'];
+        $excludedKeys = ['token', 'everHide', 'submit', 'action', 'evercaptcha_token', 'evercaptcha_answer'];
 
         foreach ($formData as $key => $value) {
             if (in_array($key, $excludedKeys)) {
