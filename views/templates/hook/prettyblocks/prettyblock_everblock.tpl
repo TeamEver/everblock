@@ -23,11 +23,6 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-    {if isset($block.extra.states) && $block.extra.states}
-    {foreach $block.extra.states as $state}
-      {$state.content nofilter}
-    {/foreach}
-    {/if}
     {if isset($block.states) && $block.states}
     {foreach from=$block.states item=state key=key}
     {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
@@ -36,6 +31,11 @@
         {if isset($state.text_color) && $state.text_color}color:{$state.text_color};{/if}
       ">
         {$state.content nofilter}
+        {if isset($block.extra.states) && $block.extra.states}
+        {foreach $block.extra.states as $state}
+          {$state.content nofilter}
+        {/foreach}
+        {/if}
     </div>
     {/foreach}
     {/if}
