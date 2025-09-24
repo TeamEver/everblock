@@ -28,15 +28,9 @@
   {if $use_slider}
     <div class="mt-4 ever-cover-carousel" data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}">
       {foreach from=$block.states item=state key=key}
+        {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
         <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
-          {if isset($state.padding_left)}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.padding_right)}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.padding_top)}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.padding_bottom)}padding-bottom:{$state.padding_bottom|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.margin_left)}margin-left:{$state.margin_left|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.margin_right)}margin-right:{$state.margin_right|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.margin_top)}margin-top:{$state.margin_top|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.margin_bottom)}margin-bottom:{$state.margin_bottom|escape:'htmlall':'UTF-8'};{/if}
+          {$prettyblock_state_spacing_style}
           {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
         ">
           {if isset($state.url) && $state.url}
@@ -87,15 +81,9 @@
   {else}
     <div class="row mt-4 g-3 justify-content-center">
       {foreach from=$block.states item=state key=key}
+        {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
         <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden col-12{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
-          {if isset($state.padding_left)}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.padding_right)}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.padding_top)}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.padding_bottom)}padding-bottom:{$state.padding_bottom|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.margin_left)}margin-left:{$state.margin_left|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.margin_right)}margin-right:{$state.margin_right|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.margin_top)}margin-top:{$state.margin_top|escape:'htmlall':'UTF-8'};{/if}
-          {if isset($state.margin_bottom)}margin-bottom:{$state.margin_bottom|escape:'htmlall':'UTF-8'};{/if}
+          {$prettyblock_state_spacing_style}
           {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
         ">
           {if isset($state.url) && $state.url}

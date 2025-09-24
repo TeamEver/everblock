@@ -26,8 +26,9 @@
   {/if}
     <div class="{if $block.settings.default.container}container{/if}">
       {foreach from=$block.states item=state key=key}
+        {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
         <div id="block-{$block.id_prettyblocks}-{$key}" class="{if isset($state.css_class) && $state.css_class}{$state.css_class|escape:'htmlall':'UTF-8'}{/if}"
-             style="{if $state.padding_left}padding-left:{$state.padding_left|escape:'htmlall':'UTF-8'};{/if}{if $state.padding_right}padding-right:{$state.padding_right|escape:'htmlall':'UTF-8'};{/if}{if $state.padding_top}padding-top:{$state.padding_top|escape:'htmlall':'UTF-8'};{/if}{if $state.padding_bottom}padding-bottom:{$state.padding_bottom|escape:'htmlall':'UTF-8'};{/if}{if $state.margin_left}margin-left:{$state.margin_left|escape:'htmlall':'UTF-8'};{/if}{if $state.margin_right}margin-right:{$state.margin_right|escape:'htmlall':'UTF-8'};{/if}{if $state.margin_top}margin-top:{$state.margin_top|escape:'htmlall':'UTF-8'};{/if}{if $state.margin_bottom}margin-bottom:{$state.margin_bottom|escape:'htmlall':'UTF-8'};{/if}{if $state.background_color}background-color:{$state.background_color|escape:'htmlall':'UTF-8'};{/if}{if $state.text_color}color:{$state.text_color|escape:'htmlall':'UTF-8'};{/if}">
+             style="{$prettyblock_state_spacing_style}{if $state.background_color}background-color:{$state.background_color|escape:'htmlall':'UTF-8'};{/if}{if $state.text_color}color:{$state.text_color|escape:'htmlall':'UTF-8'};{/if}">
           {if isset($state.image.url) && $state.image.url}
             <div class="mb-3">
               <img src="{$state.image.url}" alt="" class="img-fluid w-100" loading="lazy">

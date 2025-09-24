@@ -26,6 +26,7 @@
 
   {if isset($block.states) && $block.states}
     {foreach from=$block.states item=state key=key}
+      {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
       {* Génère l'URL de l'icône depuis le nom brut *}
       {assign var="icon_url" value=false}
       {if (is_array($state.image) || is_object($state.image)) && isset($state.image.url) && $state.image.url}
@@ -40,15 +41,7 @@
         {/if}
       {/if}
 
-      <div id="block-{$block.id_prettyblocks}-{$key}" class="{if $block.settings.default.display_inline}col {/if}text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
-        {if $state.padding_left}padding-left:{$state.padding_left};{/if}
-        {if $state.padding_right}padding-right:{$state.padding_right};{/if}
-        {if $state.padding_top}padding-top:{$state.padding_top};{/if}
-        {if $state.padding_bottom}padding-bottom:{$state.padding_bottom};{/if}
-        {if $state.margin_left}margin-left:{$state.margin_left};{/if}
-        {if $state.margin_right}margin-right:{$state.margin_right};{/if}
-        {if $state.margin_top}margin-top:{$state.margin_top};{/if}
-        {if $state.margin_bottom}margin-bottom:{$state.margin_bottom};{/if}
+      <div id="block-{$block.id_prettyblocks}-{$key}" class="{if $block.settings.default.display_inline}col {/if}text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="{$prettyblock_state_spacing_style}
         {if $state.background_color}background-color:{$state.background_color};{/if}
         {if $state.text_color}color:{$state.text_color};{/if}
       ">

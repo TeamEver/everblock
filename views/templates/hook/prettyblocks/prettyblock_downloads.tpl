@@ -29,6 +29,7 @@
   {if isset($block.states) && $block.states}
     <ul class="everblock-downloads list-unstyled">
       {foreach from=$block.states item=state key=key}
+        {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
         {assign var="icon_url" value=false}
         {if isset($state.icon) && $state.icon}
           {if $state.icon|substr:-4 != '.svg'}
@@ -37,15 +38,7 @@
             {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon}
           {/if}
         {/if}
-        <li class="d-flex{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
-          {if $state.padding_left}padding-left:{$state.padding_left};{/if}
-          {if $state.padding_right}padding-right:{$state.padding_right};{/if}
-          {if $state.padding_top}padding-top:{$state.padding_top};{/if}
-          {if $state.padding_bottom}padding-bottom:{$state.padding_bottom};{/if}
-          {if $state.margin_left}margin-left:{$state.margin_left};{/if}
-          {if $state.margin_right}margin-right:{$state.margin_right};{/if}
-          {if $state.margin_top}margin-top:{$state.margin_top};{/if}
-          {if $state.margin_bottom}margin-bottom:{$state.margin_bottom};{/if}">
+        <li class="d-flex{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="{$prettyblock_state_spacing_style}">
           {if $icon_url}
             <img src="{$icon_url|escape:'htmlall'}" alt="" loading="lazy" class="download-icon" width="24" height="24" />
           {/if}
