@@ -12,7 +12,7 @@
     'margin_bottom' => 'margin-bottom'
   )}
   {foreach from=$spacingMap key=spacingKey item=cssProperty}
-    {if isset($spacing[$spacingKey]) && $spacing[$spacingKey]}
+    {if isset($spacing[$spacingKey]) && $spacing[$spacingKey] !== '' && $spacing[$spacingKey] !== null}
       {$cssProperty}:{$spacing[$spacingKey]|escape:'htmlall':'UTF-8'};
     {/if}
   {/foreach}
@@ -23,7 +23,7 @@
     'margin_bottom_mobile' => '--margin-bottom-mobile'
   )}
   {foreach from=$mobileSpacingMap key=spacingKey item=cssProperty}
-    {if isset($spacing[$spacingKey]) && $spacing[$spacingKey]}
+    {if isset($spacing[$spacingKey]) && $spacing[$spacingKey] !== '' && $spacing[$spacingKey] !== null}
       {$cssProperty}:{$spacing[$spacingKey]|escape:'htmlall':'UTF-8'};
     {/if}
   {/foreach}

@@ -23,17 +23,9 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-      {foreach from=$block.states item=state key=key}
-            <div class="col-12{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if} style="
-                {if $state.padding_left}padding-left:{$state.padding_left};{/if}
-                {if $state.padding_right}padding-right:{$state.padding_right};{/if}
-                {if $state.padding_top}padding-top:{$state.padding_top};{/if}
-                {if $state.padding_bottom}padding-bottom:{$state.padding_bottom};{/if}
-                {if $state.margin_left}margin-left:{$state.margin_left};{/if}
-                {if $state.margin_right}margin-right:{$state.margin_right};{/if}
-                {if $state.margin_top}margin-top:{$state.margin_top};{/if}
-                {if $state.margin_bottom}margin-bottom:{$state.margin_bottom};{/if}
-              ">
+        {foreach from=$block.states item=state key=key}
+              {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
+              <div class="col-12{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if} style="{$prettyblock_state_spacing_style}">
             {if isset($state.obfuscate) && $state.obfuscate}
             {assign var="obflink" value=$state.button_link|base64_encode}
             <span class="obflink class="btn btn-{$state.button_type} data-obflink="{$obflink}"{if isset($state.color) && $state.color} style="color:{$state.color|escape:'htmlall':'UTF-8'};"{/if}>

@@ -29,17 +29,9 @@
     {else}
     {assign var='category_link' value='#'}
     {/if}
+    {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_category_highlight_state_spacing_style'}
     <div id="block-{$block.id_prettyblocks}-{$key}" class="col {$state.css_class|escape:'htmlall'}">
-      <div class="position-relative overflow-hidden h-100 w-100" style="
-        {if $state.padding_left}padding-left:{$state.padding_left};{/if}
-        {if $state.padding_right}padding-right:{$state.padding_right};{/if}
-        {if $state.padding_top}padding-top:{$state.padding_top};{/if}
-        {if $state.padding_bottom}padding-bottom:{$state.padding_bottom};{/if}
-        {if $state.margin_left}margin-left:{$state.margin_left};{/if}
-        {if $state.margin_right}margin-right:{$state.margin_right};{/if}
-        {if $state.margin_top}margin-top:{$state.margin_top};{/if}
-        {if $state.margin_bottom}margin-bottom:{$state.margin_bottom};{/if}
-      ">
+      <div class="position-relative overflow-hidden h-100 w-100" style="{$prettyblock_category_highlight_state_spacing_style}">
         {if $state.obfuscate}
           {assign var="obflink" value=$category_link|base64_encode}
           <span class="obflink obfme d-block h-100 w-100" data-obflink obfme="{$obflink}">
