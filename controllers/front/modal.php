@@ -75,8 +75,20 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
                 ? $modal->content[$this->context->language->id]
                 : '';
             $fileUrl = '';
+            $fileRenderType = '';
+            $fileExtension = '';
             if (!empty($modal->file)) {
                 $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
+                $fileExtension = Tools::strtolower(pathinfo($modal->file, PATHINFO_EXTENSION));
+                $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg'];
+                $videoExtensions = ['mp4', 'webm', 'ogg', 'ogv'];
+                if (in_array($fileExtension, $imageExtensions, true)) {
+                    $fileRenderType = 'image';
+                } elseif (in_array($fileExtension, $videoExtensions, true)) {
+                    $fileRenderType = 'video';
+                } else {
+                    $fileRenderType = 'iframe';
+                }
             }
             $this->context->smarty->assign([
                 'everblock_modal' => (object) [
@@ -86,6 +98,8 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
                         $this->module
                     ),
                     'file' => $fileUrl,
+                    'file_render_type' => $fileRenderType,
+                    'file_extension' => $fileExtension,
                 ],
             ]);
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
