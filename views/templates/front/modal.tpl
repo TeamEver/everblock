@@ -18,10 +18,10 @@
 
 {if isset($everblock_modal) && $everblock_modal}
 <div class="modal fade everblockModal" id="everblockModal" tabindex="-1" role="dialog" aria-labelledby="everblockModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-dialog-centered everblock-modal-dialog" role="document">
         <div class="modal-content"
-            {if isset($everblock_modal->background) && $everblock_modal->background} 
-            style="background-color:{$everblock_modal->background|escape:'htmlall':'UTF-8'};" 
+            {if isset($everblock_modal->background) && $everblock_modal->background}
+            style="background-color:{$everblock_modal->background|escape:'htmlall':'UTF-8'};"
             {/if}>
             {* SEO : modal must have titles *}
             <p id="everblockModalLabel" class="h5 modal-title d-none">
@@ -37,7 +37,7 @@
                 {if isset($everblock_modal->file) && $everblock_modal->file}
                     <div class="everblock-modal-media mt-3">
                         {if isset($everblock_modal->file_render_type) && $everblock_modal->file_render_type == 'image'}
-                            <img src="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" alt="" class="img-fluid" loading="lazy" />
+                            <img src="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" alt="" class="everblock-modal-image" loading="lazy" />
                         {elseif isset($everblock_modal->file_render_type) && $everblock_modal->file_render_type == 'video'}
                             <video controls preload="metadata" class="w-100">
                                 <source src="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" type="video/{$everblock_modal->file_extension|escape:'htmlall':'UTF-8'}" />

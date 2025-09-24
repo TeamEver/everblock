@@ -208,6 +208,34 @@
     border: 0;
     -webkit-appearance: none;
 }
+
+#everblockModal.modal {
+    text-align: center;
+}
+
+#everblockModal .everblock-modal-dialog {
+    display: inline-block;
+    width: auto;
+    max-width: 90vw;
+    margin: 1.75rem auto;
+}
+
+#everblockModal .everblock-modal-dialog .modal-content {
+    text-align: left;
+}
+
+#everblockModal .everblock-modal-media {
+    display: flex;
+    justify-content: center;
+}
+
+#everblockModal .everblock-modal-image {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 80vh;
+}
 .ever-model-product.card {
     border: 1px solid #dee2e6; /* même valeur que Bootstrap 4 */
     border-radius: 0.25rem;
