@@ -194,6 +194,7 @@ class Everblock extends Module
             && $this->registerHook('actionRegisterBlock')
             && $this->registerHook('beforeRenderingEverblockSpecialEvent')
             && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
+            && $this->installModuleTab('AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'))
             && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
             && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
             && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes')))
@@ -226,6 +227,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_STORELOCATOR_TOGGLE');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
+            && $this->uninstallModuleTab('AdminEverBlockConfiguration')
             && $this->uninstallModuleTab('AdminEverBlock')
             && $this->uninstallModuleTab('AdminEverBlockHook')
             && $this->uninstallModuleTab('AdminEverBlockShortcode')
