@@ -35,7 +35,18 @@
                 </button>
                 {$everblock_modal->content nofilter}
                 {if isset($everblock_modal->file) && $everblock_modal->file}
-                    <p><a href="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" target="_blank">{l s='Download file' mod='everblock'}</a></p>
+                    <div class="everblock-modal-media mt-3">
+                        {if isset($everblock_modal->file_render_type) && $everblock_modal->file_render_type == 'image'}
+                            <img src="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" alt="" class="img-fluid" loading="lazy" />
+                        {elseif isset($everblock_modal->file_render_type) && $everblock_modal->file_render_type == 'video'}
+                            <video controls preload="metadata" class="w-100">
+                                <source src="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" type="video/{$everblock_modal->file_extension|escape:'htmlall':'UTF-8'}" />
+                                {l s='Your browser does not support the video tag.' mod='everblock'}
+                            </video>
+                        {else}
+                            <iframe src="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" class="w-100 everblock-modal-iframe" frameborder="0" allowfullscreen></iframe>
+                        {/if}
+                    </div>
                 {/if}
             </div>
         </div>

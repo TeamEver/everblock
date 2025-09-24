@@ -4504,12 +4504,28 @@ class Everblock extends Module
 
     public function hookDisplayReassurance($params)
     {
-        if (!Tools::getValue('id_product')) {
+        if (!isset($this->context->controller) || !is_object($this->context->controller)) {
+            return;
+        }
+
+        if (!class_exists('ProductController') || !($this->context->controller instanceof ProductController)) {
+            return;
+        }
+
+        $idProduct = (int) Tools::getValue('id_product');
+        if (!$idProduct
+            && property_exists($this->context->controller, 'product')
+            && isset($this->context->controller->product->id)
+        ) {
+            $idProduct = (int) $this->context->controller->product->id;
+        }
+
+        if ($idProduct <= 0) {
             return;
         }
 
         $modal = EverblockModal::getByProductId(
-            (int) Tools::getValue('id_product'),
+            $idProduct,
             (int) $this->context->shop->id
         );
 
