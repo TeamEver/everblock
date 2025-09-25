@@ -25,29 +25,110 @@
 }
 /* Lookbook product markers */
 .lookbook-marker {
-    width: 2rem;
-    height: 2rem;
+    position: relative;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: 50%;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #fff;
+    border: 3px solid #f25b76;
+    box-shadow: 0 12px 24px rgba(242, 91, 118, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.lookbook-marker::after {
+    content: "";
+    display: block;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background-color: #f25b76;
+}
+
+.lookbook-marker:focus,
+.lookbook-marker:hover {
+    transform: scale(1.05);
+    box-shadow: 0 16px 32px rgba(242, 91, 118, 0.35);
+}
+
 .prettyblock-lookbook {
     width: 100%;
     display: grid;
-    gap: 1rem;
+    gap: 1.5rem;
+    align-items: start;
 }
+
 .prettyblock-lookbook.columns-2 {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+
 .prettyblock-lookbook.columns-3 {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+
+.prettyblock-lookbook .lookbook-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.prettyblock-lookbook .lookbook-item--main {
+    padding: 0 1.5rem;
+}
+
+.lookbook-main-wrapper {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.lookbook-helper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    background-color: #fff;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    font-size: 0.95rem;
+    color: #3a3a3a;
+}
+
+.lookbook-helper-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(242, 91, 118, 0.12), rgba(242, 91, 118, 0.25));
+    color: #f25b76;
+}
+
+.lookbook-helper-svg {
+    display: block;
+}
+
+.lookbook-helper-text {
+    font-weight: 600;
+}
+
 @media (max-width: 767.98px) {
     .prettyblock-lookbook.columns-2,
     .prettyblock-lookbook.columns-3 {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 992px) {
+    .prettyblock-lookbook {
+        gap: 0;
+    }
+
+    .prettyblock-lookbook .lookbook-item--main {
+        padding: 0 3rem;
     }
 }
 /* Style pour le panier déroulant */

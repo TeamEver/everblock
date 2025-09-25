@@ -24,10 +24,10 @@
 
 {assign var=columns value=$block.settings.columns|default:'1'}
 <div class="prettyblock-lookbook columns-{$columns}{$prettyblock_visibility_class}"{if $prettyblock_lookbook_wrapper_style} style="{$prettyblock_lookbook_wrapper_style}"{/if}>
-  <div class="lookbook-item">
+  <div class="lookbook-item lookbook-item--before">
     {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-before"}
   </div>
-  <div class="lookbook-item">
+  <div class="lookbook-item lookbook-item--main">
     {capture name='prettyblock_lookbook_inner_style'}
       {if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}
         background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};
@@ -41,7 +41,7 @@
         <div class="row">
       {/if}
 
-      <div class="{if $block.settings.default.container|default:false}container{/if} text-center">
+      <div class="{if $block.settings.default.container|default:false}container{/if} text-center lookbook-main-wrapper">
         {if $block.settings.title}
           <h2 class="mb-3">{$block.settings.title|escape:'htmlall':'UTF-8'}</h2>
         {/if}
@@ -59,8 +59,13 @@
             {/foreach}
           {/if}
         </div>
-        <div class="mt-3">
-          <small class="text-muted">{l s='Cliquez sur un point pour voir le produit' mod='everblock'}</small>
+        <div class="lookbook-helper" role="note">
+          <span class="lookbook-helper-icon" aria-hidden="true">
+            <svg class="lookbook-helper-svg" width="20" height="20" viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+              <path d="M5 2.5a1 1 0 0 0-1 1v10.042a1 1 0 0 0 1.707.707l2.586-2.586 2.48 4.96a1 1 0 0 0 1.342.447l1.856-.928a1 1 0 0 0 .447-1.342l-2.48-4.96 3.293.658A1 1 0 0 0 16 8.52V3.5a1 1 0 0 0-1-1H5z" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="lookbook-helper-text">{l s='Cliquez sur un point pour voir le produit' mod='everblock'}</span>
         </div>
       </div>
 
@@ -69,7 +74,7 @@
       {/if}
     </div>
   </div>
-  <div class="lookbook-item">
+  <div class="lookbook-item lookbook-item--after">
     {prettyblocks_zone zone_name="block-lookbook-{$block.id_prettyblocks}-after"}
   </div>
 </div>
