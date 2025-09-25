@@ -714,15 +714,15 @@ $(document).ready(function(){
                 return;
             }
             completionShown = true;
+            $block.hide();
             if ($message.length) {
-                $block.hide();
                 $message.removeClass('d-none').show();
             }
         }
 
         function hideCompletion() {
+            $block.show();
             if ($message.length) {
-                $block.show();
                 $message.addClass('d-none').hide();
             }
             completionShown = false;
