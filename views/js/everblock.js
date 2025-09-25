@@ -16,6 +16,127 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 $(document).ready(function(){
+    var everblockRecaptchaConfig = typeof everblock_recaptcha !== 'undefined' ? everblock_recaptcha : null;
+    var everblockRecaptchaScriptPromise = null;
+
+    function everblockShouldProtect(action) {
+        if (!everblockRecaptchaConfig || !everblockRecaptchaConfig.enabled || !everblockRecaptchaConfig.siteKey) {
+            return false;
+        }
+        if (!action) {
+            return false;
+        }
+        if (!everblockRecaptchaConfig.contexts) {
+            return false;
+        }
+        var context = everblockRecaptchaConfig.contexts[action];
+        return !!(context && context.enabled);
+    }
+
+    function everblockLoadRecaptchaScript() {
+        if (!everblockRecaptchaConfig || !everblockRecaptchaConfig.enabled || !everblockRecaptchaConfig.siteKey) {
+            return $.Deferred().resolve().promise();
+        }
+        if (everblockRecaptchaScriptPromise) {
+            return everblockRecaptchaScriptPromise;
+        }
+        var deferred = $.Deferred();
+        var script = document.createElement('script');
+        script.src = 'https://www.google.com/recaptcha/api.js?render=' + encodeURIComponent(everblockRecaptchaConfig.siteKey);
+        script.async = true;
+        script.onload = function () {
+            deferred.resolve();
+        };
+        script.onerror = function () {
+            deferred.reject();
+        };
+        document.head.appendChild(script);
+        everblockRecaptchaScriptPromise = deferred.promise();
+        return everblockRecaptchaScriptPromise;
+    }
+
+    function everblockRequestRecaptchaToken(action) {
+        var deferred = $.Deferred();
+        if (!everblockShouldProtect(action)) {
+            deferred.resolve('');
+            return deferred.promise();
+        }
+        everblockLoadRecaptchaScript().then(function () {
+            if (!window.grecaptcha || typeof grecaptcha.execute !== 'function') {
+                deferred.reject();
+                return;
+            }
+            grecaptcha.ready(function () {
+                try {
+                    grecaptcha.execute(everblockRecaptchaConfig.siteKey, {action: action}).then(function (token) {
+                        deferred.resolve(token || '');
+                    }).catch(function () {
+                        deferred.reject();
+                    });
+                } catch (error) {
+                    deferred.reject();
+                }
+            });
+        }).fail(function () {
+            deferred.reject();
+        });
+
+        return deferred.promise();
+    }
+
+    function everblockUpdateRecaptchaToken($form) {
+        var action = ($form.data('recaptcha-action') || $form.find('input[name="everblock_recaptcha_action"]').val() || '').toString();
+        if (!everblockShouldProtect(action)) {
+            return $.Deferred().resolve('').promise();
+        }
+
+        return everblockRequestRecaptchaToken(action).then(function (token) {
+            var $tokenField = $form.find('input.everblock-recaptcha-token');
+            if ($tokenField.length === 0) {
+                $tokenField = $('<input>', {
+                    type: 'hidden',
+                    name: 'g-recaptcha-response',
+                    'class': 'everblock-recaptcha-token',
+                    value: ''
+                }).appendTo($form);
+            }
+            $tokenField.val(token || '');
+
+            if ($form.find('input[name="everblock_recaptcha_action"]').length === 0) {
+                $('<input>', {
+                    type: 'hidden',
+                    name: 'everblock_recaptcha_action',
+                    value: action
+                }).appendTo($form);
+            }
+
+            return token || '';
+        });
+    }
+
+    function everblockScanRecaptchaForms() {
+        if (!everblockRecaptchaConfig || !everblockRecaptchaConfig.enabled) {
+            return;
+        }
+        var shouldLoad = false;
+        $('form.everblock-recaptcha-form').each(function () {
+            var $form = $(this);
+            var action = $form.data('recaptcha-action') || $form.find('input[name="everblock_recaptcha_action"]').val();
+            if (everblockShouldProtect(action)) {
+                shouldLoad = true;
+                return false;
+            }
+        });
+        if (shouldLoad) {
+            everblockLoadRecaptchaScript();
+        }
+    }
+
+    everblockScanRecaptchaForms();
+    $(document).ajaxComplete(function () {
+        everblockScanRecaptchaForms();
+    });
+
     var $wheelCatSelects = $('select[name$="[id_categories][]"], select[name$="[id_categories]"]');
     if ($wheelCatSelects.length) {
         if ($.fn.select2) {
@@ -193,27 +314,49 @@ $(document).ready(function(){
     });
     $(document).on('submit', '.evercontactform', function(e) {
         e.preventDefault();
-        let $form = $(this);
-        let formData = new FormData(this);
+        var $form = $(this);
 
-        $.ajax({
-            url: atob(evercontact_link),
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(modal) {
-                $('#everblockModal').remove();
-                $('body').append(modal);
-                $('#evercontactModal').modal('show');
-                $('#evercontactModal').on('hidden.bs.modal', function () {
-                    $(this).remove();
-                    $('.modal-backdrop').remove();
-                });
-            },
-            error: function(xhr) {
-                console.log(xhr.responseText);
-            }
+        everblockUpdateRecaptchaToken($form).always(function () {
+            var formData = new FormData($form.get(0));
+
+            $.ajax({
+                url: atob(evercontact_link),
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(modal) {
+                    $('#everblockModal').remove();
+                    $('body').append(modal);
+                    $('#evercontactModal').modal('show');
+                    $('#evercontactModal').on('hidden.bs.modal', function () {
+                        $(this).remove();
+                        $('.modal-backdrop').remove();
+                    });
+                },
+                error: function(xhr) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+    });
+    $(document).on('submit', 'form.everblock-recaptcha-form', function (e) {
+        var $form = $(this);
+        if ($form.hasClass('evercontactform')) {
+            return;
+        }
+        if ($form.data('everblockRecaptchaSubmitting')) {
+            $form.removeData('everblockRecaptchaSubmitting');
+            return;
+        }
+        var action = $form.data('recaptcha-action') || $form.find('input[name="everblock_recaptcha_action"]').val();
+        if (!everblockShouldProtect(action)) {
+            return;
+        }
+        e.preventDefault();
+        everblockUpdateRecaptchaToken($form).always(function () {
+            $form.data('everblockRecaptchaSubmitting', true);
+            $form.get(0).submit();
         });
     });
     $('div[data-evermodal]').each(function() {

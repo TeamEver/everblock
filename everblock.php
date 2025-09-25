@@ -35,6 +35,7 @@ use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\ImportFile;
+use Everblock\Tools\Service\RecaptchaValidator;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
@@ -129,6 +130,16 @@ class Everblock extends Module
         Configuration::updateValue('EVERBLOCK_SOLDOUT_FLAG', 0);
         Configuration::updateValue('EVERBLOCK_LOW_STOCK_THRESHOLD', 5);
         Configuration::updateValue('EVERBLOCK_STORELOCATOR_TOGGLE', 0);
+        Configuration::updateValue('EVERBLOCK_RECAPTCHA_ENABLED', 0);
+        Configuration::updateValue('EVERBLOCK_RECAPTCHA_SITE_KEY', '');
+        Configuration::updateValue('EVERBLOCK_RECAPTCHA_SECRET_KEY', '');
+        Configuration::updateValue('EVERBLOCK_RECAPTCHA_PROTECT_CONTACT', 0);
+        Configuration::updateValue('EVERBLOCK_RECAPTCHA_MIN_SCORE_CONTACT', '0.5');
+        $recaptchaMessage = [];
+        foreach (Language::getLanguages(false) as $lang) {
+            $recaptchaMessage[$lang['id_lang']] = $this->l('Your submission could not be validated. Please try again.');
+        }
+        Configuration::updateValue('EVERBLOCK_RECAPTCHA_ERROR_MESSAGE', $recaptchaMessage, true);
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -190,6 +201,7 @@ class Everblock extends Module
         }
         return (parent::install()
             && $this->registerHook('displayHeader')
+            && $this->registerHook('actionFrontControllerInitBefore')
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->registerHook('actionRegisterBlock')
             && $this->registerHook('beforeRenderingEverblockSpecialEvent')
@@ -225,6 +237,12 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES');
         Configuration::deleteByName('EVERBLOCK_LOW_STOCK_THRESHOLD');
         Configuration::deleteByName('EVERBLOCK_STORELOCATOR_TOGGLE');
+        Configuration::deleteByName('EVERBLOCK_RECAPTCHA_ENABLED');
+        Configuration::deleteByName('EVERBLOCK_RECAPTCHA_SITE_KEY');
+        Configuration::deleteByName('EVERBLOCK_RECAPTCHA_SECRET_KEY');
+        Configuration::deleteByName('EVERBLOCK_RECAPTCHA_PROTECT_CONTACT');
+        Configuration::deleteByName('EVERBLOCK_RECAPTCHA_MIN_SCORE_CONTACT');
+        Configuration::deleteByName('EVERBLOCK_RECAPTCHA_ERROR_MESSAGE');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
@@ -817,6 +835,7 @@ class Everblock extends Module
             'google_maps' => $this->l('Google Maps'),
             'migration' => $this->l('Migration des URL'),
             'tools' => $this->l('Outils'),
+            'protection' => $this->l('Protection'),
             'files' => $this->l('Gestionnaire de fichiers'),
             'flags' => $this->l('Flags'),
         ];
@@ -850,6 +869,7 @@ class Everblock extends Module
             'google_maps' => 'google_maps.tpl',
             'migration' => 'migration.tpl',
             'tools' => 'tools.tpl',
+            'protection' => 'protection.tpl',
             'files' => 'files.tpl',
             'flags' => 'flags.tpl',
             'holiday' => 'holiday.tpl',
@@ -873,6 +893,85 @@ class Everblock extends Module
                 'tab' => $tab,
                 'html_content' => $this->context->smarty->fetch($docPath),
             ];
+        }
+
+        $form['form']['input'][] = [
+            'type' => 'html',
+            'name' => 'anchor_everblock_protection',
+            'html_content' => '<span id="everblock_protection"></span>',
+            'tab' => 'protection',
+        ];
+
+        $protectionInputs = [
+            [
+                'type' => 'switch',
+                'label' => $this->l('Enable Invisible reCAPTCHA'),
+                'desc' => $this->l('Activates Google reCAPTCHA v3 for Ever Block contact forms.'),
+                'name' => 'EVERBLOCK_RECAPTCHA_ENABLED',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'EVERBLOCK_RECAPTCHA_ENABLED_on',
+                        'value' => 1,
+                        'label' => $this->l('Yes'),
+                    ],
+                    [
+                        'id' => 'EVERBLOCK_RECAPTCHA_ENABLED_off',
+                        'value' => 0,
+                        'label' => $this->l('No'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Site key'),
+                'desc' => $this->l('Public key provided by Google for your Invisible reCAPTCHA property.'),
+                'name' => 'EVERBLOCK_RECAPTCHA_SITE_KEY',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Secret key'),
+                'desc' => $this->l('Secret key used server-side to verify reCAPTCHA tokens.'),
+                'name' => 'EVERBLOCK_RECAPTCHA_SECRET_KEY',
+            ],
+            [
+                'type' => 'textarea',
+                'label' => $this->l('Error message'),
+                'desc' => $this->l('Displayed to the customer when the anti-spam verification fails.'),
+                'name' => 'EVERBLOCK_RECAPTCHA_ERROR_MESSAGE',
+                'lang' => true,
+                'rows' => 3,
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Protect Everblock contact forms'),
+                'desc' => $this->l('Applies reCAPTCHA to the contact forms created with Ever Block shortcodes.'),
+                'name' => 'EVERBLOCK_RECAPTCHA_PROTECT_CONTACT',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'EVERBLOCK_RECAPTCHA_PROTECT_CONTACT_on',
+                        'value' => 1,
+                        'label' => $this->l('Yes'),
+                    ],
+                    [
+                        'id' => 'EVERBLOCK_RECAPTCHA_PROTECT_CONTACT_off',
+                        'value' => 0,
+                        'label' => $this->l('No'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Minimum score for Everblock contact forms'),
+                'desc' => $this->l('Allowed range: 0 to 1. Requests scoring below this threshold will be rejected.'),
+                'name' => 'EVERBLOCK_RECAPTCHA_MIN_SCORE_CONTACT',
+            ],
+        ];
+
+        foreach ($protectionInputs as $input) {
+            $input['tab'] = 'protection';
+            $form['form']['input'][] = $input;
         }
 
         $form['form']['input'][] = [
@@ -1780,6 +1879,12 @@ class Everblock extends Module
             'EVERPSCSS_P_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_P_LLOREM_NUMBER'),
             'EVERPSCSS_S_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_S_LLOREM_NUMBER'),
             'EVERBLOCK_TINYMCE' => Configuration::get('EVERBLOCK_TINYMCE'),
+            'EVERBLOCK_RECAPTCHA_ENABLED' => Configuration::get('EVERBLOCK_RECAPTCHA_ENABLED'),
+            'EVERBLOCK_RECAPTCHA_SITE_KEY' => Configuration::get('EVERBLOCK_RECAPTCHA_SITE_KEY'),
+            'EVERBLOCK_RECAPTCHA_SECRET_KEY' => Configuration::get('EVERBLOCK_RECAPTCHA_SECRET_KEY'),
+            'EVERBLOCK_RECAPTCHA_PROTECT_CONTACT' => Configuration::get('EVERBLOCK_RECAPTCHA_PROTECT_CONTACT'),
+            'EVERBLOCK_RECAPTCHA_MIN_SCORE_CONTACT' => Configuration::get('EVERBLOCK_RECAPTCHA_MIN_SCORE_CONTACT'),
+            'EVERBLOCK_RECAPTCHA_ERROR_MESSAGE' => $this->getConfigInMultipleLangs('EVERBLOCK_RECAPTCHA_ERROR_MESSAGE'),
             'EVERBLOCK_DISABLE_WEBP' => Configuration::get('EVERBLOCK_DISABLE_WEBP'),
             'EVERPS_OLD_URL' => '',
             'EVERPS_NEW_URL' => '',
@@ -1854,6 +1959,58 @@ class Everblock extends Module
             ) {
                 $this->postErrors[] = $this->l('Error: selected features are not valid');
             }
+
+            $booleanKeys = [
+                'EVERBLOCK_RECAPTCHA_ENABLED',
+                'EVERBLOCK_RECAPTCHA_PROTECT_CONTACT',
+            ];
+            foreach ($booleanKeys as $booleanKey) {
+                if (Tools::getValue($booleanKey) !== ''
+                    && !Validate::isBool(Tools::getValue($booleanKey))
+                ) {
+                    $this->postErrors[] = sprintf(
+                        $this->l('Error: the field "%s" must be boolean.'),
+                        $booleanKey
+                    );
+                }
+            }
+
+            $scoreKeys = [
+                'EVERBLOCK_RECAPTCHA_MIN_SCORE_CONTACT',
+            ];
+
+            foreach ($scoreKeys as $scoreKey) {
+                $scoreValue = Tools::getValue($scoreKey);
+                if ($scoreValue === '' || $scoreValue === null) {
+                    continue;
+                }
+
+                $normalizedScore = str_replace(',', '.', (string) $scoreValue);
+                if (!Validate::isFloat($normalizedScore)) {
+                    $this->postErrors[] = sprintf(
+                        $this->l('Error: the field "%s" must be a number between 0 and 1.'),
+                        $scoreKey
+                    );
+                    continue;
+                }
+
+                $floatScore = (float) $normalizedScore;
+                if ($floatScore < 0 || $floatScore > 1) {
+                    $this->postErrors[] = sprintf(
+                        $this->l('Error: the field "%s" must be between 0 and 1.'),
+                        $scoreKey
+                    );
+                }
+            }
+
+            if (Tools::getValue('EVERBLOCK_RECAPTCHA_ENABLED')) {
+                if (!Tools::getValue('EVERBLOCK_RECAPTCHA_SITE_KEY')) {
+                    $this->postErrors[] = $this->l('Error: the reCAPTCHA site key is required when protection is enabled.');
+                }
+                if (!Tools::getValue('EVERBLOCK_RECAPTCHA_SECRET_KEY')) {
+                    $this->postErrors[] = $this->l('Error: the reCAPTCHA secret key is required when protection is enabled.');
+                }
+            }
         }
     }
 
@@ -1895,6 +2052,7 @@ class Everblock extends Module
         }
         $tabTitle = [];
         $tabContent = [];
+        $recaptchaMessages = [];
         foreach (Language::getLanguages(false) as $lang) {
             $tabTitle[$lang['id_lang']] = (Tools::getValue(
                 'EVER_TAB_TITLE_' . $lang['id_lang']
@@ -1908,6 +2066,9 @@ class Everblock extends Module
             ? Tools::getValue(
                 'EVER_TAB_CONTENT_' . $lang['id_lang']
             ) : '';
+            $recaptchaMessages[$lang['id_lang']] = (string) Tools::getValue(
+                'EVERBLOCK_RECAPTCHA_ERROR_MESSAGE_' . $lang['id_lang']
+            );
         }
         Configuration::updateValue(
             'EVER_TAB_CATS',
@@ -1923,6 +2084,35 @@ class Everblock extends Module
             'EVER_TAB_CONTENT',
             $tabContent,
             true
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_RECAPTCHA_ERROR_MESSAGE',
+            $recaptchaMessages,
+            true
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_RECAPTCHA_ENABLED',
+            (int) (bool) Tools::getValue('EVERBLOCK_RECAPTCHA_ENABLED')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_RECAPTCHA_SITE_KEY',
+            trim((string) Tools::getValue('EVERBLOCK_RECAPTCHA_SITE_KEY'))
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_RECAPTCHA_SECRET_KEY',
+            trim((string) Tools::getValue('EVERBLOCK_RECAPTCHA_SECRET_KEY'))
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_RECAPTCHA_PROTECT_CONTACT',
+            (int) (bool) Tools::getValue('EVERBLOCK_RECAPTCHA_PROTECT_CONTACT')
+        );
+        $recaptchaScoreContact = trim((string) Tools::getValue('EVERBLOCK_RECAPTCHA_MIN_SCORE_CONTACT'));
+        if ($recaptchaScoreContact === '') {
+            $recaptchaScoreContact = '0.5';
+        }
+        Configuration::updateValue(
+            'EVERBLOCK_RECAPTCHA_MIN_SCORE_CONTACT',
+            str_replace(',', '.', $recaptchaScoreContact)
         );
         Configuration::updateValue(
             'EVERPSCSS_CACHE',
@@ -2239,1498 +2429,6 @@ class Everblock extends Module
         $css .= "}\n";
 
         file_put_contents($filePath, $css);
-    }
-
-    protected function emptyAllCache()
-    {
-        Tools::clearAllCache();
-        $this->postSuccess[] = $this->l('Cache has been cleared');
-    }
-
-    public function hookActionAdminControllerSetMedia()
-    {
-        $this->context->controller->addCss($this->_path . 'views/css/ever.css');
-        if (Tools::getValue('id_' . $this->name)
-            || Tools::getIsset('add' . $this->name)
-            || Tools::getValue('configure') == $this->name
-            || Tools::getValue('id_' . $this->name . '_faq')
-            || Tools::getIsset('add' . $this->name . '_faq')
-        ) {
-            $this->context->controller->addCSS(
-                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/codemirror.min.css',
-                'all'
-            );
-            $this->context->controller->addCSS(
-                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/theme/dracula.min.css',
-                'all'
-            );
-            $this->context->controller->addJS(
-                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/codemirror.min.js',
-                'all'
-            );
-            $this->context->controller->addJS(
-                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/mode/javascript/javascript.min.js',
-                'all'
-            );
-            if (Tools::getValue('configure') == $this->name) {
-                $this->context->controller->addJs($this->_path . 'views/js/admin.js');
-            }
-            if ((bool) Configuration::get('EVERBLOCK_TINYMCE') === true
-                && Tools::getValue('configure') != $this->name
-            ) {
-                $this->context->controller->addJs($this->_path . 'views/js/adminTinyMce.js');
-            }
-        }
-    }
-
-
-    public function hookActionClearCache($params)
-    {
-        EverblockTools::warmup(Tools::getShopDomainSsl(true) . __PS_BASE_URI__);
-    }
-
-    public function hookActionCmsPageFormBuilderModifier($params)
-    {
-        /** @var FormBuilderInterface $formBuilder */
-        $formBuilder = $params['form_builder'];
-        $idCms = (int) $params['id'];
-
-        $stores = Store::getStores((int) Context::getContext()->language->id);
-        $choices = [];
-        $selectedStoreId = null;
-
-        foreach ($stores as $store) {
-            $choices[$store['name']] = (int) $store['id_store'];
-
-            // Vérifie si ce store est lié à cette page CMS
-            $cmsLinked = (int) Configuration::get('QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $store['id_store']);
-            if ($cmsLinked === $idCms) {
-                $selectedStoreId = (int) $store['id_store'];
-            }
-        }
-        $formBuilder->add('qcd_associated_store', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
-            'label' => $this->l('Associate with store'),
-            'required' => false,
-            'choices' => $choices,
-            'placeholder' => $this->l('Select a store'),
-            'data' => $selectedStoreId,
-            'attr' => [
-                'class' => 'form-select',
-            ],
-        ]);
-    }
-
-    public function hookActionObjectCmsUpdateAfter($params)
-    {
-        /** @var CMS $cms */
-        $cms = $params['object'];
-        $cmsPage = Tools::getValue('cms_page');
-
-        if (!empty($cmsPage['qcd_associated_store'])) {
-            $id_store = (int) $cmsPage['qcd_associated_store'];
-            Configuration::updateValue(
-                'QCD_ASSOCIATED_CMS_PAGE_ID_STORE_' . $id_store,
-                (int) $cms->id,
-                false, // id_lang
-                $this->context->shop->id // id_shop
-            );
-        }
-    }
-
-    public function hookActionOutputHTMLBefore($params)
-    {
-        if (Tools::getValue('evermaintenancepassword')
-            && Tools::getValue('evermaintenancepassword') == Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD')
-        ) {
-            $userIp = Tools::getRemoteAddr();  // Obtenir l'IP de l'utilisateur
-
-            // Récupérer la liste actuelle des IPs autorisées depuis la configuration
-            $ips = Configuration::get('PS_MAINTENANCE_IP');
-
-            if ($ips) {
-                $ipsArray = explode(',', $ips);  // Transformer la chaîne en tableau
-            } else {
-                $ipsArray = [];
-            }
-
-            // Vérifier si l'IP de l'utilisateur n'est pas déjà dans la liste
-            if (!in_array($userIp, $ipsArray)) {
-                $ipsArray[] = $userIp;  // Ajouter l'IP de l'utilisateur au tableau
-                $newIps = implode(',', $ipsArray);  // Transformer le tableau en chaîne
-                Configuration::updateValue('PS_MAINTENANCE_IP', $newIps);  // Mettre à jour la configuration avec la nouvelle liste d'IPs
-            }
-            Tools::redirect(
-                Tools::getHttpHost(true) . __PS_BASE_URI__
-            );
-        }
-        $txt = $params['html'];
-        try {
-            $context = Context::getContext();
-            // @Todo : move to EverblockShortcodes
-            $txt = EverblockTools::renderShortcodes($txt, $context, $this);
-            $params['html'] = $txt;
-            return $params['html'];
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog(
-                'Ever Block hookActionOutputHTMLBefore : ' . $e->getMessage()
-            );
-            EverblockTools::setLog(
-                $this->name . date('y-m-d'),
-                $e->getMessage()
-            );
-            return $params['html'];
-        }
-    }
-
-    public function hookDisplayMaintenance($params)
-    {
-        if (Configuration::get('EVERBLOCK_MAINTENANCE_PSSWD')) {
-            return $this->display(__FILE__, 'views/templates/hook/maintenance.tpl');
-        }
-    }
-
-    public function hookDisplayWrapperTop()
-    {
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
-            if (Tools::getValue('id_product')) {
-                $idObj = (int) Tools::getValue('id_product');
-                $objectName = 'Product';
-            }
-            if (Tools::getValue('id_category')) {
-                $idObj = (int) Tools::getValue('id_category');
-                $objectName = 'Category';
-            }
-            if (Tools::getValue('id_manufacturer')) {
-                $idObj = (int) Tools::getValue('id_manufacturer');
-                $objectName = 'Manufacturer';
-            }
-            if (Tools::getValue('id_supplier')) {
-                $idObj = (int) Tools::getValue('id_supplier');
-                $objectName = 'Supplier';
-            }
-            if (Tools::getValue('id_cms')) {
-                $idObj = (int) Tools::getValue('id_cms');
-                $objectName = 'Cms';
-            }
-            if (isset($idObj) && isset($objectName)) {
-                $this->context->smarty->assign(array(
-                    'idObj' => $idObj,
-                    'objectName' => $objectName,
-                    'zone' => 'displayWrapperTop',
-                ));
-                return $this->display(__FILE__, 'views/templates/hook/prettyblocks.tpl');
-            }
-        }
-    }
-
-    public function hookDisplayWrapperBottom()
-    {
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
-            if (Tools::getValue('id_product')) {
-                $idObj = (int) Tools::getValue('id_product');
-                $objectName = 'Product';
-            }
-            if (Tools::getValue('id_category')) {
-                $idObj = (int) Tools::getValue('id_category');
-                $objectName = 'Category';
-            }
-            if (Tools::getValue('id_manufacturer')) {
-                $idObj = (int) Tools::getValue('id_manufacturer');
-                $objectName = 'Manufacturer';
-            }
-            if (Tools::getValue('id_supplier')) {
-                $idObj = (int) Tools::getValue('id_supplier');
-                $objectName = 'Supplier';
-            }
-            if (Tools::getValue('id_cms')) {
-                $idObj = (int) Tools::getValue('id_cms');
-                $objectName = 'Cms';
-            }
-            if (isset($idObj) && isset($objectName)) {
-                $this->context->smarty->assign(array(
-                    'idObj' => $idObj,
-                    'objectName' => $objectName,
-                    'zone' => 'displayWrapperBottom',
-                ));
-                return $this->display(__FILE__, 'views/templates/hook/prettyblocks.tpl');
-            }
-        }
-    }
-
-    public function hookActionCheckoutRender($params)
-    {
-        $stepTitle = $this->getConfigInMultipleLangs('EVEROPTIONS_TITLE');
-        if (!$stepTitle[$this->context->language->id]
-            || empty($stepTitle[$this->context->language->id])
-        ) {
-            return;
-        }
-        $this->translator = Context::getContext()->getTranslator();
-
-        /** @var CheckoutProcess $process */
-        $process = $params['checkoutProcess'];
-        $steps = $process->getSteps();
-
-        $everStep = new EverblockCheckoutStep(
-            $this->context,
-            $this->translator,
-            Module::getInstanceByName($this->name)
-        );
-        $everStep->setCheckoutProcess($process);
-        switch ((int) Configuration::get('EVEROPTIONS_POSITION')) {
-            case 1:
-                $newSteps = [
-                    $steps[0],
-                    $everStep,
-                    $steps[1],
-                    $steps[2],
-                    $steps[3]
-                ];
-                break;
-            
-            case 2:
-                $newSteps = [
-                    $steps[0],
-                    $steps[1],
-                    $everStep,
-                    $steps[2],
-                    $steps[3]
-                ];
-                break;
-            
-            case 3:
-                $newSteps = [
-                    $steps[0],
-                    $steps[1],
-                    $steps[2],
-                    $everStep,
-                    $steps[3]
-                ];
-                break;
-
-            default:
-                $newSteps = [
-                    $steps[0],
-                    $everStep,
-                    $steps[1],
-                    $steps[2],
-                    $steps[3]
-                ];
-                break;
-        }
-        $process->setSteps($newSteps);
-    }
-
-    public function hookDisplayOrderDetail($params)
-    {
-        return $this->hookDisplayOrderConfirmation($params);
-    }
-
-    public function hookDisplayOrderConfirmation($params)
-    {
-        try {
-            $order = $params['order'];
-            $checkoutSessionData = $this->getCartSessionDatas(
-                $order->id_cart
-            );
-            if (isset($checkoutSessionData) && $checkoutSessionData) {
-                $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
-                if (!$checkoutSessionData || empty($checkoutSessionData)) {
-                    return;
-                }
-                $hiddenKeys = [
-                    'hidden',
-                    'everHide',
-                    'submitCustomStep',
-                    'controller',
-                ];
-                if (is_array($checkoutSessionData) && !empty($checkoutSessionData)) {
-                    foreach ($checkoutSessionData as $key => $value) {
-                        if (in_array($key, $hiddenKeys)) {
-                            unset($checkoutSessionData[$key]);
-                        }
-                        if (empty($value)) {
-                            unset($checkoutSessionData[$key]);
-                        }
-                    }
-                    $this->context->smarty->assign(array(
-                        'checkoutSessionData' => $checkoutSessionData,
-                    ));
-                    return $this->display(__FILE__, 'views/templates/hook/orderconfirmation.tpl');
-                }
-            }
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
-                $this->name . date('y-m-d'),
-                $e->getMessage()
-            );
-        }
-    }
-
-    public function hookDisplayAdminOrder($params)
-    {
-        try {
-            $order = new Order((int) $params['id_order']);
-            $checkoutSessionData = $this->getCartSessionDatas(
-                $order->id_cart
-            );
-            if (isset($checkoutSessionData) && $checkoutSessionData) {
-                $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
-                if (is_array($checkoutSessionData) && !empty($checkoutSessionData)) {
-                    $this->context->smarty->assign(array(
-                        'checkoutSessionData' => $checkoutSessionData,
-                    ));
-                    return $this->display(__FILE__, 'views/templates/hook/orderconfirmation.tpl');
-                }
-            }
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
-                $this->name . date('y-m-d'),
-                $e->getMessage()
-            );
-        }
-    }
-
-    public function hookDisplayPDFDeliverySlip($params)
-    {
-        return $this->hookDisplayPDFInvoice($params);
-    }
-
-    public function hookDisplayPDFInvoice($params)
-    {
-        try {
-            $order = new Order((int) $params['object']->id_order);
-            $checkoutSessionData = $this->getCartSessionDatas(
-                $order->id_cart
-            );
-            if (isset($checkoutSessionData) && $checkoutSessionData) {
-                $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
-                $hiddenKeys = [
-                    'hidden',
-                    'everHide',
-                    'submitCustomStep',
-                    'controller',
-                ];
-                if (is_array($checkoutSessionData) && !empty($checkoutSessionData)) {
-                    foreach ($checkoutSessionData as $key => $value) {
-                        if (in_array($key, $hiddenKeys)) {
-                            unset($checkoutSessionData[$key]);
-                        }
-                        if (empty($value)) {
-                            unset($checkoutSessionData[$key]);
-                        }
-                    }
-                    $this->context->smarty->assign(array(
-                        'checkoutSessionData' => $checkoutSessionData,
-                    ));
-                    return $this->display(__FILE__, 'views/templates/hook/pdf.tpl');
-                }
-            }
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
-                $this->name . date('y-m-d'),
-                $e->getMessage()
-            );
-        }
-    }
-
-    public function hookActionEmailAddAfterContent($params)
-    {
-        try {
-            $context = Context::getContext();
-            $languageId = $params['id_lang'];
-            $lang = new Language(
-                (int) $languageId
-            );
-            $context->language = $lang;
-            $params['template_txt'] = EverblockTools::renderShortcodes($params['template_txt'], $context, $this);
-            $params['template_html'] = EverblockTools::renderShortcodes($params['template_html'], $context, $this);
-            return $params;
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
-                $this->name . date('y-m-d'),
-                $e->getMessage()
-            );
-        }
-    }
-
-    public function hookActionEmailSendBefore($params)
-    {
-        if (isset($params['templateVars']['{id_order}'])) {
-            try {
-                $id_order = (int) $params['templateVars'] ["{id_order}"];
-                $order = new Order(
-                    (int) $id_order
-                );
-                $checkoutSessionData = $this->getCartSessionDatas(
-                    $order->id_cart
-                );
-                if (isset($checkoutSessionData) && $checkoutSessionData) {
-                    $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
-                    $hiddenKeys = [
-                        'hidden',
-                        'everHide',
-                        'submitCustomStep',
-                        'controller',
-                    ];
-                    if (is_array($checkoutSessionData) && !empty($checkoutSessionData)) {
-                        foreach ($checkoutSessionData as $key => $value) {
-                            if (in_array($key, $hiddenKeys)) {
-                                unset($checkoutSessionData[$key]);
-                            }
-                            if (empty($value)) {
-                                unset($checkoutSessionData[$key]);
-                            }
-                        }
-                        $this->context->smarty->assign(array(
-                            'checkoutSessionData' => $checkoutSessionData,
-                        ));
-                        $optionsHtml = $this->context->smarty->fetch(
-                            $this->local_path . 'views/templates/admin/pdf.tpl'
-                        );
-                        $params['templateVars']['{order_options}'] = $optionsHtml;
-                    }
-                }
-            } catch (Exception $e) {
-                PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-                EverblockTools::setLog(
-                    $this->name . date('y-m-d'),
-                    $e->getMessage()
-                );
-            }
-        }
-        return $params;
-    }
-
-    public static function getCartSessionDatas($idCart)
-    {
-        $sql = new DbQuery;
-        $sql->select('checkout_session_data');
-        $sql->from(
-            'cart'
-        );
-        $sql->where(
-            'id_cart = ' . (int) $idCart
-        );
-        $res =  Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
-        if (!$res) {
-            return;
-        }
-        $checkout_session_data = json_decode(
-           $res
-        );
-        foreach ($checkout_session_data as $key => $value) {
-            if ($key == 'ever-checkout-step') {
-                return $value->everdata;
-            }
-        }
-        return false;
-    }
-
-    public function hookDisplayAdminProductsExtra($params)
-    {
-        if (!$params['id_product']) {
-            return;
-        }
-
-        $productId = (int) $params['id_product'];
-        $tabsNumber = max((int) Configuration::get('EVERPS_TAB_NB'), 1);
-        $flagsNumber = max((int) Configuration::get('EVERPS_FLAG_NB'), 1);
-        
-        $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
-        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
-
-        $tabsData = [];
-        $flagsData = [];
-        for ($i = 1; $i <= $tabsNumber; $i++) {
-            foreach ($everpstabs as $everpstab) {
-                if (Validate::isLoadedObject($everpstab)
-                    && $everpstab->id_tab == $i
-                ) {
-                    $tabsData[$i] = $everpstab;
-                    break;
-                }
-            }
-
-            if (!array_key_exists($i, $tabsData)) {
-                $tabsData[$i] = null;
-            }
-        }
-
-        for ($i = 1; $i <= $flagsNumber; $i++) {
-            foreach ($everpsflags as $everpsflag) {
-                if (Validate::isLoadedObject($everpsflag)
-                    && $everpsflag->id_flag == $i
-                ) {
-                    $flagsData[$i] = $everpsflag;
-                    break;
-                }
-            }
-
-            if (!array_key_exists($i, $flagsData)) {
-                $flagsData[$i] = null;
-            }
-        }
-
-        $everAjaxUrl = Context::getContext()->link->getAdminLink('AdminModules', true, [], ['configure' => $this->name, 'token' => Tools::getAdminTokenLite('AdminModules')]);
-
-        $this->smarty->assign([
-            'tabsData' => $tabsData,
-            'flagsData' => $flagsData,
-            'default_language' => $this->context->employee->id_lang,
-            'ever_languages' => Language::getLanguages(false),
-            'ever_ajax_url' => $everAjaxUrl,
-            'ever_product_id' => $productId,
-            'tabsRange' => range(1, $tabsNumber),
-            'flagsRange' => range(1, $flagsNumber),
-        ]);
-
-        return $this->display(__FILE__, 'views/templates/admin/productTab.tpl');
-    }
-
-    public function hookDisplayAdminProductsMainStepLeftColumnBottom($params)
-    {
-        if (empty($params['id_product'])) {
-            return;
-        }
-        $modal = EverblockModal::getByProductId(
-            (int) $params['id_product'],
-            (int) $this->context->shop->id
-        );
-        $fileUrl = '';
-        $fileName = '';
-        if (!empty($modal->file)) {
-            $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
-            $fileName = basename($modal->file);
-        }
-        $this->smarty->assign([
-            'modal' => $modal,
-            'modal_file_url' => $fileUrl,
-            'modal_file_name' => $fileName,
-            'ever_languages' => Language::getLanguages(false),
-        ]);
-        return $this->display(__FILE__, 'views/templates/admin/productModal.tpl');
-    }
-
-    public function hookActionObjectEverBlockClassDeleteAfter($params)
-    {
-        $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverBlockClass_getBlocks_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'fetchInstagramImages';
-        EverblockCache::cacheDropByPattern($cachePattern);
-    }
-
-    public function hookActionObjectEverBlockClassUpdateAfter($params)
-    {
-        $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverBlockClass_getBlocks_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'fetchInstagramImages';
-        EverblockCache::cacheDropByPattern($cachePattern);
-    }
-
-    public function hookActionObjectEverBlockFlagsDeleteAfter($params)
-    {
-        $cachePattern = $this->name . 'EverblockFlagsClass_getByIdProduct_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverBlockFlags_getBlocks_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
-        EverblockCache::cacheDrop($cacheId);
-        $this->updateProductFlagsHook();
-    }
-
-    public function hookActionObjectEverBlockFlagsUpdateAfter($params)
-    {
-        $cachePattern = $this->name . 'EverblockFlagsClass_getByIdProduct_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
-        EverblockCache::cacheDrop($cacheId);
-        $this->updateProductFlagsHook();
-    }
-
-    public function hookActionObjectEverblockFaqDeleteAfter($params)
-    {
-        $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverblockShortcode_getFaqByTagName_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'fetchInstagramImages';
-        EverblockCache::cacheDropByPattern($cachePattern);
-    }
-
-    public function hookActionObjectEverblockFaqUpdateAfter($params)
-    {
-        $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverblockShortcode_getFaqByTagName_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-    }
-
-    public function hookActionObjectProductUpdateAfter($params)
-    {
-        if (php_sapi_name() == 'cli') {
-            return;
-        }
-        $controllerTypes = ['admin', 'moduleadmin'];
-        $context = Context::getContext();
-        if (!in_array($context->controller->controller_type, $controllerTypes)) {
-            return;
-        }
-        try {
-            // Traitement des tabs
-            $tabsNumber = (int) Configuration::get('EVERPS_TAB_NB');
-            if ($tabsNumber < 1) {
-                $tabsNumber = 1;
-                Configuration::updateValue('EVERPS_TAB_NB', 1);
-            }
-            $tabsRange = range(1, $tabsNumber);
-            foreach ($tabsRange as $tab) {
-                $everpstabs = EverblockTabsClass::getByIdProductIdTab(
-                    (int) $params['object']->id,
-                    (int) $context->shop->id,
-                    (int) $tab
-                );
-                foreach (Language::getLanguages(true) as $language) {
-                    $tabTitle = Tools::getValue((int) $tab . '_everblock_title_' . $language['id_lang']);
-                    if ($tabTitle && !Validate::isCleanHtml($tabTitle)) {
-                        die(json_encode(
-                            [
-                                'return' => false,
-                                'error' => $this->l('Title is not valid'),
-                            ]
-                        ));
-                    } else {
-                        $everpstabs->title[$language['id_lang']] = $tabTitle;
-                    }
-                    
-                    $tabContent = Tools::getValue((int) $tab . '_everblock_content_' . $language['id_lang']);
-                    if ($tabContent && !Validate::isCleanHtml($tabContent)) {
-                        die(json_encode(
-                            [
-                                'return' => false,
-                                'error' => $this->l('Content is not valid'),
-                            ]
-                        ));
-                    } else {
-                        $everpstabs->content[$language['id_lang']] = $tabContent;
-                    }
-                }
-                $everpstabs->id_tab = (int) $tab;
-                $everpstabs->id_product = (int) $params['object']->id;
-                $everpstabs->id_shop = (int) $context->shop->id;
-                $everpstabs->save();
-            }
-
-            // Traitement des flags
-            $flagsNumber = (int) Configuration::get('EVERPS_FLAG_NB');
-            if ($flagsNumber < 1) {
-                $flagsNumber = 1;
-                Configuration::updateValue('EVERPS_FLAG_NB', 1);
-            }
-            $flagsRange = range(1, $flagsNumber);
-            foreach ($flagsRange as $flag) {
-                $everpsflags = EverblockFlagsClass::getByIdProductIdFlag(
-                    (int) $params['object']->id,
-                    (int) $context->shop->id,
-                    (int) $flag
-                );
-                foreach (Language::getLanguages(true) as $language) {
-                    $flagTitle = Tools::getValue((int) $flag . '_everflag_title_' . $language['id_lang']);
-                    if ($flagTitle && !Validate::isCleanHtml($flagTitle)) {
-                        die(json_encode(
-                            [
-                                'return' => false,
-                                'error' => $this->l('Title is not valid'),
-                            ]
-                        ));
-                    } else {
-                        $everpsflags->title[$language['id_lang']] = $flagTitle;
-                    }
-                    
-                    $flagContent = Tools::getValue((int) $flag . '_everflag_content_' . $language['id_lang']);
-                    if ($flagContent && !Validate::isCleanHtml($flagContent)) {
-                        die(json_encode(
-                            [
-                                'return' => false,
-                                'error' => $this->l('Content is not valid'),
-                            ]
-                        ));
-                    } else {
-                        $everpsflags->content[$language['id_lang']] = $flagContent;
-                    }
-            }
-            $everpsflags->id_flag = (int) $flag;
-            $everpsflags->id_product = (int) $params['object']->id;
-            $everpsflags->id_shop = (int) $context->shop->id;
-            $everpsflags->save();
-        }
-
-            // Modal management
-            $modal = EverblockModal::getByProductId(
-                (int) $params['object']->id,
-                (int) $context->shop->id
-            );
-            foreach (Language::getLanguages(true) as $language) {
-                $content = Tools::getValue('everblock_modal_content_' . $language['id_lang']);
-                if ($content && !Validate::isCleanHtml($content)) {
-                    die(json_encode([
-                        'return' => false,
-                        'error' => $this->l('Content is not valid'),
-                    ]));
-                }
-                $modal->content[$language['id_lang']] = $content;
-            }
-            if (Tools::getValue('everblock_modal_file_delete')) {
-                if (!empty($modal->file)) {
-                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
-                    if (file_exists($oldFile)) {
-                        @unlink($oldFile);
-                    }
-                    $modal->file = '';
-                }
-            }
-            if (isset($_FILES['everblock_modal_file']) && is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
-                $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
-                if (!is_dir($dir)) {
-                    @mkdir($dir, 0755, true);
-                }
-                if (!empty($modal->file)) {
-                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
-                    if (file_exists($oldFile)) {
-                        @unlink($oldFile);
-                    }
-                }
-                $ext = pathinfo($_FILES['everblock_modal_file']['name'], PATHINFO_EXTENSION);
-                $name = uniqid('everblock_modal_') . '.' . $ext;
-                if (move_uploaded_file($_FILES['everblock_modal_file']['tmp_name'], $dir . $name)) {
-                    $modal->file = 'everblockmodal/' . $name;
-                }
-            }
-            $modal->id_product = (int) $params['object']->id;
-            $modal->id_shop = (int) $context->shop->id;
-            $modal->save();
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
-                $this->name . date('y-m-d'),
-                $e->getMessage()
-            );
-        }
-    }
-
-    public function hookActionObjectProductAddAfter($params)
-    {
-        $this->hookActionObjectProductUpdateAfter($params);
-    }
-
-    public function hookActionObjectProductDeleteAfter($params)
-    {
-        if (php_sapi_name() == 'cli') {
-            return;
-        }
-        $controllerTypes = ['admin', 'moduleadmin'];
-        if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
-            return;
-        }
-        $everpstabs = EverblockTabsClass::getByIdProductInAdmin(
-            (int) $params['object']->id,
-            (int) $this->context->shop->id
-        );
-        foreach ($everpstabs as $everpstab) {
-            if (Validate::isLoadedObject($everpstab)) {
-                $everpstab->delete();
-            }
-        }
-        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin(
-            (int) $params['object']->id,
-            (int) $this->context->shop->id
-        );
-        foreach ($everpsflags as $everpsflag) {
-            if (Validate::isLoadedObject($everpsflag)) {
-                $everpsflag->delete();
-            }
-        }
-    }
-
-    public function hookActionProductFlagsModifier($params)
-    {
-        try {
-            $productId = (int) $params['product']['id_product'];
-            $shopId = (int) Context::getContext()->shop->id;
-            $languageId = (int) Context::getContext()->language->id;
-            // Current product flags
-            $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
-            if ($everpsflags && !empty($everpsflags)) {
-                foreach ($everpsflags as $everpsflag) {
-                    if (Validate::isLoadedObject($everpsflag) && $everpsflag->title && $everpsflag->content) {
-                        $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
-                            'type' => 'custom-flag ' . $everpsflag->id_flag,
-                            'label' => strip_tags($everpsflag->content),
-                            'module' => $this->name,
-                        ];
-                    }
-                }
-            }
-            // Product features as flags
-            $bannedFeatures = $this->getFeaturesAsFlags();
-            $features = $this->getFeatures($productId);
-            if (!empty($features) && !empty($bannedFeatures)) {
-                foreach ($features as $feature) {
-                    if (in_array($feature['id_feature'], $bannedFeatures)) {
-                        $params['flags'][] = array(
-                            'type' => 'ever_feature_flag_' . $feature['id_feature'],
-                            'label' => $feature['value'],
-                            'module' => $this->name,
-                            'style' => 'style="background-color:' . Configuration::get('EVERPS_FEATURE_COLOR_' . $feature['id_feature']) . ';color:#fff;"'
-                        );
-                    }
-                }
-            }
-            if (Configuration::get('EVERBLOCK_SOLDOUT_FLAG')) {
-                $qty = StockAvailable::getQuantityAvailableByProduct($productId, 0, $shopId);
-                $allowOos = StockAvailable::outOfStock($productId, $shopId);
-                if ($allowOos == 2) {
-                    $allowOos = (int) Configuration::get('PS_ORDER_OUT_OF_STOCK');
-                }
-                if ($qty <= 0 && !$allowOos) {
-                    $params['flags']['everblock_soldout'] = [
-                        'type' => 'out_of_stock',
-                        'label' => $this->l('Sold out'),
-                        'module' => $this->name,
-                    ];
-                }
-            }
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog('Error on hookActionProductFlagsModifier : ' . $e->getMessage());
-            EverblockTools::setLog(
-                $this->name . date('y-m-d'),
-                $e->getMessage()
-            );
-            return false;
-        }
-    }
-
-    protected function getFeatures($productId)
-    {
-        $cacheId = $this->name . '_getFeatures_' . (int) $productId;
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            $sql = 'SELECT fp.id_feature, fv.value
-                    FROM ' . _DB_PREFIX_ . 'feature_product fp
-                    JOIN ' . _DB_PREFIX_ . 'feature_value_lang fv ON fp.id_feature_value = fv.id_feature_value
-                    WHERE fp.id_product = ' . (int) $productId . '
-                    AND fv.id_lang = ' . (int) $this->context->language->id;
-            $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            EverblockCache::cacheStore($cacheId, $result);
-            return $result;
-        }
-        return EverblockCache::cacheRetrieve($cacheId);
-    }
-
-    protected function getFeaturesAsFlags()
-    {
-        $cacheId = $this->name . '_getFeaturesAsFlags_' . (int) $this->context->shop->id;
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            $bannedFeatures = Configuration::get('EVERPS_FEATURES_AS_FLAGS');
-            if (!$bannedFeatures) {
-                $bannedFeatures = [];
-            } else {
-                $bannedFeatures = json_decode($bannedFeatures);
-            }
-            EverblockCache::cacheStore($cacheId, $bannedFeatures);
-            return $bannedFeatures;
-        }
-        return EverblockCache::cacheRetrieve($cacheId);
-    }
-
-    public function hookDisplayProductExtraContent($params)
-    {
-        $context = Context::getContext();
-        $tab = [];
-        $product = new Product(
-            (int) $params['product']->id,
-            false,
-            (int) $context->language->id,
-            (int) $context->shop->id
-        );
-        // Specific product tab
-        $everpstabs = EverblockTabsClass::getByIdProduct(
-            (int) $product->id,
-            (int) $context->shop->id,
-            (int) $context->language->id
-        );
-        foreach ($everpstabs as $everpstab) {
-            if (Validate::isLoadedObject($everpstab)) {
-                $title = $everpstab->title;
-                $content = $everpstab->content;
-                if (!empty($title) || !empty($content)) {
-                    $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
-                        ->setTitle($title)
-                        ->setContent($content);
-                }
-            }
-        }
-        // Global tab
-        $titleLangs = $this->getConfigInMultipleLangs('EVER_TAB_TITLE');
-        $title = $titleLangs[
-            (int) $context->language->id
-        ];
-        $contentLangs = $this->getConfigInMultipleLangs('EVER_TAB_CONTENT');
-        $content = $contentLangs[
-            (int) $context->language->id
-        ];
-        if (!empty($title) && !empty($content)) {
-            $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
-                ->setTitle($title)
-                ->setContent($content);
-        }
-        if (count($tab) > 0) {
-            return $tab;
-        }
-        return false;
-    }
-
-    public function hookDisplayAdminCustomers($params)
-    {
-        if (isset($params['id_customer']) && $params['id_customer']) {
-            $customerId = (int) $params['id_customer'];
-        } else {
-            $order = new Order((int) $params['id_order']);
-            $customerId = (int) $order->id_customer;
-        }
-        $customer = new Customer(
-            $customerId
-        );
-        $link = new Link();
-        if (Validate::isLoadedObject($customer)) {
-            $everToken = $this->encrypt($this->name . '/everlogin');
-            $this->context->smarty->assign(array(
-                'login_customer' => $customer,
-                'lastname' => $customer->lastname,
-                'firstname' => $customer->firstname,
-                'base_uri' => __PS_BASE_URI__,
-                'login_link' => $link->getModuleLink(
-                    $this->name,
-                    'everlogin',
-                    [
-                        'id_ever_customer' => $customer->id,
-                        'evertoken' => $everToken,
-                        'ever_id_cart' => Cart::lastNoneOrderedCart($customer->id),
-                    ]
-                )
-            ));
-        }
-        $this->context->smarty->assign([
-            $this->name . '_dir' => $this->_path . 'views/img/',
-            'evertoken' => $everToken,
-            'base_uri' => __PS_BASE_URI__,
-        ]);
-        return $this->display(__FILE__, 'views/templates/admin/customerConnect.tpl');
-    }
-
-    /**
-     * Add buttons to main buttons bar
-     */
-    public function hookActionGetAdminOrderButtons(array $params)
-    {
-        $order = new Order(
-            (int) $params['id_order']
-        );
-        if (Validate::isLoadedObject($order)) {
-            $everToken = $this->encrypt($this->name . '/everlogin');
-            $link = new Link();
-            $connectLink = $link->getModuleLink(
-                $this->name,
-                'everlogin',
-                [
-                    'id_ever_customer' => $order->id_customer,
-                    'evertoken' => $everToken,
-                    'ever_id_cart' => Cart::lastNoneOrderedCart($order->id_customer),
-                ]
-            );
-            /** @var \PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButtonsCollection $bar */
-            $bar = $params['actions_bar_buttons_collection'];
-            $bar->add(
-                new \PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButton(
-                    'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
-                )
-            );
-        }
-    }
-
-    public function hookActionCustomerLogoutBefore($params)
-    {
-        if ($this->context->cookie->__isset('everlogin')) {
-            $this->context->cookie->__unset('everlogin');
-        }
-    }
-
-    public function everHook($method, $args)
-    {
-        $position = isset($args[0]['position']) ? (int) $args[0]['position'] : null;
-        $context = Context::getContext();
-        // Drop cache if needed
-        EverblockClass::cleanBlocksCacheOnDate(
-            $context->language->id,
-            $context->shop->id
-        );
-        $id_hook = (int) Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
-        $hookName = lcfirst(str_replace('hook', '', $method));
-        $idObj = 0;
-        if (Tools::getValue('id_product')) {
-            $idObj = (int) Tools::getValue('id_product');
-        }
-        if (Tools::getValue('id_category')) {
-            $idObj = (int) Tools::getValue('id_category');
-        }
-        if (Tools::getValue('id_manufacturer')) {
-            $idObj = (int) Tools::getValue('id_manufacturer');
-        }
-        if (Tools::getValue('id_supplier')) {
-            $idObj = (int) Tools::getValue('id_supplier');
-        }
-        if (Tools::getValue('id_cms')) {
-            $idObj = (int) Tools::getValue('id_cms');
-        }
-        $cacheId = $this->name
-        . '-id_hook-'
-        . (int) $id_hook
-        . '-controller-'
-        . trim(Tools::getValue('controller'))
-        . '-hookName-'
-        . trim($hookName)
-        . '-idObj-'
-        . (int) $idObj
-        . '-idLang-'
-        . (int) $context->language->id
-        . '-idShop-'
-        . (int) $context->shop->id
-        . '-idCurrency-'
-        . (int) $context->currency->id
-        . '-device-'
-        . (int) $context->getDevice()
-        . $position;
-        if (!EverblockCache::isCacheStored(str_replace('|', '-', $cacheId))) {
-            if (isset($context->customer->id) && $context->customer->id) {
-                $id_entity = (int) $context->customer->id;
-            } else {
-                $id_entity = false;
-            }
-            $everblock = EverblockClass::getBlocks(
-                (int) $id_hook,
-                (int) $context->language->id,
-                (int) $context->shop->id
-            );
-            $currentBlock = [];
-            foreach ($everblock as $block) {
-                if ((bool) $block['modal'] === true
-                    && (bool) EverblockTools::isBot() === true
-                ) {
-                    continue;
-                }
-                if (Validate::isInt($position) && (int) $block['position'] != (int) $position) {
-                    continue;
-                }
-                // Check device
-                if ((int) $block['device'] > 0
-                    && (int) $context->getDevice() != (int) $block['device']
-                ) {
-                    continue;
-                }
-                if ((bool) $block['only_home'] === true
-                    && Tools::getValue('controller') != 'index'
-                ) {
-                    continue;
-                }
-                // Only category management
-                if ((bool) $block['only_category'] === true
-                    && Tools::getValue('controller') != 'category'
-                ) {
-                    continue;
-                }
-                // Only manufacturer management
-                if ((bool) $block['only_manufacturer'] === true
-                    && Tools::getValue('controller') != 'manufacturer'
-                ) {
-                    continue;
-                }
-                // Only supplier management
-                if ((bool) $block['only_supplier'] === true
-                    && Tools::getValue('controller') != 'supplier'
-                ) {
-                    continue;
-                }
-                // Only CMS category management
-                if ((bool) $block['only_cms_category'] === true
-                    && !Tools::getValue('id_cms_category')
-                ) {
-                    continue;
-                }
-                $continue = false;
-                // Only category pages
-                if ((bool) $block['only_category'] === true
-                    && Tools::getValue('controller') === 'category'
-                ) {
-                    $categories = json_decode($block['categories']);
-                    if (!in_array((int) Tools::getValue('id_category'), $categories)) {
-                        $continue = true;
-                    } else {
-                        $continue = false;
-                    }
-                }
-                // Only manufacturer pages
-                if ((bool) $block['only_manufacturer'] === true
-                    && Tools::getValue('controller') === 'manufacturer'
-                ) {
-                    $manufacturers = json_decode($block['manufacturers']);
-                    if (!in_array((int) Tools::getValue('id_manufacturer'), $manufacturers)) {
-                        $continue = true;
-                    } else {
-                        $continue = false;
-                    }
-                }
-                // Only supplier pages
-                if ((bool) $block['only_supplier'] === true
-                    && Tools::getValue('controller') === 'supplier'
-                ) {
-                    $suppliers = json_decode($block['suppliers']);
-                    if (!in_array((int) Tools::getValue('id_supplier'), $suppliers)) {
-                        $continue = true;
-                    } else {
-                        $continue = false;
-                    }
-                }
-                // Only CMS category pages
-                if ((bool) $block['only_cms_category'] === true
-                    && Tools::getValue('controller') === 'cms'
-                    && Tools::getValue('id_cms_category')
-                ) {
-                    $cms_categories = json_decode($block['cms_categories']);
-                    if (!in_array((int) Tools::getValue('id_cms_category'), $cms_categories)) {
-                        $continue = true;
-                    } else {
-                        $continue = false;
-                    }
-                }
-                // Only products pages with specific category
-                if (
-                    Tools::getValue('id_product')
-                    && Tools::getValue('controller') === 'product'
-                    && (bool) $block['only_category_product'] === true
-                ) {
-                    $product = new Product((int) Tools::getValue('id_product'));
-                    $categories = json_decode($block['categories']);
-                    $defaultCategory = (int) $product->id_category_default;
-                    if ($categories && is_array($categories)) {
-                        $continue = !in_array($defaultCategory, $categories);
-                    }
-                }
-                if ((bool) $continue === true) {
-                    continue;
-                }
-                // Date start and date end management
-                $now = new DateTime();
-                $now = $now->format('Y-m-d H:i:s');
-                if (!empty($block['date_start'])
-                    && $block['date_start'] !== '0000-00-00 00:00:00'
-                    && $block['date_start'] > $now
-                ) {
-                    continue;
-                }
-                if (!empty($block['date_end'])
-                    && $block['date_end'] !== '0000-00-00 00:00:00'
-                    && $block['date_end'] < $now
-                ) {
-                    continue;
-                }
-                $customerGroups = Customer::getGroupsStatic(
-                    (int) $id_entity
-                );
-                $allowedGroups = json_decode($block['groups'], true);
-                if (isset($customerGroups)
-                    && !empty($allowedGroups)
-                    && !array_intersect($allowedGroups, $customerGroups)
-                ) {
-                    continue;
-                }
-                if ((bool) $block['obfuscate_link'] === true) {
-                    $block['content'] = EverblockTools::obfuscateText(
-                        $block['content']
-                    );
-                }
-                if ((bool) $block['lazyload'] === true) {
-                    $block['content'] = EverblockTools::addLazyLoadToImages(
-                        $block['content']
-                    );
-                }
-                if (in_array($method, $this->bypassedControllers)) {
-                    $block['content'] = strip_tags($block['content']);
-                    $context->smarty->assign([
-                        'is_bypassed' => true,
-                    ]);
-                }
-                $currentBlock[] = ['block' => $block];
-            }
-            Hook::exec(
-                'actionRenderBlockBefore',
-                [
-                    'everhook' => trim($method),
-                    $this->name => &$currentBlock,
-                    'args' => $args,
-                ]
-            );
-            if ((bool) Module::isInstalled('prettyblocks') === true
-                && (bool) Module::isEnabled('prettyblocks') === true
-                && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-            ) {
-                $context->smarty->assign([
-                    'prettyblocks_installed' => true,
-                ]);
-            }   
-            $context->smarty->assign([
-                'everhook' => trim($method),
-                $this->name => $currentBlock,
-                'args' => $args,
-            ]);
-            $tpl = $this->display(__FILE__, $this->name . '.tpl');
-            $cached = EverblockCache::cacheStore(
-                str_replace('|', '-', $cacheId),
-                $tpl
-            );
-            return $tpl;
-        }
-        return EverblockCache::cacheRetrieve(
-            str_replace('|', '-', $cacheId)
-        );
-    }
-
-    public function hookDisplayHeader()
-    {
-        if (Tools::getValue('eac')
-            && Validate::isInt(Tools::getValue('eac'))
-        ) {
-            EverblockTools::addToCartByUrl(
-                $this->context,
-                (int) Tools::getValue('id_product'),
-                (int) Tools::getValue('id_product_attribute'),
-                (int) Tools::getValue('qty')
-            );
-        }
-        if (isset($this->context->controller->php_self)
-            && $this->context->controller->php_self === 'product'
-            && ($idProduct = (int) Tools::getValue('id_product'))
-        ) {
-            $cookie = $this->context->cookie;
-            $viewed = $cookie->__isset('viewed')
-                ? (string) $cookie->__get('viewed')
-                : '';
-            $viewedArray = array_filter(array_map('intval', explode(',', $viewed)));
-            $viewedArray = array_diff($viewedArray, [$idProduct]);
-            $viewedArray[] = $idProduct;
-            if (count($viewedArray) > 20) {
-                $viewedArray = array_slice($viewedArray, -20);
-            }
-            $cookie->__set('viewed', implode(',', $viewedArray));
-        }
-        // Google Shopping hack
-        $modelId = (int) Tools::getValue('model_id');
-        if ($modelId) {
-            $modelAttributeId = (int) Tools::getValue('model_attribute_id');
-
-            $product = new Product($modelId, true, $this->context->language->id);
-            if (Validate::isLoadedObject($product)) {
-                $presentedProducts = EverblockTools::everPresentProducts(
-                    [$product->id],
-                    $this->context,
-                    $this
-                );
-                $presentedProduct = reset($presentedProducts);
-
-                // Injection de la bonne combinaison si précisée
-                if (!empty($modelAttributeId) && isset($presentedProduct['combinations'])) {
-                    foreach ($presentedProduct['combinations'] as $comb) {
-                        if ((int) $comb['id_product_attribute'] === $modelAttributeId) {
-                            $presentedProduct['id_product_attribute'] = $modelAttributeId;
-                            $presentedProduct['combination'] = $comb;
-                            // Important si tu veux forcer l'affichage correct de prix/image
-                            $presentedProduct['price'] = $comb['price'];
-                            $presentedProduct['price_amount'] = $comb['price_amount'];
-                            if (!empty($comb['images'][0])) {
-                                $presentedProduct['cover'] = $comb['images'][0]; // remplace l'image principale si nécessaire
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                $this->context->smarty->assign('ever_model', $presentedProduct);
-            }
-        }
-
-        $idShop = (int) $this->context->shop->id;
-        // Register your CSS file
-        $this->context->controller->registerStylesheet(
-            'module-' . $this->name . '-css',
-            'modules/' . $this->name . '/views/css/' . $this->name . '.css',
-            ['media' => 'all', 'priority' => 200]
-        );
-        $this->context->controller->registerStylesheet(
-            'module-' . $this->name . '-quill-css',
-            'modules/' . $this->name . '/views/css/quill.css',
-            ['media' => 'all', 'priority' => 200]
-        );
-        $flagsCssFile = _PS_MODULE_DIR_ . $this->name . '/views/css/feature-flags-' . $idShop . '.css';
-        if (file_exists($flagsCssFile) && filesize($flagsCssFile) > 0) {
-            $this->context->controller->registerStylesheet(
-                'module-' . $this->name . '-feature-flags-css',
-                'modules/' . $this->name . '/views/css/feature-flags-' . $idShop . '.css',
-                ['media' => 'all', 'priority' => 200]
-            );
-        }
-        $soldoutCssFile = _PS_MODULE_DIR_ . $this->name . '/views/css/outofstock-flag-' . $idShop . '.css';
-        if (file_exists($soldoutCssFile) && filesize($soldoutCssFile) > 0) {
-            $this->context->controller->registerStylesheet(
-                'module-' . $this->name . '-soldout-flag-css',
-                'modules/' . $this->name . '/views/css/outofstock-flag-' . $idShop . '.css',
-                ['media' => 'all', 'priority' => 200]
-            );
-        }
-        if ((bool) Configuration::get('EVERBLOCK_USE_SLICK') === true) {
-            $this->context->controller->registerStylesheet(
-                'module-slick-min-css',
-                'modules/' . $this->name . '/views/css/slick-min.css',
-                ['media' => 'all', 'priority' => 200]
-            );
-            $this->context->controller->registerStylesheet(
-                'module-slick-theme-min-css',
-                'modules/' . $this->name . '/views/css/slick-theme-min.css',
-                ['media' => 'all', 'priority' => 200]
-            );
-            $this->context->controller->registerJavascript(
-                'module-slick-min-js',
-                'modules/' . $this->name . '/views/js/slick-min.js',
-                ['position' => 'bottom', 'priority' => 200]
-            );
-            Media::addJsDef([
-                'everblock_slick' => true,
-            ]);
-        }
-        $this->context->controller->registerJavascript(
-            'module-' . $this->name . '-js',
-            'modules/' . $this->name . '/views/js/' . $this->name . '.js',
-            ['position' => 'bottom', 'priority' => 200]
-        );
-        if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_OBF') === true) {
-            $this->context->controller->registerJavascript(
-                'module-' . $this->name . '-obf-js',
-                'modules/' . $this->name . '/views/js/' . $this->name . '-obfuscation.js',
-                ['position' => 'bottom', 'priority' => 200]
-            );
-        }
-        $compressedCss = _PS_MODULE_DIR_ . '/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css';
-        $customJs = _PS_MODULE_DIR_ . '/' . $this->name . '/views/js/custom' . $idShop . '.js';
-        if (file_exists($compressedCss) && filesize($compressedCss) > 0) {
-            $this->context->controller->registerStylesheet(
-                'module-' . $this->name . '-custom-compressed-css',
-                'modules/' . $this->name . '/views/css/custom-compressed' . $idShop . '.css',
-                ['media' => 'all', 'priority' => 200]
-            );
-        }
-        if (file_exists($customJs) && filesize($customJs) > 0) {
-            $this->context->controller->registerJavascript(
-                'module-' . $this->name . '-compressed-js',
-                'modules/' . $this->name . '/views/js/custom' . $idShop . '.js',
-                ['position' => 'bottom', 'priority' => 200]
-            );
-        }
-        $externalJs = EverblockCache::getModuleConfiguration('EVERPSJS_LINKS');
-        $jsLinksArray = [];
-        if ($externalJs) {
-            $jsLinksArray = explode("\n", $externalJs);
-            foreach ($jsLinksArray as $key => $value) {
-                $this->context->controller->registerJavascript(
-                    'module-' . $this->name . '-custom-' . (int) $key . '-js',
-                    $value,
-                    ['server' => 'remote', 'position' => 'bottom', 'priority' => 200]
-                );
-            }
-        }
-        $externalCss = EverblockCache::getModuleConfiguration('EVERPSCSS_LINKS');
-        $cssLinksArray = [];
-        if ($externalCss) {
-            $cssLinksArray = explode("\n", $externalCss);
-            foreach ($cssLinksArray as $key => $value) {
-                $this->context->controller->registerStylesheet(
-                    'module-' . $this->name . '-custom-' . (int) $key . '-js',
-                    $value,
-                    ['server' => 'remote', 'media' => 'all', 'priority' => 200]
-                );
-            }
-        }
-        // Do not show GMAP api KEY on Everblock cache
-        $apiKey = Configuration::get('EVERBLOCK_GMAP_KEY');
-        if ($apiKey && Tools::getValue('controller') == 'cms') {
-            $filename = 'store-locator-' . $idShop . '.js';
-            $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
-            if (file_exists($filePath) && filesize($filePath) > 0) {
-                $this->context->controller->registerJavascript(
-                    'module-' . $this->name . '-custom-gmap-js',
-                    'https://maps.googleapis.com/maps/api/js?key=' . $apiKey . '&libraries=places,geometry',
-                    ['server' => 'remote', 'position' => 'bottom', 'priority' => 300, 'attributes' => 'defer']
-                );
-                $this->context->controller->registerJavascript(
-                    'module-' . $this->name . '-shop-map-js',
-                    'modules/' . $this->name . '/views/js/' . $filename,
-                    ['server' => 'local', 'position' => 'bottom', 'priority' => 400, 'attributes' => 'defer']
-                );
-            }
-        }
-        $contactLink = base64_encode(
-            $this->context->link->getModuleLink(
-                $this->name,
-                'contact'
-            )
-        );
-        $modalLink = base64_encode(
-            $this->context->link->getModuleLink(
-                $this->name,
-                'modal'
-            )
-        );
-        $employeeLogged = false;
-        if (isset($this->context->employee) && $this->context->employee) {
-            if (method_exists($this->context->employee, 'isLoggedBack')) {
-                $employeeLogged = (bool) $this->context->employee->isLoggedBack();
-            }
-            if (!$employeeLogged && (int) $this->context->employee->id > 0) {
-                $employeeLogged = true;
-            }
-        }
-        $this->context->smarty->assign('everblock_is_employee', $employeeLogged);
-
-        Media::addJsDef([
-            'evercontact_link' => $contactLink,
-            'evermodal_link' => $modalLink,
-            'everblock_token' => Tools::getToken(),
-            'everblock_is_employee' => $employeeLogged,
-        ]);
-        $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
-        if (file_exists($filePath) && filesize($filePath) > 0) {
-            return PHP_EOL . file_get_contents($filePath) . PHP_EOL;
-        }
     }
 
     public function hookDisplayContentWrapperTop()

@@ -21,7 +21,11 @@
         <div class="modal-content text-center">
             <div class="modal-body text-center">
                 <div class="alert alert-warning">
-                    <p>{l s='An error has occurred, please try later' mod='everblock'}</p>
+                    {if isset($everblock_error_message) && $everblock_error_message}
+                        <p>{$everblock_error_message|escape:'htmlall':'UTF-8'}</p>
+                    {else}
+                        <p>{l s='An error has occurred, please try later' mod='everblock'}</p>
+                    {/if}
                 </div>
             </div>
         </div>
