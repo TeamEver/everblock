@@ -45,27 +45,27 @@
         {if $block.settings.title}
           <h2 class="mb-3">{$block.settings.title|escape:'htmlall':'UTF-8'}</h2>
         {/if}
-        <div class="lookbook-image position-relative mb-3 d-inline-block">
+        <div class="lookbook-image position-relative d-inline-block">
           {if isset($block.settings.image.url) && $block.settings.image.url}
             <img src="{$block.settings.image.url}" alt="{$block.settings.title|escape:'htmlall':'UTF-8'}" class="img-fluid w-100" loading="lazy">
           {/if}
           {if isset($block.states) && $block.states}
             {foreach from=$block.states item=state}
               {if isset($state.product.id) && $state.product.id}
-                <button type="button" class="btn btn-light rounded-circle lookbook-marker position-absolute" style="top:{$state.top|default:'0%'|escape:'htmlall'};left:{$state.left|default:'0%'|escape:'htmlall'};transform:translate(-50%,-50%);" data-product-id="{$state.product.id}">
+                <button type="button" class="lookbook-marker position-absolute" style="top:{$state.top|default:'0%'|escape:'htmlall'};left:{$state.left|default:'0%'|escape:'htmlall'};transform:translate(-50%,-50%);" data-product-id="{$state.product.id}">
                   <span class="visually-hidden">{l s='View product' mod='everblock'}</span>
                 </button>
               {/if}
             {/foreach}
           {/if}
-        </div>
-        <div class="lookbook-helper" role="note">
-          <span class="lookbook-helper-icon" aria-hidden="true">
-            <svg class="lookbook-helper-svg" width="20" height="20" viewBox="0 0 20 20" focusable="false" aria-hidden="true">
-              <path d="M5 2.5a1 1 0 0 0-1 1v10.042a1 1 0 0 0 1.707.707l2.586-2.586 2.48 4.96a1 1 0 0 0 1.342.447l1.856-.928a1 1 0 0 0 .447-1.342l-2.48-4.96 3.293.658A1 1 0 0 0 16 8.52V3.5a1 1 0 0 0-1-1H5z" fill="currentColor"/>
-            </svg>
-          </span>
-          <span class="lookbook-helper-text">{l s='Cliquez sur un point pour voir le produit' mod='everblock'}</span>
+          <div class="lookbook-helper" role="note">
+            <span class="lookbook-helper-icon" aria-hidden="true">
+              <svg class="lookbook-helper-svg" width="24" height="24" viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                <path d="M12 2a1 1 0 0 1 1 1v9.25l.586-.586a2 2 0 0 1 3.414 1.414v2.5A5.5 5.5 0 0 1 11.5 21H9a5 5 0 0 1-5-5v-3.586l-1.293 1.293a1 1 0 0 1-1.414-1.414l3.75-3.75A1 1 0 0 1 6.75 9H9V5a1 1 0 0 1 2 0V3a1 1 0 0 1 1-1zm-6 9.5a.5.5 0 0 0-.5.5v5a3.5 3.5 0 0 0 3.5 3.5h2.5a3.5 3.5 0 0 0 3.5-3.5v-2.5a1 1 0 0 0-1.707-.707l-1.586 1.586A1 1 0 0 1 11 15v-5a1 1 0 0 0-2 0v1.5a.5.5 0 0 1-.5.5H9a1 1 0 0 0-.707.293l-2.25 2.25A1 1 0 0 1 4 14.5v-3z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
+              </svg>
+            </span>
+            <span class="lookbook-helper-text">{l s='Cliquez sur un point pour voir le produit' mod='everblock'}</span>
+          </div>
         </div>
       </div>
 
