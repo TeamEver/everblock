@@ -632,12 +632,12 @@ class EverblockPrettyBlocks
                         'text_highlight_1' => [
                             'type' => 'editor',
                             'label' => $module->l('Highlight word 1'),
-                            'default' => 'protection',
+                            'default' => '',
                         ],
                         'text_highlight_2' => [
                             'type' => 'editor',
                             'label' => $module->l('Highlight word 2'),
-                            'default' => 'santé',
+                            'default' => '',
                         ],
                         'background_image' => [
                             'type' => 'fileupload',
