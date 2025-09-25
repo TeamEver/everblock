@@ -18,6 +18,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Service\RecaptchaValidator;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -1886,7 +1887,7 @@ class EverblockTools extends ObjectModel
             return static::generateFormFromShortcode($matches[0], $context, $module);
         }, $txt);
 
-        return $result;
+        return static::injectRecaptchaMarkup($result, RecaptchaValidator::CONTEXT_EVERBLOCK_CONTACT);
     }
 
     public static function getOrderFormShortcode(string $txt, Context $context, Everblock $module): string
@@ -2029,6 +2030,78 @@ class EverblockTools extends ObjectModel
             }
         }
         return $txt;
+    }
+
+    protected static function injectRecaptchaMarkup(string $html, string $context): string
+    {
+        if (!RecaptchaValidator::shouldProtectContext($context)) {
+            return $html;
+        }
+
+        if (stripos($html, '<form') === false) {
+            return $html;
+        }
+
+        $updatedHtml = preg_replace_callback(
+            '/<form\b[^>]*>/i',
+            function ($matches) use ($context) {
+                return static::decorateFormTag($matches[0], $context);
+            },
+            $html,
+            1
+        );
+
+        if (is_string($updatedHtml)) {
+            $html = $updatedHtml;
+        }
+
+        $hiddenFields = '';
+
+        if (stripos($html, 'name="g-recaptcha-response"') === false
+            && stripos($html, "name='g-recaptcha-response'") === false
+        ) {
+            $hiddenFields .= '<input type="hidden" name="g-recaptcha-response" class="everblock-recaptcha-token" value="">';
+        }
+
+        if (stripos($html, 'name="everblock_recaptcha_action"') === false
+            && stripos($html, "name='everblock_recaptcha_action'") === false
+        ) {
+            $hiddenFields .= '<input type="hidden" name="everblock_recaptcha_action" value="'
+                . htmlspecialchars($context, ENT_QUOTES, 'UTF-8')
+                . '">';
+        }
+
+        if ($hiddenFields !== '') {
+            $html = preg_replace('/<\/form>/i', $hiddenFields . '</form>', $html, 1);
+        }
+
+        return $html;
+    }
+
+    protected static function decorateFormTag(string $formTag, string $context): string
+    {
+        $updatedTag = $formTag;
+
+        if (preg_match('/class=("|\')(.*?)("|\')/i', $updatedTag, $classMatch)) {
+            $classes = $classMatch[2];
+            if (stripos($classes, 'everblock-recaptcha-form') === false) {
+                $replacement = 'class=' . $classMatch[1] . $classes . ' everblock-recaptcha-form' . $classMatch[3];
+                $updatedTag = preg_replace('/class=("|\')(.*?)("|\')/i', $replacement, $updatedTag, 1);
+            }
+        } else {
+            $updatedTag = preg_replace('/<form\b/i', '<form class="everblock-recaptcha-form"', $updatedTag, 1);
+        }
+
+        if (stripos($updatedTag, 'data-recaptcha-action') === false) {
+            $updatedTag = preg_replace(
+                '/<form\b/i',
+                '<form data-recaptcha-action="' . htmlspecialchars($context, ENT_QUOTES, 'UTF-8') . '"',
+                $updatedTag,
+                1
+            );
+        }
+
+        return $updatedTag;
     }
 
     public static function getEverBlockShortcode(string $txt, Context $context): string

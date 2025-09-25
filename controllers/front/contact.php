@@ -22,6 +22,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Service\RecaptchaValidator;
+
 class EverblockcontactModuleFrontController extends ModuleFrontController
 {
     public function initContent()
@@ -47,6 +49,12 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
         // ➕ Si vide ou si erreurs
         if (empty($formData) || sizeof($this->context->controller->errors)) {
             return $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
+        }
+
+        if (!$this->validateRecaptchaToken()) {
+            $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
+
+            return $this->terminateWithResponse($response);
         }
 
         // ➕ Hook avant traitement
@@ -283,6 +291,30 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
     protected function terminateWithResponse($response)
     {
         die($response);
+    }
+
+    protected function validateRecaptchaToken()
+    {
+        if (!RecaptchaValidator::shouldProtectContext(RecaptchaValidator::CONTEXT_EVERBLOCK_CONTACT)) {
+            return true;
+        }
+
+        $result = RecaptchaValidator::validateRequest(RecaptchaValidator::CONTEXT_EVERBLOCK_CONTACT);
+        if (!empty($result['success'])) {
+            return true;
+        }
+
+        $message = RecaptchaValidator::getErrorMessage((int) $this->context->language->id);
+        $this->context->controller->errors[] = $message;
+        $this->context->smarty->assign('everblock_error_message', $message);
+
+        RecaptchaValidator::logFailure(
+            RecaptchaValidator::CONTEXT_EVERBLOCK_CONTACT,
+            $result,
+            ['ip' => Tools::getRemoteAddr()]
+        );
+
+        return false;
     }
 
     protected function sendMail($idLanguage, $template, $subject, $templateVars, $to, $toName = null, $from = null, $fromName = null, $attachments = null, $modeSMTP = null, $templatePath = _PS_MAIL_DIR_, $die = false, $idShop = null)
