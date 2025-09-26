@@ -39,21 +39,44 @@
         {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_cover_state_spacing_style'}
         {capture name='prettyblock_cover_state_style'}
           {$prettyblock_cover_state_spacing_style}
+          {if $state.parallax && isset($state.background_image.url) && $state.background_image.url}
+            background-image:url('{$state.background_image.url|escape:'htmlall'}');
+            background-size:cover;
+            background-position:center;
+            background-repeat:no-repeat;
+            background-attachment:fixed;
+            {if isset($state.background_image.height) && $state.background_image.height}
+              min-height:{$state.background_image.height|intval}px;
+            {/if}
+          {/if}
         {/capture}
         {assign var='prettyblock_cover_state_style' value=$smarty.capture.prettyblock_cover_state_style|trim}
         <div id="block-{$block.id_prettyblocks}-{$key}"
-             class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
+             class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
             {if isset($state.background_image.url) && $state.background_image.url}
-              <picture>
+              {if $state.parallax}
                 {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
-                  <source media="(max-width: 767px)" srcset="{$state.background_image_mobile.url|escape:'htmlall'}">
+                  <style>
+                    @media (max-width: 767px) {
+                      #block-{$block.id_prettyblocks}-{$key} {
+                        background-image:url('{$state.background_image_mobile.url|escape:'htmlall'}');
+                        {if isset($state.background_image_mobile.height) && $state.background_image_mobile.height}min-height:{$state.background_image_mobile.height|intval}px;{/if}
+                      }
+                    }
+                  </style>
                 {/if}
-                <img src="{$state.background_image.url|escape:'htmlall'}"
-                     alt="{$state.title|escape:'htmlall'}"
-                     {if isset($state.background_image.width)} width="{$state.background_image.width|escape:'htmlall'}"{/if}
-                     {if isset($state.background_image.height)} height="{$state.background_image.height|escape:'htmlall'}"{/if}
-                     class="prettyblock-cover-image">
-              </picture>
+              {else}
+                <picture>
+                  {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
+                    <source media="(max-width: 767px)" srcset="{$state.background_image_mobile.url|escape:'htmlall'}">
+                  {/if}
+                  <img src="{$state.background_image.url|escape:'htmlall'}"
+                       alt="{$state.title|escape:'htmlall'}"
+                       {if isset($state.background_image.width)} width="{$state.background_image.width|escape:'htmlall'}"{/if}
+                       {if isset($state.background_image.height)} height="{$state.background_image.height|escape:'htmlall'}"{/if}
+                       class="prettyblock-cover-image">
+                </picture>
+              {/if}
             {/if}
           <div class="prettyblock-cover-overlay position-desktop-{$state.content_position_desktop|default:'center'|lower|escape:'htmlall'} position-mobile-{$state.content_position_mobile|default:'center'|lower|escape:'htmlall'}">
             {if $state.title}
@@ -97,21 +120,44 @@
       {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_cover_state_spacing_style'}
       {capture name='prettyblock_cover_state_style'}
         {$prettyblock_cover_state_spacing_style}
+        {if $state.parallax && isset($state.background_image.url) && $state.background_image.url}
+          background-image:url('{$state.background_image.url|escape:'htmlall'}');
+          background-size:cover;
+          background-position:center;
+          background-repeat:no-repeat;
+          background-attachment:fixed;
+          {if isset($state.background_image.height) && $state.background_image.height}
+            min-height:{$state.background_image.height|intval}px;
+          {/if}
+        {/if}
       {/capture}
       {assign var='prettyblock_cover_state_style' value=$smarty.capture.prettyblock_cover_state_style|trim}
       <div id="block-{$block.id_prettyblocks}-{$key}"
-           class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
+           class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
         {if isset($state.background_image.url) && $state.background_image.url}
-          <picture>
+          {if $state.parallax}
             {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
-              <source media="(max-width: 767px)" srcset="{$state.background_image_mobile.url|escape:'htmlall'}">
+              <style>
+                @media (max-width: 767px) {
+                  #block-{$block.id_prettyblocks}-{$key} {
+                    background-image:url('{$state.background_image_mobile.url|escape:'htmlall'}');
+                    {if isset($state.background_image_mobile.height) && $state.background_image_mobile.height}min-height:{$state.background_image_mobile.height|intval}px;{/if}
+                  }
+                }
+              </style>
             {/if}
-            <img src="{$state.background_image.url|escape:'htmlall'}"
-                 alt="{$state.title|escape:'htmlall'}"
-                 {if isset($state.background_image.width)} width="{$state.background_image.width|escape:'htmlall'}"{/if}
-                 {if isset($state.background_image.height)} height="{$state.background_image.height|escape:'htmlall'}"{/if}
-                 class="prettyblock-cover-image">
-          </picture>
+          {else}
+            <picture>
+              {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
+                <source media="(max-width: 767px)" srcset="{$state.background_image_mobile.url|escape:'htmlall'}">
+              {/if}
+              <img src="{$state.background_image.url|escape:'htmlall'}"
+                   alt="{$state.title|escape:'htmlall'}"
+                   {if isset($state.background_image.width)} width="{$state.background_image.width|escape:'htmlall'}"{/if}
+                   {if isset($state.background_image.height)} height="{$state.background_image.height|escape:'htmlall'}"{/if}
+                   class="prettyblock-cover-image">
+            </picture>
+          {/if}
         {/if}
         <div class="prettyblock-cover-overlay position-desktop-{$state.content_position_desktop|default:'center'|lower|escape:'htmlall'} position-mobile-{$state.content_position_mobile|default:'center'|lower|escape:'htmlall'}">
           {if $state.title}

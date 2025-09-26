@@ -583,6 +583,14 @@
     overflow: hidden;
 }
 
+.prettyblock-cover-item--parallax {
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 300px;
+}
+
 .prettyblock-cover-item img.prettyblock-cover-image {
     width: 100%;
     height: auto;
@@ -633,6 +641,10 @@
 }
 
 @media (max-width: 767px) {
+    .prettyblock-cover-item--parallax {
+        background-attachment: scroll;
+    }
+
     .prettyblock-cover-overlay.position-mobile-top {
         justify-content: flex-start;
         align-items: center;
