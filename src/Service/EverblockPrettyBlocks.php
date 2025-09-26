@@ -2376,6 +2376,11 @@ class EverblockPrettyBlocks
                                 'url' => '',
                             ],
                         ],
+                        'parallax' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable parallax effect'),
+                            'default' => false,
+                        ],
                         'btn1_text' => [
                             'type' => 'text',
                             'label' => $module->l('Button 1 text'),
