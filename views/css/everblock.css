@@ -781,6 +781,7 @@
 #everblock-storelocator-wrapper.map-hidden #pane-list {
     flex: 0 0 100%;
     max-width: 100%;
+    width: 100%;
 }
 
 #everblock-storelocator-wrapper.map-hidden #storeLocatorTabs {
