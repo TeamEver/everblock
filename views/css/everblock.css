@@ -33,7 +33,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: transparent;
+    background-color: #fff;
     border: 3px solid #f25b76;
     box-shadow: 0 12px 24px rgba(242, 91, 118, 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
@@ -46,6 +46,7 @@
     transform: scale(1.05);
     box-shadow: 0 16px 32px rgba(242, 91, 118, 0.35);
     background-color: #f25b76;
+    border-color: #f25b76;
     color: #fff;
 }
 
