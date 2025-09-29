@@ -60,8 +60,8 @@
           {/if}
           <div class="lookbook-helper" role="note">
             <span class="lookbook-helper-icon" aria-hidden="true">
-              <svg class="lookbook-helper-svg" width="24" height="24" viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                <path d="M12 2a1 1 0 0 1 1 1v9.25l.586-.586a2 2 0 0 1 3.414 1.414v2.5A5.5 5.5 0 0 1 11.5 21H9a5 5 0 0 1-5-5v-3.586l-1.293 1.293a1 1 0 0 1-1.414-1.414l3.75-3.75A1 1 0 0 1 6.75 9H9V5a1 1 0 0 1 2 0V3a1 1 0 0 1 1-1zm-6 9.5a.5.5 0 0 0-.5.5v5a3.5 3.5 0 0 0 3.5 3.5h2.5a3.5 3.5 0 0 0 3.5-3.5v-2.5a1 1 0 0 0-1.707-.707l-1.586 1.586A1 1 0 0 1 11 15v-5a1 1 0 0 0-2 0v1.5a.5.5 0 0 1-.5.5H9a1 1 0 0 0-.707.293l-2.25 2.25A1 1 0 0 1 4 14.5v-3z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
+              <svg class="lookbook-helper-svg" width="24" height="24" viewBox="0 0 512 512" focusable="false" aria-hidden="true">
+                <path fill="currentColor" d="M454.423,278.957,328,243.839v-8.185a116,116,0,1,0-104,0V312H199.582l-18.494-22.6a90.414,90.414,0,0,0-126.43-13.367,20.862,20.862,0,0,0-8.026,33.47L215.084,496H472V302.08A24.067,24.067,0,0,0,454.423,278.957ZM192,132a84,84,0,1,1,136,65.9V132a52,52,0,0,0-104,0v65.9A83.866,83.866,0,0,1,192,132ZM440,464H229.3L79.141,297.75a58.438,58.438,0,0,1,77.181,11.91l28.1,34.34H256V132a20,20,0,0,1,40,0V268.161l144,40Z"/>
               </svg>
             </span>
             <span class="lookbook-helper-text">{l s='Cliquez sur un point pour voir le produit' mod='everblock'}</span>
