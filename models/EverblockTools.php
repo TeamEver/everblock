@@ -654,7 +654,10 @@ class EverblockTools extends ObjectModel
             }
 
             if (empty($cartIds)) {
-                $bestIds = static::getBestSellingProductIds($limit, $orderBy, $orderWay);
+                $bestIds = static::filterAvailableCrossSellingProducts(
+                    static::getBestSellingProductIds($limit, $orderBy, $orderWay),
+                    $context
+                );
                 $everPresentProducts = static::everPresentProducts($bestIds, $context);
 
                 if (!empty($everPresentProducts)) {
@@ -692,7 +695,9 @@ class EverblockTools extends ObjectModel
             $ids = [];
             foreach ($productIds as $row) {
                 $id = (int) $row['id_product'];
-                if (!in_array($id, $cartIds) && !in_array($id, $ids)) {
+                if (!in_array($id, $cartIds) && !in_array($id, $ids)
+                    && static::isProductAvailableForCrossSelling($id, $context)
+                ) {
                     $ids[] = $id;
                 }
                 if (count($ids) >= $limit) {
@@ -714,7 +719,9 @@ class EverblockTools extends ObjectModel
                     $categoryProducts = static::getProductsByCategoryId($cid, $limit * 2, $orderBy, $orderWay);
                     foreach ($categoryProducts as $cproduct) {
                         $pid = (int) $cproduct['id_product'];
-                        if (!in_array($pid, $cartIds) && !in_array($pid, $ids)) {
+                        if (!in_array($pid, $cartIds) && !in_array($pid, $ids)
+                            && static::isProductAvailableForCrossSelling($pid, $context)
+                        ) {
                             $ids[] = $pid;
                         }
                         if (count($ids) >= $limit) {
@@ -730,14 +737,19 @@ class EverblockTools extends ObjectModel
                     if (count($ids) >= $limit) {
                         break;
                     }
-                    if (!in_array($bid, $cartIds) && !in_array($bid, $ids)) {
+                    if (!in_array($bid, $cartIds) && !in_array($bid, $ids)
+                        && static::isProductAvailableForCrossSelling($bid, $context)
+                    ) {
                         $ids[] = $bid;
                     }
                 }
             }
 
             if (empty($ids)) {
-                $bestIds = static::getBestSellingProductIds($limit, $orderBy, $orderWay);
+                $bestIds = static::filterAvailableCrossSellingProducts(
+                    static::getBestSellingProductIds($limit, $orderBy, $orderWay),
+                    $context
+                );
                 $everPresentProducts = static::everPresentProducts($bestIds, $context);
 
                 if (!empty($everPresentProducts)) {
@@ -756,7 +768,8 @@ class EverblockTools extends ObjectModel
                 continue;
             }
 
-            $everPresentProducts = static::everPresentProducts($ids, $context);
+            $filteredIds = static::filterAvailableCrossSellingProducts($ids, $context);
+            $everPresentProducts = static::everPresentProducts($filteredIds, $context);
 
             if (!empty($everPresentProducts)) {
                 $context->smarty->assign([
@@ -773,6 +786,66 @@ class EverblockTools extends ObjectModel
         }
 
         return $txt;
+    }
+
+    protected static function filterAvailableCrossSellingProducts(array $productIds, Context $context): array
+    {
+        $filtered = [];
+
+        foreach ($productIds as $productId) {
+            $productId = (int) $productId;
+
+            if ($productId <= 0) {
+                continue;
+            }
+
+            if (static::isProductAvailableForCrossSelling($productId, $context)) {
+                $filtered[] = $productId;
+            }
+        }
+
+        return $filtered;
+    }
+
+    protected static function isProductAvailableForCrossSelling(int $productId, Context $context): bool
+    {
+        static $availabilityCache = [];
+
+        if (isset($availabilityCache[$productId])) {
+            return $availabilityCache[$productId];
+        }
+
+        if (!Configuration::get('PS_STOCK_MANAGEMENT')) {
+            $availabilityCache[$productId] = true;
+
+            return true;
+        }
+
+        $product = new Product($productId);
+
+        if (!Validate::isLoadedObject($product)) {
+            $availabilityCache[$productId] = false;
+
+            return false;
+        }
+
+        $quantity = StockAvailable::getQuantityAvailableByProduct(
+            $productId,
+            0,
+            (int) $context->shop->id
+        );
+
+        if ($quantity > 0) {
+            $availabilityCache[$productId] = true;
+
+            return true;
+        }
+
+        $isAllowedWhenOutOfStock = Product::isAvailableWhenOutOfStock((int) $product->out_of_stock);
+
+        $availabilityCache[$productId] = $isAllowedWhenOutOfStock;
+
+        return $isAllowedWhenOutOfStock;
     }
 
     public static function addToCartByUrl(Context $context, int $productId, int $productAttributeId = 0, int $quantity = 1)
