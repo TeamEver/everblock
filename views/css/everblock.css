@@ -152,6 +152,24 @@
     }
 }
 
+@media (min-width: 768px) {
+    .lookbook-helper {
+        flex-wrap: nowrap;
+        padding: 1.25rem 3rem;
+        white-space: nowrap;
+    }
+
+    .lookbook-helper-icon {
+        width: 3.25rem;
+        height: 3.25rem;
+    }
+
+    .lookbook-helper-text {
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+}
+
 @media (min-width: 992px) {
     .prettyblock-lookbook {
         gap: 0;
