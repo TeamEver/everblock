@@ -3374,7 +3374,7 @@ class EverblockTools extends ObjectModel
                 var markers = ' . json_encode($markers) . ';
                 var markerMap = {};
                 var storeList = document.getElementById("everblock-storelist");
-                var originalItems = Array.from(storeList.children);
+                var originalItems = storeList ? Array.from(storeList.children) : [];
                 var defaultCenter = { lat: markers[0].lat, lng: markers[0].lng };
 
                 function renderContent(marker) {
@@ -3443,10 +3443,12 @@ class EverblockTools extends ObjectModel
                     if (infoWindow) {
                         infoWindow.close();
                     }
-                    originalItems.forEach(function (el) {
-                        storeList.appendChild(el);
-                        el.style.display = "";
-                    });
+                    if (storeList) {
+                        originalItems.forEach(function (el) {
+                            storeList.appendChild(el);
+                            el.style.display = "";
+                        });
+                    }
                 }
 
                 function applySearch(userLocation) {
@@ -3533,6 +3535,10 @@ class EverblockTools extends ObjectModel
                 }
 
                 document.addEventListener("DOMContentLoaded", function () {
+                    storeList = document.getElementById("everblock-storelist");
+                    if (storeList) {
+                        originalItems = Array.from(storeList.children);
+                    }
                     var mapTabBtn = document.getElementById("tab-map");
                     if (mapTabBtn) {
                         mapTabBtn.addEventListener("shown.bs.tab", function () {
