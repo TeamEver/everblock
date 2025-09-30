@@ -129,6 +129,16 @@ class Everblock extends Module
         Configuration::updateValue('EVERBLOCK_SOLDOUT_FLAG', 0);
         Configuration::updateValue('EVERBLOCK_LOW_STOCK_THRESHOLD', 5);
         Configuration::updateValue('EVERBLOCK_STORELOCATOR_TOGGLE', 0);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_API_KEY', '');
+        Configuration::updateValue('EVERBLOCK_GOOGLE_PLACE_ID', '');
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT', 5);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING', 0);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SORT', 'most_relevant');
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING', 1);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR', 1);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA', 1);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL', $this->l('Read all reviews on Google'));
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL', '');
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -225,6 +235,16 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES');
         Configuration::deleteByName('EVERBLOCK_LOW_STOCK_THRESHOLD');
         Configuration::deleteByName('EVERBLOCK_STORELOCATOR_TOGGLE');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_API_KEY');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_PLACE_ID');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_LIMIT');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_SORT');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL');
+        Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
@@ -1148,6 +1168,128 @@ class Everblock extends Module
             $form['form']['input'][] = $input;
         }
 
+        $googleReviewsInputs = [
+            [
+                'type' => 'html',
+                'name' => 'anchor_everblock_google_reviews',
+                'html_content' => '<span id="everblock_google_reviews"></span>',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Google Places API key'),
+                'desc' => $this->l('API key used to retrieve reviews from Google Places.'),
+                'name' => 'EVERBLOCK_GOOGLE_API_KEY',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Google Place ID'),
+                'desc' => $this->l('Place identifier for your business listing.'),
+                'name' => 'EVERBLOCK_GOOGLE_PLACE_ID',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Maximum number of reviews'),
+                'desc' => $this->l('Number of reviews to display (minimum 1).'),
+                'name' => 'EVERBLOCK_GOOGLE_REVIEWS_LIMIT',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Minimum rating to display'),
+                'desc' => $this->l('Only reviews with a rating equal or above this value will be shown.'),
+                'name' => 'EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING',
+            ],
+            [
+                'type' => 'select',
+                'label' => $this->l('Reviews sort order'),
+                'name' => 'EVERBLOCK_GOOGLE_REVIEWS_SORT',
+                'options' => [
+                    'query' => [
+                        [
+                            'id' => 'most_relevant',
+                            'name' => $this->l('Most relevant'),
+                        ],
+                        [
+                            'id' => 'newest',
+                            'name' => $this->l('Most recent'),
+                        ],
+                    ],
+                    'id' => 'id',
+                    'name' => 'name',
+                ],
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Show overall rating'),
+                'name' => 'EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'everblock_google_reviews_show_rating_on',
+                        'value' => 1,
+                        'label' => $this->l('Enabled'),
+                    ],
+                    [
+                        'id' => 'everblock_google_reviews_show_rating_off',
+                        'value' => 0,
+                        'label' => $this->l('Disabled'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Show reviewer photos'),
+                'name' => 'EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'everblock_google_reviews_show_avatar_on',
+                        'value' => 1,
+                        'label' => $this->l('Enabled'),
+                    ],
+                    [
+                        'id' => 'everblock_google_reviews_show_avatar_off',
+                        'value' => 0,
+                        'label' => $this->l('Disabled'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'switch',
+                'label' => $this->l('Show call-to-action button'),
+                'name' => 'EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'everblock_google_reviews_show_cta_on',
+                        'value' => 1,
+                        'label' => $this->l('Enabled'),
+                    ],
+                    [
+                        'id' => 'everblock_google_reviews_show_cta_off',
+                        'value' => 0,
+                        'label' => $this->l('Disabled'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('CTA label'),
+                'desc' => $this->l('Text displayed on the button linking to Google.'),
+                'name' => 'EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('CTA link override'),
+                'desc' => $this->l('Leave empty to use the Google listing URL.'),
+                'name' => 'EVERBLOCK_GOOGLE_REVIEWS_CTA_URL',
+            ],
+        ];
+
+        foreach ($googleReviewsInputs as $input) {
+            $input['tab'] = 'meta_tools';
+            $form['form']['input'][] = $input;
+        }
+
         $markerIcon = Configuration::get('EVERBLOCK_MARKER_ICON');
         $googleMapsInputs = [
             [
@@ -1760,6 +1902,16 @@ class Everblock extends Module
             'EVERWP_API_USER' => Configuration::get('EVERWP_API_USER'),
             'EVERWP_API_PWD' => Configuration::get('EVERWP_API_PWD'),
             'EVERWP_POST_NBR' => Configuration::get('EVERWP_POST_NBR'),
+            'EVERBLOCK_GOOGLE_API_KEY' => Configuration::get('EVERBLOCK_GOOGLE_API_KEY'),
+            'EVERBLOCK_GOOGLE_PLACE_ID' => Configuration::get('EVERBLOCK_GOOGLE_PLACE_ID'),
+            'EVERBLOCK_GOOGLE_REVIEWS_LIMIT' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_LIMIT'),
+            'EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING'),
+            'EVERBLOCK_GOOGLE_REVIEWS_SORT' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SORT'),
+            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING'),
+            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR'),
+            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA'),
+            'EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL'),
+            'EVERBLOCK_GOOGLE_REVIEWS_CTA_URL' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL'),
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERBLOCK_MARKER_ICON' => Configuration::get('EVERBLOCK_MARKER_ICON'),
             'EVERBLOCK_STORELOCATOR_TOGGLE' => Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
@@ -1853,6 +2005,41 @@ class Everblock extends Module
                 && !Validate::isArrayWithIds(Tools::getValue('EVERPS_FEATURES_AS_FLAGS'))
             ) {
                 $this->postErrors[] = $this->l('Error: selected features are not valid');
+            }
+            if (Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT')
+                && (!Validate::isUnsignedInt(Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT'))
+                || (int) Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT') < 1)
+            ) {
+                $this->postErrors[] = $this->l('Error: the field "Maximum number of reviews" is not valid');
+            }
+            $minRatingValue = Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING');
+            if ($minRatingValue !== '' && $minRatingValue !== null) {
+                if (!is_numeric($minRatingValue)) {
+                    $this->postErrors[] = $this->l('Error: the field "Minimum rating to display" must be a number');
+                } elseif ((float) $minRatingValue < 0 || (float) $minRatingValue > 5) {
+                    $this->postErrors[] = $this->l('Error: the field "Minimum rating to display" must be between 0 and 5');
+                }
+            }
+            $sortValue = Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_SORT');
+            if ($sortValue && !in_array($sortValue, ['most_relevant', 'newest'], true)) {
+                $this->postErrors[] = $this->l('Error: the field "Reviews sort order" is not valid');
+            }
+            $boolFields = [
+                'EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING',
+                'EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR',
+                'EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA',
+            ];
+            foreach ($boolFields as $boolField) {
+                $value = Tools::getValue($boolField);
+                if ($value !== '' && $value !== null && !Validate::isBool($value)) {
+                    $this->postErrors[] = $this->l('Error: one of the Google reviews display options is not valid');
+                    break;
+                }
+            }
+            if (Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL')
+                && !Validate::isUrl(Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL'))
+            ) {
+                $this->postErrors[] = $this->l('Error: the field "CTA link override" must be a valid URL');
             }
         }
     }
@@ -2032,6 +2219,74 @@ class Everblock extends Module
             'EVERWP_POST_NBR',
             Tools::getValue('EVERWP_POST_NBR')
         );
+        $googleReviewsLimit = (int) Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT');
+        if ($googleReviewsLimit <= 0) {
+            $googleReviewsLimit = 5;
+        }
+        $googleReviewsMinRating = Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING');
+        if ($googleReviewsMinRating === '' || $googleReviewsMinRating === null) {
+            $googleReviewsMinRating = 0;
+        }
+        $googleReviewsMinRating = (float) $googleReviewsMinRating;
+        if ($googleReviewsMinRating < 0) {
+            $googleReviewsMinRating = 0;
+        }
+        if ($googleReviewsMinRating > 5) {
+            $googleReviewsMinRating = 5;
+        }
+        $googleReviewsSort = Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_SORT');
+        if (!in_array($googleReviewsSort, ['newest', 'most_relevant'], true)) {
+            $googleReviewsSort = 'most_relevant';
+        }
+        $googleReviewsShowRating = Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING');
+        $googleReviewsShowRating = in_array((string) $googleReviewsShowRating, ['1', 'true', 'on'], true) ? 1 : 0;
+        $googleReviewsShowAvatar = Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR');
+        $googleReviewsShowAvatar = in_array((string) $googleReviewsShowAvatar, ['1', 'true', 'on'], true) ? 1 : 0;
+        $googleReviewsShowCta = Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA');
+        $googleReviewsShowCta = in_array((string) $googleReviewsShowCta, ['1', 'true', 'on'], true) ? 1 : 0;
+        $googleReviewsCtaLabel = trim((string) Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL'));
+        $googleReviewsCtaUrl = trim((string) Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL'));
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_API_KEY',
+            Tools::getValue('EVERBLOCK_GOOGLE_API_KEY')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_PLACE_ID',
+            Tools::getValue('EVERBLOCK_GOOGLE_PLACE_ID')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_REVIEWS_LIMIT',
+            $googleReviewsLimit
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING',
+            $googleReviewsMinRating
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_REVIEWS_SORT',
+            $googleReviewsSort
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING',
+            $googleReviewsShowRating
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR',
+            $googleReviewsShowAvatar
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA',
+            $googleReviewsShowCta
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL',
+            $googleReviewsCtaLabel
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_GOOGLE_REVIEWS_CTA_URL',
+            $googleReviewsCtaUrl
+        );
+        EverblockCache::cacheDropByPattern('everblock_google_reviews_');
         Configuration::updateValue(
             'EVERBLOCK_GMAP_KEY',
             Tools::getValue('EVERBLOCK_GMAP_KEY')

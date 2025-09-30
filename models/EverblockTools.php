@@ -61,6 +61,7 @@ class EverblockTools extends ObjectModel
             '[displayQcdSvg' => ['method' => 'getQcdSvgCode', 'args' => ['context']],
             '[everimg' => ['method' => 'getEverImgShortcode', 'args' => ['context', 'module']],
             '[wordpress-posts]' => ['method' => 'getWordpressPostsShortcode', 'args' => ['context', 'module']],
+            '[googlereviews' => ['method' => 'getGoogleReviewsShortcode', 'args' => ['context', 'module']],
             '[best-sales' => ['method' => 'getBestSalesShortcode', 'args' => ['context', 'module']],
             '[categorybestsales' => ['method' => 'getCategoryBestSalesShortcode', 'args' => ['context', 'module']],
             '[brandbestsales' => ['method' => 'getBrandBestSalesShortcode', 'args' => ['context', 'module']],
@@ -1038,6 +1039,327 @@ class EverblockTools extends ObjectModel
         }
 
         return $txt;
+    }
+
+    public static function getGoogleReviewsShortcode(string $txt, Context $context, Everblock $module): string
+    {
+        $pattern = '/\[googlereviews(?:\s+([^\]]+))?\]/i';
+
+        return (string) preg_replace_callback($pattern, function ($matches) use ($context, $module) {
+            $attrString = isset($matches[1]) ? trim($matches[1]) : '';
+            $attrs = $attrString !== '' ? static::parseShortcodeAttrs($attrString) : [];
+
+            $overrides = [
+                'api_key' => $attrs['key'] ?? ($attrs['api_key'] ?? null),
+                'place_id' => $attrs['place_id'] ?? ($attrs['id'] ?? null),
+                'limit' => $attrs['limit'] ?? ($attrs['max'] ?? null),
+                'min_rating' => $attrs['min_rating'] ?? ($attrs['rating'] ?? null),
+                'sort' => $attrs['sort'] ?? null,
+                'show_rating' => $attrs['show_rating'] ?? null,
+                'show_avatar' => $attrs['show_avatar'] ?? null,
+                'show_cta' => $attrs['show_cta'] ?? null,
+                'cta_label' => $attrs['cta_label'] ?? null,
+                'cta_url' => $attrs['cta_url'] ?? null,
+                'columns' => $attrs['columns'] ?? ($attrs['cols'] ?? null),
+                'css_class' => $attrs['class'] ?? null,
+                'heading' => $attrs['title'] ?? ($attrs['heading'] ?? null),
+                'intro' => $attrs['intro'] ?? ($attrs['description'] ?? null),
+            ];
+
+            $resolved = static::resolveGoogleReviews($overrides);
+
+            if (!$resolved['options']['is_configured']) {
+                return '';
+            }
+
+            if (!empty($overrides['css_class'])) {
+                $resolved['options']['css_class'] = trim(($resolved['options']['css_class'] ?? '') . ' ' . $overrides['css_class']);
+            }
+
+            $templatePath = static::getTemplatePath('hook/google_reviews.tpl', $module);
+
+            $context->smarty->assign([
+                'googleReviewsHeading' => $resolved['options']['heading'],
+                'googleReviewsIntro' => $resolved['options']['intro'],
+                'googleReviewsData' => $resolved['data'],
+                'googleReviewsOptions' => $resolved['options'],
+            ]);
+
+            return $context->smarty->fetch($templatePath);
+        }, $txt);
+    }
+
+    /**
+     * Prepare Google reviews options and fetch data.
+     *
+     * @param array<string, mixed> $overrides
+     *
+     * @return array{options: array<string, mixed>, data: array<string, mixed>}
+     */
+    public static function resolveGoogleReviews(array $overrides = []): array
+    {
+        $options = static::prepareGoogleReviewsOptions($overrides);
+
+        $data = [
+            'name' => '',
+            'rating' => null,
+            'user_ratings_total' => 0,
+            'url' => '',
+            'website' => '',
+            'reviews' => [],
+        ];
+
+        if ($options['is_configured']) {
+            $data = static::fetchGooglePlaceReviews(
+                $options['api_key'],
+                $options['place_id'],
+                $options['limit'],
+                $options['min_rating'],
+                $options['sort']
+            );
+        }
+
+        $ctaUrl = trim((string) $options['cta_url']);
+        if ($ctaUrl === '' && isset($data['url']) && $data['url']) {
+            $ctaUrl = (string) $data['url'];
+        }
+        if ($ctaUrl === '' && isset($data['website']) && $data['website']) {
+            $ctaUrl = (string) $data['website'];
+        }
+        $options['cta_url'] = $ctaUrl;
+
+        // Never expose API credentials to the template layer
+        unset($options['api_key']);
+
+        return [
+            'options' => $options,
+            'data' => $data,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     *
+     * @return array<string, mixed>
+     */
+    protected static function prepareGoogleReviewsOptions(array $overrides = []): array
+    {
+        $defaultLimit = (int) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_LIMIT');
+        if ($defaultLimit <= 0) {
+            $defaultLimit = 5;
+        }
+
+        $defaultMinRating = Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING');
+        $defaultSort = (string) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SORT');
+        $defaultSort = in_array($defaultSort, ['newest', 'most_relevant'], true) ? $defaultSort : 'most_relevant';
+
+        $defaultShowRating = static::parseBoolean(Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING'));
+        if ($defaultShowRating === null) {
+            $defaultShowRating = true;
+        }
+        $defaultShowAvatar = static::parseBoolean(Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR'));
+        if ($defaultShowAvatar === null) {
+            $defaultShowAvatar = true;
+        }
+        $defaultShowCta = static::parseBoolean(Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA'));
+        if ($defaultShowCta === null) {
+            $defaultShowCta = true;
+        }
+
+        $options = [
+            'api_key' => trim((string) ($overrides['api_key'] ?? Configuration::get('EVERBLOCK_GOOGLE_API_KEY'))),
+            'place_id' => trim((string) ($overrides['place_id'] ?? Configuration::get('EVERBLOCK_GOOGLE_PLACE_ID'))),
+            'limit' => (int) ($overrides['limit'] ?? $defaultLimit),
+            'min_rating' => (float) ($overrides['min_rating'] ?? ($defaultMinRating !== false ? (float) $defaultMinRating : 0.0)),
+            'sort' => (string) ($overrides['sort'] ?? $defaultSort),
+            'show_rating' => $defaultShowRating,
+            'show_avatar' => $defaultShowAvatar,
+            'show_cta' => $defaultShowCta,
+            'cta_label' => trim((string) ($overrides['cta_label'] ?? Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL'))),
+            'cta_url' => trim((string) ($overrides['cta_url'] ?? Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL'))),
+            'columns' => (int) ($overrides['columns'] ?? 3),
+            'css_class' => trim((string) ($overrides['css_class'] ?? '')),
+            'heading' => trim((string) ($overrides['heading'] ?? '')),
+            'intro' => $overrides['intro'] ?? '',
+            'overrides' => [
+                'api_key' => isset($overrides['api_key']) && $overrides['api_key'] !== '',
+                'place_id' => isset($overrides['place_id']) && $overrides['place_id'] !== '',
+                'limit' => array_key_exists('limit', $overrides),
+                'min_rating' => array_key_exists('min_rating', $overrides),
+                'sort' => array_key_exists('sort', $overrides),
+                'columns' => array_key_exists('columns', $overrides),
+            ],
+        ];
+
+        $sort = strtolower($options['sort']);
+        if (!in_array($sort, ['newest', 'most_relevant'], true)) {
+            $options['sort'] = 'most_relevant';
+        } else {
+            $options['sort'] = $sort;
+        }
+
+        if (isset($overrides['show_rating'])) {
+            $parsed = static::parseBoolean($overrides['show_rating']);
+            if ($parsed !== null) {
+                $options['show_rating'] = $parsed;
+            }
+            $options['overrides']['show_rating'] = true;
+        } else {
+            $options['overrides']['show_rating'] = false;
+        }
+
+        if (isset($overrides['show_avatar'])) {
+            $parsed = static::parseBoolean($overrides['show_avatar']);
+            if ($parsed !== null) {
+                $options['show_avatar'] = $parsed;
+            }
+            $options['overrides']['show_avatar'] = true;
+        } else {
+            $options['overrides']['show_avatar'] = false;
+        }
+
+        if (isset($overrides['show_cta'])) {
+            $parsed = static::parseBoolean($overrides['show_cta']);
+            if ($parsed !== null) {
+                $options['show_cta'] = $parsed;
+            }
+            $options['overrides']['show_cta'] = true;
+        } else {
+            $options['overrides']['show_cta'] = false;
+        }
+
+        if ($options['limit'] <= 0) {
+            $options['limit'] = 5;
+        }
+
+        if ($options['columns'] <= 0) {
+            $options['columns'] = 3;
+        }
+        if ($options['columns'] > 6) {
+            $options['columns'] = 6;
+        }
+
+        $options['min_rating'] = max(0.0, min(5.0, $options['min_rating']));
+
+        $options['is_configured'] = $options['api_key'] !== '' && $options['place_id'] !== '';
+
+        return $options;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    protected static function parseBoolean($value): ?bool
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if ($value === '') {
+            return null;
+        }
+
+        $value = strtolower((string) $value);
+
+        if (in_array($value, ['1', 'true', 'yes', 'on'], true)) {
+            return true;
+        }
+
+        if (in_array($value, ['0', 'false', 'no', 'off'], true)) {
+            return false;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected static function fetchGooglePlaceReviews(string $apiKey, string $placeId, int $limit, float $minRating, string $sort): array
+    {
+        $empty = [
+            'name' => '',
+            'rating' => null,
+            'user_ratings_total' => 0,
+            'url' => '',
+            'website' => '',
+            'reviews' => [],
+        ];
+
+        if ($apiKey === '' || $placeId === '') {
+            return $empty;
+        }
+
+        $cacheId = 'everblock_google_reviews_' . md5($placeId . '|' . $limit . '|' . $minRating . '|' . $sort);
+
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $query = [
+                'place_id' => $placeId,
+                'fields' => 'name,rating,user_ratings_total,reviews,url,website',
+                'key' => $apiKey,
+                'reviews_sort' => $sort === 'newest' ? 'newest' : 'most_relevant',
+                'reviews_no_translations' => 'true',
+            ];
+
+            $endpoint = 'https://maps.googleapis.com/maps/api/place/details/json?' . http_build_query($query);
+            $response = Tools::file_get_contents($endpoint);
+
+            if ($response === false) {
+                PrestaShopLogger::addLog('Everblock Google Reviews: unable to contact Google Places API.', 2);
+                EverblockCache::cacheStore($cacheId, $empty);
+            } else {
+                $payload = json_decode($response, true);
+
+                if (!is_array($payload) || ($payload['status'] ?? '') !== 'OK') {
+                    $status = isset($payload['status']) ? (string) $payload['status'] : 'unknown';
+                    PrestaShopLogger::addLog('Everblock Google Reviews: API status ' . $status, 2);
+                    EverblockCache::cacheStore($cacheId, $empty);
+                } else {
+                    $result = isset($payload['result']) && is_array($payload['result']) ? $payload['result'] : [];
+                    $reviews = isset($result['reviews']) && is_array($result['reviews']) ? $result['reviews'] : [];
+                    $filteredReviews = [];
+
+                    foreach ($reviews as $review) {
+                        if (!is_array($review)) {
+                            continue;
+                        }
+                        $rating = isset($review['rating']) ? (float) $review['rating'] : 0.0;
+                        if ($rating < $minRating) {
+                            continue;
+                        }
+
+                        $filteredReviews[] = [
+                            'author_name' => $review['author_name'] ?? '',
+                            'author_url' => $review['author_url'] ?? '',
+                            'profile_photo_url' => $review['profile_photo_url'] ?? '',
+                            'rating' => $rating,
+                            'text' => $review['text'] ?? '',
+                            'relative_time_description' => $review['relative_time_description'] ?? '',
+                            'time' => isset($review['time']) ? (int) $review['time'] : null,
+                        ];
+                    }
+
+                    $data = [
+                        'name' => $result['name'] ?? '',
+                        'rating' => isset($result['rating']) ? (float) $result['rating'] : null,
+                        'user_ratings_total' => isset($result['user_ratings_total']) ? (int) $result['user_ratings_total'] : 0,
+                        'url' => $result['url'] ?? '',
+                        'website' => $result['website'] ?? '',
+                        'reviews' => array_slice($filteredReviews, 0, $limit),
+                    ];
+
+                    EverblockCache::cacheStore($cacheId, $data);
+                }
+            }
+        }
+
+        $cachedData = EverblockCache::cacheRetrieve($cacheId);
+
+        return is_array($cachedData) ? $cachedData : $empty;
     }
 
     public static function getProductShortcodes(string $txt, Context $context, Everblock $module): string
