@@ -188,7 +188,7 @@ class Everblock extends Module
             $hook->description = 'This hook triggers before special event block is rendered';
             $hook->save();
         }
-        return (parent::install()
+        $installed = parent::install()
             && $this->registerHook('displayHeader')
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->registerHook('actionRegisterBlock')
@@ -197,8 +197,14 @@ class Everblock extends Module
             && $this->installModuleTab('AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'))
             && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
             && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
-            && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes')))
+            && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes'))
             && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'));
+
+        if ($installed) {
+            $this->importLegacyTranslations();
+        }
+
+        return $installed;
     }
 
     public function uninstall()
@@ -232,6 +238,193 @@ class Everblock extends Module
             && $this->uninstallModuleTab('AdminEverBlockHook')
             && $this->uninstallModuleTab('AdminEverBlockShortcode')
             && $this->uninstallModuleTab('AdminEverBlockFaq'));
+    }
+
+    public function l($string, $specific = null, $idLang = null)
+    {
+        return Context::getContext()->getTranslator()->trans(
+            $string,
+            [],
+            $this->getTranslationDomain($specific)
+        );
+    }
+
+    private function getTranslationDomain($specific = null)
+    {
+        $domainKey = $specific ? $specific : $this->name;
+
+        return sprintf('Modules.%s.%s', Tools::ucfirst($this->name), $this->normalizeDomainKey($domainKey));
+    }
+
+    private function normalizeDomainKey($key)
+    {
+        $key = trim((string) $key);
+
+        if ($key === '') {
+            $key = $this->name;
+        }
+
+        $key = str_replace(['-', '.'], '_', $key);
+        $key = preg_replace('/[^A-Za-z0-9_]/', '', $key);
+        $key = Tools::strtolower($key);
+
+        return Tools::ucfirst($key);
+    }
+
+    private function importLegacyTranslations()
+    {
+        $legacyDir = dirname(__FILE__) . '/translations';
+
+        if (!is_dir($legacyDir)) {
+            return;
+        }
+
+        $defaultMap = $this->loadDefaultLegacyTranslations($legacyDir);
+
+        if (empty($defaultMap)) {
+            return;
+        }
+
+        foreach (Language::getLanguages(false) as $language) {
+            $legacyFile = $this->resolveLegacyFileForIso($legacyDir, $language['iso_code']);
+
+            if (!$legacyFile) {
+                continue;
+            }
+
+            $legacyTranslations = $this->loadLegacyTranslationsFromFile($legacyFile);
+
+            if (empty($legacyTranslations)) {
+                continue;
+            }
+
+            foreach ($legacyTranslations as $legacyKey => $translatedValue) {
+                if (!isset($defaultMap[$legacyKey])) {
+                    continue;
+                }
+
+                $domain = $this->buildDomainFromLegacyKey($legacyKey);
+
+                if (!$domain) {
+                    continue;
+                }
+
+                $source = $defaultMap[$legacyKey];
+
+                if ($source === $translatedValue || $source === '') {
+                    continue;
+                }
+
+                $this->upsertTranslation(
+                    (int) $language['id_lang'],
+                    $domain,
+                    $source,
+                    $translatedValue
+                );
+            }
+        }
+    }
+
+    private function loadDefaultLegacyTranslations($legacyDir)
+    {
+        $candidates = ['en.php', 'gb.php', 'us.php'];
+
+        foreach ($candidates as $candidate) {
+            $path = $legacyDir . '/' . $candidate;
+
+            if (is_file($path)) {
+                return $this->loadLegacyTranslationsFromFile($path);
+            }
+        }
+
+        foreach (glob($legacyDir . '/*.php') as $file) {
+            if (basename($file) === 'index.php') {
+                continue;
+            }
+
+            return $this->loadLegacyTranslationsFromFile($file);
+        }
+
+        return [];
+    }
+
+    private function resolveLegacyFileForIso($legacyDir, $isoCode)
+    {
+        $iso = Tools::strtolower($isoCode);
+        $candidates = [$iso . '.php'];
+
+        if ($iso === 'en') {
+            $candidates[] = 'gb.php';
+            $candidates[] = 'us.php';
+        }
+
+        foreach ($candidates as $candidate) {
+            $path = $legacyDir . '/' . $candidate;
+
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    private function loadLegacyTranslationsFromFile($path)
+    {
+        if (!is_file($path)) {
+            return [];
+        }
+
+        $backup = isset($GLOBALS['_MODULE']) ? $GLOBALS['_MODULE'] : null;
+        $GLOBALS['_MODULE'] = [];
+
+        include $path;
+
+        $translations = isset($GLOBALS['_MODULE']) && is_array($GLOBALS['_MODULE'])
+            ? $GLOBALS['_MODULE']
+            : [];
+
+        if ($backup !== null) {
+            $GLOBALS['_MODULE'] = $backup;
+        } else {
+            unset($GLOBALS['_MODULE']);
+        }
+
+        return $translations;
+    }
+
+    private function buildDomainFromLegacyKey($legacyKey)
+    {
+        if (strpos($legacyKey, '>') === false) {
+            return null;
+        }
+
+        $parts = explode('>', $legacyKey, 2);
+
+        if (!isset($parts[1])) {
+            return null;
+        }
+
+        $domainPart = $parts[1];
+        $segments = explode('_', $domainPart);
+
+        if (empty($segments)) {
+            return null;
+        }
+
+        $domainKey = $segments[0];
+
+        return sprintf('Modules.%s.%s', Tools::ucfirst($this->name), $this->normalizeDomainKey($domainKey));
+    }
+
+    private function upsertTranslation($idLang, $domain, $source, $translation)
+    {
+        Db::getInstance()->execute(
+            'INSERT INTO `' . _DB_PREFIX_ . "translation` (`id_lang`, `domain`, `key`, `translation`, `theme`, `modified`)"
+            . " VALUES ("
+            . (int) $idLang . ", '" . pSQL($domain) . "', '" . pSQL($source) . "', '" . pSQL($translation, true) . "', NULL, 0)"
+            . " ON DUPLICATE KEY UPDATE `translation` = VALUES(`translation`), `modified` = VALUES(`modified`)"
+        );
     }
 
     protected function installModuleTab($tabClass, $parent, $tabName)
