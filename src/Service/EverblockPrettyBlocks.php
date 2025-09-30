@@ -128,6 +128,7 @@ class EverblockPrettyBlocks
             $rowTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/row.tpl';
             $reassuranceTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_reassurance.tpl';
             $ctaTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cta.tpl';
+            $googleReviewsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_google_reviews.tpl';
             $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
             $linkListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_link_list.tpl';
             $downloadsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_downloads.tpl';
@@ -1637,6 +1638,98 @@ class EverblockPrettyBlocks
                                 'light' => 'light',
                                 'dark' => 'dark',
                             ]
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Google reviews'),
+                'description' => $module->l('Display your Google Business reviews.'),
+                'code' => 'everblock_google_reviews',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $googleReviewsTemplate,
+                ],
+                'repeater' => [
+                    'name' => 'Feed',
+                    'nameFrom' => 'title',
+                    'groups' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title'),
+                            'default' => $module->l('What our customers say'),
+                        ],
+                        'intro' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Introductory text'),
+                            'default' => '',
+                        ],
+                        'columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '3',
+                        ],
+                        'api_key_override' => [
+                            'type' => 'text',
+                            'label' => $module->l('Override API key'),
+                            'default' => '',
+                        ],
+                        'place_id_override' => [
+                            'type' => 'text',
+                            'label' => $module->l('Override Place ID'),
+                            'default' => '',
+                        ],
+                        'limit_override' => [
+                            'type' => 'number',
+                            'label' => $module->l('Override review limit'),
+                            'default' => (string) ((int) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_LIMIT') ?: 5),
+                        ],
+                        'min_rating_override' => [
+                            'type' => 'text',
+                            'label' => $module->l('Override minimum rating'),
+                            'default' => (string) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING'),
+                        ],
+                        'sort_override' => [
+                            'type' => 'select',
+                            'label' => $module->l('Override sort order'),
+                            'default' => (string) (Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SORT') ?: 'most_relevant'),
+                            'choices' => [
+                                'most_relevant' => $module->l('Most relevant'),
+                                'newest' => $module->l('Most recent'),
+                            ],
+                        ],
+                        'show_rating_override' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Show rating summary'),
+                            'default' => (bool) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING'),
+                        ],
+                        'show_avatar_override' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Show reviewer avatars'),
+                            'default' => (bool) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR'),
+                        ],
+                        'show_cta_override' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Show CTA button'),
+                            'default' => (bool) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA'),
+                        ],
+                        'cta_label_override' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA label'),
+                            'default' => (string) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL'),
+                        ],
+                        'cta_url_override' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA URL'),
+                            'default' => (string) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL'),
                         ],
                         'css_class' => [
                             'type' => 'text',

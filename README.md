@@ -65,6 +65,7 @@ Ever Block includes a library of PrettyBlock blocks ready to use:
 - Downloads
 - Everblock content
 - Flash deals
+- Google reviews
 - Special event
 - Category products
 - Gallery
@@ -218,6 +219,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[crosselling nb="4" orderby="id_product" orderway="asc"]`: If the cart is empty, show best-selling products. Otherwise display accessories of cart products. Optional parameters: `nb`, `limit`, `orderby`, `orderway`, `carousel`.
 - `{hook h='displayHome'}`: Displays the `displayHome` hook (hooks are not allowed on modals)
 - `[everinstagram]`: Display your latest Instagram photos. Images are stored in `/img/cms/instagram`. Images are cached for 24h and refreshed when the cache expires or when you run `everblock:tools:execute refreshtokens`.
+- `[googlereviews place_id="YOUR_PLACE_ID"]`: Display reviews from your Google Business listing. Optional parameters: `key`, `place_id`, `limit`, `min_rating`, `sort`, `show_rating`, `show_avatar`, `show_cta`, `cta_label`, `cta_url`, `columns`, `title`, `intro`, `class`.
 - `[everimg name="image.jpg" class="img-fluid" carousel=true]`: Display one or more CMS images. Required parameter: `name`. Optional parameters: `class`, `carousel`.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]`: Display a QCD SVG icon. Required parameter: `name`. Optional parameters: `class`, `inline`.
 - `[qcdacf field="field" objectType="objectType" objectId="objectId"]`: Display a value from QCD ACF fields. Required parameters: `field`, `objectType`, `objectId`.
@@ -247,6 +249,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 | `[entity_gender]` | — | — |
 | `[storelocator]` | — | — |
 | `[evermap]` | — | — |
+| `[googlereviews]` | — | key, place_id, limit, min_rating, sort, show_rating, show_avatar, show_cta, cta_label, cta_url, columns, title, intro, class |
 | `[evercart]` | — | — |
 | `[cart_total]` | — | — |
 | `[cart_quantity]` | — | — |
@@ -347,6 +350,8 @@ Obfuscation settings will help you improve your SEO, the obfuscation script can 
 Make sure that the hook used in the block matches the criteria of the settings of this block, so as to guarantee its display.
 
 Each block can be converted to a modal and can have shortcodes in its content (except hook and store locator shortcodes). You can therefore create contact forms in a modal.
+
+The PrettyBlocks library now includes a **Google reviews** block so you can drop your Google Business testimonials with configurable columns, intro text and CTA overrides.
 
 ## Triggering modals from a button
 You can trigger an Everblock modal manually from any hook. Add a button with the
@@ -513,6 +518,7 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]` : Si le panier est vide, affiche les meilleures ventes. Sinon, affiche les accessoires des produits du panier. S'il n'y en a pas ou si le nombre est insuffisant, complète avec les meilleures ventes des mêmes catégories puis avec les meilleures ventes globales.
 - `{hook h='displayHome'}` : Affiche le hook `displayHome` (les hooks ne sont pas autorisés dans les modales)
 - `[everinstagram]` : Affiche vos dernières photos Instagram. Les images sont enregistrées dans `/img/cms/instagram`. Les images sont mises en cache pendant 24h et régénérées automatiquement ou via la commande `everblock:tools:execute refreshtokens`.
+- `[googlereviews place_id="VOTRE_PLACE_ID"]` : Affiche les avis de votre fiche Google Business. Paramètres optionnels : `key`, `place_id`, `limit`, `min_rating`, `sort`, `show_rating`, `show_avatar`, `show_cta`, `cta_label`, `cta_url`, `columns`, `title`, `intro`, `class`.
 - `[nativecontact]` : Intègre le formulaire de contact natif PrestaShop.
 - `[everimg name="image.jpg" class="img-fluid"]` : Affiche une ou plusieurs images CMS.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]` : Affiche une icône SVG QCD. Module disponible chez [410 Gone](https://www.410-gone.fr/).
@@ -580,6 +586,8 @@ Les réglages d'obfuscation vous aideront à améliorer votre SEO ; le script d'
 Assurez-vous que le hook utilisé dans le bloc corresponde aux critères du bloc afin de garantir son affichage.
 
 Chaque bloc peut être converti en modal et peut contenir des shortcodes (à l'exception des hooks et du store locator). Vous pouvez donc créer des formulaires de contact dans une modal.
+
+La bibliothèque PrettyBlocks propose désormais un bloc **Avis Google** pour afficher vos témoignages Google Business avec configuration des colonnes, du texte d’introduction et du bouton.
 
 ## Déclenchement des modales depuis un bouton
 Vous pouvez déclencher manuellement une modal Everblock depuis n'importe quel hook. Ajoutez un bouton avec la classe `everblock-modal-button` et indiquez l'ID du bloc dans l'attribut `data-everclickmodal` :
@@ -738,6 +746,7 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Si el carrito está vacío, se muestran los productos más vendidos. De lo contrario, muestra los accesorios de los productos del carrito. Si no hay suficientes, se añaden los más vendidos de las mismas categorías y, en último lugar, los más vendidos globales.
 - `{hook h='displayHome'}`: Muestra el hook `displayHome` (los hooks no están permitidos en modales)
 - `[everinstagram]`: Muestra tus últimas fotos de Instagram. Las imágenes se guardan en `/img/cms/instagram`. Las imágenes se almacenan en caché durante 24h y se regeneran de forma automática o ejecutando `everblock:tools:execute refreshtokens`.
+- `[googlereviews place_id="TU_PLACE_ID"]`: Muestra las reseñas de tu ficha de Google Business. Parámetros opcionales: `key`, `place_id`, `limit`, `min_rating`, `sort`, `show_rating`, `show_avatar`, `show_cta`, `cta_label`, `cta_url`, `columns`, `title`, `intro`, `class`.
 - `[nativecontact]`: Inserta el formulario de contacto nativo de PrestaShop.
 - `[everimg name="image.jpg" class="img-fluid"]`: Muestra una o más imágenes CMS.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]`: Muestra un icono SVG de QCD. Módulo disponible en [410 Gone](https://www.410-gone.fr/).
@@ -800,6 +809,8 @@ Las opciones permiten añadir condiciones de visualización como:
 - mostrar el bloque solo en páginas de proveedor, con selección de proveedores
 
 Las opciones de ofuscación te ayudarán a mejorar tu SEO; el script puede desactivarse en la configuración del módulo.
+
+La biblioteca PrettyBlocks incorpora ahora un bloque **Reseñas de Google** para mostrar tus testimonios de Google Business con columnas, texto introductorio y botón configurables.
 
 Asegúrate de que el hook del bloque coincida con los criterios de configuración para garantizar su visualización.
 
@@ -962,6 +973,7 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 - `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Se il carrello è vuoto vengono mostrati i prodotti più venduti. Altrimenti mostra gli accessori dei prodotti in carrello; se mancano articoli o non si raggiunge il limite, aggiunge i più venduti delle stesse categorie e infine i best seller globali.
 - `{hook h='displayHome'}`: Mostra l'hook `displayHome` (gli hook non sono consentiti nelle modali)
 - `[everinstagram]`: Mostra le ultime foto di Instagram. Le immagini vengono salvate in `/img/cms/instagram`. Le immagini sono mantenute in cache per 24h e vengono rigenerate automaticamente o eseguendo `everblock:tools:execute refreshtokens`.
+- `[googlereviews place_id="IL_TUO_PLACE_ID"]`: Mostra le recensioni della tua scheda Google Business. Parametri opzionali: `key`, `place_id`, `limit`, `min_rating`, `sort`, `show_rating`, `show_avatar`, `show_cta`, `cta_label`, `cta_url`, `columns`, `title`, `intro`, `class`.
 - `[nativecontact]`: Inserisce il modulo di contatto nativo di PrestaShop.
 - `[everimg name="image.jpg" class="img-fluid"]`: Mostra una o più immagini CMS.
 - `[displayQcdSvg name="icon" class="myclass" inline=true]`: Mostra un'icona SVG QCD. Modulo disponibile presso [410 Gone](https://www.410-gone.fr/).
@@ -1028,6 +1040,8 @@ Le impostazioni di offuscamento ti aiuteranno a migliorare la SEO; lo script di 
 Assicurati che l'hook utilizzato nel blocco corrisponda ai criteri di configurazione per garantirne la visualizzazione.
 
 Ogni blocco può essere convertito in modale e può contenere shortcode (tranne hook e store locator). Puoi quindi creare moduli di contatto in una modale.
+
+La libreria PrettyBlocks ora include un blocco **Recensioni Google** per mostrare le testimonianze della tua scheda Google Business con colonne, testo introduttivo e pulsante personalizzabili.
 
 ## Attivare modali da un pulsante
 Puoi attivare manualmente una modale Everblock da qualsiasi hook. Aggiungi un pulsante con la classe `everblock-modal-button` e indica l'ID del blocco nell'attributo `data-everclickmodal`:
