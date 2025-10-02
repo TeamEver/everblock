@@ -969,6 +969,7 @@ class Everblock extends Module
             'everblock_notifications' => $notifications,
             'everblock_form' => $this->renderForm(),
             'display_upgrade' => $displayUpgrade,
+            'everblock_stats' => $this->getModuleStatistics(),
         ]);
         $output = $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'
@@ -1026,6 +1027,7 @@ class Everblock extends Module
 
         $tabs = [
             'settings' => $this->l('Réglages'),
+            'stats' => $this->l('Statistiques'),
             'meta_tools' => $this->l('Meta Tools'),
             'google_maps' => $this->l('Google Maps'),
             'migration' => $this->l('Migration des URL'),
@@ -1059,6 +1061,7 @@ class Everblock extends Module
 
         $docTemplates = [
             'settings' => 'settings.tpl',
+            'stats' => 'stats.tpl',
             'meta_tools' => 'meta_tools.tpl',
             'google_maps' => 'google_maps.tpl',
             'migration' => 'migration.tpl',
@@ -2146,6 +2149,52 @@ class Everblock extends Module
         }
         $configData = array_merge($configData, $bannedFeaturesColors);
         return $configData;
+    }
+
+    protected function getModuleStatistics(): array
+    {
+        $idShop = (int) $this->context->shop->id;
+        $stats = [
+            'blocks_total' => $this->countTableRecords('everblock', 'id_shop = ' . $idShop),
+            'blocks_active' => $this->countTableRecords('everblock', 'id_shop = ' . $idShop . ' AND active = 1'),
+            'shortcodes' => $this->countTableRecords('everblock_shortcode', 'id_shop = ' . $idShop),
+            'faqs' => $this->countTableRecords('everblock_faq', 'id_shop = ' . $idShop),
+            'tabs' => $this->countTableRecords('everblock_tabs', 'id_shop = ' . $idShop),
+            'flags' => $this->countTableRecords('everblock_flags', 'id_shop = ' . $idShop),
+            'modals' => $this->countTableRecords('everblock_modal', 'id_shop = ' . $idShop),
+            'game_sessions' => $this->countTableRecords('everblock_game_play'),
+        ];
+
+        return $stats;
+    }
+
+    protected function countTableRecords(string $table, string $whereClause = ''): int
+    {
+        if (!$this->moduleTableExists($table)) {
+            return 0;
+        }
+
+        $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
+        $sql = sprintf(
+            'SELECT COUNT(*) FROM `%s`',
+            bqSQL(_DB_PREFIX_ . $table)
+        );
+        if ($whereClause !== '') {
+            $sql .= ' WHERE ' . $whereClause;
+        }
+
+        return (int) $db->getValue($sql);
+    }
+
+    protected function moduleTableExists(string $table): bool
+    {
+        $tableName = _DB_PREFIX_ . $table;
+        $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
+        $pattern = str_replace(['_', '%'], ['\\_', '\\%'], pSQL($tableName));
+        $sql = sprintf("SHOW TABLES LIKE '%s'", $pattern);
+        $result = $db->executeS($sql);
+
+        return !empty($result);
     }
 
     public function postValidation()
