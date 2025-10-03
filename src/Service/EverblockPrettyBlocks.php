@@ -3459,6 +3459,115 @@ class EverblockPrettyBlocks
                     ], $module),
                 ],
             ];
+            $adventTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_advent_calendar.tpl';
+            $blocks[] = [
+                'name' => $module->l('Advent calendar'),
+                'description' => $module->l('Interactive Advent calendar with 24 festive windows'),
+                'code' => 'everblock_advent_calendar',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $adventTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Block title'),
+                            'default' => $module->l('Christmas Advent calendar'),
+                        ],
+                        'instructions' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Instructions text'),
+                            'default' => $module->l('Scratch or click on today's window to reveal your festive surprise!'),
+                        ],
+                        'start_date' => [
+                            'type' => 'text',
+                            'label' => $module->l('Calendar start date (YYYY-MM-DD)'),
+                            'default' => date('Y') . '-12-01',
+                        ],
+                        'restrict_to_current_day' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Allow only the current day to be opened'),
+                            'default' => true,
+                        ],
+                        'locked_message' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Locked window message (use %date% to insert the day)'),
+                            'default' => $module->l('Come back on the matching December day to open this window.'),
+                        ],
+                        'opened_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Opened badge label'),
+                            'default' => $module->l('Opened'),
+                        ],
+                        'snow_enabled' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable snowfall decoration'),
+                            'default' => true,
+                        ],
+                    ], $module),
+                ],
+                'repeater' => [
+                    'name' => 'Calendar window',
+                    'nameFrom' => 'window_title',
+                    'groups' => static::appendSpacingFields([
+                        'day_number' => [
+                            'type' => 'number',
+                            'label' => $module->l('Day number (1-24)'),
+                            'default' => 1,
+                        ],
+                        'window_title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Window title'),
+                            'default' => $module->l('Festive surprise'),
+                        ],
+                        'window_subtitle' => [
+                            'type' => 'text',
+                            'label' => $module->l('Subtitle'),
+                            'default' => '',
+                        ],
+                        'content' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Content to reveal'),
+                            'default' => $module->l('Add a personalised message, discount code or surprise.'),
+                        ],
+                        'image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Optional image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'button_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button label'),
+                            'default' => $module->l('Shop now'),
+                        ],
+                        'button_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button link URL'),
+                            'default' => '',
+                        ],
+                        'promo_code' => [
+                            'type' => 'text',
+                            'label' => $module->l('Promo code'),
+                            'default' => '',
+                        ],
+                        'background_color' => [
+                            'type' => 'color',
+                            'label' => $module->l('Window background color'),
+                            'default' => '#b3002d',
+                        ],
+                        'text_color' => [
+                            'type' => 'color',
+                            'label' => $module->l('Window text color'),
+                            'default' => '#ffffff',
+                        ],
+                    ], $module),
+                ],
+            ];
             $scratchTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_scratch_card.tpl';
             $blocks[] = [
                 'name' => $module->l('Scratch card'),
