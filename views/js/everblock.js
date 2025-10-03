@@ -2266,6 +2266,440 @@ $(document).ready(function(){
         requestInitialStatus();
     });
 
+    $(document).on('click', '.ever-advent-calendar__login-btn', function (e) {
+        e.preventDefault();
+        var target = $(this).data('target');
+        if (typeof target === 'string' && target.length) {
+            $(target).modal('show');
+        }
+    });
+    $(document).on('hidden.bs.modal', '.ever-advent-login-modal', function () {
+        var form = $(this).find('form')[0];
+        if (form) {
+            form.reset();
+        }
+    });
+
+    $('.ever-advent-calendar').each(function () {
+        var $calendar = $(this);
+        var configB64 = $calendar.data('config');
+        var config = {};
+        if (typeof configB64 === 'string') {
+            try {
+                config = JSON.parse(atob(configB64));
+            } catch (e) {
+                config = {};
+            }
+        }
+        var blockId = parseInt($calendar.data('block-id'), 10) || 0;
+        var playUrl = typeof config.playUrl === 'string' ? config.playUrl : '';
+        var token = typeof config.token === 'string' ? config.token : '';
+        var lockedMessage = typeof config.lockedMessage === 'string' ? config.lockedMessage : '';
+        var emptyMessage = typeof config.emptyMessage === 'string' ? config.emptyMessage : '';
+        var fallbackLockedMessage = typeof config.fallbackLockedMessage === 'string' ? config.fallbackLockedMessage : '';
+        var errorMessage = typeof config.errorMessage === 'string' ? config.errorMessage : 'An error occurred. Please try again later.';
+        var openedLabel = typeof config.openedLabel === 'string' ? config.openedLabel : '';
+        var snowEnabled = !!config.snowEnabled;
+        var isEmployee = !!config.isEmployee;
+        if (!isEmployee && typeof everblock_is_employee !== 'undefined') {
+            isEmployee = !!everblock_is_employee;
+        }
+        var langId = parseInt(config.langId, 10);
+        if (!langId && typeof prestashop !== 'undefined' && prestashop.language && prestashop.language.id) {
+            langId = parseInt(prestashop.language.id, 10);
+        }
+        var restrictToCurrentDay = !!config.restrictToCurrentDay && !isEmployee;
+        var startDate = parseDateValue(config.startDate);
+        var now = new Date();
+        var defaultStart = new Date(now.getFullYear(), 11, 1);
+        defaultStart.setHours(0, 0, 0, 0);
+        if (!startDate) {
+            startDate = defaultStart;
+        } else {
+            startDate.setHours(0, 0, 0, 0);
+        }
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var storageKey = 'everblock_advent_' + blockId;
+        var openedDays = loadOpenedDays();
+        var requestInProgress = false;
+        var windowsMap = buildWindowsMap(config.windows || []);
+        var $status = $calendar.find('.ever-advent-calendar__status');
+        var $windows = $calendar.find('.ever-advent-calendar__window');
+        if (snowEnabled) {
+            $calendar.addClass('ever-advent-calendar--snow');
+        }
+        updateWindows();
+        $windows.on('click', function (event) {
+            event.preventDefault();
+            var $window = $(this);
+            var day = parseInt($window.data('day'), 10);
+            if (!day || day < 1 || day > 24) {
+                return;
+            }
+            if ($window.hasClass('ever-advent-calendar__window--opened')) {
+                revealStoredContent($window);
+                showStatus('');
+                return;
+            }
+            if ($window.hasClass('ever-advent-calendar__window--locked')) {
+                var availableOn = $window.data('availableOn');
+                if (availableOn instanceof Date && !isNaN(availableOn.getTime())) {
+                    showStatus(formatAvailableMessage(availableOn));
+                } else if (lockedMessage) {
+                    showStatus(lockedMessage);
+                } else {
+                    showStatus('');
+                }
+                return;
+            }
+            if (requestInProgress) {
+                return;
+            }
+            var windowData = $window.data('windowConfig') || null;
+            if (!windowData) {
+                showStatus(emptyMessage);
+                return;
+            }
+            if (!playUrl || !token || isEmployee) {
+                markAsOpened($window, windowData, true);
+                openedDays[String(day)] = {
+                    timestamp: Date.now(),
+                    data: windowData
+                };
+                saveOpenedDays();
+                showStatus('');
+                return;
+            }
+            requestInProgress = true;
+            $window.addClass('ever-advent-calendar__window--loading');
+            $.ajax({
+                url: playUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    id_block: blockId,
+                    token: token,
+                    day: day
+                },
+                success: function (res) {
+                    requestInProgress = false;
+                    $window.removeClass('ever-advent-calendar__window--loading');
+                    if (!res || typeof res !== 'object') {
+                        showStatus(emptyMessage);
+                        return;
+                    }
+                    if (res.status === false) {
+                        if (res.reason === 'already_opened') {
+                            markAsOpened($window, windowData, false);
+                            openedDays[String(day)] = {
+                                timestamp: Date.now(),
+                                data: windowData
+                            };
+                            saveOpenedDays();
+                        }
+                        if (res.reason === 'too_early' && res.available_on) {
+                            showStatus(formatAvailableMessage(res.available_on));
+                        } else {
+                            showStatus(typeof res.message === 'string' ? res.message : lockedMessage);
+                        }
+                        return;
+                    }
+                    markAsOpened($window, windowData, true);
+                    openedDays[String(day)] = {
+                        timestamp: Date.now(),
+                        data: windowData
+                    };
+                    saveOpenedDays();
+                    showStatus(typeof res.message === 'string' ? res.message : '');
+                },
+                error: function () {
+                    requestInProgress = false;
+                    $window.removeClass('ever-advent-calendar__window--loading');
+                    showStatus(errorMessage);
+                }
+            });
+        });
+
+        function loadOpenedDays() {
+            var stored;
+            try {
+                stored = localStorage.getItem(storageKey);
+            } catch (err) {
+                return {};
+            }
+            if (!stored) {
+                return {};
+            }
+            try {
+                var parsed = JSON.parse(stored);
+                return parsed && typeof parsed === 'object' ? parsed : {};
+            } catch (err) {
+                return {};
+            }
+        }
+
+        function saveOpenedDays() {
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(openedDays));
+            } catch (err) {
+                // ignore
+            }
+        }
+
+        function parseDateValue(value) {
+            if (typeof value !== 'string' || !value.trim()) {
+                return null;
+            }
+            var parsed = Date.parse(value);
+            if (!isNaN(parsed)) {
+                return new Date(parsed);
+            }
+            var match = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (match) {
+                return new Date(parseInt(match[1], 10), parseInt(match[2], 10) - 1, parseInt(match[3], 10));
+            }
+            return null;
+        }
+
+        function addDays(date, days) {
+            var clone = new Date(date.getTime());
+            clone.setDate(clone.getDate() + days);
+            clone.setHours(0, 0, 0, 0);
+            return clone;
+        }
+
+        function sameDay(a, b) {
+            return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+        }
+
+        function buildWindowsMap(windows) {
+            var map = {};
+            var items = Array.isArray(windows) ? windows : Object.values(windows);
+            items.forEach(function (raw) {
+                if (!raw || typeof raw !== 'object') {
+                    return;
+                }
+                var normalized = normalizeWindow(raw);
+                var day = parseInt(normalized.day_number, 10);
+                if (!day || day < 1 || day > 24) {
+                    return;
+                }
+                map[String(day)] = normalized;
+            });
+            return map;
+        }
+
+        function normalizeWindow(raw) {
+            var result = {};
+            Object.keys(raw || {}).forEach(function (key) {
+                result[key] = resolveValue(raw[key]);
+            });
+            return result;
+        }
+
+        function resolveValue(value) {
+            if (value && typeof value === 'object') {
+                if (Array.isArray(value)) {
+                    return value.map(resolveValue);
+                }
+                if (Object.prototype.hasOwnProperty.call(value, 'value')) {
+                    return resolveValue(value.value);
+                }
+                var langKey = langId ? String(langId) : null;
+                if (langKey && Object.prototype.hasOwnProperty.call(value, langKey)) {
+                    return resolveValue(value[langKey]);
+                }
+                var keys = Object.keys(value);
+                var numericKeys = keys.filter(function (k) {
+                    return /^\d+$/.test(k);
+                });
+                if (numericKeys.length && numericKeys.length === keys.length) {
+                    if (langKey && Object.prototype.hasOwnProperty.call(value, langKey)) {
+                        return resolveValue(value[langKey]);
+                    }
+                    return resolveValue(value[numericKeys[0]]);
+                }
+                var output = {};
+                keys.forEach(function (k) {
+                    output[k] = resolveValue(value[k]);
+                });
+                return output;
+            }
+            return value;
+        }
+
+        function applyWindowStyles($window, data) {
+            if (data.background_color) {
+                $window.css('--ever-advent-window-bg', data.background_color);
+            } else {
+                $window.css('--ever-advent-window-bg', '');
+            }
+            if (data.text_color) {
+                $window.css('--ever-advent-window-color', data.text_color);
+            } else {
+                $window.css('--ever-advent-window-color', '');
+            }
+        }
+
+        function updateWindows() {
+            $windows.each(function () {
+                var $window = $(this);
+                var day = parseInt($window.data('day'), 10);
+                if (!day || day < 1 || day > 24) {
+                    $window.remove();
+                    return;
+                }
+                var data = windowsMap[String(day)] || null;
+                $window.data('windowConfig', data);
+                var $badge = $window.find('.ever-advent-calendar__badge');
+                if ($badge.length) {
+                    $badge.text('');
+                }
+                var $back = $window.find('.ever-advent-calendar__back');
+                var $reveal = $window.find('.ever-advent-calendar__reveal');
+                $reveal.empty();
+                $back.attr('hidden', 'hidden');
+                $window.removeClass('ever-advent-calendar__window--opened ever-advent-calendar__window--locked ever-advent-calendar__window--available ever-advent-calendar__window--loading');
+                $window.attr('aria-disabled', 'false');
+                if (data) {
+                    applyWindowStyles($window, data);
+                } else {
+                    $window.css('--ever-advent-window-bg', '');
+                    $window.css('--ever-advent-window-color', '');
+                }
+                var stored = openedDays[String(day)];
+                if (stored && data) {
+                    markAsOpened($window, data, false);
+                    return;
+                }
+                var windowDate = addDays(startDate, day - 1);
+                $window.data('availableOn', windowDate);
+                if (restrictToCurrentDay) {
+                    if (sameDay(windowDate, today)) {
+                        $window.addClass('ever-advent-calendar__window--available');
+                    } else {
+                        lockWindow($window);
+                    }
+                } else {
+                    if (windowDate <= today || isEmployee) {
+                        $window.addClass('ever-advent-calendar__window--available');
+                    } else {
+                        lockWindow($window);
+                    }
+                }
+            });
+        }
+
+        function lockWindow($window) {
+            $window.addClass('ever-advent-calendar__window--locked');
+            $window.attr('aria-disabled', 'true');
+        }
+
+        function markAsOpened($window, data, focusReveal) {
+            $window.removeClass('ever-advent-calendar__window--locked ever-advent-calendar__window--available');
+            $window.addClass('ever-advent-calendar__window--opened');
+            $window.attr('aria-disabled', 'false');
+            var $badge = $window.find('.ever-advent-calendar__badge');
+            if ($badge.length) {
+                $badge.text(openedLabel);
+            }
+            var $back = $window.find('.ever-advent-calendar__back');
+            var $reveal = $window.find('.ever-advent-calendar__reveal');
+            $reveal.html(buildRevealHtml(data));
+            $back.removeAttr('hidden');
+            if (focusReveal) {
+                setTimeout(function () {
+                    $reveal.attr('tabindex', '-1').focus();
+                }, 100);
+            }
+        }
+
+        function revealStoredContent($window) {
+            var data = $window.data('windowConfig') || null;
+            if (!data) {
+                return;
+            }
+            markAsOpened($window, data, false);
+        }
+
+        function buildRevealHtml(data) {
+            if (!data) {
+                return '<p class=\"ever-advent-calendar__placeholder\">' + escapeHtml(emptyMessage) + '</p>';
+            }
+            var parts = [];
+            if (data.image && data.image.url) {
+                var alt = data.window_title ? escapeHtml(data.window_title) : '';
+                parts.push('<div class=\"ever-advent-calendar__image\"><img src=\"' + escapeAttribute(data.image.url) + '\" alt=\"' + alt + '\"></div>');
+            }
+            if (data.window_title) {
+                parts.push('<h4 class=\"ever-advent-calendar__heading\">' + escapeHtml(data.window_title) + '</h4>');
+            }
+            if (data.window_subtitle) {
+                parts.push('<p class=\"ever-advent-calendar__subtitle\">' + escapeHtml(data.window_subtitle) + '</p>');
+            }
+            if (data.content) {
+                parts.push('<div class=\"ever-advent-calendar__body\">' + data.content + '</div>');
+            }
+            if (data.promo_code) {
+                parts.push('<div class=\"ever-advent-calendar__promo\"><span>' + escapeHtml(data.promo_code) + '</span></div>');
+            }
+            if (data.button_url && data.button_label) {
+                parts.push('<a class=\"btn btn-light ever-advent-calendar__button\" href=\"' + escapeAttribute(data.button_url) + '\" target=\"_blank\" rel=\"noopener\">' + escapeHtml(data.button_label) + '</a>');
+            }
+            if (!parts.length) {
+                parts.push('<p class=\"ever-advent-calendar__placeholder\">' + escapeHtml(emptyMessage) + '</p>');
+            }
+            return parts.join('');
+        }
+
+        function escapeHtml(value) {
+            if (value === null || value === undefined) {
+                return '';
+            }
+            return String(value).replace(/[&<>"']/g, function (match) {
+                var escapes = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return escapes[match] || match;
+            });
+        }
+
+        function escapeAttribute(value) {
+            return escapeHtml(value);
+        }
+
+        function formatAvailableMessage(dateOrString) {
+            var dateObj = dateOrString instanceof Date ? dateOrString : parseDateValue(dateOrString);
+            if (!dateObj) {
+                return lockedMessage || '';
+            }
+            var formatted = dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            if (lockedMessage && lockedMessage.indexOf('%date%') !== -1) {
+                return lockedMessage.replace('%date%', formatted);
+            }
+            if (fallbackLockedMessage) {
+                return fallbackLockedMessage.replace('%s', formatted).replace('%date%', formatted);
+            }
+            return 'Come back on ' + formatted + ' to open this window.';
+        }
+
+        function showStatus(message) {
+            if (!$status.length) {
+                return;
+            }
+            if (typeof message === 'string' && message.trim().length) {
+                $status.html(message).show();
+            } else {
+                $status.hide().empty();
+            }
+        }
+    });
+
     $('.ever-slot-machine').each(function(){
         var $machine = $(this);
         var configB64 = $machine.data('config');

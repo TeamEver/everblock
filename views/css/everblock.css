@@ -1581,3 +1581,319 @@
         max-height: 56px;
     }
 }
+
+
+.ever-advent-calendar {
+    position: relative;
+    padding: 2.5rem 1.75rem;
+    border-radius: 1.75rem;
+    background: linear-gradient(140deg, #07111f 0%, #0f2a3a 45%, #07111f 100%);
+    color: #ffffff;
+    box-shadow: 0 24px 45px rgba(3, 16, 30, 0.45);
+    overflow: hidden;
+}
+
+.ever-advent-calendar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 55%),
+        radial-gradient(circle at 90% 30%, rgba(255, 203, 112, 0.2) 0%, rgba(255, 203, 112, 0) 60%),
+        radial-gradient(circle at 50% 90%, rgba(144, 224, 239, 0.18) 0%, rgba(144, 224, 239, 0) 55%);
+}
+
+.ever-advent-calendar--snow::before {
+    content: '';
+    position: absolute;
+    inset: -50% 0 0 0;
+    background-image: radial-gradient(2px 2px at 20px 20px, rgba(255, 255, 255, 0.45) 50%, transparent 51%),
+        radial-gradient(2px 2px at 40px 60px, rgba(255, 255, 255, 0.35) 50%, transparent 51%),
+        radial-gradient(2px 2px at 60px 40px, rgba(255, 255, 255, 0.4) 50%, transparent 51%),
+        radial-gradient(2px 2px at 80px 20px, rgba(255, 255, 255, 0.3) 50%, transparent 51%);
+    background-size: 120px 120px;
+    animation: ever-advent-snow 18s linear infinite;
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+@keyframes ever-advent-snow {
+    0% {
+        transform: translateY(-10%);
+    }
+    100% {
+        transform: translateY(10%);
+    }
+}
+
+.ever-advent-calendar__title {
+    font-family: 'Montserrat', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.ever-advent-calendar__instructions {
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 1.5rem auto;
+}
+
+.ever-advent-calendar__status {
+    display: none;
+    margin: 0 auto 1.5rem auto;
+    padding: 0.85rem 1.25rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+    font-weight: 500;
+    text-align: center;
+    color: #fff;
+}
+
+.ever-advent-calendar__grid {
+    display: grid;
+    gap: 1.1rem;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    position: relative;
+}
+
+@media (min-width: 768px) {
+    .ever-advent-calendar__grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.ever-advent-calendar__window {
+    position: relative;
+    border: none;
+    background: none;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ever-advent-calendar__window:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.85);
+    outline-offset: 4px;
+}
+
+.ever-advent-calendar__window--locked {
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.ever-advent-calendar__window--available:hover:not(.ever-advent-calendar__window--locked) {
+    transform: translateY(-6px);
+}
+
+.ever-advent-calendar__window--opened {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 36px rgba(5, 12, 24, 0.5);
+}
+
+.ever-advent-calendar__front,
+.ever-advent-calendar__back {
+    position: relative;
+    border-radius: 1.25rem;
+    min-height: 120px;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    background: var(--ever-advent-window-bg, rgba(255, 255, 255, 0.12));
+    color: var(--ever-advent-window-color, #ffffff);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease, color 0.3s ease;
+}
+
+.ever-advent-calendar__front::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: inherit;
+    border: 1px dashed rgba(255, 255, 255, 0.35);
+    pointer-events: none;
+}
+
+.ever-advent-calendar__front {
+    overflow: hidden;
+}
+
+.ever-advent-calendar__number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.ever-advent-calendar__badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: rgba(255, 255, 255, 0.22);
+    color: inherit;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.ever-advent-calendar__window--opened .ever-advent-calendar__badge {
+    opacity: 1;
+}
+
+.ever-advent-calendar__back {
+    background: rgba(255, 255, 255, 0.95);
+    color: #082235;
+    border-color: transparent;
+    opacity: 0;
+    transform: translateY(12px);
+}
+
+.ever-advent-calendar__back[hidden] {
+    display: none !important;
+}
+
+.ever-advent-calendar__window--opened .ever-advent-calendar__front {
+    opacity: 0;
+    transform: translateY(-12px);
+    pointer-events: none;
+}
+
+.ever-advent-calendar__window--opened .ever-advent-calendar__back {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ever-advent-calendar__window--loading::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 1rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    animation: ever-advent-spin 1s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes ever-advent-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.ever-advent-calendar__grid--locked .ever-advent-calendar__window {
+    cursor: not-allowed;
+}
+
+.ever-advent-calendar__grid--locked .ever-advent-calendar__front {
+    opacity: 0.8;
+}
+
+.ever-advent-calendar__grid--locked .ever-advent-calendar__badge {
+    display: none;
+}
+
+.ever-advent-calendar__image {
+    margin-bottom: 1rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.ever-advent-calendar__image img {
+    max-width: 120px;
+    border-radius: 0.85rem;
+    box-shadow: 0 12px 20px rgba(12, 30, 50, 0.35);
+}
+
+.ever-advent-calendar__heading {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}
+
+.ever-advent-calendar__subtitle {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(8, 34, 53, 0.75);
+    margin-bottom: 0.75rem;
+}
+
+.ever-advent-calendar__body {
+    width: 100%;
+    font-size: 0.95rem;
+    color: rgba(8, 34, 53, 0.9);
+}
+
+.ever-advent-calendar__promo {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #b2003a;
+}
+
+.ever-advent-calendar__button {
+    margin-top: 1.2rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #c2185b 0%, #ff5252 100%);
+    color: #ffffff;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+}
+
+.ever-advent-calendar__placeholder {
+    margin: 0.5rem 0 0;
+    color: rgba(8, 34, 53, 0.7);
+    font-style: italic;
+}
+
+.ever-advent-calendar__login .btn {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+}
+
+.ever-advent-calendar__login-message {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #082235;
+}
+
+@media (max-width: 575.98px) {
+    .ever-advent-calendar {
+        padding: 2rem 1.2rem;
+    }
+    .ever-advent-calendar__grid {
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap: 0.85rem;
+    }
+    .ever-advent-calendar__front,
+    .ever-advent-calendar__back {
+        min-height: 100px;
+        padding: 0.9rem;
+    }
+    .ever-advent-calendar__number {
+        font-size: 1.8rem;
+    }
+}
