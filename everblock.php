@@ -2747,6 +2747,29 @@ class Everblock extends Module
     public function hookActionAdminControllerSetMedia()
     {
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
+
+        $controllerName = Tools::getValue('controller');
+
+        if (!$controllerName && isset($this->context->controller->controller_name)) {
+            $controllerName = $this->context->controller->controller_name;
+        }
+
+        $normalizedController = Tools::strtolower((string) $controllerName);
+
+        $moduleAdminControllers = [
+            'admineverblock',
+            'admineverblockfaq',
+            'admineverblockhook',
+            'admineverblockshortcode',
+        ];
+
+        $shouldLoadAdminStyles = in_array($normalizedController, $moduleAdminControllers, true)
+            || ($normalizedController === 'adminmodules' && Tools::getValue('configure') === $this->name);
+
+        if ($shouldLoadAdminStyles) {
+            $this->context->controller->addCss($this->_path . 'views/css/everblock-admin.css');
+        }
+
         if (Tools::getValue('id_' . $this->name)
             || Tools::getIsset('add' . $this->name)
             || Tools::getValue('configure') == $this->name

@@ -16,14 +16,22 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
-{if isset($everblock_notifications) && $everblock_notifications}
-    {$everblock_notifications nofilter}
-{/if}
+<section class="everblock-admin-surface">
+    {if isset($everblock_notifications) && $everblock_notifications}
+        <div class="everblock-admin-alerts">
+            {$everblock_notifications nofilter}
+        </div>
+    {/if}
 
-{if isset($display_upgrade) && $display_upgrade}
-    {include file='module:everblock/views/templates/admin/upgrade.tpl'}
-{/if}
+    {if isset($display_upgrade) && $display_upgrade}
+        <div class="everblock-admin-upgrade">
+            {include file='module:everblock/views/templates/admin/upgrade.tpl'}
+        </div>
+    {/if}
 
-{if isset($everblock_form)}
-    {$everblock_form nofilter}
-{/if}
+    {if isset($everblock_form)}
+        <div class="everblock-admin-main">
+            {$everblock_form nofilter}
+        </div>
+    {/if}
+</section>
