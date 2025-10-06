@@ -52,20 +52,12 @@
           {if isset($block.states) && $block.states}
             {foreach from=$block.states item=state}
               {if isset($state.product.id) && $state.product.id}
-                <button type="button" class="lookbook-marker position-absolute" style="top:{$state.top|default:'0%'|escape:'htmlall'};left:{$state.left|default:'0%'|escape:'htmlall'};transform:translate(-50%,-50%);" data-product-id="{$state.product.id}">
+                <button type="button" class="lookbook-marker position-absolute{if $state.animation_enabled|default:false} lookbook-marker--animated{/if}" style="top:{$state.top|default:'0%'|escape:'htmlall'};left:{$state.left|default:'0%'|escape:'htmlall'};transform:translate(-50%,-50%);" data-product-id="{$state.product.id}">
                   <span class="visually-hidden">{l s='View product' mod='everblock'}</span>
                 </button>
               {/if}
             {/foreach}
           {/if}
-          <div class="lookbook-helper" role="note">
-            <span class="lookbook-helper-icon" aria-hidden="true">
-              <svg class="lookbook-helper-svg" width="24" height="24" viewBox="0 0 512 512" focusable="false" aria-hidden="true">
-                <path fill="currentColor" d="M454.423,278.957,328,243.839v-8.185a116,116,0,1,0-104,0V312H199.582l-18.494-22.6a90.414,90.414,0,0,0-126.43-13.367,20.862,20.862,0,0,0-8.026,33.47L215.084,496H472V302.08A24.067,24.067,0,0,0,454.423,278.957ZM192,132a84,84,0,1,1,136,65.9V132a52,52,0,0,0-104,0v65.9A83.866,83.866,0,0,1,192,132ZM440,464H229.3L79.141,297.75a58.438,58.438,0,0,1,77.181,11.91l28.1,34.34H256V132a20,20,0,0,1,40,0V268.161l144,40Z"/>
-              </svg>
-            </span>
-            <span class="lookbook-helper-text"><strong>{l s='Cliquez sur un point' mod='everblock'}</strong> {l s='pour voir le produit' mod='everblock'}</span>
-          </div>
         </div>
       </div>
 
