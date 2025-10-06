@@ -3485,7 +3485,7 @@ class EverblockPrettyBlocks
                         'instructions' => [
                             'type' => 'editor',
                             'label' => $module->l('Instructions text'),
-                            'default' => $module->l('Scratch or click on today's window to reveal your festive surprise!'),
+                            'default' => $module->l('Scratch or click on today\'s window to reveal your festive surprise!'),
                         ],
                         'start_date' => [
                             'type' => 'text',
