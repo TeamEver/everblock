@@ -57,6 +57,11 @@
     outline-offset: 2px;
 }
 
+.lookbook-marker--animated {
+    animation: lookbook-marker-pulse-core 2.4s ease-in-out infinite;
+}
+
+.lookbook-marker--animated::before,
 .lookbook-marker--animated::after {
     content: "";
     position: absolute;
@@ -65,33 +70,48 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 3px solid rgba(242, 91, 118, 0.4);
     transform: translate(-50%, -50%) scale(1);
-    opacity: 0.6;
-    animation: lookbook-marker-zoom 1.8s ease-in-out infinite;
+    opacity: 0.45;
+    background: rgba(242, 91, 118, 0.15);
     pointer-events: none;
     z-index: -1;
 }
 
-.lookbook-marker--animated:focus::after,
-.lookbook-marker--animated:hover::after,
-.lookbook-marker--animated:active::after {
-    animation-play-state: paused;
+.lookbook-marker--animated::before {
+    animation: lookbook-marker-pulse-ring 2.4s ease-out infinite;
 }
 
-@keyframes lookbook-marker-zoom {
-    0% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 0.6;
+.lookbook-marker--animated::after {
+    animation: lookbook-marker-pulse-ring 2.4s ease-out infinite;
+    animation-delay: 1.2s;
+}
+
+@keyframes lookbook-marker-pulse-core {
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 12px 24px rgba(242, 91, 118, 0.25);
     }
 
-    60% {
-        transform: translate(-50%, -50%) scale(1.35);
+    45% {
+        transform: scale(1.08);
+        box-shadow: 0 18px 36px rgba(242, 91, 118, 0.35);
+    }
+}
+
+@keyframes lookbook-marker-pulse-ring {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.45;
+    }
+
+    70% {
+        transform: translate(-50%, -50%) scale(1.65);
         opacity: 0;
     }
 
     100% {
-        transform: translate(-50%, -50%) scale(1.35);
+        transform: translate(-50%, -50%) scale(1.65);
         opacity: 0;
     }
 }
@@ -148,6 +168,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .lookbook-marker--animated,
+    .lookbook-marker--animated::before,
     .lookbook-marker--animated::after {
         animation: none;
     }
