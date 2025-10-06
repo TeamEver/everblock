@@ -3104,6 +3104,128 @@ $(document).ready(function(){
         requestStatus();
     });
 
+    initPrettyblockToc();
+
+    function initPrettyblockToc() {
+        $('.pb-toc-summary').each(function(index){
+            var $summary = $(this);
+            var $menu = $summary.find('.pb-toc-menu');
+            var $content = $summary.siblings('.pb-toc-content');
+            var $sections = $content.find('.pb-toc-section');
+            if (!$menu.length || !$sections.length) {
+                return;
+            }
+            var namespace = '.pbToc' + index;
+            var $links = $menu.find('a[href^="#"]');
+
+            $sections.addClass('is-hidden').attr('aria-hidden', 'true');
+
+            function setActiveSection($target, updateHash) {
+                if (!$target.length) {
+                    return;
+                }
+                $sections.not($target).addClass('is-hidden').removeClass('is-active').attr('aria-hidden', 'true');
+                $target.removeClass('is-hidden').addClass('is-active').attr('aria-hidden', 'false');
+
+                var targetId = $target.attr('id');
+                if (!targetId) {
+                    return;
+                }
+
+                $links.removeClass('is-active');
+                var $activeLink = $links.filter(function(){
+                    return this.hash === '#' + targetId;
+                }).first();
+                if ($activeLink.length) {
+                    $activeLink.addClass('is-active');
+                    var $parentCollapses = $activeLink.parents('.collapse');
+                    $parentCollapses.each(function(){
+                        var $collapse = $(this);
+                        if (!$collapse.hasClass('show')) {
+                            if (typeof $collapse.collapse === 'function') {
+                                $collapse.collapse('show');
+                            } else {
+                                $collapse.addClass('show');
+                            }
+                        }
+                        $collapse.prev('.pb-toc-toggle').addClass('is-open').attr('aria-expanded', 'true');
+                    });
+                    $menu.find('.pb-toc-toggle').each(function(){
+                        var $toggle = $(this);
+                        var selector = $toggle.attr('data-bs-target') || $toggle.attr('data-target');
+                        if (!selector) {
+                            return;
+                        }
+                        var $targetCollapse = $(selector);
+                        if ($targetCollapse.length && !$targetCollapse.hasClass('show')) {
+                            $toggle.removeClass('is-open').attr('aria-expanded', 'false');
+                        }
+                    });
+                }
+
+                if (updateHash && window.history && typeof window.history.replaceState === 'function') {
+                    window.history.replaceState(null, '', '#' + targetId);
+                }
+            }
+
+            var $initial = $sections.filter(window.location.hash);
+            if (!$initial.length) {
+                $initial = $sections.first();
+            }
+            setActiveSection($initial, false);
+
+            $links.on('click', function(e){
+                var anchor = this.hash;
+                if (!anchor) {
+                    return;
+                }
+                var $targetSection = $sections.filter(anchor);
+                if (!$targetSection.length) {
+                    return;
+                }
+                e.preventDefault();
+                setActiveSection($targetSection, true);
+                if ($content.length) {
+                    $('html, body').stop(true).animate({
+                        scrollTop: Math.max($content.offset().top - 80, 0)
+                    }, 300);
+                }
+            });
+
+            $(window).on('hashchange' + namespace, function(){
+                var $targetSection = $sections.filter(window.location.hash);
+                if ($targetSection.length) {
+                    setActiveSection($targetSection, false);
+                }
+            });
+
+            $menu.find('.collapse').on('shown.bs.collapse', function(){
+                $(this).prev('.pb-toc-toggle').addClass('is-open');
+            }).on('hidden.bs.collapse', function(){
+                $(this).prev('.pb-toc-toggle').removeClass('is-open');
+            });
+
+            $menu.find('.pb-toc-toggle').on('click', function(){
+                var $toggle = $(this);
+                var selector = $toggle.attr('data-bs-target') || $toggle.attr('data-target');
+                if (!selector) {
+                    return;
+                }
+                var $targetCollapse = $(selector);
+                if (!$targetCollapse.length) {
+                    return;
+                }
+                setTimeout(function(){
+                    if ($targetCollapse.hasClass('show')) {
+                        $toggle.addClass('is-open').attr('aria-expanded', 'true');
+                    } else {
+                        $toggle.removeClass('is-open').attr('aria-expanded', 'false');
+                    }
+                }, 200);
+            });
+        });
+    }
+
     // Exit intent modal
     var exitIntentShown = false;
     $(document).on('mouseout', function(e) {
