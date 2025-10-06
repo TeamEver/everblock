@@ -1206,6 +1206,16 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
                         ],
+                        'slider_autoplay' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable auto scroll'),
+                            'default' => 0,
+                        ],
+                        'slider_autoplay_delay' => [
+                            'type' => 'text',
+                            'label' => $module->l('Auto scroll delay (ms)'),
+                            'default' => 5000,
+                        ],
                         'slider_items' => [
                             'type' => 'text',
                             'label' => $module->l('Number of images in slider'),

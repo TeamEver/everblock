@@ -26,7 +26,10 @@
 {if isset($block.states) && $block.states}
   {assign var='use_slider' value=(isset($block.settings.slider) && $block.settings.slider && $block.states|@count > 1)}
   {if $use_slider}
-    <div class="mt-4 ever-cover-carousel" data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}">
+    <div class="mt-4 ever-cover-carousel"
+         data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}"
+         data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
+         data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}">
       {foreach from=$block.states item=state key=key}
         {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
         <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
