@@ -79,22 +79,6 @@
     padding: 15px;
 }
 
-/* Table of Contents styles */
-.pb-toc-toggle {
-    cursor: pointer;
-    text-align: left;
-    width: 100%;
-    background: none;
-    border: none;
-}
-.pb-toc-toggle::after {
-    content: '\25B6';
-    float: right;
-}
-.pb-toc-toggle[aria-expanded="true"]::after {
-    content: '\25BC';
-}
-
 /* Pricing table styles */
 .everblock-pricing-table .pricing-plan {
     border: 1px solid #dee2e6;

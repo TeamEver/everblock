@@ -48,7 +48,8 @@
             {assign var='catIndex' value=$catIndex+1}
             <li class="pb-toc-category">
               <button class="pb-toc-toggle btn btn-link p-0" type="button" data-toggle="collapse" data-target="#pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" data-bs-toggle="collapse" data-bs-target="#pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" aria-expanded="false" aria-controls="pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}">
-                {$state.category|escape:'htmlall'}
+                <span class="pb-toc-toggle-label">{$state.category|escape:'htmlall'}</span>
+                <span class="pb-toc-toggle-icon" aria-hidden="true"></span>
               </button>
               <ul id="pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" class="list-unstyled collapse">
             {assign var='currentCategory' value=$state.category}
@@ -60,7 +61,8 @@
               {assign var='subIndex' value=$subIndex+1}
               <li class="pb-toc-subcategory">
                 <button class="pb-toc-toggle btn btn-link p-0" type="button" data-toggle="collapse" data-target="#pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" data-bs-toggle="collapse" data-bs-target="#pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" aria-expanded="false" aria-controls="pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}">
-                  {$state.subcategory|escape:'htmlall'}
+                  <span class="pb-toc-toggle-label">{$state.subcategory|escape:'htmlall'}</span>
+                  <span class="pb-toc-toggle-icon" aria-hidden="true"></span>
                 </button>
                 <ul id="pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" class="list-unstyled collapse">
               {assign var='currentSub' value=$state.subcategory}
@@ -68,7 +70,7 @@
               {assign var='currentSub' value=''}
             {/if}
           {/if}
-          <li><a href="#{$state.anchor|escape:'htmlall'}">{$state.title|escape:'htmlall'}</a></li>
+          <li><a class="pb-toc-link" href="#{$state.anchor|escape:'htmlall'}">{$state.title|escape:'htmlall'}</a></li>
         {/foreach}
         {if $currentSub != ''}</ul></li>{/if}
         {if $currentCategory != ''}</ul></li>{/if}
