@@ -38,6 +38,8 @@
     box-shadow: 0 12px 24px rgba(242, 91, 118, 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
     color: #f25b76;
+    overflow: visible;
+    z-index: 1;
 }
 
 .lookbook-marker:focus,
@@ -53,6 +55,45 @@
 .lookbook-marker:focus-visible {
     outline: 3px solid rgba(242, 91, 118, 0.35);
     outline-offset: 2px;
+}
+
+.lookbook-marker--animated::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid rgba(242, 91, 118, 0.4);
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+    animation: lookbook-marker-zoom 1.8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.lookbook-marker--animated:focus::after,
+.lookbook-marker--animated:hover::after,
+.lookbook-marker--animated:active::after {
+    animation-play-state: paused;
+}
+
+@keyframes lookbook-marker-zoom {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.6;
+    }
+
+    60% {
+        transform: translate(-50%, -50%) scale(1.35);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1.35);
+        opacity: 0;
+    }
 }
 
 .prettyblock-lookbook {
@@ -89,84 +130,10 @@
     margin-bottom: 3.5rem;
 }
 
-.lookbook-helper {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    transform: translate(-50%, 50%);
-    display: inline-flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    padding: 1rem 2.25rem;
-    border-radius: 999px;
-    background-color: #fff;
-    border: 1px solid rgba(242, 91, 118, 0.25);
-    box-shadow: 0 18px 36px rgba(242, 91, 118, 0.18);
-    font-size: 0.95rem;
-    color: #3a3a3a;
-    z-index: 1;
-    white-space: normal;
-    text-align: left;
-}
-
-.lookbook-helper-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 50%;
-    border: 2px solid #f25b76;
-    background-color: #fff;
-    color: #f25b76;
-}
-
-.lookbook-helper-svg {
-    display: block;
-}
-
-.lookbook-helper-text {
-    font-weight: 600;
-    font-size: 0.85rem;
-    line-height: 1;
-    min-width: 0;
-}
-
 @media (max-width: 767.98px) {
     .prettyblock-lookbook.columns-2,
     .prettyblock-lookbook.columns-3 {
         grid-template-columns: 1fr;
-    }
-
-    .lookbook-helper {
-        width: calc(100% - 3rem);
-        max-width: 320px;
-        padding: 0.85rem 1.75rem;
-        justify-content: center;
-        text-align: center;
-    }
-
-    .lookbook-helper-text {
-        flex-basis: 100%;
-    }
-}
-
-@media (min-width: 768px) {
-    .lookbook-helper {
-        flex-wrap: nowrap;
-        padding: 1.25rem 3rem;
-        white-space: nowrap;
-    }
-
-    .lookbook-helper-icon {
-        width: 3.25rem;
-        height: 3.25rem;
-    }
-
-    .lookbook-helper-text {
-        font-size: 0.95rem;
-        white-space: nowrap;
     }
 }
 
@@ -177,6 +144,12 @@
 
     .prettyblock-lookbook .lookbook-item--main {
         padding: 0 3rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lookbook-marker--animated::after {
+        animation: none;
     }
 }
 /* Style pour le panier déroulant */

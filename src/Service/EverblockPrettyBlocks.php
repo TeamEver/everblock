@@ -3041,6 +3041,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Left position (e.g., 50%)'),
                             'default' => '0%',
                         ],
+                        'animation_enabled' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable zoom animation'),
+                            'default' => 0,
+                        ],
                     ], $module),
                 ],
             ];
