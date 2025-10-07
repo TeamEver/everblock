@@ -66,7 +66,7 @@
         <div class="ever-advent-calendar" data-block-id="{$block.id_prettyblocks}" data-config="{$encodedConfig}">
             {if $block.settings.title}<h3 class="ever-advent-calendar__title">{$block.settings.title|escape:'htmlall':'UTF-8'}</h3>{/if}
             {if $instructionsHtml}
-                <div class="ever-advent-calendar__instructions">{$instructionsHtml}</div>
+                <div class="ever-advent-calendar__instructions">{$instructionsHtml nofilter}</div>
             {/if}
             <div class="ever-advent-calendar__status" role="status" aria-live="polite" style="display:none;"></div>
             <div class="ever-advent-calendar__content">
