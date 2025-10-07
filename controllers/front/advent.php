@@ -90,6 +90,8 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
             ]);
         }
 
+        $sanitizedWindow = $this->sanitizeWindowPayload($window);
+
         $today = $this->getNowDate();
         $startDate = $calendarSettings['start_date'];
         if (!$startDate) {
@@ -145,9 +147,11 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
 
             if ($alreadyCustomer || $alreadyIp) {
                 $this->renderJson([
-                    'status' => false,
+                    'status' => 'already_opened',
+                    'day' => $requestedDay,
                     'message' => $this->module->l('You have already opened this window.', 'advent'),
                     'reason' => 'already_opened',
+                    'window' => $sanitizedWindow,
                 ]);
             }
         }
@@ -165,6 +169,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
             'status' => true,
             'day' => $requestedDay,
             'message' => $this->module->l('Window unlocked!', 'advent'),
+            'window' => $sanitizedWindow,
         ]);
     }
 
@@ -293,5 +298,158 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
     private function isAdmin()
     {
         return !empty((new Cookie('psAdmin'))->id_employee);
+    }
+
+    private function sanitizeWindowPayload(array $window)
+    {
+        $payload = [];
+
+        $payload['day_number'] = (int) ($window['day_number'] ?? 0);
+
+        $title = $this->sanitizePlainText($window['window_title'] ?? '');
+        if ($title !== '') {
+            $payload['window_title'] = $title;
+        }
+
+        $subtitle = $this->sanitizePlainText($window['window_subtitle'] ?? '');
+        if ($subtitle !== '') {
+            $payload['window_subtitle'] = $subtitle;
+        }
+
+        $content = $this->sanitizeHtmlContent($window['content'] ?? '');
+        if ($content !== '') {
+            $payload['content'] = $content;
+        }
+
+        if (!empty($window['promo_code'])) {
+            $promo = $this->sanitizePlainText($window['promo_code']);
+            if ($promo !== '') {
+                $payload['promo_code'] = $promo;
+            }
+        }
+
+        if (!empty($window['button_label'])) {
+            $label = $this->sanitizePlainText($window['button_label']);
+            if ($label !== '') {
+                $payload['button_label'] = $label;
+            }
+        }
+
+        if (!empty($window['button_url'])) {
+            $url = $this->sanitizeUrl($window['button_url']);
+            if ($url !== null) {
+                $payload['button_url'] = $url;
+            }
+        }
+
+        if (!empty($window['image']) && is_array($window['image'])) {
+            $imageUrl = $this->sanitizeUrl($window['image']['url'] ?? '');
+            if ($imageUrl !== null) {
+                $payload['image'] = ['url' => $imageUrl];
+            }
+        } elseif (!empty($window['image']) && is_string($window['image'])) {
+            $imageUrl = $this->sanitizeUrl($window['image']);
+            if ($imageUrl !== null) {
+                $payload['image'] = ['url' => $imageUrl];
+            }
+        }
+
+        $background = $this->sanitizeColor($window['background_color'] ?? '');
+        if ($background !== null) {
+            $payload['background_color'] = $background;
+        }
+
+        $textColor = $this->sanitizeColor($window['text_color'] ?? '');
+        if ($textColor !== null) {
+            $payload['text_color'] = $textColor;
+        }
+
+        return $payload;
+    }
+
+    private function sanitizePlainText($value)
+    {
+        if (!is_scalar($value)) {
+            return '';
+        }
+
+        $clean = trim((string) $value);
+        if ($clean === '') {
+            return '';
+        }
+
+        $clean = strip_tags($clean);
+
+        return Tools::substr($clean, 0, 512);
+    }
+
+    private function sanitizeHtmlContent($value)
+    {
+        if (!is_string($value)) {
+            return '';
+        }
+
+        $content = trim($value);
+        if ($content === '') {
+            return '';
+        }
+
+        if (method_exists('Tools', 'purifyHTML')) {
+            return Tools::purifyHTML($content, true);
+        }
+
+        return strip_tags($content, '<p><br><strong><em><ul><ol><li><span><div><a>');
+    }
+
+    private function sanitizeUrl($value)
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $url = trim((string) $value);
+        if ($url === '') {
+            return null;
+        }
+
+        if (stripos($url, 'javascript:') === 0) {
+            return null;
+        }
+
+        if (preg_match('/^(mailto|tel):[^\s]+$/i', $url)) {
+            return $url;
+        }
+
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            return $url;
+        }
+
+        if (strpos($url, '//') === 0 && filter_var('https:' . $url, FILTER_VALIDATE_URL)) {
+            return $url;
+        }
+
+        if (in_array($url[0], ['/', '#', '?'], true)) {
+            return $url;
+        }
+
+        return null;
+    }
+
+    private function sanitizeColor($value)
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $color = trim((string) $value);
+        if ($color === '') {
+            return null;
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $color)) {
+            return strtolower($color);
+        }
+
+        return null;
     }
 }
