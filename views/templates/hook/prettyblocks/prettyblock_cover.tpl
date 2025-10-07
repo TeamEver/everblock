@@ -78,7 +78,7 @@
                 </picture>
               {/if}
             {/if}
-          <div class="prettyblock-cover-overlay position-desktop-{$state.content_position_desktop|default:'center'|lower|escape:'htmlall'} position-mobile-{$state.content_position_mobile|default:'center'|lower|escape:'htmlall'}">
+          <div class="prettyblock-cover-overlay position-desktop-{$state.content_position_desktop|default:'center'|lower|replace:' ':'-'|escape:'htmlall'} position-mobile-{$state.content_position_mobile|default:'center'|lower|replace:' ':'-'|escape:'htmlall'}">
             {if $state.title}
               <{$state.title_tag|default:'h2'}{if isset($state.title_color) && $state.title_color} style="color: {$state.title_color|escape:'htmlall'}"{/if}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
             {/if}
@@ -159,7 +159,7 @@
             </picture>
           {/if}
         {/if}
-        <div class="prettyblock-cover-overlay position-desktop-{$state.content_position_desktop|default:'center'|lower|escape:'htmlall'} position-mobile-{$state.content_position_mobile|default:'center'|lower|escape:'htmlall'}">
+        <div class="prettyblock-cover-overlay position-desktop-{$state.content_position_desktop|default:'center'|lower|replace:' ':'-'|escape:'htmlall'} position-mobile-{$state.content_position_mobile|default:'center'|lower|replace:' ':'-'|escape:'htmlall'}">
           {if $state.title}
             <{$state.title_tag|default:'h2'}{if isset($state.title_color) && $state.title_color} style="color: {$state.title_color|escape:'htmlall'}"{/if}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
           {/if}
