@@ -199,6 +199,27 @@
     text-align: right;
     font-weight: bold;
 }
+
+/* Position carousel navigation outside of slider */
+.ever-featured-products .carousel {
+    overflow: visible;
+}
+
+.ever-featured-products .carousel-control-prev,
+.ever-featured-products .carousel-control-next {
+    width: 3rem;
+    height: 3rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.ever-featured-products .carousel-control-prev {
+    left: -1.5rem;
+}
+
+.ever-featured-products .carousel-control-next {
+    right: -1.5rem;
+}
 /* Style pour les boutons de partage */
 
 .everblock-sharer {
