@@ -1698,7 +1698,7 @@ class EverblockPrettyBlocks
                             'default' => '',
                         ],
                         'limit_override' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Override review limit'),
                             'default' => (string) ((int) Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_LIMIT') ?: 5),
                         ],
@@ -3158,7 +3158,7 @@ class EverblockPrettyBlocks
                             'default' => 'WHEEL',
                         ],
                         'coupon_validity' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Coupon validity in days'),
                             'default' => '30',
                         ],
@@ -3168,7 +3168,7 @@ class EverblockPrettyBlocks
                             'default' => '',
                         ],
                         'max_winners' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Maximum winners for this segment (0 for unlimited)'),
                             'default' => '0',
                         ],
@@ -3298,7 +3298,7 @@ class EverblockPrettyBlocks
                             'default' => 'MYSTERY',
                         ],
                         'coupon_validity' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Coupon validity in days'),
                             'default' => '30',
                         ],
@@ -3308,7 +3308,7 @@ class EverblockPrettyBlocks
                             'default' => '',
                         ],
                         'max_winners' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Maximum winners for this box (0 for unlimited)'),
                             'default' => '0',
                         ],
@@ -3415,7 +3415,7 @@ class EverblockPrettyBlocks
                             'default' => 'SLOT',
                         ],
                         'default_coupon_validity' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Default coupon validity in days'),
                             'default' => 30,
                         ],
@@ -3429,7 +3429,7 @@ class EverblockPrettyBlocks
                             ],
                         ],
                         'default_max_winners' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Maximum overall winners (0 for unlimited)'),
                             'default' => 0,
                         ],
@@ -3534,7 +3534,7 @@ class EverblockPrettyBlocks
                     'nameFrom' => 'window_title',
                     'groups' => static::appendSpacingFields([
                         'day_number' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Day number (1-24)'),
                             'default' => 1,
                         ],
@@ -3680,7 +3680,7 @@ class EverblockPrettyBlocks
                             'default' => 'SCRATCH',
                         ],
                         'coupon_validity' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Coupon validity in days'),
                             'default' => '30',
                         ],
@@ -3690,7 +3690,7 @@ class EverblockPrettyBlocks
                             'default' => '',
                         ],
                         'max_winners' => [
-                            'type' => 'number',
+                            'type' => 'text',
                             'label' => $module->l('Maximum winners for this scratch (0 for unlimited)'),
                             'default' => '0',
                         ],
