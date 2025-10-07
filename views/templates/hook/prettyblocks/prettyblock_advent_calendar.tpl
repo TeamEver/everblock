@@ -52,6 +52,7 @@
 {elseif $block.settings.default.container}
     {assign var=containerClass value='container'}
 {/if}
+{assign var=calendarBackgroundColor value=$block.settings.calendar_background_color|default:''}
 <div id="block-{$block.id_prettyblocks}" class="{$containerClass}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
   {if $block.settings.default.force_full_width}
     <div class="row gx-0 no-gutters">
@@ -63,7 +64,7 @@
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-        <div class="ever-advent-calendar" data-block-id="{$block.id_prettyblocks}" data-config="{$encodedConfig}">
+        <div class="ever-advent-calendar" data-block-id="{$block.id_prettyblocks}" data-config="{$encodedConfig}"{if $calendarBackgroundColor} style="background-color:{$calendarBackgroundColor|escape:'htmlall':'UTF-8'};"{/if}>
             {if $block.settings.title}<h3 class="ever-advent-calendar__title">{$block.settings.title|escape:'htmlall':'UTF-8'}</h3>{/if}
             {if $instructionsHtml}
                 <div class="ever-advent-calendar__instructions">{$instructionsHtml}</div>
