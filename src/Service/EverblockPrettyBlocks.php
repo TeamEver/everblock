@@ -3522,6 +3522,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Enable snowfall decoration'),
                             'default' => true,
                         ],
+                        'calendar_background_color' => [
+                            'type' => 'color',
+                            'label' => $module->l('Calendar background color'),
+                            'default' => '',
+                        ],
                     ], $module),
                 ],
                 'repeater' => [
