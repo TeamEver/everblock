@@ -642,6 +642,18 @@
     text-align: center;
 }
 
+.prettyblock-cover-overlay.position-desktop-top-left {
+    justify-content: flex-start;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.prettyblock-cover-overlay.position-desktop-top-right {
+    justify-content: flex-start;
+    align-items: flex-end;
+    text-align: right;
+}
+
 .prettyblock-cover-overlay.position-desktop-bottom {
     justify-content: flex-end;
     align-items: center;
@@ -654,7 +666,19 @@
     text-align: left;
 }
 
+.prettyblock-cover-overlay.position-desktop-center-left {
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+}
+
 .prettyblock-cover-overlay.position-desktop-right {
+    justify-content: center;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.prettyblock-cover-overlay.position-desktop-center-right {
     justify-content: center;
     align-items: flex-end;
     text-align: right;
@@ -666,6 +690,18 @@
     text-align: center;
 }
 
+.prettyblock-cover-overlay.position-desktop-bottom-left {
+    justify-content: flex-end;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.prettyblock-cover-overlay.position-desktop-bottom-right {
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
+}
+
 @media (max-width: 767px) {
     .prettyblock-cover-item--parallax {
         background-attachment: scroll;
@@ -675,6 +711,18 @@
         justify-content: flex-start;
         align-items: center;
         text-align: center;
+    }
+
+    .prettyblock-cover-overlay.position-mobile-top-left {
+        justify-content: flex-start;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .prettyblock-cover-overlay.position-mobile-top-right {
+        justify-content: flex-start;
+        align-items: flex-end;
+        text-align: right;
     }
 
     .prettyblock-cover-overlay.position-mobile-bottom {
@@ -689,7 +737,19 @@
         text-align: left;
     }
 
+    .prettyblock-cover-overlay.position-mobile-center-left {
+        justify-content: center;
+        align-items: flex-start;
+        text-align: left;
+    }
+
     .prettyblock-cover-overlay.position-mobile-right {
+        justify-content: center;
+        align-items: flex-end;
+        text-align: right;
+    }
+
+    .prettyblock-cover-overlay.position-mobile-center-right {
         justify-content: center;
         align-items: flex-end;
         text-align: right;
@@ -699,6 +759,18 @@
         justify-content: center;
         align-items: center;
         text-align: center;
+    }
+
+    .prettyblock-cover-overlay.position-mobile-bottom-left {
+        justify-content: flex-end;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .prettyblock-cover-overlay.position-mobile-bottom-right {
+        justify-content: flex-end;
+        align-items: flex-end;
+        text-align: right;
     }
 }
 
