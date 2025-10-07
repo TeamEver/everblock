@@ -2301,15 +2301,12 @@ $(document).ready(function(){
         var emptyMessage = typeof config.emptyMessage === 'string' ? config.emptyMessage : '';
         var fallbackLockedMessage = typeof config.fallbackLockedMessage === 'string' ? config.fallbackLockedMessage : '';
         var errorMessage = typeof config.errorMessage === 'string' ? config.errorMessage : 'An error occurred. Please try again later.';
+        var missingContentMessage = typeof config.missingContentMessage === 'string' ? config.missingContentMessage : '';
         var openedLabel = typeof config.openedLabel === 'string' ? config.openedLabel : '';
         var snowEnabled = !!config.snowEnabled;
         var isEmployee = !!config.isEmployee;
         if (!isEmployee && typeof everblock_is_employee !== 'undefined') {
             isEmployee = !!everblock_is_employee;
-        }
-        var langId = parseInt(config.langId, 10);
-        if (!langId && typeof prestashop !== 'undefined' && prestashop.language && prestashop.language.id) {
-            langId = parseInt(prestashop.language.id, 10);
         }
         var restrictToCurrentDay = !!config.restrictToCurrentDay && !isEmployee;
         var startDate = parseDateValue(config.startDate);
@@ -2326,7 +2323,6 @@ $(document).ready(function(){
         var storageKey = 'everblock_advent_' + blockId;
         var openedDays = loadOpenedDays();
         var requestInProgress = false;
-        var windowsMap = buildWindowsMap(config.windows || []);
         var $status = $calendar.find('.ever-advent-calendar__status');
         var $windows = $calendar.find('.ever-advent-calendar__window');
         if (snowEnabled) {
@@ -2360,18 +2356,18 @@ $(document).ready(function(){
                 return;
             }
             var windowData = $window.data('windowConfig') || null;
-            if (!windowData) {
-                showStatus(emptyMessage);
-                return;
-            }
-            if (!playUrl || !token || isEmployee) {
-                markAsOpened($window, windowData, true);
-                openedDays[String(day)] = {
-                    timestamp: Date.now(),
-                    data: windowData
-                };
-                saveOpenedDays();
-                showStatus('');
+            if (!playUrl || !token) {
+                if (windowData) {
+                    markAsOpened($window, windowData, true);
+                    openedDays[String(day)] = {
+                        timestamp: Date.now(),
+                        data: windowData
+                    };
+                    saveOpenedDays();
+                    showStatus('');
+                } else {
+                    showStatus(missingContentMessage || errorMessage);
+                }
                 return;
             }
             requestInProgress = true;
@@ -2389,17 +2385,25 @@ $(document).ready(function(){
                     requestInProgress = false;
                     $window.removeClass('ever-advent-calendar__window--loading');
                     if (!res || typeof res !== 'object') {
-                        showStatus(emptyMessage);
+                        showStatus(errorMessage);
                         return;
                     }
                     if (res.status === false) {
                         if (res.reason === 'already_opened') {
-                            markAsOpened($window, windowData, false);
-                            openedDays[String(day)] = {
-                                timestamp: Date.now(),
-                                data: windowData
-                            };
-                            saveOpenedDays();
+                            var reopenedWindow = null;
+                            if (res.window && typeof res.window === 'object') {
+                                reopenedWindow = res.window;
+                            } else if (windowData) {
+                                reopenedWindow = windowData;
+                            }
+                            if (reopenedWindow) {
+                                markAsOpened($window, reopenedWindow, false);
+                                openedDays[String(day)] = {
+                                    timestamp: Date.now(),
+                                    data: reopenedWindow
+                                };
+                                saveOpenedDays();
+                            }
                         }
                         if (res.reason === 'too_early' && res.available_on) {
                             showStatus(formatAvailableMessage(res.available_on));
@@ -2408,10 +2412,21 @@ $(document).ready(function(){
                         }
                         return;
                     }
-                    markAsOpened($window, windowData, true);
+                    var statusValue = res.status;
+                    if (statusValue !== true && statusValue !== 'already_opened') {
+                        showStatus(errorMessage);
+                        return;
+                    }
+                    var payload = (res.window && typeof res.window === 'object') ? res.window : null;
+                    if (!payload) {
+                        showStatus(missingContentMessage || emptyMessage || errorMessage);
+                        return;
+                    }
+                    var focusReveal = statusValue === true;
+                    markAsOpened($window, payload, focusReveal);
                     openedDays[String(day)] = {
                         timestamp: Date.now(),
-                        data: windowData
+                        data: payload
                     };
                     saveOpenedDays();
                     showStatus(typeof res.message === 'string' ? res.message : '');
@@ -2476,70 +2491,17 @@ $(document).ready(function(){
             return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
         }
 
-        function buildWindowsMap(windows) {
-            var map = {};
-            var items = Array.isArray(windows) ? windows : Object.values(windows);
-            items.forEach(function (raw) {
-                if (!raw || typeof raw !== 'object') {
-                    return;
-                }
-                var normalized = normalizeWindow(raw);
-                var day = parseInt(normalized.day_number, 10);
-                if (!day || day < 1 || day > 24) {
-                    return;
-                }
-                map[String(day)] = normalized;
-            });
-            return map;
-        }
-
-        function normalizeWindow(raw) {
-            var result = {};
-            Object.keys(raw || {}).forEach(function (key) {
-                result[key] = resolveValue(raw[key]);
-            });
-            return result;
-        }
-
-        function resolveValue(value) {
-            if (value && typeof value === 'object') {
-                if (Array.isArray(value)) {
-                    return value.map(resolveValue);
-                }
-                if (Object.prototype.hasOwnProperty.call(value, 'value')) {
-                    return resolveValue(value.value);
-                }
-                var langKey = langId ? String(langId) : null;
-                if (langKey && Object.prototype.hasOwnProperty.call(value, langKey)) {
-                    return resolveValue(value[langKey]);
-                }
-                var keys = Object.keys(value);
-                var numericKeys = keys.filter(function (k) {
-                    return /^\d+$/.test(k);
-                });
-                if (numericKeys.length && numericKeys.length === keys.length) {
-                    if (langKey && Object.prototype.hasOwnProperty.call(value, langKey)) {
-                        return resolveValue(value[langKey]);
-                    }
-                    return resolveValue(value[numericKeys[0]]);
-                }
-                var output = {};
-                keys.forEach(function (k) {
-                    output[k] = resolveValue(value[k]);
-                });
-                return output;
-            }
-            return value;
-        }
-
         function applyWindowStyles($window, data) {
-            if (data.background_color) {
-                $window.css('--ever-advent-window-bg', data.background_color);
+            var hasData = data && typeof data === 'object';
+            var background = hasData && data.background_color ? data.background_color : '';
+            var textColor = hasData && data.text_color ? data.text_color : '';
+            if (background) {
+                $window.css('--ever-advent-window-bg', background);
             } else {
                 $window.css('--ever-advent-window-bg', '');
             }
-            if (data.text_color) {
-                $window.css('--ever-advent-window-color', data.text_color);
+            if (textColor) {
+                $window.css('--ever-advent-window-color', textColor);
             } else {
                 $window.css('--ever-advent-window-color', '');
             }
@@ -2553,8 +2515,12 @@ $(document).ready(function(){
                     $window.remove();
                     return;
                 }
-                var data = windowsMap[String(day)] || null;
-                $window.data('windowConfig', data);
+                var storedEntry = openedDays[String(day)];
+                var storedData = null;
+                if (storedEntry && typeof storedEntry === 'object' && storedEntry.data && typeof storedEntry.data === 'object') {
+                    storedData = storedEntry.data;
+                }
+                $window.data('windowConfig', storedData);
                 var $badge = $window.find('.ever-advent-calendar__badge');
                 if ($badge.length) {
                     $badge.text('');
@@ -2565,15 +2531,9 @@ $(document).ready(function(){
                 $back.attr('hidden', 'hidden');
                 $window.removeClass('ever-advent-calendar__window--opened ever-advent-calendar__window--locked ever-advent-calendar__window--available ever-advent-calendar__window--loading');
                 $window.attr('aria-disabled', 'false');
-                if (data) {
-                    applyWindowStyles($window, data);
-                } else {
-                    $window.css('--ever-advent-window-bg', '');
-                    $window.css('--ever-advent-window-color', '');
-                }
-                var stored = openedDays[String(day)];
-                if (stored && data) {
-                    markAsOpened($window, data, false);
+                applyWindowStyles($window, storedData);
+                if (storedData) {
+                    markAsOpened($window, storedData, false);
                     return;
                 }
                 var windowDate = addDays(startDate, day - 1);
@@ -2603,6 +2563,12 @@ $(document).ready(function(){
             $window.removeClass('ever-advent-calendar__window--locked ever-advent-calendar__window--available');
             $window.addClass('ever-advent-calendar__window--opened');
             $window.attr('aria-disabled', 'false');
+            if (data && typeof data === 'object') {
+                $window.data('windowConfig', data);
+            } else {
+                $window.removeData('windowConfig');
+            }
+            applyWindowStyles($window, data);
             var $badge = $window.find('.ever-advent-calendar__badge');
             if ($badge.length) {
                 $badge.text(openedLabel);

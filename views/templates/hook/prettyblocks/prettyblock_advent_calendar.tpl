@@ -18,7 +18,6 @@
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$block.settings assign='prettyblock_spacing_style'}
 
-{assign var=calendarWindows value=$block.states|default:[]}
 {assign var=isEmployee value=false}
 {if isset($everblock_is_employee) && $everblock_is_employee}
     {assign var=isEmployee value=true}
@@ -41,10 +40,10 @@
     'snowEnabled' => (bool) $snowEnabled,
     'isEmployee' => (bool) $isEmployee,
     'langId' => $currentLangId,
-    'windows' => $calendarWindows,
     'emptyMessage' => {l s='This window is not configured yet.' mod='everblock'},
     'fallbackLockedMessage' => {l s='Come back on %s to open this window.' mod='everblock'},
-    'errorMessage' => {l s='An error occurred. Please try again later.' mod='everblock'}
+    'errorMessage' => {l s='An error occurred. Please try again later.' mod='everblock'},
+    'missingContentMessage' => {l s='The surprise for this window is not available right now.' mod='everblock'}
 ]}
 {assign var=encodedConfig value=$adventConfig|json_encode|base64_encode|escape:'htmlall':'UTF-8'}
 {assign var=containerClass value=''}
