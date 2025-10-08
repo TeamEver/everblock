@@ -1,0 +1,606 @@
+/**
+ * 2019-2025 Team Ever
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ *  @author    Team Ever <https://www.team-ever.com/>
+ *  @copyright 2019-2025 Team Ever
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+
+:root {
+    --everblock-hero-gradient: linear-gradient(135deg, #3c5ff6 0%, #6737ff 100%);
+    --everblock-hero-dark: #101638;
+    --everblock-hero-accent: #5368ff;
+    --everblock-hero-secondary: rgba(255, 255, 255, 0.14);
+    --everblock-panel-shadow: 0 24px 50px -25px rgba(17, 26, 72, 0.4);
+}
+
+.everblock-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.everblock-admin * {
+    box-sizing: border-box;
+}
+
+.everblock-admin-hero {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 24px;
+    padding: 2.75rem;
+    background: var(--everblock-hero-gradient);
+    color: #fff;
+    box-shadow: 0 35px 80px -35px rgba(16, 22, 56, 0.75);
+}
+
+.everblock-admin-hero::before,
+.everblock-admin-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(0);
+    opacity: 0.55;
+    z-index: 0;
+}
+
+.everblock-admin-hero::before {
+    width: 340px;
+    height: 340px;
+    background: rgba(255, 255, 255, 0.08);
+    top: -140px;
+    right: -110px;
+}
+
+.everblock-admin-hero::after {
+    width: 280px;
+    height: 280px;
+    background: rgba(16, 22, 56, 0.22);
+    bottom: -120px;
+    left: -80px;
+}
+
+.everblock-admin-hero__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 2.5rem;
+}
+
+.everblock-admin-hero__branding {
+    flex: 1 1 420px;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.everblock-admin-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.82);
+    width: fit-content;
+}
+
+.everblock-admin-hero__title {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.everblock-admin-hero__title i {
+    font-size: 2.6rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.everblock-admin-hero__tagline {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.everblock-admin-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.everblock-admin-hero__meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 999px;
+    background: rgba(16, 22, 56, 0.35);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.everblock-admin-hero__meta span i {
+    font-size: 1.1rem;
+}
+
+.everblock-admin-hero__features {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.everblock-admin-hero__feature-title {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 1.05rem;
+}
+
+.everblock-admin-hero__feature-text {
+    display: block;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.everblock-admin-hero__visual {
+    position: relative;
+    z-index: 1;
+    flex: 0 1 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.everblock-admin-hero__logo {
+    background: rgba(255, 255, 255, 0.96);
+    padding: 1.15rem;
+    border-radius: 24px;
+    box-shadow: 0 28px 60px -28px rgba(12, 20, 54, 0.65);
+}
+
+.everblock-admin-hero__image {
+    display: block;
+    max-width: 150px;
+    margin: 0 auto;
+    filter: drop-shadow(0 18px 30px rgba(16, 22, 56, 0.25));
+}
+
+.everblock-admin-hero__actions {
+    position: relative;
+    z-index: 1;
+    margin-top: 2.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+}
+
+.everblock-admin-hero__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1.8rem;
+    border-radius: 999px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.everblock-admin-hero__action i {
+    font-size: 1.1rem;
+}
+
+.everblock-admin-hero__action span {
+    display: inline-block;
+}
+
+.everblock-admin-hero__action--ghost {
+    background: var(--everblock-hero-secondary);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.everblock-admin-hero__action--primary {
+    background: #ffffff;
+    color: #3345f4;
+}
+
+.everblock-admin-hero__action--accent {
+    background: linear-gradient(135deg, #ff8a5c 0%, #ff5776 100%);
+    color: #ffffff;
+}
+
+.everblock-admin-hero__action:hover,
+.everblock-admin-hero__action:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 38px -24px rgba(12, 20, 54, 0.6);
+}
+
+.everblock-admin-hero__action--ghost:hover,
+.everblock-admin-hero__action--ghost:focus {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+}
+
+.everblock-admin-hero__action--primary:hover,
+.everblock-admin-hero__action--primary:focus {
+    background: #eef0ff;
+    color: #2736d5;
+}
+
+.everblock-admin-hero__action--accent:hover,
+.everblock-admin-hero__action--accent:focus {
+    background: linear-gradient(135deg, #ff7a66 0%, #ff3d70 100%);
+}
+
+.everblock-admin-surface {
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+}
+
+.everblock-admin-alerts .alert {
+    border-radius: 16px;
+    box-shadow: 0 24px 46px -26px rgba(17, 26, 72, 0.45);
+}
+
+.everblock-admin-upgrade .panel,
+.everblock-admin-main .panel {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--everblock-panel-shadow);
+}
+
+.everblock-admin-main .panel-heading,
+.everblock-admin-upgrade .panel-heading {
+    background: linear-gradient(90deg, #f8f9ff 0%, #eef1ff 100%);
+    border-bottom: 1px solid rgba(83, 104, 255, 0.08);
+    color: #1f2d5c;
+    font-weight: 600;
+}
+
+.everblock-admin-main .panel-body,
+.everblock-admin-upgrade .panel-body {
+    background: #ffffff;
+}
+
+.everblock-admin-main .table {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.everblock-admin-main .table > thead > tr > th {
+    background: #f2f4ff;
+    border-bottom: none;
+    color: #1f2d5c;
+    font-weight: 600;
+}
+
+.everblock-admin-main .table > tbody > tr {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.everblock-admin-main .table > tbody > tr:hover {
+    background: #f7f8ff;
+    transform: translateY(-1px);
+}
+
+.everblock-admin-main .nav-tabs {
+    border-bottom: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.everblock-admin-main .nav-tabs > li {
+    margin-bottom: 0;
+}
+
+.everblock-admin-main .nav-tabs > li > a {
+    border: none;
+    border-radius: 999px;
+    background: #edf0ff;
+    color: #1f2d5c;
+    font-weight: 600;
+    padding: 0.65rem 1.4rem;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.everblock-admin-main .nav-tabs > li > a:hover {
+    background: #e1e6ff;
+}
+
+.everblock-admin-main .nav-tabs > li.active > a,
+.everblock-admin-main .nav-tabs > li.active > a:focus,
+.everblock-admin-main .nav-tabs > li.active > a:hover {
+    background: #3c5ff6;
+    color: #fff;
+    box-shadow: 0 18px 34px -20px rgba(60, 95, 246, 0.6);
+}
+
+.everblock-admin-main .tab-content {
+    margin-top: 1.5rem;
+}
+
+.everblock-admin-main .form-horizontal .control-label {
+    color: #2a3362;
+    font-weight: 600;
+}
+
+.everblock-admin-main .form-group {
+    margin-bottom: 1.6rem;
+}
+
+.everblock-doc {
+    border: 1px solid #e5e8ff;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f8ff 100%);
+    box-shadow: 0 20px 48px -32px rgba(20, 30, 74, 0.45);
+}
+
+.everblock-doc .card-body {
+    padding: 1.9rem;
+}
+
+.everblock-doc .card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #1f2d5c;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1.1rem;
+}
+
+.everblock-doc .card-title i {
+    color: var(--everblock-hero-accent);
+}
+
+.everblock-doc p {
+    color: #3f4b6f;
+    font-size: 0.96rem;
+    line-height: 1.6;
+}
+
+.everblock-doc ul {
+    padding-left: 1.25rem;
+    color: #3f4b6f;
+}
+
+.everblock-doc li {
+    margin-bottom: 0.5rem;
+}
+
+.everblock-admin-footer {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 26px;
+    padding: 2.75rem 2.9rem;
+    background: #101638;
+    color: #fff;
+    box-shadow: 0 32px 70px -40px rgba(16, 22, 56, 0.75);
+}
+
+.everblock-admin-footer::before,
+.everblock-admin-footer::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.35;
+    z-index: 0;
+}
+
+.everblock-admin-footer::before {
+    width: 260px;
+    height: 260px;
+    background: rgba(83, 104, 255, 0.45);
+    top: -80px;
+    right: -60px;
+}
+
+.everblock-admin-footer::after {
+    width: 220px;
+    height: 220px;
+    background: rgba(60, 95, 246, 0.32);
+    bottom: -70px;
+    left: -80px;
+}
+
+.everblock-admin-footer__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    text-align: center;
+}
+
+.everblock-admin-footer__brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.everblock-admin-footer__logo {
+    display: inline-flex;
+    padding: 0.7rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.everblock-admin-footer__image {
+    max-width: 120px;
+    border-radius: 16px;
+    box-shadow: 0 22px 46px -28px rgba(12, 20, 54, 0.65);
+}
+
+.everblock-admin-footer__title {
+    font-size: 1.55rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.everblock-admin-footer__title i {
+    font-size: 1.6rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.everblock-admin-footer__description,
+.everblock-admin-footer__gratitude {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.everblock-admin-footer__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    justify-content: center;
+}
+
+.everblock-admin-footer__cta .btn {
+    border-radius: 999px;
+    border: none;
+    font-weight: 600;
+    padding: 0.7rem 1.8rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.everblock-admin-footer__cta .btn:hover,
+.everblock-admin-footer__cta .btn:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 36px -24px rgba(12, 20, 54, 0.65);
+}
+
+.everblock-admin-footer__donation {
+    background: linear-gradient(135deg, #ff8a5c 0%, #ff5776 100%);
+    color: #fff;
+}
+
+.everblock-admin-footer__donation:hover,
+.everblock-admin-footer__donation:focus {
+    background: linear-gradient(135deg, #ff7a66 0%, #ff3d70 100%);
+}
+
+@media (max-width: 1199px) {
+    .everblock-admin-hero {
+        padding: 2.25rem;
+    }
+
+    .everblock-admin-hero__title {
+        font-size: 2.2rem;
+    }
+
+    .everblock-admin-hero__image {
+        max-width: 130px;
+    }
+}
+
+@media (max-width: 991px) {
+    .everblock-admin-hero__inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .everblock-admin-hero__visual {
+        align-self: stretch;
+    }
+
+    .everblock-admin-hero__logo {
+        width: 100%;
+    }
+
+    .everblock-admin-hero__actions {
+        width: 100%;
+    }
+
+    .everblock-admin-hero__action {
+        flex: 1 1 240px;
+        justify-content: center;
+    }
+
+    .everblock-admin-main .panel,
+    .everblock-admin-upgrade .panel {
+        border-radius: 18px;
+    }
+}
+
+@media (max-width: 767px) {
+    .everblock-admin {
+        gap: 2rem;
+    }
+
+    .everblock-admin-hero {
+        padding: 1.9rem;
+    }
+
+    .everblock-admin-hero__title {
+        font-size: 2rem;
+    }
+
+    .everblock-admin-hero__actions {
+        flex-direction: column;
+        gap: 0.7rem;
+    }
+
+    .everblock-admin-hero__action {
+        width: 100%;
+    }
+
+    .everblock-admin-surface {
+        gap: 1.4rem;
+    }
+
+    .everblock-admin-footer {
+        padding: 2.1rem 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .everblock-admin-hero__meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .everblock-admin-footer__cta {
+        flex-direction: column;
+    }
+}
