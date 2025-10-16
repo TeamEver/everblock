@@ -692,7 +692,6 @@ class Everblock extends Module
             }
             $tab->add();
         }
-        $this->registerHook('actionClearCache');
         $this->registerHook('displayContentWrapperTop');
         $this->registerHook('actionCmsPageFormBuilderModifier');
         $this->registerHook('actionObjectCmsUpdateAfter');
@@ -2780,11 +2779,6 @@ class Everblock extends Module
         }
     }
 
-
-    public function hookActionClearCache($params)
-    {
-        EverblockTools::warmup(Tools::getShopDomainSsl(true) . __PS_BASE_URI__);
-    }
 
     public function hookActionCmsPageFormBuilderModifier($params)
     {

@@ -138,11 +138,6 @@ class ExecuteAction extends Command
             'description' => 'Flushes all native caches (Smarty, XML, filesystem).',
             'parameters' => [],
         ],
-        'warmup' => [
-            'label' => 'Warm front-office pages',
-            'description' => 'Preloads the storefront for every active language.',
-            'parameters' => ['--url (optional)'],
-        ],
     ];
 
     public function __construct(KernelInterface $kernel)
@@ -159,7 +154,6 @@ class ExecuteAction extends Command
         $this->addArgument('idshop id', InputArgument::OPTIONAL, 'Shop ID');
         $this->addArgument('fromlang id', InputArgument::OPTIONAL, 'Source language ID');
         $this->addArgument('tolang id', InputArgument::OPTIONAL, 'Target language ID');
-        $this->addOption('url', null, InputOption::VALUE_REQUIRED, 'Override the base URL used by actions such as warmup.');
         $help = "Use the --list option to display the available actions.\n";
         foreach ($this->allowedActions as $name => $action) {
             $parameters = empty($action['parameters']) ? 'no parameter' : implode(', ', $action['parameters']);
@@ -191,8 +185,6 @@ class ExecuteAction extends Command
         $idShop = $input->getArgument('idshop id');
         $idLangFrom = $input->getArgument('fromlang id');
         $idLangTo = $input->getArgument('tolang id');
-        $baseUrlOverride = $input->getOption('url');
-
         if (!$action) {
             $output->writeln('<warning>No action provided. Use the --list option to display available actions.</warning>');
 
@@ -559,14 +551,6 @@ class ExecuteAction extends Command
         if ($action === 'clearcache') {
             \Tools::clearAllCache();
             $output->writeln('<success>All PrestaShop caches cleared</success>');
-
-            return self::SUCCESS;
-        }
-        if ($action === 'warmup') {
-            $baseUrl = $baseUrlOverride ?: \Tools::getShopDomainSsl(true) . __PS_BASE_URI__;
-            $output->writeln('<comment>Warming up front-office pages from ' . $baseUrl . '</comment>');
-            EverblockTools::warmup($baseUrl);
-            $output->writeln('<success>Warmup requests dispatched</success>');
 
             return self::SUCCESS;
         }

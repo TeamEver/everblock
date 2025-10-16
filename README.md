@@ -170,7 +170,6 @@ Only image and media assets should be stored inside `views/img/`. The automated 
 | `checkdatabase` | Check module database | Installs missing tables and columns, removes obsolete files. | — |
 | `dropunusedlangs` | Drop unused languages | Removes orphan translations from core multilingual tables. | — |
 | `clearcache` | Clear PrestaShop cache | Flushes all native caches (Smarty, XML, filesystem). | — |
-| `warmup` | Warm front-office pages | Preloads the storefront for every active language. | `--url` (optional) |
 
 ## Shortcodes
 The module allows you to use many shortcodes anywhere in your store. However, restrictions may be in place, such as not allowing a hook shortcode or store locator to be used in a modal.
@@ -493,7 +492,6 @@ Exécutez `php bin/console everblock:tools:execute --list` pour afficher les act
 | `checkdatabase` | Vérifier la base du module | Installe les tables/colonnes manquantes et supprime les fichiers obsolètes. | — |
 | `dropunusedlangs` | Supprimer les langues inutilisées | Retire les traductions orphelines des tables multilingues natives. | — |
 | `clearcache` | Vider le cache PrestaShop | Vide tous les caches natifs (Smarty, XML, fichiers). | — |
-| `warmup` | Chauffer les pages front-office | Précharge le front-office pour chaque langue active. | `--url` (optionnel) |
 
 ## Shortcodes
 Le module vous permet d'utiliser de nombreux shortcodes partout dans votre boutique. Certaines restrictions peuvent s'appliquer, par exemple un hook ou un store locator ne peuvent pas être utilisés dans une modale.
@@ -721,7 +719,6 @@ Ejecuta `php bin/console everblock:tools:execute --list` para mostrar las accion
 | `checkdatabase` | Comprobar la base de datos del módulo | Instala tablas y columnas faltantes y elimina archivos obsoletos. | — |
 | `dropunusedlangs` | Eliminar idiomas sin uso | Elimina traducciones huérfanas de las tablas multilingües nativas. | — |
 | `clearcache` | Vaciar la caché de PrestaShop | Limpia todas las cachés nativas (Smarty, XML, archivos). | — |
-| `warmup` | Calentar páginas del front-office | Precarga el escaparate para cada idioma activo. | `--url` (opcional) |
 
 ## Shortcodes
 El módulo permite usar muchos shortcodes en cualquier lugar de la tienda. Pueden existir restricciones, por ejemplo un hook o un store locator no pueden usarse en una modal.
@@ -948,7 +945,6 @@ Esegui `php bin/console everblock:tools:execute --list` per visualizzare le azio
 | `checkdatabase` | Controllare il database del modulo | Installa tabelle e colonne mancanti ed elimina i file obsoleti. | — |
 | `dropunusedlangs` | Eliminare lingue inutilizzate | Rimuove le traduzioni orfane dalle tabelle multilingue native. | — |
 | `clearcache` | Svuotare la cache di PrestaShop | Svuota tutte le cache native (Smarty, XML, file). | — |
-| `warmup` | Scaldare le pagine del front-office | Precarica il front-office per ogni lingua attiva. | `--url` (opzionale) |
 
 ## Shortcode
 Il modulo consente di utilizzare molti shortcode in qualsiasi parte del negozio. Possono esserci restrizioni, ad esempio un hook o uno store locator non possono essere usati in una modale.
