@@ -23,7 +23,7 @@ namespace Everblock\Tools\Service;
 use Context;
 use Module;
 
-if (!defined('_PS_VERSION_')) {
+if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
     exit;
 }
 
