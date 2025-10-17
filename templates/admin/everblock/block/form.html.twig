@@ -1,0 +1,42 @@
+<div class="everblock-form card">
+  <div class="card-header">
+    <h3 class="card-title mb-0">{{ 'Block configuration'|trans({}, 'Modules.Everblock.Admin') }}</h3>
+  </div>
+  <div class="card-body">
+    {{ form_start(form) }}
+      {% set grouped = {} %}
+      {% for child in form %}
+        {% set tab = child.vars.row_attr.data-tab ?? 'general' %}
+        {% set grouped = grouped|merge({ (tab): (grouped[tab]|default([]))|merge([child]) }) %}
+      {% endfor %}
+
+      <ul class="nav nav-tabs" role="tablist">
+        {% for key, label in form_tabs %}
+          <li class="nav-item" role="presentation">
+            <button class="nav-link {% if loop.first %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#everblock-tab-{{ key }}" type="button" role="tab">{{ label }}</button>
+          </li>
+        {% endfor %}
+      </ul>
+      <div class="tab-content mt-3">
+        {% for key, label in form_tabs %}
+          <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="everblock-tab-{{ key }}" role="tabpanel">
+            {% for child in grouped[key]|default([]) %}
+              <div class="mb-3">
+                {{ form_row(child) }}
+              </div>
+            {% endfor %}
+            {% for doc in documentation %}
+              {% if doc.tab == key %}
+                <div class="alert alert-info mt-3">{{ doc.content|raw }}</div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" name="save" class="btn btn-primary">{{ 'Save'|trans({}, 'Modules.Everblock.Admin') }}</button>
+        <button type="submit" name="stay" class="btn btn-outline-secondary">{{ 'Save and stay'|trans({}, 'Modules.Everblock.Admin') }}</button>
+      </div>
+    {{ form_end(form) }}
+  </div>
+</div>

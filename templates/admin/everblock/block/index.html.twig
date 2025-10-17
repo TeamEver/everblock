@@ -1,0 +1,77 @@
+<div class="everblock-grid card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title mb-0">{{ 'Blocks list'|trans({}, 'Modules.Everblock.Admin') }}</h3>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" href="{{ clear_cache_url }}">{{ 'Clear cache'|trans({}, 'Modules.Everblock.Admin') }}</a>
+      <a class="btn btn-primary" href="{{ create_url }}">{{ 'Add new block'|trans({}, 'Modules.Everblock.Admin') }}</a>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="post" action="{{ path('everblock_admin_blocks_bulk_delete') }}">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th><input type="checkbox" class="js-everblock-select-all"></th>
+              {% for column in grid_definition.columns %}
+                <th>{{ column.label }}</th>
+              {% endfor %}
+              <th class="text-end">{{ 'Actions'|trans({}, 'Modules.Everblock.Admin') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in grid_data.records %}
+              <tr>
+                <td><input type="checkbox" name="ids[]" value="{{ record.id_everblock }}"></td>
+                {% for column in grid_definition.columns %}
+                  <td>
+                    {% set value = attribute(record, column.name) %}
+                    {% if column.type is defined and column.type == 'bool' %}
+                      {% if value %}
+                        <span class="badge bg-success">{{ 'Yes'|trans({}, 'Modules.Everblock.Admin') }}</span>
+                      {% else %}
+                        <span class="badge bg-secondary">{{ 'No'|trans({}, 'Modules.Everblock.Admin') }}</span>
+                      {% endif %}
+                    {% else %}
+                      {{ value }}
+                    {% endif %}
+                  </td>
+                {% endfor %}
+                <td class="text-end">
+                  <div class="btn-group" role="group">
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('everblock_admin_blocks_edit', {everblockId: record.id_everblock}) }}">{{ 'Edit'|trans({}, 'Modules.Everblock.Admin') }}</a>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('everblock_admin_blocks_duplicate', {everblockId: record.id_everblock}) }}">{{ 'Duplicate'|trans({}, 'Modules.Everblock.Admin') }}</a>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('everblock_admin_blocks_toggle', {everblockId: record.id_everblock}) }}">{{ 'Toggle'|trans({}, 'Modules.Everblock.Admin') }}</a>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path('everblock_admin_blocks_export', {everblockId: record.id_everblock}) }}">{{ 'Export'|trans({}, 'Modules.Everblock.Admin') }}</a>
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="{{ grid_definition.columns|length + 2 }}" class="text-center text-muted">{{ 'No blocks found.'|trans({}, 'Modules.Everblock.Admin') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-danger">{{ grid_definition.bulk_actions.delete.label }}</button>
+        <button type="submit" class="btn btn-outline-secondary" formaction="{{ path('everblock_admin_blocks_bulk_duplicate') }}">{{ grid_definition.bulk_actions.duplicate.label }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var toggle = document.querySelector('.js-everblock-select-all');
+    if (!toggle) {
+      return;
+    }
+    toggle.addEventListener('change', function (event) {
+      document.querySelectorAll('input[name="ids[]"]').forEach(function (checkbox) {
+        checkbox.checked = event.target.checked;
+      });
+    });
+  });
+</script>

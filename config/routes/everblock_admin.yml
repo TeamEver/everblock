@@ -10,9 +10,81 @@ everblock_admin_blocks:
     path: /everblock/blocks
     methods: [GET]
     defaults:
-        _controller: 'Everblock\\Tools\\Controller\\Admin\\BlocksController::index'
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::index'
         _legacy_controller: 'AdminEverBlock'
         _legacy_link: 'AdminEverBlock'
+
+everblock_admin_blocks_create:
+    path: /everblock/blocks/new
+    methods: [GET, POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::create'
+        _legacy_controller: 'AdminEverBlock'
+        _legacy_link: 'AdminEverBlock:add'
+
+everblock_admin_blocks_edit:
+    path: /everblock/blocks/{everblockId}/edit
+    methods: [GET, POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::edit'
+        _legacy_controller: 'AdminEverBlock'
+        _legacy_link: 'AdminEverBlock:update'
+    requirements:
+        everblockId: "\\d+"
+
+everblock_admin_blocks_duplicate:
+    path: /everblock/blocks/{everblockId}/duplicate
+    methods: [GET]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::duplicate'
+        _legacy_controller: 'AdminEverBlock'
+        _legacy_link: 'AdminEverBlock:duplicate'
+    requirements:
+        everblockId: "\\d+"
+
+everblock_admin_blocks_toggle:
+    path: /everblock/blocks/{everblockId}/toggle
+    methods: [GET]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::toggle'
+        _legacy_controller: 'AdminEverBlock'
+        _legacy_link: 'AdminEverBlock:status'
+    requirements:
+        everblockId: "\\d+"
+
+everblock_admin_blocks_bulk_delete:
+    path: /everblock/blocks/bulk/delete
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::bulkDelete'
+        _legacy_controller: 'AdminEverBlock'
+        _legacy_link: 'AdminEverBlock:bulkdelete'
+
+everblock_admin_blocks_bulk_duplicate:
+    path: /everblock/blocks/bulk/duplicate
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::bulkDuplicate'
+        _legacy_controller: 'AdminEverBlock'
+        _legacy_link: 'AdminEverBlock:bulkduplicate'
+
+everblock_admin_blocks_export:
+    path: /everblock/blocks/{everblockId}/export
+    methods: [GET]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::export'
+        _legacy_controller: 'AdminEverBlock'
+        _legacy_link: 'AdminEverBlock:export'
+    requirements:
+        everblockId: "\\d+"
+
+everblock_admin_blocks_clear_cache:
+    path: /everblock/blocks/cache/clear
+    methods: [GET]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::clearCache'
+        _legacy_controller: 'AdminEverBlock'
+        _legacy_link: 'AdminEverBlock:clearcache'
 
 everblock_admin_hooks:
     path: /everblock/hooks
