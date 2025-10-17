@@ -32,39 +32,42 @@
     <div class="row">
   {/if}
   {if isset($block.states) && $block.states}
-    <div class="col-12 col-lg-4 pb-toc-summary">
-      {if isset($block.settings.title) && $block.settings.title}
-        <span class="h2 pb-toc-title">{$block.settings.title|escape:'htmlall'}</span>
-      {/if}
-      <ul class="list-unstyled pb-toc-menu">
-        {assign var='currentCategory' value=''}
-        {assign var='currentSub' value=''}
-        {assign var='catIndex' value=0}
-        {assign var='subIndex' value=0}
-        {foreach from=$block.states item=state}
-          {if $state.category != $currentCategory}
-            {if $currentSub != ''}</ul></li>{/if}
-            {if $currentCategory != ''}</ul></li>{/if}
-            {assign var='catIndex' value=$catIndex+1}
-            <li class="pb-toc-category">
-              <button class="pb-toc-toggle btn btn-link p-0" type="button" data-toggle="collapse" data-target="#pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" data-bs-toggle="collapse" data-bs-target="#pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" aria-expanded="false" aria-controls="pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}">
-                <span class="pb-toc-toggle-label">{$state.category|escape:'htmlall'}</span>
-                <span class="pb-toc-toggle-icon" aria-hidden="true"></span>
-              </button>
-              <ul id="pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" class="list-unstyled collapse">
-            {assign var='currentCategory' value=$state.category}
-            {assign var='currentSub' value=''}
-          {/if}
-          {if $state.subcategory != $currentSub}
-            {if $currentSub != ''}</ul></li>{/if}
-            {if $state.subcategory != ''}
-              {assign var='subIndex' value=$subIndex+1}
-              <li class="pb-toc-subcategory">
-                <button class="pb-toc-toggle btn btn-link p-0" type="button" data-toggle="collapse" data-target="#pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" data-bs-toggle="collapse" data-bs-target="#pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" aria-expanded="false" aria-controls="pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}">
-                  <span class="pb-toc-toggle-label">{$state.subcategory|escape:'htmlall'}</span>
+    <div class="col-12 col-lg-4">
+      <aside class="pb-toc-summary">
+        {if isset($block.settings.title) && $block.settings.title}
+          <h2 class="pb-toc-title h4 mb-4">{$block.settings.title|escape:'htmlall'}</h2>
+        {/if}
+        <ul class="list-unstyled pb-toc-menu">
+          {assign var='currentCategory' value=''}
+          {assign var='currentSub' value=''}
+          {assign var='catIndex' value=0}
+          {assign var='subIndex' value=0}
+          {foreach from=$block.states item=state}
+            {if $state.category != $currentCategory}
+              {if $currentSub != ''}</ul></li>{/if}
+              {if $currentCategory != ''}</ul></li>{/if}
+              {assign var='catIndex' value=$catIndex+1}
+              <li class="pb-toc-category">
+                {assign var='categoryDefaultOpen' value=($catIndex eq 1)}
+                <button class="pb-toc-toggle pb-toc-toggle-category{if $categoryDefaultOpen} is-open{/if}" type="button" data-toggle="collapse" data-target="#pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" data-bs-toggle="collapse" data-bs-target="#pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" aria-expanded="{if $categoryDefaultOpen}true{else}false{/if}" aria-controls="pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}">
+                  <span class="pb-toc-toggle-label">{$state.category|escape:'htmlall'}</span>
                   <span class="pb-toc-toggle-icon" aria-hidden="true"></span>
                 </button>
-                <ul id="pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" class="list-unstyled collapse">
+                <ul id="pb-toc-cat-{$block.id_prettyblocks}-{$catIndex}" class="list-unstyled collapse{if $categoryDefaultOpen} show{/if}">
+              {assign var='currentCategory' value=$state.category}
+              {assign var='currentSub' value=''}
+            {/if}
+            {if $state.subcategory != $currentSub}
+              {if $currentSub != ''}</ul></li>{/if}
+              {if $state.subcategory != ''}
+                {assign var='subIndex' value=$subIndex+1}
+                <li class="pb-toc-subcategory">
+                  {assign var='subDefaultOpen' value=($categoryDefaultOpen && $subIndex eq 1)}
+                  <button class="pb-toc-toggle pb-toc-toggle-sub{if $subDefaultOpen} is-open{/if}" type="button" data-toggle="collapse" data-target="#pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" data-bs-toggle="collapse" data-bs-target="#pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" aria-expanded="{if $subDefaultOpen}true{else}false{/if}" aria-controls="pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}">
+                    <span class="pb-toc-toggle-label">{$state.subcategory|escape:'htmlall'}</span>
+                    <span class="pb-toc-toggle-icon" aria-hidden="true"></span>
+                  </button>
+                  <ul id="pb-toc-sub-{$block.id_prettyblocks}-{$catIndex}-{$subIndex}" class="list-unstyled collapse{if $subDefaultOpen} show{/if}">
               {assign var='currentSub' value=$state.subcategory}
             {else}
               {assign var='currentSub' value=''}
@@ -74,7 +77,8 @@
         {/foreach}
         {if $currentSub != ''}</ul></li>{/if}
         {if $currentCategory != ''}</ul></li>{/if}
-      </ul>
+        </ul>
+      </aside>
     </div>
     <div class="col-12 col-lg-8 pb-toc-content">
       {foreach from=$block.states item=state}
