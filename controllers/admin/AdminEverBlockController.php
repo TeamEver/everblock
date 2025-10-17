@@ -22,6 +22,8 @@ if (!defined('_PS_VERSION_')) {
 }
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
 
+use Everblock\Tools\Service\ShortcodeDocumentationProvider;
+
 class AdminEverBlockController extends ModuleAdminController
 {
     private $html;
@@ -44,6 +46,7 @@ class AdminEverBlockController extends ModuleAdminController
             'module_link' => $module_link,
             'everblock_dir' => _MODULE_DIR_ . '/everblock/',
             'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
+            'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($m),
         ]);
 
         $this->_select = 'a.*, h.title AS hname, CONCAT(h.title, LPAD(a.position, 10, "0")) as sort_key';

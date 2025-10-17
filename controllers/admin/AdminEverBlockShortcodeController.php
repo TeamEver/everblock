@@ -24,6 +24,8 @@ if (!defined('_PS_VERSION_')) {
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
 
+use Everblock\Tools\Service\ShortcodeDocumentationProvider;
+
 class AdminEverBlockShortcodeController extends ModuleAdminController
 {
     private $html;
@@ -45,6 +47,7 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
             'module_link' => $module_link,
             'everblock_dir' => _MODULE_DIR_ . '/everblock/',
             'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
+            'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($m),
         ]);
 
         $this->bulk_actions = [

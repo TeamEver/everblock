@@ -35,6 +35,7 @@ use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\ImportFile;
+use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
@@ -969,6 +970,7 @@ class Everblock extends Module
             'everblock_form' => $this->renderForm(),
             'display_upgrade' => $displayUpgrade,
             'everblock_stats' => $this->getModuleStatistics(),
+            'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($this),
         ]);
         $output = $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'
