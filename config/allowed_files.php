@@ -76,6 +76,7 @@ return [
     'models/EverblockFlagsClass.php',
     'models/EverblockModal.php',
     'src/Service/EverblockPrettyBlocks.php',
+    'src/Service/ShortcodeDocumentationProvider.php',
     'models/EverblockShortcode.php',
     'models/EverblockTabsClass.php',
     'models/EverblockTools.php',
