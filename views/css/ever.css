@@ -159,3 +159,433 @@
     height: auto;
 }
 
+/*
+ * Admin configuration layout revamp
+ */
+.everblock-config-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    margin: 2rem 0 4rem;
+}
+
+.everblock-config__notifications > * {
+    margin-bottom: 0;
+}
+
+.everblock-config__notifications > * + * {
+    margin-top: 1rem;
+}
+
+.everblock-config__hero {
+    background: linear-gradient(135deg, #4337ff 0%, #8f5bff 100%);
+    border-radius: 24px;
+    padding: 2.5rem;
+    color: #fff;
+    box-shadow: 0 30px 60px rgba(45, 35, 66, 0.35);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: stretch;
+}
+
+.everblock-config__hero-main {
+    flex: 1 1 320px;
+    max-width: 640px;
+}
+
+.everblock-config__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.everblock-config__hero-title {
+    font-size: 2.3rem;
+    font-weight: 700;
+    margin: 1.1rem 0 0.75rem;
+}
+
+.everblock-config__hero-description {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    max-width: 560px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.everblock-config__hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+}
+
+.everblock-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.everblock-config__hero-stats {
+    flex: 1 1 240px;
+    display: grid;
+    gap: 1rem;
+    align-content: flex-start;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.everblock-config__stat {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 18px;
+    padding: 1.4rem 1.2rem;
+    text-align: center;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.everblock-config__stat-value {
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.everblock-config__stat-label {
+    margin-top: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.everblock-config__layout {
+    display: grid;
+    gap: 2.25rem;
+}
+
+@media (min-width: 992px) {
+    .everblock-config__layout {
+        grid-template-columns: minmax(0, 2.25fr) minmax(260px, 1fr);
+        align-items: start;
+    }
+}
+
+.everblock-config__card {
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 22px 55px rgba(15, 23, 42, 0.18);
+    padding: 1.75rem;
+}
+
+.everblock-config__card--form {
+    padding: 0;
+    overflow: hidden;
+}
+
+.everblock-config__card--form #module_form {
+    margin-bottom: 0;
+}
+
+#module_form .nav-tabs {
+    background: #f3f4ff;
+    border-radius: 18px;
+    padding: 0.5rem;
+    border: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    position: sticky;
+    top: 70px;
+    z-index: 3;
+}
+
+#module_form .nav-tabs > li {
+    float: none;
+}
+
+#module_form .nav-tabs > li > a {
+    border: 0;
+    border-radius: 12px;
+    padding: 0.65rem 1.1rem;
+    font-weight: 600;
+    color: #3a3a68;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#module_form .nav-tabs > li.active > a,
+#module_form .nav-tabs > li > a:focus,
+#module_form .nav-tabs > li > a:hover {
+    background: #ffffff;
+    color: #4337ff;
+    box-shadow: 0 12px 28px rgba(67, 55, 255, 0.22);
+}
+
+#module_form .nav-tabs > li > a .everblock-tab-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(67, 55, 255, 0.35);
+    animation: everblock-tab-pulse 0.6s ease-out;
+}
+
+@keyframes everblock-tab-pulse {
+    from {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(12);
+    }
+}
+
+.everblock-config__card--form .tab-content {
+    padding: 2.5rem 2.5rem 3rem;
+}
+
+#module_form .form-wrapper {
+    padding-top: 1.5rem;
+}
+
+#module_form .form-group {
+    background: #f9f9ff;
+    border: 1px solid #e5e7ff;
+    border-radius: 16px;
+    padding: 1.35rem 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+#module_form .form-group:hover {
+    border-color: #c7cafc;
+    box-shadow: 0 16px 32px rgba(67, 56, 202, 0.16);
+}
+
+#module_form .everblock-form-group--doc {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+}
+
+#module_form .form-group:last-of-type {
+    margin-bottom: 0;
+}
+
+#module_form label.control-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2552;
+}
+
+#module_form .help-block {
+    color: #4b5563;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.everblock-sidecard {
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 22px 55px rgba(15, 23, 42, 0.16);
+    padding: 1.9rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.everblock-sidecard__title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1f2552;
+}
+
+.everblock-sidecard__subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #4b5563;
+}
+
+.everblock-sidecard__actions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.everblock-sidecard__link {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    text-decoration: none;
+    background: #f5f6ff;
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    color: #111827;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.everblock-sidecard__link strong {
+    font-size: 1rem;
+    font-weight: 700;
+    display: block;
+}
+
+.everblock-sidecard__link small {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: #5b6075;
+    font-weight: 500;
+}
+
+.everblock-sidecard__link:hover {
+    border-color: #4337ff;
+    box-shadow: 0 18px 34px rgba(67, 55, 255, 0.22);
+    transform: translateY(-2px);
+    color: #111827;
+}
+
+.everblock-sidecard__icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4337ff 0%, #8f5bff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    box-shadow: 0 12px 20px rgba(67, 55, 255, 0.35);
+}
+
+.everblock-sidecard__badges {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.everblock-sidecard__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 1.1rem;
+    border-radius: 999px;
+    background: #eef0ff;
+    color: #3a3a68;
+    font-weight: 600;
+}
+
+.everblock-sidecard__cta {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.9rem 1.5rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ff7a59 0%, #ff4f8b 100%);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.everblock-sidecard__cta:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 18px 38px rgba(255, 79, 139, 0.35);
+}
+
+details.everblock-doc-accordion {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #e2e5ff;
+    margin: 1.5rem 0;
+    box-shadow: 0 18px 40px rgba(79, 70, 229, 0.18);
+    overflow: hidden;
+}
+
+details.everblock-doc-accordion[open] {
+    box-shadow: 0 22px 50px rgba(67, 56, 202, 0.22);
+}
+
+.everblock-doc-accordion__summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.1rem 1.6rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: #4337ff;
+    list-style: none;
+}
+
+.everblock-doc-accordion__summary::-webkit-details-marker {
+    display: none;
+}
+
+.everblock-doc-accordion__summary::after {
+    content: '\25BC';
+    margin-left: auto;
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+}
+
+details[open] > .everblock-doc-accordion__summary::after {
+    transform: rotate(-180deg);
+}
+
+.everblock-doc-accordion__content {
+    padding: 0 1.6rem 1.6rem;
+    color: #3f3f55;
+    line-height: 1.6;
+}
+
+.everblock-doc-accordion__content p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 767px) {
+    .everblock-config__hero {
+        padding: 2rem;
+    }
+
+    .everblock-config__card--form .tab-content {
+        padding: 1.5rem;
+    }
+
+    #module_form .nav-tabs {
+        top: 60px;
+    }
+}
+

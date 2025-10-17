@@ -17,18 +17,24 @@
  */
 
 $(document).ready(function() {
-  let cssTextarea = document.getElementById("EVERPSCSS");
-  let cssEditor = CodeMirror.fromTextArea(cssTextarea, {
-    mode: "text/css",
-    theme: "dracula",
-    lineNumbers: true
-  });
-  let jsTextarea = document.getElementById("EVERPSJS");
-  let jsEditor = CodeMirror.fromTextArea(jsTextarea, {
-    mode: "text/javascript",
-    theme: "dracula",
-    lineNumbers: true
-  });
+  const cssTextarea = document.getElementById('EVERPSCSS');
+  const jsTextarea = document.getElementById('EVERPSJS');
+
+  if (cssTextarea) {
+    CodeMirror.fromTextArea(cssTextarea, {
+      mode: 'text/css',
+      theme: 'dracula',
+      lineNumbers: true
+    });
+  }
+
+  if (jsTextarea) {
+    CodeMirror.fromTextArea(jsTextarea, {
+      mode: 'text/javascript',
+      theme: 'dracula',
+      lineNumbers: true
+    });
+  }
 
   // Ensure documentation cards are displayed at the bottom of each tab in the
   // module configuration form. HelperForm renders documentation inputs as
@@ -48,5 +54,56 @@ $(document).ready(function() {
         return $(this).find('.everblock-doc').length > 0;
       })
       .appendTo($wrapper);
+  });
+
+  // Transform legacy documentation cards into accessible accordions that match
+  // the refreshed admin layout.
+  $('.everblock-config__card--form .everblock-doc').each(function() {
+    const $card = $(this);
+    const $body = $card.find('.card-body');
+    const $group = $card.closest('.form-group');
+
+    if (!$body.length) {
+      return;
+    }
+
+    const $title = $body.find('.card-title').first();
+    const summaryHtml = $title.length ? $title.html() : '';
+
+    if ($title.length) {
+      $title.remove();
+    }
+
+    const $details = $('<details>', {
+      class: 'everblock-doc-accordion',
+      open: true
+    });
+
+    const $summary = $('<summary>', {
+      class: 'everblock-doc-accordion__summary'
+    }).html(summaryHtml || $card.data('title') || 'Documentation');
+
+    const $content = $('<div>', {
+      class: 'everblock-doc-accordion__content'
+    }).append($body.contents());
+
+    $details.append($summary, $content);
+    $card.replaceWith($details);
+
+    if ($group.length) {
+      $group.addClass('everblock-form-group--doc');
+    }
+  });
+
+  // Add a subtle pulse feedback on tab switch to give the interface more life.
+  $('#module_form .nav-tabs a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+    const $target = $(e.target);
+    const $pulse = $('<span>', { class: 'everblock-tab-pulse' });
+
+    $target.append($pulse);
+
+    setTimeout(function() {
+      $pulse.remove();
+    }, 600);
   });
 });
