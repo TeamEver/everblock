@@ -205,11 +205,11 @@ class Everblock extends Module
             && $this->registerHook('actionRegisterBlock')
             && $this->registerHook('beforeRenderingEverblockSpecialEvent')
             && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
-            && $this->installModuleTab('AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'))
-            && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
-            && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
-            && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes'))
-            && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'));
+            && $this->installModuleTab('AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'), 'everblock_admin_configuration')
+            && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'), 'everblock_admin_blocks')
+            && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'), 'everblock_admin_hooks')
+            && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes'), 'everblock_admin_shortcodes')
+            && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'), 'everblock_admin_faq');
 
         if ($installed) {
             $this->importLegacyTranslations();
@@ -254,11 +254,11 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
-            && $this->uninstallModuleTab('AdminEverBlockConfiguration')
-            && $this->uninstallModuleTab('AdminEverBlock')
-            && $this->uninstallModuleTab('AdminEverBlockHook')
-            && $this->uninstallModuleTab('AdminEverBlockShortcode')
-            && $this->uninstallModuleTab('AdminEverBlockFaq'));
+            && $this->uninstallModuleTab('AdminEverBlockConfiguration', 'everblock_admin_configuration')
+            && $this->uninstallModuleTab('AdminEverBlock', 'everblock_admin_blocks')
+            && $this->uninstallModuleTab('AdminEverBlockHook', 'everblock_admin_hooks')
+            && $this->uninstallModuleTab('AdminEverBlockShortcode', 'everblock_admin_shortcodes')
+            && $this->uninstallModuleTab('AdminEverBlockFaq', 'everblock_admin_faq'));
     }
 
     public function l($string, $specific = null, $idLang = null)
@@ -448,7 +448,7 @@ class Everblock extends Module
         );
     }
 
-    protected function installModuleTab($tabClass, $parent, $tabName)
+    protected function installModuleTab($tabClass, $parent, $tabName, ?string $routeName = null, array $routeParams = [])
     {
         $tab = new Tab();
         $tab->active = 1;
@@ -456,6 +456,12 @@ class Everblock extends Module
         $tab->id_parent = (int) Tab::getIdFromClassName($parent);
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
         $tab->module = $this->name;
+        if (property_exists($tab, 'route_name')) {
+            $tab->route_name = $routeName;
+        }
+        if (property_exists($tab, 'route_params')) {
+            $tab->route_params = $routeParams;
+        }
         if ($tabClass == 'AdminEverBlockParent') {
             $tab->icon = 'icon-team-ever';
         }
@@ -465,9 +471,36 @@ class Everblock extends Module
         return $tab->add();
     }
 
-    protected function uninstallModuleTab($tabClass)
+    protected function uninstallModuleTab($tabClass, ?string $routeName = null)
     {
-        $tab = new Tab((int) Tab::getIdFromClassName($tabClass));
+        $tabId = (int) Tab::getIdFromClassName($tabClass);
+
+        if (!$tabId && $routeName && method_exists(Tab::class, 'getCollectionFromModule')) {
+            $collection = Tab::getCollectionFromModule($this->name);
+
+            if (is_array($collection)) {
+                foreach ($collection as $tab) {
+                    if (!isset($tab->id)) {
+                        continue;
+                    }
+                    if ($tabClass && isset($tab->class_name) && $tab->class_name === $tabClass) {
+                        $tabId = (int) $tab->id;
+                        break;
+                    }
+                    if ($routeName && isset($tab->route_name) && $tab->route_name === $routeName) {
+                        $tabId = (int) $tab->id;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!$tabId) {
+            return true;
+        }
+
+        $tab = new Tab($tabId);
+
         return $tab->delete();
     }
 

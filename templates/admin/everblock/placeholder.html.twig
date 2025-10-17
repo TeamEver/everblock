@@ -1,0 +1,11 @@
+<section class="everblock-placeholder">
+    <div class="panel everblock-config__card">
+        <h4>{{ content_title|default('') }}</h4>
+        {% if content_description is defined and content_description %}
+            <p class="text-muted">{{ content_description }}</p>
+        {% endif %}
+        <p class="text-muted">
+            {{ 'The legacy back office pages remain available while this section is being migrated to Symfony.'|trans({}, 'Modules.Everblock.Admin') }}
+        </p>
+    </div>
+</section>

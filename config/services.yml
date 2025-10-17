@@ -45,3 +45,22 @@ services:
         tags:
             - { name: 'console.command' }
 
+    Everblock\Tools\Service\Admin\NavigationBuilder:
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+            $router: '@router'
+            $translator: '@translator'
+
+    Everblock\Tools\Service\Admin\StatisticsProvider:
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+
+    Everblock\Tools\Controller\Admin\:
+        resource: '../src/Controller/Admin'
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+            $moduleRepository: '@prestashop.core.module.repository'
+            $translator: '@translator'
+            $navigationBuilder: '@Everblock\\Tools\\Service\\Admin\\NavigationBuilder'
+        tags: ['controller.service_arguments']
+
