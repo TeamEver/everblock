@@ -1,0 +1,3 @@
+everblock_admin:
+    resource: "config/routes/everblock_admin.yml"
+    prefix: /
