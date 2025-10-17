@@ -29,6 +29,7 @@
     <div class="mt-4 ever-cover-carousel"
          data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}"
          data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
+         data-infinite="{if isset($block.settings.slider_infinite) && $block.settings.slider_infinite}1{else}0{/if}"
          data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}">
       {foreach from=$block.states item=state key=key}
         {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}

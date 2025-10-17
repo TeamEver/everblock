@@ -1211,6 +1211,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Enable auto scroll'),
                             'default' => 0,
                         ],
+                        'slider_infinite' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable infinite loop'),
+                            'default' => 0,
+                        ],
                         'slider_autoplay_delay' => [
                             'type' => 'text',
                             'label' => $module->l('Auto scroll delay (ms)'),
