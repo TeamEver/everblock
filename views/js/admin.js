@@ -56,6 +56,20 @@ $(document).ready(function() {
       .appendTo($wrapper);
   });
 
+  // Hide structural anchors injected as ``html`` helper inputs so that they do
+  // not render as empty form rows while keeping them in the DOM for potential
+  // scroll targeting.
+  $('.everblock-config__card--form span[id^="everblock_"]').each(function() {
+    const $anchor = $(this);
+    const $group = $anchor.closest('.form-group');
+
+    $anchor.attr('aria-hidden', 'true');
+
+    if ($group.length && $.trim($group.text()) === '') {
+      $group.addClass('everblock-form-group--anchor');
+    }
+  });
+
   // Transform legacy documentation cards into accessible accordions that match
   // the refreshed admin layout.
   $('.everblock-config__card--form .everblock-doc').each(function() {
