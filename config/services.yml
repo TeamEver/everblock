@@ -55,6 +55,24 @@ services:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
 
+    Everblock\Tools\Grid\Definition\Factory\EverblockGridDefinitionFactory: ~
+
+    Everblock\Tools\Grid\Query\EverblockQueryBuilder:
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+
+    Everblock\Tools\Grid\Data\EverblockGridDataFactory: ~
+
+    Everblock\Tools\Form\DataProvider\EverblockFormDataProvider:
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+
+    Everblock\Tools\Form\Handler\EverblockFormHandler:
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+
+    Everblock\Tools\Form\Type\EverblockFormType: ~
+
     Everblock\Tools\Controller\Admin\:
         resource: '../src/Controller/Admin'
         arguments:
@@ -63,4 +81,3 @@ services:
             $translator: '@translator'
             $navigationBuilder: '@Everblock\\Tools\\Service\\Admin\\NavigationBuilder'
         tags: ['controller.service_arguments']
-
