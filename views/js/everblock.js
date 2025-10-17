@@ -160,6 +160,7 @@ $(document).ready(function(){
             var slides = parseInt($carousel.data('items')) || 3;
             var autoplay = parseInt($carousel.data('autoplay')) === 1;
             var autoplayDelay = parseInt($carousel.data('autoplayDelay')) || 5000;
+            var infinite = parseInt($carousel.data('infinite')) === 1;
             $carousel.on('init', function(event, slick){
                 var $center = $(slick.$slides[slick.currentSlide]);
                 $(slick.$prevArrow).appendTo($center);
@@ -175,6 +176,7 @@ $(document).ready(function(){
                 centerMode: true,
                 arrows: true,
                 dots: false,
+                infinite: infinite,
                 autoplay: autoplay,
                 autoplaySpeed: autoplayDelay,
                 responsive: [{
