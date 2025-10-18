@@ -20,7 +20,6 @@
 
 namespace Everblock\Tools\Service\Domain;
 
-use Everblock\Tools\Entity\EverBlock;
 use Everblock\Tools\Entity\EverBlockFaq;
 use Everblock\Tools\Entity\EverBlockFlag;
 use Everblock\Tools\Entity\EverBlockModal;
@@ -28,7 +27,6 @@ use Everblock\Tools\Entity\EverBlockTab;
 use Everblock\Tools\Repository\EverBlockFaqRepository;
 use Everblock\Tools\Repository\EverBlockFlagRepository;
 use Everblock\Tools\Repository\EverBlockModalRepository;
-use Everblock\Tools\Repository\EverBlockRepository;
 use Everblock\Tools\Repository\EverBlockTabRepository;
 use Everblock\Tools\Service\EverBlockFlagProvider;
 use Everblock\Tools\Service\EverBlockModalProvider;
@@ -42,16 +40,6 @@ class LegacyModelMap
     public function getMappings(): array
     {
         return [
-            'EverblockClass' => [
-                'entity' => EverBlock::class,
-                'repository' => EverBlockRepository::class,
-                'service' => EverBlockDomainService::class,
-                'usage' => [
-                    'everblock.php',
-                    'models/EverblockTools.php',
-                    'src/Form/Handler/EverblockFormHandler.php',
-                ],
-            ],
             'EverblockFaq' => [
                 'entity' => EverBlockFaq::class,
                 'repository' => EverBlockFaqRepository::class,

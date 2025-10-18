@@ -24,6 +24,9 @@ if (!defined('_PS_VERSION_')) {
 require_once('vendor/autoload.php');
 
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use Everblock\Tools\Application\Command\EverBlock\EverBlockTranslationCommand;
+use Everblock\Tools\Application\Command\EverBlock\UpsertEverBlockCommand;
+use Everblock\Tools\Application\EverBlockApplicationService;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\Domain\EverBlockDomainService;
 use Everblock\Tools\Service\EverBlockFaqProvider;
@@ -64,6 +67,7 @@ class Everblock extends Module
     ];
     private ?EverBlockProvider $everBlockProvider = null;
     private ?EverBlockDomainService $everBlockDomainService = null;
+    private ?EverBlockApplicationService $everBlockApplicationService = null;
     private ?EverBlockFaqProvider $everBlockFaqProvider = null;
     private ?EverBlockFlagProvider $everBlockFlagProvider = null;
     private ?EverBlockTabProvider $everBlockTabProvider = null;
@@ -74,6 +78,7 @@ class Everblock extends Module
     public function __construct(
         ?EverBlockProvider $everBlockProvider = null,
         ?EverBlockDomainService $everBlockDomainService = null,
+        ?EverBlockApplicationService $everBlockApplicationService = null,
         ?EverBlockFaqProvider $everBlockFaqProvider = null,
         ?EverBlockFlagProvider $everBlockFlagProvider = null,
         ?EverBlockTabProvider $everBlockTabProvider = null,
@@ -88,6 +93,7 @@ class Everblock extends Module
         $this->bootstrap = true;
         $this->everBlockProvider = $everBlockProvider;
         $this->everBlockDomainService = $everBlockDomainService;
+        $this->everBlockApplicationService = $everBlockApplicationService;
         $this->everBlockFaqProvider = $everBlockFaqProvider;
         $this->everBlockFlagProvider = $everBlockFlagProvider;
         $this->everBlockTabProvider = $everBlockTabProvider;
@@ -119,6 +125,10 @@ class Everblock extends Module
 
             if (null === $this->everBlockDomainService) {
                 $this->everBlockDomainService = $this->resolveService($container, EverBlockDomainService::class);
+            }
+
+            if (null === $this->everBlockApplicationService) {
+                $this->everBlockApplicationService = $this->resolveService($container, EverBlockApplicationService::class);
             }
 
             if (null === $this->everBlockFaqProvider) {
@@ -180,11 +190,26 @@ class Everblock extends Module
         return $this->everBlockProvider;
     }
 
-    public function getEverBlockDomainService(): ?EverBlockDomainService
+    public function getEverBlockDomainService(): EverBlockDomainService
     {
         $this->bootstrapDependencies();
 
+        if (!$this->everBlockDomainService instanceof EverBlockDomainService) {
+            throw new \RuntimeException('EverBlockDomainService service is not available.');
+        }
+
         return $this->everBlockDomainService;
+    }
+
+    public function getEverBlockApplicationService(): EverBlockApplicationService
+    {
+        $this->bootstrapDependencies();
+
+        if (!$this->everBlockApplicationService instanceof EverBlockApplicationService) {
+            throw new \RuntimeException('EverBlockApplicationService service is not available.');
+        }
+
+        return $this->everBlockApplicationService;
     }
 
     public function getEverBlockFaqProvider(): ?EverBlockFaqProvider
@@ -3430,6 +3455,7 @@ class Everblock extends Module
         if (empty($params['id_product'])) {
             return;
         }
+        $this->getEverBlockDomainService();
         $modal = EverblockModal::getByProductId(
             (int) $params['id_product'],
             (int) $this->context->shop->id,
@@ -4026,17 +4052,10 @@ class Everblock extends Module
         $context = Context::getContext();
         // Drop cache if needed
         $blockService = $this->getEverBlockDomainService();
-        if ($blockService instanceof EverBlockDomainService) {
-            $blockService->cleanBlocksCacheOnDate(
-                (int) $context->language->id,
-                (int) $context->shop->id
-            );
-        } else {
-            EverblockClass::cleanBlocksCacheOnDate(
-                $context->language->id,
-                $context->shop->id
-            );
-        }
+        $blockService->cleanBlocksCacheOnDate(
+            (int) $context->language->id,
+            (int) $context->shop->id
+        );
         $id_hook = (int) Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
         $hookName = lcfirst(str_replace('hook', '', $method));
         $idObj = 0;
@@ -4079,23 +4098,11 @@ class Everblock extends Module
             } else {
                 $id_entity = false;
             }
-        $everblock = [];
-        if ($blockService instanceof EverBlockDomainService) {
             $everblock = $blockService->getBlocks(
                 (int) $id_hook,
                 (int) $context->language->id,
                 (int) $context->shop->id
             );
-        } else {
-            $everblockProvider = $this->getEverBlockProvider();
-            if ($everblockProvider instanceof EverBlockProvider) {
-                $everblock = $everblockProvider->getBlocks(
-                    (int) $id_hook,
-                    (int) $context->language->id,
-                    (int) $context->shop->id
-                );
-            }
-        }
             $currentBlock = [];
             foreach ($everblock as $block) {
                 if ((bool) $block['modal'] === true
@@ -4825,104 +4832,178 @@ class Everblock extends Module
             return;
         }
 
-        $block = new EverblockClass();
-        $block->name = pSQL($line['name']);
-        $block->id_hook = $idHook;
-        $block->id_shop = (int) $line['id_shop'];
+        $applicationService = $this->getEverBlockApplicationService();
 
-        if (isset($line['position']) && Validate::isUnsignedInt($line['position'])) {
-            $block->position = (int) $line['position'];
-        } else {
-            $block->position = 0;
+        $shopId = (int) $line['id_shop'];
+        $languageId = (int) $line['id_lang'];
+
+        $position = $this->parseUnsignedIntField($line, 'position');
+        $active = $this->parseBooleanField($line, 'active', true);
+        $onlyHome = $this->parseBooleanField($line, 'only_home');
+        $onlyCategory = $this->parseBooleanField($line, 'only_category');
+        $onlyCategoryProduct = $this->parseBooleanField($line, 'only_category_product');
+        $onlyManufacturer = $this->parseBooleanField($line, 'only_manufacturer');
+        $onlySupplier = $this->parseBooleanField($line, 'only_supplier');
+        $onlyCmsCategory = $this->parseBooleanField($line, 'only_cms_category');
+        $obfuscateLink = $this->parseBooleanField($line, 'obfuscate_link');
+        $addContainer = $this->parseBooleanField($line, 'add_container');
+        $lazyload = $this->parseBooleanField($line, 'lazyload');
+        $modal = $this->parseBooleanField($line, 'modal');
+        $device = $this->parseUnsignedIntField($line, 'device', 0);
+        $delay = $this->parseUnsignedIntField($line, 'delay');
+        $timeout = $this->parseUnsignedIntField($line, 'timeout');
+        $background = $this->parseStringField($line, 'background', true);
+        $cssClass = $this->parseStringField($line, 'css_class');
+        $dataAttribute = $this->parseStringField($line, 'data_attribute');
+        $bootstrapClass = $this->parseStringField($line, 'bootstrap_class');
+        $categories = $this->parseCsvField($line, 'categories');
+        $groups = $this->parseCsvField($line, 'groups');
+        $manufacturers = $this->parseCsvField($line, 'manufacturers');
+        $suppliers = $this->parseCsvField($line, 'suppliers');
+        $cmsCategories = $this->parseCsvField($line, 'cms_categories');
+        $dateStart = $this->parseDateTimeField($line, 'date_start');
+        $dateEnd = $this->parseDateTimeField($line, 'date_end');
+
+        $translations = [];
+        if (array_key_exists('content', $line) || array_key_exists('custom_code', $line)) {
+            $content = isset($line['content']) ? (string) $line['content'] : '';
+            $customCode = isset($line['custom_code']) ? (string) $line['custom_code'] : '';
+            $translations[] = new EverBlockTranslationCommand(
+                $languageId,
+                $content,
+                $customCode
+            );
         }
-        if (isset($line['active']) && Validate::isBool($line['active'])) {
-            $block->active = (int) $line['active'];
-        } else {
-            $block->active = 1;
+
+        $command = new UpsertEverBlockCommand(
+            null,
+            trim((string) $line['name']),
+            $idHook,
+            $shopId,
+            $onlyHome,
+            $onlyCategory,
+            $onlyCategoryProduct,
+            $onlyManufacturer,
+            $onlySupplier,
+            $onlyCmsCategory,
+            $obfuscateLink,
+            $addContainer,
+            $lazyload,
+            $groups,
+            $categories,
+            $manufacturers,
+            $suppliers,
+            $cmsCategories,
+            $background,
+            $cssClass,
+            $dataAttribute,
+            $bootstrapClass,
+            $position,
+            $device,
+            $delay,
+            $timeout,
+            $modal,
+            $dateStart,
+            $dateEnd,
+            $active,
+            $translations
+        );
+
+        try {
+            $applicationService->save($command);
+        } catch (\Throwable $e) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
         }
-        if (isset($line['only_home']) && Validate::isBool($line['only_home'])) {
-            $block->only_home = $line['only_home'];
+    }
+
+    /**
+     * @param array<string, mixed> $line
+     */
+    private function parseBooleanField(array $line, string $key, bool $default = false): bool
+    {
+        if (!array_key_exists($key, $line)) {
+            return $default;
         }
-        if (isset($line['only_category']) && Validate::isBool($line['only_category'])) {
-            $block->only_category = $line['only_category'];
+
+        if (!Validate::isBool($line[$key])) {
+            return $default;
         }
-        if (isset($line['only_category_product']) && Validate::isBool($line['only_category_product'])) {
-            $block->only_category_product = $line['only_category_product'];
+
+        return (bool) $line[$key];
+    }
+
+    /**
+     * @param array<string, mixed> $line
+     */
+    private function parseUnsignedIntField(array $line, string $key, ?int $default = null): ?int
+    {
+        if (!array_key_exists($key, $line) || !Validate::isUnsignedInt($line[$key])) {
+            return $default;
         }
-        if (isset($line['device']) && Validate::isUnsignedInt($line['device'])) {
-            $block->device = $line['device'];
+
+        return (int) $line[$key];
+    }
+
+    /**
+     * @param array<string, mixed> $line
+     */
+    private function parseStringField(array $line, string $key, bool $isColor = false): string
+    {
+        if (!array_key_exists($key, $line)) {
+            return '';
         }
-        if (isset($line['categories']) && Validate::isString($line['categories'])) {
-            $block->categories = json_encode(explode(',', $line['categories']));
+
+        $value = trim((string) $line[$key]);
+
+        if ($isColor) {
+            return Validate::isColor($value) ? $value : '';
         }
-        if (isset($line['groups']) && Validate::isString($line['groups'])) {
-            $block->groups = json_encode(explode(',', $line['groups']));
+
+        return Validate::isString($value) ? $value : '';
+    }
+
+    /**
+     * @param array<string, mixed> $line
+     *
+     * @return array<int>
+     */
+    private function parseCsvField(array $line, string $key): array
+    {
+        if (!array_key_exists($key, $line) || !Validate::isString($line[$key])) {
+            return [];
         }
-        if (isset($line['only_manufacturer']) && Validate::isBool($line['only_manufacturer'])) {
-            $block->only_manufacturer = $line['only_manufacturer'];
+
+        $raw = trim((string) $line[$key]);
+
+        if ($raw === '') {
+            return [];
         }
-        if (isset($line['only_supplier']) && Validate::isBool($line['only_supplier'])) {
-            $block->only_supplier = $line['only_supplier'];
+
+        $parts = array_map('trim', explode(',', $raw));
+        $parts = array_filter($parts, static fn ($value) => $value !== '');
+
+        return array_map('intval', $parts);
+    }
+
+    /**
+     * @param array<string, mixed> $line
+     */
+    private function parseDateTimeField(array $line, string $key): ?DateTimeImmutable
+    {
+        if (!array_key_exists($key, $line)) {
+            return null;
         }
-        if (isset($line['only_cms_category']) && Validate::isBool($line['only_cms_category'])) {
-            $block->only_cms_category = $line['only_cms_category'];
-        }
-        if (isset($line['manufacturers']) && Validate::isString($line['manufacturers'])) {
-            $block->manufacturers = json_encode(explode(',', $line['manufacturers']));
-        }
-        if (isset($line['suppliers']) && Validate::isString($line['suppliers'])) {
-            $block->suppliers = json_encode(explode(',', $line['suppliers']));
-        }
-        if (isset($line['cms_categories']) && Validate::isString($line['cms_categories'])) {
-            $block->cms_categories = json_encode(explode(',', $line['cms_categories']));
-        }
-        if (isset($line['obfuscate_link']) && Validate::isBool($line['obfuscate_link'])) {
-            $block->obfuscate_link = $line['obfuscate_link'];
-        }
-        if (isset($line['add_container']) && Validate::isBool($line['add_container'])) {
-            $block->add_container = $line['add_container'];
-        }
-        if (isset($line['lazyload']) && Validate::isBool($line['lazyload'])) {
-            $block->lazyload = $line['lazyload'];
-        }
-        if (isset($line['background']) && Validate::isColor($line['background'])) {
-            $block->background = $line['background'];
-        }
-        if (isset($line['css_class']) && Validate::isString($line['css_class'])) {
-            $block->css_class = $line['css_class'];
-        }
-        if (isset($line['data_attribute']) && Validate::isString($line['data_attribute'])) {
-            $block->data_attribute = $line['data_attribute'];
-        }
-        if (isset($line['bootstrap_class']) && Validate::isString($line['bootstrap_class'])) {
-            $block->bootstrap_class = $line['bootstrap_class'];
-        }
-        if (isset($line['modal']) && Validate::isBool($line['modal'])) {
-            $block->modal = $line['modal'];
-        }
-        if (isset($line['delay']) && Validate::isUnsignedInt($line['delay'])) {
-            $block->delay = $line['delay'];
-        }
-        if (isset($line['timeout']) && Validate::isUnsignedInt($line['timeout'])) {
-            $block->timeout = $line['timeout'];
-        }
-        if (isset($line['date_start']) && Validate::isDateFormat($line['date_start'])) {
-            $block->date_start = $line['date_start'];
-        }
-        if (isset($line['date_end']) && Validate::isDateFormat($line['date_end'])) {
-            $block->date_end = $line['date_end'];
-        }
-        if (isset($line['content']) && Validate::isAnything($line['content'])) {
-            $block->content[(int) $line['id_lang']] = $line['content'];
-        }
-        if (isset($line['custom_code']) && Validate::isAnything($line['custom_code'])) {
-            $block->custom_code[(int) $line['id_lang']] = $line['custom_code'];
+
+        $value = trim((string) $line[$key]);
+
+        if ($value === '' || !Validate::isDateFormat($value)) {
+            return null;
         }
 
         try {
-            $block->save();
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
+            return new \DateTimeImmutable($value);
+        } catch (\Exception) {
+            return null;
         }
     }
 

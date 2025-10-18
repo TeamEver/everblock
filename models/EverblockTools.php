@@ -17,6 +17,8 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+use Everblock\Tools\Entity\EverBlock;
+use Everblock\Tools\Entity\EverBlockTranslation;
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Service\EverblockCache;
 
@@ -54,7 +56,7 @@ class EverblockTools extends ObjectModel
             '[evermap]' => ['method' => 'getEverMapShortcode', 'args' => ['context', 'module']],
             '{hook h=' => 'replaceHook',
             '[llorem]' => ['method' => 'generateLoremIpsum', 'args' => ['context']],
-            '[everblock' => ['method' => 'getEverBlockShortcode', 'args' => ['context']],
+            '[everblock' => ['method' => 'getEverBlockShortcode', 'args' => ['context', 'module']],
             '[subcategories' => ['method' => 'getSubcategoriesShortcode', 'args' => ['context', 'module']],
             '[everstore' => ['method' => 'getStoreShortcode', 'args' => ['context', 'module']],
             '[video' => 'getVideoShortcode',
@@ -2432,26 +2434,43 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getEverBlockShortcode(string $txt, Context $context): string
+    public static function getEverBlockShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all('/\[everblock\s+(\d+)\]/i', $txt, $matches);
 
+        if (empty($matches[1])) {
+            return $txt;
+        }
+
+        $domainService = $module->getEverBlockDomainService();
+
         foreach ($matches[1] as $match) {
             $everblockId = (int) $match;
-            $everblock = new EverblockClass(
-                (int) $everblockId,
-                (int) $context->language->id,
-                (int) $context->shop->id
-            );
             $shortcode = '[everblock ' . $everblockId . ']';
-            if (Validate::isLoadedObject($everblock)) {
-                $replacement = $everblock->content;
-                $txt = str_replace($shortcode, $replacement, $txt);
-            } else {
+            $block = $domainService->find($everblockId, (int) $context->shop->id);
+
+            if (!$block instanceof EverBlock) {
                 $txt = str_replace($shortcode, '', $txt);
+                continue;
+            }
+
+            $translation = static::resolveEverBlockTranslation($block, (int) $context->language->id);
+            $replacement = $translation ? (string) $translation->getContent() : '';
+            $txt = str_replace($shortcode, $replacement, $txt);
+        }
+
+        return $txt;
+    }
+
+    protected static function resolveEverBlockTranslation(EverBlock $block, int $languageId): ?EverBlockTranslation
+    {
+        foreach ($block->getTranslations() as $translation) {
+            if ($translation instanceof EverBlockTranslation && $translation->getLanguageId() === $languageId) {
+                return $translation;
             }
         }
-        return $txt;
+
+        return null;
     }
 
     public static function getRandomProductsShortcode(string $txt, Context $context, Everblock $module): string
