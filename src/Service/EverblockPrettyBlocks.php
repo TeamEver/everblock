@@ -23,12 +23,14 @@ namespace Everblock\Tools\Service;
 use Configuration;
 use EverBlockClass;
 use Everblock\Tools\Service\EverblockCache;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use EverblockShortcode;
 use EverblockTools;
 use Hook;
 use Module;
 use PrettyBlocksModel;
 use Tools;
+use Everblock\Tools\Service\EverBlockProvider;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -36,7 +38,35 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockPrettyBlocks
 {
+    private static ?EverBlockProvider $provider = null;
+
     private const MEDIA_PATH = '$/img/cms/prettyblocks/';
+
+    public static function setEverBlockProvider(EverBlockProvider $provider): void
+    {
+        static::$provider = $provider;
+    }
+
+    private static function resolveProvider(): ?EverBlockProvider
+    {
+        if (static::$provider instanceof EverBlockProvider) {
+            return static::$provider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockProvider::class)) {
+                $resolved = $container->get(EverBlockProvider::class);
+                if ($resolved instanceof EverBlockProvider) {
+                    static::$provider = $resolved;
+
+                    return $resolved;
+                }
+            }
+        }
+
+        return null;
+    }
 
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
     {
@@ -90,7 +120,7 @@ class EverblockPrettyBlocks
         ];
     }
 
-    public static function getEverPrettyBlocks($context)
+    public static function getEverPrettyBlocks($context, ?EverBlockProvider $provider = null)
     {
         $cacheId = 'EverblockPrettyBlocks_getEverPrettyBlocks_'
         . (int) $context->language->id
@@ -199,10 +229,14 @@ class EverblockPrettyBlocks
                 (int) $context->language->id,
                 (int) $context->shop->id
             );
-            $everblocks = EverBlockClass::getAllBlocks(
-                (int) $context->language->id,
-                (int) $context->shop->id
-            );
+            $provider = $provider ?? static::resolveProvider();
+            $everblocks = [];
+            if ($provider instanceof EverBlockProvider) {
+                $everblocks = $provider->getAllBlocks(
+                    (int) $context->language->id,
+                    (int) $context->shop->id
+                );
+            }
             $everblockChoices = [];
             foreach ($everblocks as $eblock) {
                 $everblockChoices[$eblock['id_everblock']] = $eblock['id_everblock'] . ' - ' . $eblock['name'];

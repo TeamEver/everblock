@@ -14,11 +14,24 @@
     },
     "exclude-from-classmap": []
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Everblock\\Tools\\Tests\\": "tests/"
+    }
+  },
   "config": {
     "preferred-install": "dist",
     "prepend-autoloader": false
   },
   "require": {
-      "php": ">=7.1"
+    "php": ">=8.1",
+    "doctrine/dbal": "^3.8",
+    "doctrine/orm": "^2.18",
+    "symfony/cache": "^6.4",
+    "symfony/cache-contracts": "^3.3",
+    "symfony/service-contracts": "^3.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5"
   }
 }

@@ -32,6 +32,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
+use Everblock\Tools\Service\EverBlockProvider;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\ImportFile;
@@ -40,6 +41,7 @@ use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContent;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use ScssPhp\ScssPhp\Compiler;
 
 class Everblock extends Module
@@ -59,6 +61,7 @@ class Everblock extends Module
     private $bypassedControllers = [
         'hookDisplayInvoiceLegalFreeText',
     ];
+    private ?EverBlockProvider $everBlockProvider = null;
 
     public function __construct()
     {
@@ -76,6 +79,27 @@ class Everblock extends Module
             'min' => '1.7',
             'max' => _PS_VERSION_,
         ];
+    }
+
+    private function getEverBlockProvider(): ?EverBlockProvider
+    {
+        if ($this->everBlockProvider instanceof EverBlockProvider) {
+            return $this->everBlockProvider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockProvider::class)) {
+                $provider = $container->get(EverBlockProvider::class);
+                if ($provider instanceof EverBlockProvider) {
+                    $this->everBlockProvider = $provider;
+
+                    return $this->everBlockProvider;
+                }
+            }
+        }
+
+        return null;
     }
 
     public function __call($method, $args)
@@ -3301,6 +3325,10 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'fetchInstagramImages';
         EverblockCache::cacheDropByPattern($cachePattern);
+        $provider = $this->getEverBlockProvider();
+        if ($provider instanceof EverBlockProvider) {
+            $provider->clearCache();
+        }
     }
 
     public function hookActionObjectEverBlockClassUpdateAfter($params)
@@ -3311,6 +3339,14 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'fetchInstagramImages';
         EverblockCache::cacheDropByPattern($cachePattern);
+        $provider = $this->getEverBlockProvider();
+        if ($provider instanceof EverBlockProvider) {
+            if (isset($params['object']->id_hook)) {
+                $provider->clearCacheForHook((int) $params['object']->id_hook);
+            } else {
+                $provider->clearCache();
+            }
+        }
     }
 
     public function hookActionObjectEverBlockFlagsDeleteAfter($params)
@@ -3800,11 +3836,15 @@ class Everblock extends Module
             } else {
                 $id_entity = false;
             }
-            $everblock = EverblockClass::getBlocks(
-                (int) $id_hook,
-                (int) $context->language->id,
-                (int) $context->shop->id
-            );
+            $everblockProvider = $this->getEverBlockProvider();
+            $everblock = [];
+            if ($everblockProvider instanceof EverBlockProvider) {
+                $everblock = $everblockProvider->getBlocks(
+                    (int) $id_hook,
+                    (int) $context->language->id,
+                    (int) $context->shop->id
+                );
+            }
             $currentBlock = [];
             foreach ($everblock as $block) {
                 if ((bool) $block['modal'] === true
@@ -4210,7 +4250,10 @@ class Everblock extends Module
 
     public function hookActionRegisterBlock($params)
     {
-        return EverblockPrettyBlocks::getEverPrettyBlocks($this->context);
+        return EverblockPrettyBlocks::getEverPrettyBlocks(
+            $this->context,
+            $this->getEverBlockProvider()
+        );
     }
 
     public function checkLatestEverModuleVersion(): bool
