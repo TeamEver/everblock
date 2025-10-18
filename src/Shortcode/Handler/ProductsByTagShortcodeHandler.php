@@ -3,18 +3,21 @@
 namespace Everblock\Tools\Shortcode\Handler;
 
 use Everblock;
-use EverblockTools;
 use Everblock\Tools\Dto\Product\ProductTagFilters;
 use Everblock\Tools\Infrastructure\Repository\ProductRepository;
 use Everblock\Tools\Infrastructure\Repository\ProductTagRepository;
 use Everblock\Tools\Shortcode\ShortcodeHandlerInterface;
 use Everblock\Tools\Shortcode\ShortcodeRenderingContext;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 
 final class ProductsByTagShortcodeHandler implements ShortcodeHandlerInterface
 {
     public function __construct(
         private readonly ProductTagRepository $productTagRepository,
-        private readonly ProductRepository $productRepository
+        private readonly ProductRepository $productRepository,
+        private readonly Environment $twig,
+        private readonly TranslatorInterface $translator
     ) {
     }
 
@@ -105,16 +108,12 @@ final class ProductsByTagShortcodeHandler implements ShortcodeHandlerInterface
                     return '';
                 }
 
-                $context->getSmarty()->assign([
+                return $this->twig->render('@Everblock/shortcode/products_by_tag.html.twig', [
                     'products' => $products,
                     'cols' => $cols,
-                    'total' => count($products),
                     'params' => $attrs,
+                    'empty_message' => $this->translator->trans('No products found.', [], 'Modules.Everblock.Shop'),
                 ]);
-
-                $templatePath = EverblockTools::getTemplatePath('hook/products_by_tag.tpl', $module);
-
-                return $context->getSmarty()->fetch($templatePath);
             },
             $content
         );

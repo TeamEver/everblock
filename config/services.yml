@@ -216,15 +216,28 @@ services:
         arguments:
             $handlers: !tagged_iterator everblock.shortcode_handler
 
+    Everblock\Tools\Shortcode\ShortcodeRenderingContextFactory:
+        arguments:
+            $requestStack: '@request_stack'
+            $security: '@?security.helper'
+
     Everblock\Tools\Shortcode\Handler\FaqShortcodeHandler:
+        arguments:
+            $twig: '@twig'
         tags:
             - { name: 'everblock.shortcode_handler' }
 
     Everblock\Tools\Shortcode\Handler\ProductsByTagShortcodeHandler:
+        arguments:
+            $twig: '@twig'
+            $translator: '@translator'
         tags:
             - { name: 'everblock.shortcode_handler' }
 
     Everblock\Tools\Shortcode\Handler\LowStockShortcodeHandler:
+        arguments:
+            $twig: '@twig'
+            $translator: '@translator'
         tags:
             - { name: 'everblock.shortcode_handler' }
 

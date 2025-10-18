@@ -5,25 +5,28 @@ namespace Everblock\Tools\Shortcode\Handler;
 use Combination;
 use Db;
 use Everblock;
-use EverblockTools;
 use Everblock\Tools\Dto\Product\LowStockFilters;
 use Everblock\Tools\Dto\Product\ProductIdCollection;
 use Everblock\Tools\Infrastructure\Repository\ProductRepository;
 use Everblock\Tools\Infrastructure\Repository\StockRepository;
 use Everblock\Tools\Shortcode\ShortcodeHandlerInterface;
 use Everblock\Tools\Shortcode\ShortcodeRenderingContext;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Product\ProductPresenterFactory;
 use ProductAssembler;
 use Validate;
+use Twig\Environment;
 
 final class LowStockShortcodeHandler implements ShortcodeHandlerInterface
 {
     public function __construct(
         private readonly StockRepository $stockRepository,
-        private readonly ProductRepository $productRepository
+        private readonly ProductRepository $productRepository,
+        private readonly Environment $twig,
+        private readonly TranslatorInterface $translator
     ) {
     }
 
@@ -127,20 +130,17 @@ final class LowStockShortcodeHandler implements ShortcodeHandlerInterface
 
                 $data = $cache[$cacheKey];
 
-                if ($data['products'] === []) {
+                if ($data['products'] === [] && $data['variants'] === []) {
                     return '';
                 }
 
-                $context->getSmarty()->assign([
+                return $this->twig->render('@Everblock/shortcode/low_stock.html.twig', [
                     'products' => $data['products'],
                     'variants' => $data['variants'],
                     'cols' => $cols,
                     'params' => $attrs,
+                    'empty_message' => $this->translator->trans('No low stock products.', [], 'Modules.Everblock.Shop'),
                 ]);
-
-                $templatePath = EverblockTools::getTemplatePath('hook/low_stock.tpl', $module);
-
-                return $context->getSmarty()->fetch($templatePath);
             },
             $content
         );

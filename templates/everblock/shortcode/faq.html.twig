@@ -1,0 +1,69 @@
+{#
+ # 2019-2025 Team Ever
+ #
+ # NOTICE OF LICENSE
+ #
+ # This source file is subject to the Academic Free License (AFL 3.0)
+ # that is bundled with this package in the file LICENSE.txt.
+ # It is also available through the world-wide-web at this URL:
+ # http://opensource.org/licenses/afl-3.0.php
+ # If you did not receive a copy of the license and are unable to
+ # obtain it through the world-wide-web, please send an email
+ # to license@prestashop.com so we can send you a copy immediately.
+ #
+ # @author    Team Ever <https://www.team-ever.com/>
+ # @copyright 2019-2025 Team Ever
+ # @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+#}
+{% if faqs is not empty %}
+  <div class="container" id="everblockFaq">
+    <div class="row">
+      <div class="col-12">
+        <div class="accordion faq-accordion" id="faqAccordion">
+          {% for faq in faqs %}
+            {% set faqId = faq.id_everblock_faq|default(loop.index0) %}
+            <div class="accordion-item card mb-4">
+              <h2 class="accordion-header card-header p-0" id="headingEverFaq{{ faqId }}">
+                <button class="accordion-button btn btn-link faq-question d-flex justify-content-between align-items-center w-100 text-body py-3 px-4 {{ loop.first ? '' : 'collapsed' }}"
+                        type="button"
+                        data-toggle="collapse"
+                        data-bs-toggle="collapse"
+                        data-target="#collapse{{ faqId }}"
+                        data-bs-target="#collapse{{ faqId }}"
+                        aria-expanded="{{ loop.first ? 'true' : 'false' }}"
+                        aria-controls="collapse{{ faqId }}">
+                  <span>{{ faq.title|default('') }}</span><i class="icon-angle-down" aria-hidden="true"></i>
+                </button>
+              </h2>
+              <div id="collapse{{ faqId }}"
+                   class="accordion-collapse collapse {{ loop.first ? 'show' : '' }}"
+                   aria-labelledby="headingEverFaq{{ faqId }}"
+                   data-parent="#faqAccordion"
+                   data-bs-parent="#faqAccordion">
+                <div class="accordion-body card-body faq-answer">{{ faq.content|default('')|raw }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+{% for faq in faqs %}
+      {
+        "@type": "Question",
+        "name": "{{ faq.title|default('')|e('js') }}",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "{{ faq.content|default('')|striptags|e('js') }}"
+        }
+      }{% if not loop.last %},{% endif %}
+{% endfor %}
+    ]
+  }
+  </script>
+{% endif %}
