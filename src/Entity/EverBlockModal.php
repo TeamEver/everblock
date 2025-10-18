@@ -58,6 +58,11 @@ class EverBlockModal
         return $this->id;
     }
 
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
     public function getProductId(): int
     {
         return $this->productId;
@@ -94,5 +99,29 @@ class EverBlockModal
     public function getTranslations(): Collection
     {
         return $this->translations;
+    }
+
+    public function addTranslation(EverBlockModalTranslation $translation): void
+    {
+        foreach ($this->translations as $existingTranslation) {
+            if ($existingTranslation->getLanguageId() === $translation->getLanguageId()) {
+                $this->translations->removeElement($existingTranslation);
+
+                break;
+            }
+        }
+
+        $this->translations->add($translation);
+    }
+
+    public function getTranslation(int $languageId): ?EverBlockModalTranslation
+    {
+        foreach ($this->translations as $translation) {
+            if ($translation->getLanguageId() === $languageId) {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 }

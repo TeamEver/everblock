@@ -23,6 +23,8 @@ namespace Everblock\Tools\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Everblock\Tools\Entity\EverBlockModal;
+use Everblock\Tools\Entity\EverBlockModalTranslation;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -128,6 +130,58 @@ class EverBlockModalRepository
         ]);
     }
 
+    public function findById(int $modalId, int $shopId): ?EverBlockModal
+    {
+        $queryBuilder = $this->createBaseQueryBuilder($shopId)
+            ->andWhere('modal.id_everblock_modal = :modalId')
+            ->setParameter('modalId', $modalId, ParameterType::INTEGER)
+            ->setMaxResults(1);
+
+        $row = $queryBuilder->executeQuery()->fetchAssociative();
+
+        if (false === $row) {
+            return null;
+        }
+
+        $modal = $this->hydrateModal($row);
+        $translations = $this->fetchTranslations($modalId, $modal);
+
+        foreach ($translations as $translation) {
+            $modal->addTranslation($translation);
+        }
+
+        return $modal;
+    }
+
+    /**
+     * @param array<int, array{content: string|null}> $translations
+     */
+    public function save(EverBlockModal $modal, array $translations): EverBlockModal
+    {
+        if (null === $modal->getId()) {
+            $modalId = $this->insertModal($modal);
+            $modal->setId($modalId);
+        } else {
+            $this->updateModal($modal);
+        }
+
+        $this->saveTranslations((int) $modal->getId(), $translations);
+        $this->clearCacheForModal((int) $modal->getId(), $modal->getShopId());
+
+        return $modal;
+    }
+
+    public function delete(int $modalId, int $shopId): void
+    {
+        $this->connection->delete($this->getTableName('everblock_modal_lang'), ['id_everblock_modal' => $modalId]);
+        $this->connection->delete($this->getTableName('everblock_modal'), [
+            'id_everblock_modal' => $modalId,
+            'id_shop' => $shopId,
+        ]);
+
+        $this->clearCacheForModal($modalId, $shopId);
+    }
+
     private function createBaseQueryBuilder(int $shopId): QueryBuilder
     {
         $queryBuilder = $this->connection->createQueryBuilder();
@@ -144,6 +198,79 @@ class EverBlockModalRepository
             ->setParameter('shopId', $shopId, ParameterType::INTEGER);
 
         return $queryBuilder;
+    }
+
+    private function hydrateModal(array $row): EverBlockModal
+    {
+        $modal = new EverBlockModal();
+        $modal->setId((int) ($row['id_everblock_modal'] ?? 0));
+        $modal->setProductId((int) ($row['id_product'] ?? 0));
+        $modal->setShopId((int) ($row['id_shop'] ?? 0));
+        $modal->setFile($row['file'] ?? null);
+
+        return $modal;
+    }
+
+    private function fetchTranslations(int $modalId, EverBlockModal $modal): array
+    {
+        $rows = $this->connection->createQueryBuilder()
+            ->select('id_lang', 'content')
+            ->from($this->getTableName('everblock_modal_lang'))
+            ->where('id_everblock_modal = :modalId')
+            ->setParameter('modalId', $modalId, ParameterType::INTEGER)
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $translations = [];
+        foreach ($rows as $row) {
+            $translation = new EverBlockModalTranslation($modal, (int) $row['id_lang']);
+            $translation->setContent($row['content']);
+            $translations[] = $translation;
+        }
+
+        return $translations;
+    }
+
+    private function insertModal(EverBlockModal $modal): int
+    {
+        $this->connection->insert($this->getTableName('everblock_modal'), [
+            'id_product' => $modal->getProductId(),
+            'id_shop' => $modal->getShopId(),
+            'file' => $modal->getFile(),
+        ]);
+
+        return (int) $this->connection->lastInsertId();
+    }
+
+    private function updateModal(EverBlockModal $modal): void
+    {
+        $this->connection->update(
+            $this->getTableName('everblock_modal'),
+            [
+                'id_product' => $modal->getProductId(),
+                'id_shop' => $modal->getShopId(),
+                'file' => $modal->getFile(),
+            ],
+            [
+                'id_everblock_modal' => $modal->getId(),
+            ]
+        );
+    }
+
+    /**
+     * @param array<int, array{content: string|null}> $translations
+     */
+    private function saveTranslations(int $modalId, array $translations): void
+    {
+        $this->connection->delete($this->getTableName('everblock_modal_lang'), ['id_everblock_modal' => $modalId]);
+
+        foreach ($translations as $languageId => $data) {
+            $this->connection->insert($this->getTableName('everblock_modal_lang'), [
+                'id_everblock_modal' => $modalId,
+                'id_lang' => $languageId,
+                'content' => $data['content'] ?? null,
+            ]);
+        }
     }
 
     /**

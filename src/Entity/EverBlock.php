@@ -33,7 +33,7 @@ class EverBlock
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'text')]
+    #[ORM\Column(type: 'string', length: 255)]
     private string $name = '';
 
     #[ORM\Column(name: 'id_hook', type: 'integer')]
@@ -142,5 +142,323 @@ class EverBlock
     public function getTranslations(): Collection
     {
         return $this->translations;
+    }
+
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getHookId(): int
+    {
+        return $this->hookId;
+    }
+
+    public function setHookId(int $hookId): void
+    {
+        $this->hookId = $hookId;
+    }
+
+    public function getOnlyHome(): bool
+    {
+        return $this->onlyHome;
+    }
+
+    public function setOnlyHome(bool $onlyHome): void
+    {
+        $this->onlyHome = $onlyHome;
+    }
+
+    public function getOnlyCategory(): bool
+    {
+        return $this->onlyCategory;
+    }
+
+    public function setOnlyCategory(bool $onlyCategory): void
+    {
+        $this->onlyCategory = $onlyCategory;
+    }
+
+    public function getOnlyCategoryProduct(): bool
+    {
+        return $this->onlyCategoryProduct;
+    }
+
+    public function setOnlyCategoryProduct(bool $onlyCategoryProduct): void
+    {
+        $this->onlyCategoryProduct = $onlyCategoryProduct;
+    }
+
+    public function getOnlyManufacturer(): bool
+    {
+        return $this->onlyManufacturer;
+    }
+
+    public function setOnlyManufacturer(bool $onlyManufacturer): void
+    {
+        $this->onlyManufacturer = $onlyManufacturer;
+    }
+
+    public function getOnlySupplier(): bool
+    {
+        return $this->onlySupplier;
+    }
+
+    public function setOnlySupplier(bool $onlySupplier): void
+    {
+        $this->onlySupplier = $onlySupplier;
+    }
+
+    public function getOnlyCmsCategory(): bool
+    {
+        return $this->onlyCmsCategory;
+    }
+
+    public function setOnlyCmsCategory(bool $onlyCmsCategory): void
+    {
+        $this->onlyCmsCategory = $onlyCmsCategory;
+    }
+
+    public function getObfuscateLink(): bool
+    {
+        return $this->obfuscateLink;
+    }
+
+    public function setObfuscateLink(bool $obfuscateLink): void
+    {
+        $this->obfuscateLink = $obfuscateLink;
+    }
+
+    public function getAddContainer(): bool
+    {
+        return $this->addContainer;
+    }
+
+    public function setAddContainer(bool $addContainer): void
+    {
+        $this->addContainer = $addContainer;
+    }
+
+    public function getLazyload(): bool
+    {
+        return $this->lazyload;
+    }
+
+    public function setLazyload(bool $lazyload): void
+    {
+        $this->lazyload = $lazyload;
+    }
+
+    public function getDevice(): int
+    {
+        return $this->device;
+    }
+
+    public function setDevice(int $device): void
+    {
+        $this->device = $device;
+    }
+
+    public function getShopId(): int
+    {
+        return $this->shopId;
+    }
+
+    public function setShopId(int $shopId): void
+    {
+        $this->shopId = $shopId;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): void
+    {
+        $this->position = $position;
+    }
+
+    public function getCategories(): ?string
+    {
+        return $this->categories;
+    }
+
+    public function setCategories(?string $categories): void
+    {
+        $this->categories = $categories;
+    }
+
+    public function getManufacturers(): ?string
+    {
+        return $this->manufacturers;
+    }
+
+    public function setManufacturers(?string $manufacturers): void
+    {
+        $this->manufacturers = $manufacturers;
+    }
+
+    public function getSuppliers(): ?string
+    {
+        return $this->suppliers;
+    }
+
+    public function setSuppliers(?string $suppliers): void
+    {
+        $this->suppliers = $suppliers;
+    }
+
+    public function getCmsCategories(): ?string
+    {
+        return $this->cmsCategories;
+    }
+
+    public function setCmsCategories(?string $cmsCategories): void
+    {
+        $this->cmsCategories = $cmsCategories;
+    }
+
+    public function getGroups(): ?string
+    {
+        return $this->groups;
+    }
+
+    public function setGroups(?string $groups): void
+    {
+        $this->groups = $groups;
+    }
+
+    public function getBackground(): ?string
+    {
+        return $this->background;
+    }
+
+    public function setBackground(?string $background): void
+    {
+        $this->background = $background;
+    }
+
+    public function getCssClass(): ?string
+    {
+        return $this->cssClass;
+    }
+
+    public function setCssClass(?string $cssClass): void
+    {
+        $this->cssClass = $cssClass;
+    }
+
+    public function getDataAttribute(): ?string
+    {
+        return $this->dataAttribute;
+    }
+
+    public function setDataAttribute(?string $dataAttribute): void
+    {
+        $this->dataAttribute = $dataAttribute;
+    }
+
+    public function getBootstrapClass(): ?string
+    {
+        return $this->bootstrapClass;
+    }
+
+    public function setBootstrapClass(?string $bootstrapClass): void
+    {
+        $this->bootstrapClass = $bootstrapClass;
+    }
+
+    public function isModal(): bool
+    {
+        return $this->modal;
+    }
+
+    public function setModal(bool $modal): void
+    {
+        $this->modal = $modal;
+    }
+
+    public function getDelay(): int
+    {
+        return $this->delay;
+    }
+
+    public function setDelay(int $delay): void
+    {
+        $this->delay = $delay;
+    }
+
+    public function getTimeout(): int
+    {
+        return $this->timeout;
+    }
+
+    public function setTimeout(int $timeout): void
+    {
+        $this->timeout = $timeout;
+    }
+
+    public function getDateStart(): ?\DateTimeInterface
+    {
+        return $this->dateStart;
+    }
+
+    public function setDateStart(?\DateTimeInterface $dateStart): void
+    {
+        $this->dateStart = $dateStart;
+    }
+
+    public function getDateEnd(): ?\DateTimeInterface
+    {
+        return $this->dateEnd;
+    }
+
+    public function setDateEnd(?\DateTimeInterface $dateEnd): void
+    {
+        $this->dateEnd = $dateEnd;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): void
+    {
+        $this->active = $active;
+    }
+
+    public function addTranslation(EverBlockTranslation $translation): void
+    {
+        foreach ($this->translations as $existingTranslation) {
+            if ($existingTranslation->getLanguageId() === $translation->getLanguageId()) {
+                $this->translations->removeElement($existingTranslation);
+                break;
+            }
+        }
+
+        $this->translations->add($translation);
+    }
+
+    public function getTranslation(int $languageId): ?EverBlockTranslation
+    {
+        foreach ($this->translations as $translation) {
+            if ($translation->getLanguageId() === $languageId) {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 }

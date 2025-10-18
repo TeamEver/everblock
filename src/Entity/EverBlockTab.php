@@ -58,6 +58,11 @@ class EverBlockTab
         return $this->id;
     }
 
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
     public function getProductId(): int
     {
         return $this->productId;
@@ -94,5 +99,31 @@ class EverBlockTab
     public function getTranslations(): Collection
     {
         return $this->translations;
+    }
+
+    public function addTranslation(EverBlockTabTranslation $translation): void
+    {
+        foreach ($this->translations as $existingTranslation) {
+            if ($existingTranslation->getLanguageId() === $translation->getLanguageId()
+                && $existingTranslation->getShopId() === $translation->getShopId()
+            ) {
+                $this->translations->removeElement($existingTranslation);
+
+                break;
+            }
+        }
+
+        $this->translations->add($translation);
+    }
+
+    public function getTranslation(int $languageId, int $shopId): ?EverBlockTabTranslation
+    {
+        foreach ($this->translations as $translation) {
+            if ($translation->getLanguageId() === $languageId && $translation->getShopId() === $shopId) {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 }

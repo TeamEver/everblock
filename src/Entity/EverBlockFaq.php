@@ -67,6 +67,11 @@ class EverBlockFaq
         return $this->id;
     }
 
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
     public function getTagName(): ?string
     {
         return $this->tagName;
@@ -133,5 +138,31 @@ class EverBlockFaq
     public function getTranslations(): Collection
     {
         return $this->translations;
+    }
+
+    public function addTranslation(EverBlockFaqTranslation $translation): void
+    {
+        foreach ($this->translations as $existingTranslation) {
+            if ($existingTranslation->getLanguageId() === $translation->getLanguageId()
+                && $existingTranslation->getShopId() === $translation->getShopId()
+            ) {
+                $this->translations->removeElement($existingTranslation);
+
+                break;
+            }
+        }
+
+        $this->translations->add($translation);
+    }
+
+    public function getTranslation(int $languageId, int $shopId): ?EverBlockFaqTranslation
+    {
+        foreach ($this->translations as $translation) {
+            if ($translation->getLanguageId() === $languageId && $translation->getShopId() === $shopId) {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 }
