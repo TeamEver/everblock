@@ -120,7 +120,13 @@ services:
             $connection: '@doctrine.dbal.default_connection'
             $cache: '@cache.app'
 
+    Everblock\Tools\Repository\EverBlockFaqRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $cache: '@cache.app'
+
     Everblock\Tools\Service\EverBlockProvider: ~
+    Everblock\Tools\Service\EverBlockFaqProvider: ~
 
     Everblock\Tools\Controller\Admin\:
         resource: '../src/Controller/Admin'

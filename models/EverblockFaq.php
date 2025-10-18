@@ -17,7 +17,8 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Service\EverBlockFaqProvider;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -25,6 +26,9 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockFaq extends ObjectModel
 {
+    /** @var EverBlockFaqProvider|null */
+    protected static $provider;
+
     public $id_everblock_faq;
     public $id_shop;
     public $id_lang;
@@ -93,62 +97,39 @@ class EverblockFaq extends ObjectModel
         ],
     ];
 
+    public static function setProvider(EverBlockFaqProvider $provider): void
+    {
+        static::$provider = $provider;
+    }
+
+    protected static function getProvider(): EverBlockFaqProvider
+    {
+        if (static::$provider instanceof EverBlockFaqProvider) {
+            return static::$provider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockFaqProvider::class)) {
+                $provider = $container->get(EverBlockFaqProvider::class);
+                if ($provider instanceof EverBlockFaqProvider) {
+                    static::$provider = $provider;
+
+                    return $provider;
+                }
+            }
+        }
+
+        throw new \RuntimeException('EverBlockFaqProvider service is not available.');
+    }
+
     public static function getAllFaq(int $shopId, int $langId): array
     {
-        $cache_id = 'EverblockFaq_getAllFaq_'
-        . (int) $shopId
-        . '_'
-        . (int) $langId;
-        if (!EverblockCache::isCacheStored($cache_id)) {
-            $sql = new DbQuery();
-            $sql->select('*');
-            $sql->from(self::definition['table']);
-            $sql->where('id_shop = ' . (int) $idShop);
-            $sql->where('active = 1');
-            $sql->orderBy('position ASC');
-            $faqs = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $return = [];
-            foreach ($faqs as $f) {
-                $return[] = new self(
-                    (int) $f[self::$definition['primary']],
-                    (int) $langId,
-                    (int) $shopId
-                );
-            }
-            EverblockCache::cacheStore($cache_id, $return);
-            return $return;
-        }
-        return EverblockCache::cacheRetrieve($cache_id);
+        return static::getProvider()->getAllFaq($shopId, $langId);
     }
 
     public static function getFaqByTagName(int $shopId, int $langId, string $tagName): array
     {
-        $cache_id = 'EverblockFaq_getFaqByTagName_'
-        . (int) $shopId
-        . '_'
-        . (int) $langId
-        . '_'
-        . trim($tagName);
-        if (!EverblockCache::isCacheStored($cache_id)) {
-            $sql = new DbQuery();
-            $sql->select('*');
-            $sql->from(self::$definition['table']);
-            $sql->where('id_shop = ' . (int) $shopId);
-            $sql->where('tag_name = "' . pSQL($tagName) . '"');
-            $sql->where('active = 1');
-            $sql->orderBy('position ASC');
-            $faqs = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $return = [];
-            foreach ($faqs as $f) {
-                $return[] = new self(
-                    (int) $f[self::$definition['primary']],
-                    (int) $langId,
-                    (int) $shopId
-                );
-            }
-            EverblockCache::cacheStore($cache_id, $return);
-            return $return;
-        }
-        return EverblockCache::cacheRetrieve($cache_id);
+        return static::getProvider()->getFaqByTagName($shopId, $langId, $tagName);
     }
 }
