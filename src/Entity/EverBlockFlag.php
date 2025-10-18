@@ -58,6 +58,11 @@ class EverBlockFlag
         return $this->id;
     }
 
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
     public function getProductId(): int
     {
         return $this->productId;
@@ -94,5 +99,29 @@ class EverBlockFlag
     public function getTranslations(): Collection
     {
         return $this->translations;
+    }
+
+    public function addTranslation(EverBlockFlagTranslation $translation): void
+    {
+        foreach ($this->translations as $existingTranslation) {
+            if ($existingTranslation->getLanguageId() === $translation->getLanguageId()) {
+                $this->translations->removeElement($existingTranslation);
+
+                break;
+            }
+        }
+
+        $this->translations->add($translation);
+    }
+
+    public function getTranslation(int $languageId): ?EverBlockFlagTranslation
+    {
+        foreach ($this->translations as $translation) {
+            if ($translation->getLanguageId() === $languageId) {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 }

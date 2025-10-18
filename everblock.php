@@ -32,6 +32,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
+use Everblock\Tools\Service\Domain\EverBlockDomainService;
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Service\EverBlockFlagProvider;
 use Everblock\Tools\Service\EverBlockProvider;
@@ -65,6 +66,7 @@ class Everblock extends Module
         'hookDisplayInvoiceLegalFreeText',
     ];
     private ?EverBlockProvider $everBlockProvider = null;
+    private ?EverBlockDomainService $everBlockDomainService = null;
     private ?EverBlockFaqProvider $everBlockFaqProvider = null;
     private ?EverBlockFlagProvider $everBlockFlagProvider = null;
     private ?EverBlockTabProvider $everBlockTabProvider = null;
@@ -101,6 +103,27 @@ class Everblock extends Module
                     $this->everBlockProvider = $provider;
 
                     return $this->everBlockProvider;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function getEverBlockDomainService(): ?EverBlockDomainService
+    {
+        if ($this->everBlockDomainService instanceof EverBlockDomainService) {
+            return $this->everBlockDomainService;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockDomainService::class)) {
+                $service = $container->get(EverBlockDomainService::class);
+                if ($service instanceof EverBlockDomainService) {
+                    $this->everBlockDomainService = $service;
+
+                    return $this->everBlockDomainService;
                 }
             }
         }
@@ -3972,10 +3995,18 @@ class Everblock extends Module
         $position = isset($args[0]['position']) ? (int) $args[0]['position'] : null;
         $context = Context::getContext();
         // Drop cache if needed
-        EverblockClass::cleanBlocksCacheOnDate(
-            $context->language->id,
-            $context->shop->id
-        );
+        $blockService = $this->getEverBlockDomainService();
+        if ($blockService instanceof EverBlockDomainService) {
+            $blockService->cleanBlocksCacheOnDate(
+                (int) $context->language->id,
+                (int) $context->shop->id
+            );
+        } else {
+            EverblockClass::cleanBlocksCacheOnDate(
+                $context->language->id,
+                $context->shop->id
+            );
+        }
         $id_hook = (int) Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
         $hookName = lcfirst(str_replace('hook', '', $method));
         $idObj = 0;
@@ -4018,8 +4049,15 @@ class Everblock extends Module
             } else {
                 $id_entity = false;
             }
+        $everblock = [];
+        if ($blockService instanceof EverBlockDomainService) {
+            $everblock = $blockService->getBlocks(
+                (int) $id_hook,
+                (int) $context->language->id,
+                (int) $context->shop->id
+            );
+        } else {
             $everblockProvider = $this->getEverBlockProvider();
-            $everblock = [];
             if ($everblockProvider instanceof EverBlockProvider) {
                 $everblock = $everblockProvider->getBlocks(
                     (int) $id_hook,
@@ -4027,6 +4065,7 @@ class Everblock extends Module
                     (int) $context->shop->id
                 );
             }
+        }
             $currentBlock = [];
             foreach ($everblock as $block) {
                 if ((bool) $block['modal'] === true

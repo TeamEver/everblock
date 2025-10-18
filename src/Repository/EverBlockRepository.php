@@ -20,9 +20,12 @@
 
 namespace Everblock\Tools\Repository;
 
+use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Everblock\Tools\Entity\EverBlock;
+use Everblock\Tools\Entity\EverBlockTranslation;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -130,6 +133,61 @@ class EverBlockRepository
         ]);
     }
 
+    public function findById(int $blockId, int $shopId): ?EverBlock
+    {
+        $qb = $this->createBaseQueryBuilder()
+            ->where('eb.id_everblock = :blockId')
+            ->andWhere('eb.id_shop = :shopId')
+            ->setParameter('blockId', $blockId, ParameterType::INTEGER)
+            ->setParameter('shopId', $shopId, ParameterType::INTEGER)
+            ->setMaxResults(1);
+
+        $row = $qb->executeQuery()->fetchAssociative();
+
+        if (false === $row) {
+            return null;
+        }
+
+        $block = $this->hydrateBlock($row);
+        $translations = $this->fetchTranslations($blockId, $block);
+
+        foreach ($translations as $translation) {
+            $block->addTranslation($translation);
+        }
+
+        return $block;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $translations
+     */
+    public function save(EverBlock $block, array $translations): EverBlock
+    {
+        if (null === $block->getId()) {
+            $blockId = $this->insertBlock($block);
+            $blockId = (int) $blockId;
+            $block->setId($blockId);
+        } else {
+            $this->updateBlock($block);
+        }
+
+        $this->saveTranslations((int) $block->getId(), $translations);
+        $this->clearCacheForLanguageAndShopCollections($translations, $block->getShopId());
+
+        return $block;
+    }
+
+    public function delete(int $blockId, int $shopId): void
+    {
+        $this->connection->delete($this->getTableName('everblock_lang'), ['id_everblock' => $blockId]);
+        $this->connection->delete($this->getTableName('everblock'), [
+            'id_everblock' => $blockId,
+            'id_shop' => $shopId,
+        ]);
+
+        $this->clearCache();
+    }
+
     private function resolveBootstrapClass(int $colNumber): string
     {
         $class = 'col-';
@@ -196,6 +254,176 @@ class EverBlockRepository
             ->leftJoin('eb', $this->getTableName('everblock_lang'), 'ebl', 'eb.id_everblock = ebl.id_everblock');
 
         return $qb;
+    }
+
+    private function hydrateBlock(array $row): EverBlock
+    {
+        $block = new EverBlock();
+        $block->setName((string) ($row['name'] ?? ''));
+        $block->setHookId((int) $row['id_hook']);
+        $block->setOnlyHome((bool) $row['only_home']);
+        $block->setOnlyCategory((bool) $row['only_category']);
+        $block->setOnlyCategoryProduct((bool) $row['only_category_product']);
+        $block->setOnlyManufacturer((bool) $row['only_manufacturer']);
+        $block->setOnlySupplier((bool) $row['only_supplier']);
+        $block->setOnlyCmsCategory((bool) $row['only_cms_category']);
+        $block->setObfuscateLink((bool) $row['obfuscate_link']);
+        $block->setAddContainer((bool) $row['add_container']);
+        $block->setLazyload((bool) $row['lazyload']);
+        $block->setDevice((int) $row['device']);
+        $block->setShopId((int) $row['id_shop']);
+        $block->setPosition((int) $row['position']);
+        $block->setCategories($row['categories']);
+        $block->setManufacturers($row['manufacturers']);
+        $block->setSuppliers($row['suppliers']);
+        $block->setCmsCategories($row['cms_categories']);
+        $block->setGroups($row['groups']);
+        $block->setBackground($row['background']);
+        $block->setCssClass($row['css_class']);
+        $block->setDataAttribute($row['data_attribute']);
+        $block->setBootstrapClass($row['bootstrap_class']);
+        $block->setModal((bool) $row['modal']);
+        $block->setDelay((int) $row['delay']);
+        $block->setTimeout((int) $row['timeout']);
+        $block->setActive((bool) $row['active']);
+
+        if (!empty($row['date_start']) && $row['date_start'] !== '0000-00-00 00:00:00') {
+            $block->setDateStart(new DateTimeImmutable((string) $row['date_start']));
+        }
+        if (!empty($row['date_end']) && $row['date_end'] !== '0000-00-00 00:00:00') {
+            $block->setDateEnd(new DateTimeImmutable((string) $row['date_end']));
+        }
+
+        $block->setId((int) $row['id_everblock']);
+
+        return $block;
+    }
+
+    private function fetchTranslations(int $blockId, EverBlock $block): array
+    {
+        $rows = $this->connection->createQueryBuilder()
+            ->select('id_lang', 'content', 'custom_code')
+            ->from($this->getTableName('everblock_lang'))
+            ->where('id_everblock = :blockId')
+            ->setParameter('blockId', $blockId, ParameterType::INTEGER)
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        $translations = [];
+        foreach ($rows as $row) {
+            $translation = new EverBlockTranslation($block, (int) $row['id_lang']);
+            $translation->setContent($row['content']);
+            $translation->setCustomCode($row['custom_code']);
+            $translations[] = $translation;
+        }
+
+        return $translations;
+    }
+
+    private function insertBlock(EverBlock $block): int
+    {
+        $this->connection->insert($this->getTableName('everblock'), [
+            'name' => $block->getName(),
+            'id_hook' => $block->getHookId(),
+            'only_home' => $block->getOnlyHome() ? 1 : 0,
+            'only_category' => $block->getOnlyCategory() ? 1 : 0,
+            'only_category_product' => $block->getOnlyCategoryProduct() ? 1 : 0,
+            'only_manufacturer' => $block->getOnlyManufacturer() ? 1 : 0,
+            'only_supplier' => $block->getOnlySupplier() ? 1 : 0,
+            'only_cms_category' => $block->getOnlyCmsCategory() ? 1 : 0,
+            'obfuscate_link' => $block->getObfuscateLink() ? 1 : 0,
+            'add_container' => $block->getAddContainer() ? 1 : 0,
+            'lazyload' => $block->getLazyload() ? 1 : 0,
+            'device' => $block->getDevice(),
+            'id_shop' => $block->getShopId(),
+            'position' => $block->getPosition(),
+            'categories' => $block->getCategories(),
+            'manufacturers' => $block->getManufacturers(),
+            'suppliers' => $block->getSuppliers(),
+            'cms_categories' => $block->getCmsCategories(),
+            'groups' => $block->getGroups(),
+            'background' => $block->getBackground(),
+            'css_class' => $block->getCssClass(),
+            'data_attribute' => $block->getDataAttribute(),
+            'bootstrap_class' => $block->getBootstrapClass(),
+            'modal' => $block->isModal() ? 1 : 0,
+            'delay' => $block->getDelay(),
+            'timeout' => $block->getTimeout(),
+            'date_start' => $block->getDateStart()?->format('Y-m-d H:i:s'),
+            'date_end' => $block->getDateEnd()?->format('Y-m-d H:i:s'),
+            'active' => $block->isActive() ? 1 : 0,
+        ]);
+
+        return (int) $this->connection->lastInsertId();
+    }
+
+    private function updateBlock(EverBlock $block): void
+    {
+        $this->connection->update(
+            $this->getTableName('everblock'),
+            [
+                'name' => $block->getName(),
+                'id_hook' => $block->getHookId(),
+                'only_home' => $block->getOnlyHome() ? 1 : 0,
+                'only_category' => $block->getOnlyCategory() ? 1 : 0,
+                'only_category_product' => $block->getOnlyCategoryProduct() ? 1 : 0,
+                'only_manufacturer' => $block->getOnlyManufacturer() ? 1 : 0,
+                'only_supplier' => $block->getOnlySupplier() ? 1 : 0,
+                'only_cms_category' => $block->getOnlyCmsCategory() ? 1 : 0,
+                'obfuscate_link' => $block->getObfuscateLink() ? 1 : 0,
+                'add_container' => $block->getAddContainer() ? 1 : 0,
+                'lazyload' => $block->getLazyload() ? 1 : 0,
+                'device' => $block->getDevice(),
+                'position' => $block->getPosition(),
+                'categories' => $block->getCategories(),
+                'manufacturers' => $block->getManufacturers(),
+                'suppliers' => $block->getSuppliers(),
+                'cms_categories' => $block->getCmsCategories(),
+                'groups' => $block->getGroups(),
+                'background' => $block->getBackground(),
+                'css_class' => $block->getCssClass(),
+                'data_attribute' => $block->getDataAttribute(),
+                'bootstrap_class' => $block->getBootstrapClass(),
+                'modal' => $block->isModal() ? 1 : 0,
+                'delay' => $block->getDelay(),
+                'timeout' => $block->getTimeout(),
+                'date_start' => $block->getDateStart()?->format('Y-m-d H:i:s'),
+                'date_end' => $block->getDateEnd()?->format('Y-m-d H:i:s'),
+                'active' => $block->isActive() ? 1 : 0,
+            ],
+            [
+                'id_everblock' => $block->getId(),
+                'id_shop' => $block->getShopId(),
+            ]
+        );
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $translations
+     */
+    private function saveTranslations(int $blockId, array $translations): void
+    {
+        $this->connection->delete($this->getTableName('everblock_lang'), ['id_everblock' => $blockId]);
+
+        foreach ($translations as $languageId => $data) {
+            $this->connection->insert($this->getTableName('everblock_lang'), [
+                'id_everblock' => $blockId,
+                'id_lang' => $languageId,
+                'content' => $data['content'] ?? null,
+                'custom_code' => $data['custom_code'] ?? null,
+            ]);
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $translations
+     */
+    private function clearCacheForLanguageAndShopCollections(array $translations, int $shopId): void
+    {
+        $languageIds = array_keys($translations);
+        foreach ($languageIds as $languageId) {
+            $this->clearCacheForLanguageAndShop((int) $languageId, $shopId);
+        }
     }
 
     private function getTableName(string $table): string

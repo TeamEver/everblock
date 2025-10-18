@@ -152,6 +152,13 @@ services:
             $connection: '@doctrine.dbal.default_connection'
             $cache: '@cache.app'
 
+    Everblock\Tools\Service\Domain\EverBlockDomainService: ~
+    Everblock\Tools\Service\Domain\EverBlockFaqDomainService: ~
+    Everblock\Tools\Service\Domain\LegacyModelMap: ~
+    Everblock\Tools\Service\Domain\EverBlockFlagDomainService: ~
+    Everblock\Tools\Service\Domain\EverBlockTabDomainService: ~
+    Everblock\Tools\Service\Domain\EverBlockModalDomainService: ~
+
     Everblock\Tools\Service\EverBlockProvider: ~
     Everblock\Tools\Service\EverBlockFaqProvider: ~
     Everblock\Tools\Service\EverBlockFlagProvider: ~
