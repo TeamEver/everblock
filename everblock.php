@@ -35,7 +35,6 @@ use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\ImportFile;
-use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
@@ -957,65 +956,11 @@ class Everblock extends Module
                 $this->html .= $this->displayConfirmation($success);
             }
         }
-        $blockAdminLink = $this->context->link->getAdminLink('AdminEverBlock', true, [], [
-            'configure' => $this->name,
-            'module_name' => $this->name,
-        ]);
-        $faqAdminLink = $this->context->link->getAdminLink('AdminEverBlockFaq', true, [], [
-            'configure' => $this->name,
-            'module_name' => $this->name,
-        ]);
-        $hookAdminLink = $this->context->link->getAdminLink('AdminEverBlockHook', true, [], [
-            'configure' => $this->name,
-            'module_name' => $this->name,
-        ]);
-        $shortcodeAdminLink = $this->context->link->getAdminLink('AdminEverBlockShortcode', true, [], [
-            'configure' => $this->name,
-            'module_name' => $this->name,
-        ]);
-        $cronLinks = [];
-        $cronToken = $this->encrypt($this->name . '/evercron');
-        foreach ($this->allowedActions as $action) {
-            $cronLinks[$action] = $this->context->link->getModuleLink(
-                $this->name,
-                'cron',
-                [
-                    'action' => $action,
-                    'evertoken' => $cronToken,
-                ]
-            );
-        }
-        $displayUpgrade = $this->checkLatestEverModuleVersion();
-        $notifications = $this->html;
-        $this->html = '';
-        $this->context->smarty->assign([
-            'module_name' => $this->displayName,
-            $this->name . '_version' => $this->version,
-            $this->name . '_dir' => $this->_path,
-            'block_admin_link' => $blockAdminLink,
-            'faq_admin_link' => $faqAdminLink,
-            'hook_admin_link' => $hookAdminLink,
-            'shortcode_admin_link' => $shortcodeAdminLink,
-            'cron_links' => $cronLinks,
-            'modules_list_link' => $this->context->link->getAdminLink('AdminModules'),
-            'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
-            'everblock_notifications' => $notifications,
-            'everblock_form' => $this->renderForm(),
-            'display_upgrade' => $displayUpgrade,
-            'everblock_stats' => $this->getModuleStatistics(),
-            'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($this),
-        ]);
-        $output = $this->context->smarty->fetch(
-            $this->local_path . 'views/templates/admin/header.tpl'
-        );
-        $output .= $this->context->smarty->fetch(
-            $this->local_path . 'views/templates/admin/configure.tpl'
-        );
-        $output .= $this->context->smarty->fetch(
-            $this->local_path . 'views/templates/admin/footer.tpl'
+        Tools::redirectAdmin(
+            $this->context->link->getAdminLink('AdminEverBlockConfiguration')
         );
 
-        return $output;
+        return '';
     }
 
     protected function renderForm()

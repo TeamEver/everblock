@@ -2,7 +2,7 @@ everblock_admin_configuration:
     path: /everblock/configuration
     methods: [GET]
     defaults:
-        _controller: 'Everblock\\Tools\\Controller\\Admin\\ConfigurationController::index'
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockConfigurationController::index'
         _legacy_controller: 'AdminEverBlockConfiguration'
         _legacy_link: 'AdminEverBlockConfiguration'
 

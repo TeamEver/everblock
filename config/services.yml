@@ -51,6 +51,10 @@ services:
             $router: '@router'
             $translator: '@translator'
 
+    Everblock\Tools\Service\Admin\ConfigurationContextBuilder:
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+
     Everblock\Tools\Service\Admin\StatisticsProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
