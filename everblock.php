@@ -31,12 +31,14 @@ use Everblock\Tools\Application\EverBlockApplicationService;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\Domain\EverBlockDomainService;
 use Everblock\Tools\Service\Domain\EverBlockFlagDomainService;
+use Everblock\Tools\Service\Domain\EverBlockModalDomainService;
 use Everblock\Tools\Service\Domain\EverBlockShortcodeDomainService;
 use Everblock\Tools\Service\Domain\EverBlockTabDomainService;
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Entity\EverBlock;
 use Everblock\Tools\Entity\EverBlockFlag;
 use Everblock\Tools\Entity\EverBlockTranslation;
+use Everblock\Tools\Entity\EverBlockModal;
 use Everblock\Tools\Entity\EverBlockTab;
 use Everblock\Tools\Entity\EverBlockTabTranslation;
 use Everblock\Tools\Repository\EverBlockRepository;
@@ -83,6 +85,7 @@ class Everblock extends Module
     private ?EverBlockModalProvider $everBlockModalProvider = null;
     private ?EverBlockShortcodeProvider $everBlockShortcodeProvider = null;
     private ?EverBlockShortcodeDomainService $everBlockShortcodeDomainService = null;
+    private ?EverBlockModalDomainService $everBlockModalDomainService = null;
     private bool $dependenciesBootstrapped = false;
 
     public function __construct(
@@ -95,6 +98,7 @@ class Everblock extends Module
         ?EverBlockTabProvider $everBlockTabProvider = null,
         ?EverBlockRepository $everBlockRepository = null,
         ?EverBlockModalProvider $everBlockModalProvider = null,
+        ?EverBlockModalDomainService $everBlockModalDomainService = null,
         ?EverBlockShortcodeProvider $everBlockShortcodeProvider = null,
         ?EverBlockShortcodeDomainService $everBlockShortcodeDomainService = null
     ) {
@@ -113,6 +117,7 @@ class Everblock extends Module
         $this->everBlockTabProvider = $everBlockTabProvider;
         $this->everBlockRepository = $everBlockRepository;
         $this->everBlockModalProvider = $everBlockModalProvider;
+        $this->everBlockModalDomainService = $everBlockModalDomainService;
         $this->everBlockShortcodeProvider = $everBlockShortcodeProvider;
         $this->everBlockShortcodeDomainService = $everBlockShortcodeDomainService;
         parent::__construct();
@@ -173,6 +178,10 @@ class Everblock extends Module
 
             if (null === $this->everBlockModalProvider) {
                 $this->everBlockModalProvider = $this->resolveService($container, EverBlockModalProvider::class);
+            }
+
+            if (null === $this->everBlockModalDomainService) {
+                $this->everBlockModalDomainService = $this->resolveService($container, EverBlockModalDomainService::class);
             }
 
             if (null === $this->everBlockShortcodeProvider) {
@@ -315,6 +324,17 @@ class Everblock extends Module
         $this->bootstrapDependencies();
 
         return $this->everBlockModalProvider;
+    }
+
+    public function getEverBlockModalDomainService(): EverBlockModalDomainService
+    {
+        $this->bootstrapDependencies();
+
+        if (!$this->everBlockModalDomainService instanceof EverBlockModalDomainService) {
+            throw new \RuntimeException('EverBlockModalDomainService service is not available.');
+        }
+
+        return $this->everBlockModalDomainService;
     }
 
     public function __call($method, $args)
@@ -3535,17 +3555,31 @@ class Everblock extends Module
         if (empty($params['id_product'])) {
             return;
         }
-        $this->getEverBlockDomainService();
-        $modal = EverblockModal::getByProductId(
+        $modalDomainService = $this->getEverBlockModalDomainService();
+        $modalEntity = $modalDomainService->getOrCreateForProduct(
             (int) $params['id_product'],
-            (int) $this->context->shop->id,
-            $this->getEverBlockModalProvider()
+            (int) $this->context->shop->id
         );
+
+        $contents = [];
+        foreach (Language::getLanguages(false) as $language) {
+            $translation = $modalEntity->getTranslation((int) $language['id_lang']);
+            $contents[(int) $language['id_lang']] = $translation?->getContent();
+        }
+
+        $modal = (object) [
+            'id_everblock_modal' => $modalEntity->getId(),
+            'id_product' => $modalEntity->getProductId(),
+            'id_shop' => $modalEntity->getShopId(),
+            'file' => $modalEntity->getFile(),
+            'content' => $contents,
+        ];
+
         $fileUrl = '';
         $fileName = '';
         if (!empty($modal->file)) {
             $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
-            $fileName = basename($modal->file);
+            $fileName = basename((string) $modal->file);
         }
         $this->smarty->assign([
             'modal' => $modal,
@@ -3817,11 +3851,13 @@ class Everblock extends Module
             }
 
             // Modal management
-            $modal = EverblockModal::getByProductId(
+            $modalDomainService = $this->getEverBlockModalDomainService();
+            $modalEntity = $modalDomainService->getOrCreateForProduct(
                 (int) $params['object']->id,
-                (int) $context->shop->id,
-                $this->getEverBlockModalProvider()
+                (int) $context->shop->id
             );
+
+            $contents = [];
             foreach (Language::getLanguages(true) as $language) {
                 $content = Tools::getValue('everblock_modal_content_' . $language['id_lang']);
                 if ($content && !Validate::isCleanHtml($content)) {
@@ -3830,24 +3866,31 @@ class Everblock extends Module
                         'error' => $this->l('Content is not valid'),
                     ]));
                 }
-                $modal->content[$language['id_lang']] = $content;
+
+                $contents[(int) $language['id_lang']] = (string) $content;
             }
+
+            $existingFile = $modalEntity->getFile();
+
             if (Tools::getValue('everblock_modal_file_delete')) {
-                if (!empty($modal->file)) {
-                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+                if (!empty($existingFile)) {
+                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $existingFile;
                     if (file_exists($oldFile)) {
                         @unlink($oldFile);
                     }
-                    $modal->file = '';
                 }
+
+                $modalEntity->setFile(null);
+                $existingFile = null;
             }
+
             if (isset($_FILES['everblock_modal_file']) && is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
                 $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
                 if (!is_dir($dir)) {
                     @mkdir($dir, 0755, true);
                 }
-                if (!empty($modal->file)) {
-                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+                if (!empty($existingFile)) {
+                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $existingFile;
                     if (file_exists($oldFile)) {
                         @unlink($oldFile);
                     }
@@ -3855,12 +3898,15 @@ class Everblock extends Module
                 $ext = pathinfo($_FILES['everblock_modal_file']['name'], PATHINFO_EXTENSION);
                 $name = uniqid('everblock_modal_') . '.' . $ext;
                 if (move_uploaded_file($_FILES['everblock_modal_file']['tmp_name'], $dir . $name)) {
-                    $modal->file = 'everblockmodal/' . $name;
+                    $modalEntity->setFile('everblockmodal/' . $name);
                 }
             }
-            $modal->id_product = (int) $params['object']->id;
-            $modal->id_shop = (int) $context->shop->id;
-            $modal->save();
+
+            $modalEntity->setProductId((int) $params['object']->id);
+            $modalEntity->setShopId((int) $context->shop->id);
+
+            $translations = $modalDomainService->buildTranslations($modalEntity, $contents);
+            $modalDomainService->save($modalEntity, $translations);
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
             EverblockTools::setLog(
@@ -5516,32 +5562,33 @@ class Everblock extends Module
             return;
         }
 
-        $modal = EverblockModal::getByProductId(
+        $modalDomainService = $this->getEverBlockModalDomainService();
+        $modalEntity = $modalDomainService->findEntityByProduct(
             $idProduct,
-            (int) $this->context->shop->id,
-            $this->getEverBlockModalProvider()
+            (int) $this->context->shop->id
         );
 
-        // Vérifie si objet chargé
-        if (!Validate::isLoadedObject($modal)) {
+        if (!$modalEntity instanceof EverBlockModal) {
             return;
         }
         $idLang = (int) $this->context->language->id;
 
-        // Cas 1 : contenu texte dispo
-        $hasContent = !empty($modal->content[$idLang]);
+        $translation = $modalEntity->getTranslation($idLang);
+        $content = $translation ? $translation->getContent() : '';
 
-        // Cas 2 : fichier image dispo
-        $hasFile = !empty($modal->file);
+        $hasContent = !empty($content);
+
+        $file = $modalEntity->getFile();
+        $hasFile = !empty($file);
 
         if (!$hasContent && !$hasFile) {
             return;
         }
 
         $this->smarty->assign([
-            'everblock_modal_id' => (int) $modal->id_everblock_modal,
-            'everblock_modal_file' => $modal->file,
-            'everblock_modal_content' => $modal->content[$idLang] ?? '',
+            'everblock_modal_id' => (int) $modalEntity->getId(),
+            'everblock_modal_file' => $file,
+            'everblock_modal_content' => $content ?? '',
         ]);
 
         return $this->fetch('module:everblock/views/templates/hook/modal.tpl');

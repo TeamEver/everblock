@@ -49,11 +49,7 @@ class LegacyModelMap
                 'entity' => EverBlockModal::class,
                 'repository' => EverBlockModalRepository::class,
                 'service' => EverBlockModalProvider::class,
-                'usage' => [
-                    'everblock.php',
-                    'models/EverblockTools.php',
-                    'controllers/front/modal.php',
-                ],
+                'usage' => [],
             ],
         ];
     }

@@ -13,7 +13,6 @@
       "Everblock\\Tools\\": "src/"
     },
     "classmap": [
-      "models/EverblockModal.php",
       "models/EverblockTools.php"
     ],
     "exclude-from-classmap": []
