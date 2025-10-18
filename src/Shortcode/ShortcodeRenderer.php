@@ -2,7 +2,6 @@
 
 namespace Everblock\Tools\Shortcode;
 
-use Context;
 use Customer;
 use Everblock;
 use EverblockTools;
@@ -33,7 +32,7 @@ final class ShortcodeRenderer
         EverblockPrettyBlocks::setShortcodeProvider($this->shortcodeProvider);
     }
 
-    public function render(string $content, Context $context, Everblock $module): string
+    public function render(string $content, ShortcodeRenderingContext $context, Everblock $module): string
     {
         Hook::exec('displayBeforeRenderingShortcodes', ['html' => &$content]);
 
@@ -62,11 +61,11 @@ final class ShortcodeRenderer
         return $this->prettyBlocks;
     }
 
-    public function renderEverShortcodes(string $content, Context $context): string
+    public function renderEverShortcodes(string $content, ShortcodeRenderingContext $context): string
     {
         $customShortcodes = $this->shortcodeProvider->getAllShortcodes(
-            (int) $context->shop->id,
-            (int) $context->language->id
+            $context->getShopId(),
+            $context->getLanguageId()
         );
 
         foreach ($customShortcodes as $shortcode) {
@@ -76,7 +75,7 @@ final class ShortcodeRenderer
         return $content;
     }
 
-    public function renderRegisteredHandlers(string $content, Context $context, Everblock $module): string
+    public function renderRegisteredHandlers(string $content, ShortcodeRenderingContext $context, Everblock $module): string
     {
         foreach ($this->handlers as $handler) {
             if (!$handler instanceof ShortcodeHandlerInterface) {
@@ -93,10 +92,10 @@ final class ShortcodeRenderer
         return $content;
     }
 
-    public function renderCustomerShortcodes(string $content, Context $context): string
+    public function renderCustomerShortcodes(string $content, ShortcodeRenderingContext $context): string
     {
-        $customer = new Customer((int) $context->customer->id);
-        $gender = new Gender((int) $customer->id_gender, (int) $context->language->id);
+        $customer = new Customer($context->getCustomerId());
+        $gender = new Gender((int) $customer->id_gender, $context->getLanguageId());
 
         $replacements = [
             '[entity_lastname]' => $customer->lastname,
@@ -116,19 +115,19 @@ final class ShortcodeRenderer
         return $content;
     }
 
-    public function renderSmartyVariables(string $content, Context $context): string
+    public function renderSmartyVariables(string $content, ShortcodeRenderingContext $context): string
     {
         if (!$this->shouldRenderCustomerShortcodes($context)) {
             return $content;
         }
 
         $templateVars = [
-            'customer' => $context->controller->getTemplateVarCustomer(),
-            'currency' => $context->controller->getTemplateVarCurrency(),
-            'shop' => $context->controller->getTemplateVarShop(),
-            'urls' => $context->controller->getTemplateVarUrls(),
-            'configuration' => $context->controller->getTemplateVarConfiguration(),
-            'breadcrumb' => $context->controller->getBreadcrumb(),
+            'customer' => $context->getTemplateVarCustomer(),
+            'currency' => $context->getTemplateVarCurrency(),
+            'shop' => $context->getTemplateVarShop(),
+            'urls' => $context->getTemplateVarUrls(),
+            'configuration' => $context->getTemplateVarConfiguration(),
+            'breadcrumb' => $context->getBreadcrumb(),
         ];
 
         foreach ($templateVars as $key => $value) {
@@ -165,11 +164,9 @@ final class ShortcodeRenderer
         return $content;
     }
 
-    private function shouldRenderCustomerShortcodes(Context $context): bool
+    private function shouldRenderCustomerShortcodes(ShortcodeRenderingContext $context): bool
     {
-        $controllerType = $context->controller->controller_type ?? null;
-
-        return in_array($controllerType, ['front', 'modulefront'], true);
+        return in_array($context->getControllerType(), ['front', 'modulefront'], true);
     }
 
     private function obfuscateTextByClass(string $text): string

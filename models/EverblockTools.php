@@ -23,6 +23,7 @@ use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Service\EverBlockShortcodeProvider;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Shortcode\ShortcodeRenderer;
+use Everblock\Tools\Shortcode\ShortcodeRenderingContext;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -48,7 +49,9 @@ class EverblockTools extends ObjectModel
         $renderer = static::resolveShortcodeRenderer($module);
 
         if ($renderer instanceof ShortcodeRenderer) {
-            return $renderer->render($txt, $context, $module);
+            $renderContext = ShortcodeRenderingContext::fromContext($context);
+
+            return $renderer->render($txt, $renderContext, $module);
         }
 
         Hook::exec('displayBeforeRenderingShortcodes', ['html' => &$txt]);
