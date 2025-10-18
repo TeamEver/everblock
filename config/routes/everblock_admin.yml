@@ -150,9 +150,45 @@ everblock_admin_shortcodes:
     path: /everblock/shortcodes
     methods: [GET]
     defaults:
-        _controller: 'Everblock\\Tools\\Controller\\Admin\\ShortcodesController::index'
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockShortcodeController::index'
         _legacy_controller: 'AdminEverBlockShortcode'
         _legacy_link: 'AdminEverBlockShortcode'
+
+everblock_admin_shortcodes_create:
+    path: /everblock/shortcodes/new
+    methods: [GET, POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockShortcodeController::create'
+        _legacy_controller: 'AdminEverBlockShortcode'
+        _legacy_link: 'AdminEverBlockShortcode:add'
+
+everblock_admin_shortcodes_edit:
+    path: /everblock/shortcodes/{shortcodeId}/edit
+    methods: [GET, POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockShortcodeController::edit'
+        _legacy_controller: 'AdminEverBlockShortcode'
+        _legacy_link: 'AdminEverBlockShortcode:update'
+    requirements:
+        shortcodeId: "\\d+"
+
+everblock_admin_shortcodes_delete:
+    path: /everblock/shortcodes/{shortcodeId}/delete
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockShortcodeController::delete'
+        _legacy_controller: 'AdminEverBlockShortcode'
+        _legacy_link: 'AdminEverBlockShortcode:delete'
+    requirements:
+        shortcodeId: "\\d+"
+
+everblock_admin_shortcodes_bulk_delete:
+    path: /everblock/shortcodes/bulk/delete
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockShortcodeController::bulkDelete'
+        _legacy_controller: 'AdminEverBlockShortcode'
+        _legacy_link: 'AdminEverBlockShortcode:bulkdelete'
 
 everblock_admin_faq:
     path: /everblock/faq
