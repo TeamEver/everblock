@@ -31,6 +31,7 @@ use Module;
 use PrettyBlocksModel;
 use Tools;
 use Everblock\Tools\Service\EverBlockProvider;
+use Everblock\Tools\Service\EverBlockShortcodeProvider;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -39,12 +40,18 @@ if (!defined('_PS_VERSION_')) {
 class EverblockPrettyBlocks
 {
     private static ?EverBlockProvider $provider = null;
+    private static ?EverBlockShortcodeProvider $shortcodeProvider = null;
 
     private const MEDIA_PATH = '$/img/cms/prettyblocks/';
 
     public static function setEverBlockProvider(EverBlockProvider $provider): void
     {
         static::$provider = $provider;
+    }
+
+    public static function setShortcodeProvider(EverBlockShortcodeProvider $provider): void
+    {
+        static::$shortcodeProvider = $provider;
     }
 
     private static function resolveProvider(): ?EverBlockProvider
@@ -59,6 +66,27 @@ class EverblockPrettyBlocks
                 $resolved = $container->get(EverBlockProvider::class);
                 if ($resolved instanceof EverBlockProvider) {
                     static::$provider = $resolved;
+
+                    return $resolved;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static function resolveShortcodeProvider(): ?EverBlockShortcodeProvider
+    {
+        if (static::$shortcodeProvider instanceof EverBlockShortcodeProvider) {
+            return static::$shortcodeProvider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockShortcodeProvider::class)) {
+                $resolved = $container->get(EverBlockShortcodeProvider::class);
+                if ($resolved instanceof EverBlockShortcodeProvider) {
+                    static::$shortcodeProvider = $resolved;
 
                     return $resolved;
                 }
@@ -225,10 +253,18 @@ class EverblockPrettyBlocks
             }
             $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
             $blocks = [];
-            $allShortcodes = EverblockShortcode::getAllShortcodes(
-                (int) $context->language->id,
-                (int) $context->shop->id
-            );
+            $shortcodeProvider = static::resolveShortcodeProvider();
+            if ($shortcodeProvider instanceof EverBlockShortcodeProvider) {
+                $allShortcodes = $shortcodeProvider->getAllShortcodes(
+                    (int) $context->shop->id,
+                    (int) $context->language->id
+                );
+            } else {
+                $allShortcodes = EverblockShortcode::getAllShortcodes(
+                    (int) $context->shop->id,
+                    (int) $context->language->id
+                );
+            }
             $provider = $provider ?? static::resolveProvider();
             $everblocks = [];
             if ($provider instanceof EverBlockProvider) {

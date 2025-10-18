@@ -176,6 +176,9 @@ The module allows you to use many shortcodes anywhere in your store. However, re
 
 You can create your own shortcodes from the "Shortcodes" tab accessible in the "Ever block" submenu.
 
+### Doctrine-backed repositories
+Ever Block now exposes modal and shortcode data through dedicated Doctrine repositories and Symfony cache aware providers. Services such as the Pretty Blocks integration and the back-office form data providers rely on these services instead of the legacy static helpers, ensuring that multilingual and multishop shortcodes resolve the expected content consistently. When extending the module you can inject `EverBlockModalProvider` or `EverBlockShortcodeProvider` to reuse the same cached queries in your own services.
+
 -### Basic shortcodes
 - `[product id="1"]`: Display product with ID 1. Optional parameter: `carousel`.
 - `[product id="1,2,3"]`: Display products with IDs 1, 2, and 3. Optional parameter: `carousel`.

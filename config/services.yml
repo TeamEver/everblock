@@ -102,6 +102,7 @@ services:
     Everblock\Tools\Form\DataProvider\ShortcodeFormDataProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
+            $shortcodeProvider: '@Everblock\\Tools\\Service\\EverBlockShortcodeProvider'
     Everblock\Tools\Form\DataProvider\FaqFormDataProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
@@ -131,6 +132,16 @@ services:
             $connection: '@doctrine.dbal.default_connection'
             $cache: '@cache.app'
 
+    Everblock\Tools\Repository\EverBlockModalRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $cache: '@cache.app'
+
+    Everblock\Tools\Repository\EverBlockShortcodeRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $cache: '@cache.app'
+
     Everblock\Tools\Repository\EverBlockFlagRepository:
         arguments:
             $connection: '@doctrine.dbal.default_connection'
@@ -145,6 +156,8 @@ services:
     Everblock\Tools\Service\EverBlockFaqProvider: ~
     Everblock\Tools\Service\EverBlockFlagProvider: ~
     Everblock\Tools\Service\EverBlockTabProvider: ~
+    Everblock\Tools\Service\EverBlockModalProvider: ~
+    Everblock\Tools\Service\EverBlockShortcodeProvider: ~
 
     Everblock\Tools\Controller\Admin\:
         resource: '../src/Controller/Admin'

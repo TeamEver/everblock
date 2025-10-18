@@ -21,6 +21,7 @@
 namespace Everblock\Tools\Form\DataProvider;
 
 use Context;
+use Everblock\Tools\Service\EverBlockShortcodeProvider;
 use Language;
 
 if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
@@ -34,8 +35,10 @@ class ShortcodeFormDataProvider
      */
     private $context;
 
-    public function __construct(Context $context)
-    {
+    public function __construct(
+        Context $context,
+        private readonly EverBlockShortcodeProvider $shortcodeProvider
+    ) {
         $this->context = $context;
     }
 
@@ -68,20 +71,24 @@ class ShortcodeFormDataProvider
     public function getData(int $shortcodeId): array
     {
         $default = $this->getDefaultData();
-        $shortcode = new \EverblockShortcode($shortcodeId, null, $this->context->shop->id);
 
-        if (!\Validate::isLoadedObject($shortcode)) {
-            throw new \RuntimeException($this->trans('The requested shortcode cannot be found.'));
+        try {
+            $shortcode = $this->shortcodeProvider->getShortcodeForForm(
+                $shortcodeId,
+                (int) $this->context->shop->id
+            );
+        } catch (\RuntimeException $exception) {
+            throw new \RuntimeException($this->trans('The requested shortcode cannot be found.'), 0, $exception);
         }
 
-        if ((int) $shortcode->id_shop !== (int) $this->context->shop->id) {
+        if ((int) $shortcode['id_shop'] !== (int) $this->context->shop->id) {
             throw new \RuntimeException($this->trans('You cannot edit this shortcode from the current shop.'));
         }
 
-        $default['id_everblock_shortcode'] = (int) $shortcode->id;
-        $default['shortcode'] = (string) $shortcode->shortcode;
-        $default['title'] = (array) $shortcode->title;
-        $default['content'] = (array) $shortcode->content;
+        $default['id_everblock_shortcode'] = (int) $shortcode['id_everblock_shortcode'];
+        $default['shortcode'] = (string) $shortcode['shortcode'];
+        $default['title'] = array_replace($default['title'], (array) $shortcode['title']);
+        $default['content'] = array_replace($default['content'], (array) $shortcode['content']);
 
         return $default;
     }
