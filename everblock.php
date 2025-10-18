@@ -22,18 +22,14 @@ if (!defined('_PS_VERSION_')) {
 }
 
 require_once('vendor/autoload.php');
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockClass.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTabsClass.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\Domain\EverBlockDomainService;
 use Everblock\Tools\Service\EverBlockFaqProvider;
+use Everblock\Tools\Entity\EverBlock;
+use Everblock\Tools\Entity\EverBlockTranslation;
+use Everblock\Tools\Repository\EverBlockRepository;
 use Everblock\Tools\Service\EverBlockFlagProvider;
 use Everblock\Tools\Service\EverBlockProvider;
 use Everblock\Tools\Service\EverBlockTabProvider;
@@ -70,6 +66,7 @@ class Everblock extends Module
     private ?EverBlockFaqProvider $everBlockFaqProvider = null;
     private ?EverBlockFlagProvider $everBlockFlagProvider = null;
     private ?EverBlockTabProvider $everBlockTabProvider = null;
+    private ?EverBlockRepository $everBlockRepository = null;
 
     public function __construct()
     {
@@ -145,6 +142,27 @@ class Everblock extends Module
                     $this->everBlockFaqProvider = $provider;
 
                     return $this->everBlockFaqProvider;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function getEverBlockRepository(): ?EverBlockRepository
+    {
+        if ($this->everBlockRepository instanceof EverBlockRepository) {
+            return $this->everBlockRepository;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockRepository::class)) {
+                $repository = $container->get(EverBlockRepository::class);
+                if ($repository instanceof EverBlockRepository) {
+                    $this->everBlockRepository = $repository;
+
+                    return $this->everBlockRepository;
                 }
             }
         }
@@ -4907,18 +4925,36 @@ class Everblock extends Module
             }
 
             $idEverblock = (int) trim(explode('-', $state['id_everblock'], 2)[0]);
-            $everblock   = new EverBlockClass(
-                $idEverblock,
-                (int) $this->context->language->id,
-                (int) $this->context->shop->id
-            );
+            $repository = $this->getEverBlockRepository();
+            if (!$repository instanceof EverBlockRepository) {
+                $state['content'] = '';
+                continue;
+            }
 
-            $state['content'] = Validate::isLoadedObject($everblock) ? $everblock->content : '';
+            $block = $repository->findById($idEverblock, (int) $this->context->shop->id);
+            if (!$block instanceof EverBlock) {
+                $state['content'] = '';
+                continue;
+            }
+
+            $translation = $this->resolveEverBlockTranslation($block, (int) $this->context->language->id);
+            $state['content'] = $translation ? (string) $translation->getContent() : '';
         }
         unset($state);
 
         // Les données retournées sont disponibles dans $block.extra
         return ['states' => $states];
+    }
+
+    private function resolveEverBlockTranslation(EverBlock $block, int $languageId): ?EverBlockTranslation
+    {
+        foreach ($block->getTranslations() as $translation) {
+            if ($translation instanceof EverBlockTranslation && $translation->getLanguageId() === $languageId) {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 
     public function hookBeforeRenderingEverblockCategoryTabs($params)

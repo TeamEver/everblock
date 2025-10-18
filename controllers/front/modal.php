@@ -22,6 +22,11 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Entity\EverBlock;
+use Everblock\Tools\Entity\EverBlockTranslation;
+use Everblock\Tools\Repository\EverBlockRepository;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+
 class EverblockmodalModuleFrontController extends ModuleFrontController
 {
     public function init()
@@ -105,13 +110,8 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
             die($response);
         }
-        $block = new EverBlockClass(
-            $blockId,
-            $this->context->language->id,
-            $this->context->shop->id
-
-        );
-        if (!Validate::isLoadedObject($block)) {
+        $block = $this->findBlock($blockId);
+        if (null === $block) {
             die();
         }
         $modalDelay = (int) $block->delay;
@@ -152,5 +152,54 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             die($response);
         }
         die();
+    }
+
+    private function findBlock(int $blockId): ?\stdClass
+    {
+        $repository = $this->getBlockRepository();
+        if (!$repository instanceof EverBlockRepository) {
+            return null;
+        }
+
+        $block = $repository->findById($blockId, (int) $this->context->shop->id);
+        if (!$block instanceof EverBlock) {
+            return null;
+        }
+
+        $translation = $this->resolveTranslation($block, (int) $this->context->language->id);
+        $content = $translation ? (string) $translation->getContent() : '';
+
+        return (object) [
+            'id' => $block->getId(),
+            'delay' => $block->getDelay(),
+            'content' => $content,
+        ];
+    }
+
+    private function resolveTranslation(EverBlock $block, int $languageId): ?EverBlockTranslation
+    {
+        foreach ($block->getTranslations() as $translation) {
+            if ($translation instanceof EverBlockTranslation && $translation->getLanguageId() === $languageId) {
+                return $translation;
+            }
+        }
+
+        return null;
+    }
+
+    private function getBlockRepository(): ?EverBlockRepository
+    {
+        if (!class_exists(SymfonyContainer::class)) {
+            return null;
+        }
+
+        $container = SymfonyContainer::getInstance();
+        if (null === $container || !$container->has(EverBlockRepository::class)) {
+            return null;
+        }
+
+        $service = $container->get(EverBlockRepository::class);
+
+        return $service instanceof EverBlockRepository ? $service : null;
     }
 }

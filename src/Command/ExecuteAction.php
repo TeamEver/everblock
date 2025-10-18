@@ -29,6 +29,8 @@ use Currency;
 use Db;
 use DbQuery;
 use Everblock\Tools\Bridge\Legacy\EverBlockLegacyAdapter;
+use Everblock\Tools\Entity\EverBlockTranslation;
+use Everblock\Tools\Repository\EverBlockRepository;
 use Everblock\Tools\Service\ImportFile;
 use Everblock\Tools\Service\EverblockCache;
 use EverblockTools;
@@ -146,7 +148,11 @@ class ExecuteAction extends Command
      */
     private $legacyAdapter;
 
-    public function __construct(KernelInterface $kernel, EverBlockLegacyAdapter $legacyAdapter)
+    public function __construct(
+        KernelInterface $kernel,
+        EverBlockLegacyAdapter $legacyAdapter,
+        private readonly EverBlockRepository $blockRepository
+    )
     {
         parent::__construct();
         $this->legacyAdapter = $legacyAdapter;
@@ -421,18 +427,48 @@ class ExecuteAction extends Command
             $sql->where('id_shop = ' . (int) $shop->id);
             $blocks = Db::getInstance()->executeS($sql);
             foreach ($blocks as $blk) {
-                $block = new EverBlockClass((int) $blk['id_everblock']);
-                if (isset($block->content[$idLangFrom])) {
-                    $block->content[(int) $idLangTo] = $block->content[$idLangFrom];
+                $block = $this->blockRepository->findById((int) $blk['id_everblock'], (int) $shop->id);
+                if (!$block) {
+                    continue;
                 }
-                if (isset($block->custom_code[$idLangFrom])) {
-                    $block->custom_code[(int) $idLangTo] = $block->custom_code[$idLangFrom];
+
+                $source = $this->findTranslation($block->getTranslations(), (int) $idLangFrom);
+                if (!$source) {
+                    continue;
                 }
+
+                $translations = [];
+                foreach ($block->getTranslations() as $translation) {
+                    if (!$translation instanceof EverBlockTranslation) {
+                        continue;
+                    }
+
+                    $languageId = $translation->getLanguageId();
+                    if ($languageId === (int) $idLangTo) {
+                        $translations[$languageId] = [
+                            'content' => $source->getContent(),
+                            'custom_code' => $source->getCustomCode(),
+                        ];
+                    } else {
+                        $translations[$languageId] = [
+                            'content' => $translation->getContent(),
+                            'custom_code' => $translation->getCustomCode(),
+                        ];
+                    }
+                }
+
+                if (!isset($translations[(int) $idLangTo])) {
+                    $translations[(int) $idLangTo] = [
+                        'content' => $source->getContent(),
+                        'custom_code' => $source->getCustomCode(),
+                    ];
+                }
+
                 try {
-                    $block->save();
-                    $output->writeln('<comment>Duplicated block ' . $block->id . ' from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</comment>');
-                } catch (Exception $e) {
-                    $output->writeln('<warning>' . $e->getMessage() . '</warning>');
+                    $this->blockRepository->save($block, $translations);
+                    $output->writeln('<comment>Duplicated block ' . $block->getId() . ' from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</comment>');
+                } catch (\Throwable $exception) {
+                    $output->writeln('<warning>' . $exception->getMessage() . '</warning>');
                 }
             }
             $this->legacyAdapter->clearCacheForLanguageAndShop((int) $idLangFrom, (int) $shop->id);
@@ -567,6 +603,20 @@ class ExecuteAction extends Command
             return self::SUCCESS;
         }
         return self::ABORTED;
+    }
+
+    /**
+     * @param iterable<EverBlockTranslation> $translations
+     */
+    private function findTranslation(iterable $translations, int $languageId): ?EverBlockTranslation
+    {
+        foreach ($translations as $translation) {
+            if ($translation instanceof EverBlockTranslation && $translation->getLanguageId() === $languageId) {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 
     /**

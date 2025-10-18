@@ -188,6 +188,21 @@ class EverBlockRepository
         $this->clearCache();
     }
 
+    public function getNextPosition(int $hookId, int $shopId): int
+    {
+        $qb = $this->connection->createQueryBuilder();
+        $qb->select('MAX(position)')
+            ->from($this->getTableName('everblock'))
+            ->where('id_hook = :id_hook')
+            ->andWhere('id_shop = :id_shop')
+            ->setParameter('id_hook', $hookId, ParameterType::INTEGER)
+            ->setParameter('id_shop', $shopId, ParameterType::INTEGER);
+
+        $currentMax = (int) $qb->executeQuery()->fetchOne();
+
+        return $currentMax + 1;
+    }
+
     private function resolveBootstrapClass(int $colNumber): string
     {
         $class = 'col-';

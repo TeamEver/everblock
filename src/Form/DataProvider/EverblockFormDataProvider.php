@@ -23,7 +23,9 @@ namespace Everblock\Tools\Form\DataProvider;
 use Category;
 use CMSCategory;
 use Context;
-use EverBlockClass;
+use Everblock\Tools\Entity\EverBlock;
+use Everblock\Tools\Entity\EverBlockTranslation;
+use Everblock\Tools\Repository\EverBlockRepository;
 use Group;
 use Hook;
 use Language;
@@ -41,7 +43,7 @@ class EverblockFormDataProvider
      */
     private $context;
 
-    public function __construct(Context $context)
+    public function __construct(Context $context, private readonly EverBlockRepository $blockRepository)
     {
         $this->context = $context;
     }
@@ -89,12 +91,12 @@ class EverblockFormDataProvider
             'css_class' => '',
             'data_attribute' => '',
             'bootstrap_class' => '',
-            'position' => '',
+            'position' => null,
             'modal' => false,
-            'delay' => '',
-            'timeout' => '',
-            'date_start' => '',
-            'date_end' => '',
+            'delay' => null,
+            'timeout' => null,
+            'date_start' => null,
+            'date_end' => null,
             'device' => 0,
         ];
     }
@@ -105,43 +107,44 @@ class EverblockFormDataProvider
     public function getData(int $everblockId): array
     {
         $default = $this->getDefaultData();
-        $block = new EverBlockClass($everblockId);
+        $shopId = isset($this->context->shop) ? (int) $this->context->shop->id : 0;
+        $block = $this->blockRepository->findById($everblockId, $shopId);
 
-        if (!\Validate::isLoadedObject($block)) {
+        if (!$block instanceof EverBlock) {
             return $default;
         }
 
-        $default['id_everblock'] = (int) $block->id;
-        $default['name'] = (string) $block->name;
-        $default['id_hook'] = (int) $block->id_hook;
-        $default['content'] = (array) $block->content;
-        $default['custom_code'] = (array) $block->custom_code;
-        $default['active'] = (bool) $block->active;
-        $default['groupBox'] = (array) json_decode((string) $block->groups, true) ?: [];
-        $default['categories'] = (array) json_decode((string) $block->categories, true) ?: [];
-        $default['manufacturers'] = (array) json_decode((string) $block->manufacturers, true) ?: [];
-        $default['suppliers'] = (array) json_decode((string) $block->suppliers, true) ?: [];
-        $default['cms_categories'] = (array) json_decode((string) $block->cms_categories, true) ?: [];
-        $default['only_home'] = (bool) $block->only_home;
-        $default['only_category'] = (bool) $block->only_category;
-        $default['only_category_product'] = (bool) $block->only_category_product;
-        $default['only_manufacturer'] = (bool) $block->only_manufacturer;
-        $default['only_supplier'] = (bool) $block->only_supplier;
-        $default['only_cms_category'] = (bool) $block->only_cms_category;
-        $default['obfuscate_link'] = (bool) $block->obfuscate_link;
-        $default['add_container'] = (bool) $block->add_container;
-        $default['lazyload'] = (bool) $block->lazyload;
-        $default['background'] = (string) $block->background;
-        $default['css_class'] = (string) $block->css_class;
-        $default['data_attribute'] = (string) $block->data_attribute;
-        $default['bootstrap_class'] = (string) $block->bootstrap_class;
-        $default['position'] = (string) $block->position;
-        $default['modal'] = (bool) $block->modal;
-        $default['delay'] = (string) $block->delay;
-        $default['timeout'] = (string) $block->timeout;
-        $default['date_start'] = (string) $block->date_start;
-        $default['date_end'] = (string) $block->date_end;
-        $default['device'] = (int) $block->device;
+        $default['id_everblock'] = $block->getId();
+        $default['name'] = $block->getName();
+        $default['id_hook'] = $block->getHookId();
+        $default['content'] = $this->extractTranslations($block, fn (EverBlockTranslation $translation) => (string) $translation->getContent());
+        $default['custom_code'] = $this->extractTranslations($block, fn (EverBlockTranslation $translation) => (string) $translation->getCustomCode());
+        $default['active'] = $block->isActive();
+        $default['groupBox'] = $this->decodeJsonIds($block->getGroups());
+        $default['categories'] = $this->decodeJsonIds($block->getCategories());
+        $default['manufacturers'] = $this->decodeJsonIds($block->getManufacturers());
+        $default['suppliers'] = $this->decodeJsonIds($block->getSuppliers());
+        $default['cms_categories'] = $this->decodeJsonIds($block->getCmsCategories());
+        $default['only_home'] = $block->getOnlyHome();
+        $default['only_category'] = $block->getOnlyCategory();
+        $default['only_category_product'] = $block->getOnlyCategoryProduct();
+        $default['only_manufacturer'] = $block->getOnlyManufacturer();
+        $default['only_supplier'] = $block->getOnlySupplier();
+        $default['only_cms_category'] = $block->getOnlyCmsCategory();
+        $default['obfuscate_link'] = $block->getObfuscateLink();
+        $default['add_container'] = $block->getAddContainer();
+        $default['lazyload'] = $block->getLazyload();
+        $default['background'] = (string) ($block->getBackground() ?? '');
+        $default['css_class'] = (string) ($block->getCssClass() ?? '');
+        $default['data_attribute'] = (string) ($block->getDataAttribute() ?? '');
+        $default['bootstrap_class'] = (string) ($block->getBootstrapClass() ?? '');
+        $default['position'] = $block->getPosition();
+        $default['modal'] = $block->isModal();
+        $default['delay'] = $block->getDelay();
+        $default['timeout'] = $block->getTimeout();
+        $default['date_start'] = $block->getDateStart();
+        $default['date_end'] = $block->getDateEnd();
+        $default['device'] = $block->getDevice();
 
         return $default;
     }
@@ -430,5 +433,41 @@ class EverblockFormDataProvider
     private function trans(string $message): string
     {
         return $this->context->getTranslator()->trans($message, [], 'Modules.Everblock.Admin');
+    }
+
+    /**
+     * @return array<int>
+     */
+    private function decodeJsonIds(?string $value): array
+    {
+        if (!$value) {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        return array_map('intval', $decoded);
+    }
+
+    /**
+     * @param callable(EverBlockTranslation): string $accessor
+     *
+     * @return array<int, string>
+     */
+    private function extractTranslations(EverBlock $block, callable $accessor): array
+    {
+        $values = [];
+        foreach ($block->getTranslations() as $translation) {
+            if (!$translation instanceof EverBlockTranslation) {
+                continue;
+            }
+
+            $values[$translation->getLanguageId()] = $accessor($translation);
+        }
+
+        return $values;
     }
 }

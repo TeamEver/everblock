@@ -12,6 +12,9 @@
     "psr-4": {
       "Everblock\\Tools\\": "src/"
     },
+    "classmap": [
+      "models/"
+    ],
     "exclude-from-classmap": []
   },
   "autoload-dev": {

@@ -24,6 +24,8 @@ services:
     everblock.tools.execute_action:
         class: Everblock\Tools\Command\ExecuteAction
         public: true
+        arguments:
+            $blockRepository: '@Everblock\\Tools\\Repository\\EverBlockRepository'
         tags:
             - { name: 'console.command' }
 
@@ -94,6 +96,7 @@ services:
     Everblock\Tools\Form\DataProvider\EverblockFormDataProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
+            $blockRepository: '@Everblock\\Tools\\Repository\\EverBlockRepository'
 
     Everblock\Tools\Form\DataProvider\HookFormDataProvider:
         arguments:
@@ -110,6 +113,7 @@ services:
     Everblock\Tools\Form\Handler\EverblockFormHandler:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
+            $applicationService: '@Everblock\\Tools\\Application\\EverBlockApplicationService'
 
     Everblock\Tools\Form\Handler\HookFormHandler:
         arguments:

@@ -21,9 +21,9 @@
 namespace Everblock\Tools\Controller\Admin;
 
 use Context;
-use EverBlockClass;
 use EverblockTools;
 use Everblock\Tools\Bridge\Legacy\EverBlockLegacyAdapter;
+use Everblock\Tools\Application\EverBlockApplicationService;
 use Everblock\Tools\Form\DataProvider\EverblockFormDataProvider;
 use Everblock\Tools\Form\Handler\EverblockFormHandler;
 use Everblock\Tools\Form\Type\EverblockFormType;
@@ -36,7 +36,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\RouterInterface;
 use Tools;
-use Validate;
 
 if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
     exit;
@@ -79,6 +78,8 @@ class EverblockBlockController extends BaseEverblockController
      */
     private $legacyAdapter;
 
+    private EverBlockApplicationService $applicationService;
+
     public function __construct(
         EverblockGridDefinitionFactory $gridDefinitionFactory,
         EverblockGridDataFactory $gridDataFactory,
@@ -87,6 +88,7 @@ class EverblockBlockController extends BaseEverblockController
         EverblockFormHandler $formHandler,
         RouterInterface $router,
         EverBlockLegacyAdapter $legacyAdapter,
+        EverBlockApplicationService $applicationService,
         ?Context $context = null,
         ?\PrestaShop\PrestaShop\Adapter\Module\Repository\ModuleRepository $moduleRepository = null,
         ?\Symfony\Contracts\Translation\TranslatorInterface $translator = null,
@@ -101,6 +103,7 @@ class EverblockBlockController extends BaseEverblockController
         $this->formHandler = $formHandler;
         $this->router = $router;
         $this->legacyAdapter = $legacyAdapter;
+        $this->applicationService = $applicationService;
     }
 
     public function index(Request $request): Response
@@ -188,7 +191,7 @@ class EverblockBlockController extends BaseEverblockController
         $formOptions = $this->formDataProvider->getFormOptions();
         $form = $this->formFactory->create(EverblockFormType::class, $formData, $formOptions);
 
-        $result = $this->formHandler->handle($form, $request, new EverBlockClass($everblockId));
+        $result = $this->formHandler->handle($form, $request, $everblockId);
 
         if ($result['submitted'] && $result['success']) {
             $this->addFlash(
@@ -233,49 +236,10 @@ class EverblockBlockController extends BaseEverblockController
             return $this->redirectToRoute('everblock_admin_blocks');
         }
 
-        $source = new EverBlockClass($everblockId);
-        if (!Validate::isLoadedObject($source)) {
-            $this->addFlash('error', $this->translate('Unable to find the block to duplicate.'));
-
-            return $this->redirectToRoute('everblock_admin_blocks');
-        }
-
-        $duplicate = new EverBlockClass();
-        $duplicate->name = $source->name;
-        $duplicate->id_hook = (int) $source->id_hook;
-        $duplicate->id_shop = (int) $source->id_shop;
-        $duplicate->only_home = (bool) $source->only_home;
-        $duplicate->only_category = (bool) $source->only_category;
-        $duplicate->only_category_product = (bool) $source->only_category_product;
-        $duplicate->only_manufacturer = (bool) $source->only_manufacturer;
-        $duplicate->only_supplier = (bool) $source->only_supplier;
-        $duplicate->only_cms_category = (bool) $source->only_cms_category;
-        $duplicate->categories = $source->categories;
-        $duplicate->manufacturers = $source->manufacturers;
-        $duplicate->suppliers = $source->suppliers;
-        $duplicate->cms_categories = $source->cms_categories;
-        $duplicate->groups = $source->groups;
-        $duplicate->content = $source->content;
-        $duplicate->custom_code = $source->custom_code;
-        $duplicate->device = (int) $source->device;
-        $duplicate->background = $source->background;
-        $duplicate->css_class = $source->css_class;
-        $duplicate->data_attribute = $source->data_attribute;
-        $duplicate->bootstrap_class = $source->bootstrap_class;
-        $duplicate->position = (int) $source->position;
-        $duplicate->delay = (int) $source->delay;
-        $duplicate->timeout = (int) $source->timeout;
-        $duplicate->modal = (bool) $source->modal;
-        $duplicate->date_start = $source->date_start;
-        $duplicate->date_end = $source->date_end;
-        $duplicate->active = false;
-        $duplicate->obfuscate_link = (bool) $source->obfuscate_link;
-        $duplicate->add_container = (bool) $source->add_container;
-        $duplicate->lazyload = (bool) $source->lazyload;
-
-        if ($duplicate->save()) {
+        try {
+            $this->applicationService->duplicate($everblockId, $this->getShopId(), false);
             $this->addFlash('success', $this->translate('The block has been duplicated.'));
-        } else {
+        } catch (\Throwable $exception) {
             $this->addFlash('error', $this->translate('An error occurred while duplicating the block.'));
         }
 
@@ -290,18 +254,11 @@ class EverblockBlockController extends BaseEverblockController
             return $this->redirectToRoute('everblock_admin_blocks');
         }
 
-        $block = new EverBlockClass($everblockId);
-        if (!Validate::isLoadedObject($block)) {
-            $this->addFlash('error', $this->translate('Unable to update the block status.'));
-
-            return $this->redirectToRoute('everblock_admin_blocks');
-        }
-
-        $block->active = (int) !$block->active;
-        if ($block->save()) {
+        try {
+            $this->applicationService->toggle($everblockId, $this->getShopId());
             $this->addFlash('success', $this->translate('The block status has been updated.'));
-        } else {
-            $this->addFlash('error', $this->translate('An error occurred while updating the block status.'));
+        } catch (\Throwable $exception) {
+            $this->addFlash('error', $this->translate('Unable to update the block status.'));
         }
 
         return $this->redirectToRoute('everblock_admin_blocks');
@@ -322,9 +279,11 @@ class EverblockBlockController extends BaseEverblockController
 
         $deleted = 0;
         foreach ($ids as $id) {
-            $block = new EverBlockClass((int) $id);
-            if (Validate::isLoadedObject($block) && $block->delete()) {
+            try {
+                $this->applicationService->delete((int) $id, $this->getShopId());
                 ++$deleted;
+            } catch (\Throwable $exception) {
+                continue;
             }
         }
 
@@ -352,16 +311,11 @@ class EverblockBlockController extends BaseEverblockController
 
         $duplicated = 0;
         foreach ($ids as $id) {
-            $block = new EverBlockClass((int) $id);
-            if (!Validate::isLoadedObject($block)) {
-                continue;
-            }
-
-            $duplicate = $block->duplicateObject();
-            if ($duplicate && $duplicate->id) {
-                $duplicate->active = false;
-                $duplicate->save();
+            try {
+                $this->applicationService->duplicate((int) $id, $this->getShopId(), false);
                 ++$duplicated;
+            } catch (\Throwable $exception) {
+                continue;
             }
         }
 
@@ -418,6 +372,11 @@ class EverblockBlockController extends BaseEverblockController
         $this->addFlash('success', $this->translate('Cache has been cleared.'));
 
         return $this->redirectToRoute('everblock_admin_blocks');
+    }
+
+    private function getShopId(): int
+    {
+        return isset($this->context->shop) ? (int) $this->context->shop->id : 0;
     }
 
     private function isTokenValid(Request $request, string $tokenId): bool
