@@ -1,0 +1,3 @@
+twig:
+    paths:
+        '%kernel.project_dir%/modules/everblock/templates': Everblock

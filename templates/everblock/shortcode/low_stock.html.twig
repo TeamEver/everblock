@@ -1,0 +1,59 @@
+{#
+ # 2019-2025 Team Ever
+ #
+ # NOTICE OF LICENSE
+ #
+ # This source file is subject to the Academic Free License (AFL 3.0)
+ # that is bundled with this package in the file LICENSE.txt.
+ # It is also available through the world-wide-web at this URL:
+ # http://opensource.org/licenses/afl-3.0.php
+ # If you did not receive a copy of the license and are unable to
+ # obtain it through the world-wide-web, please send an email
+ # to license@prestashop.com so we can send you a copy immediately.
+ #
+ # @author    Team Ever <https://www.team-ever.com/>
+ # @copyright 2019-2025 Team Ever
+ # @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ #}
+{% set columns = cols|default(4)|int %}
+{% if products is not empty %}
+  <div class="eb-low-stock cols-{{ columns }}">
+    <div class="products row">
+      {% for product in products %}
+        {% include '@Everblock/shortcode/_product_card.html.twig' with { product: product } %}
+      {% endfor %}
+    </div>
+  </div>
+{% elseif variants is not empty %}
+  <div class="eb-low-stock eb-low-stock--variants table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'Product'|trans({}, 'Modules.Everblock.Shop') }}</th>
+          <th scope="col">{{ 'Attributes'|trans({}, 'Modules.Everblock.Shop') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for variant in variants %}
+          <tr>
+            <td>
+              <a href="{{ variant.url|default('#') }}">
+                {% if variant.image is not empty %}
+                  <img src="{{ variant.image }}" alt="" loading="lazy" class="me-2" style="max-width: 60px; height: auto;">
+                {% endif %}
+                {{ variant.id_product|default('') }}
+              </a>
+            </td>
+            <td>
+              {% if variant.attributes is not empty %}
+                {{ variant.attributes|join(', ') }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="eb-low-stock--empty">{{ empty_message|default('No low stock products.') }}</div>
+{% endif %}

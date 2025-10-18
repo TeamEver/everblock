@@ -23,7 +23,7 @@ use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Service\EverBlockShortcodeProvider;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Shortcode\ShortcodeRenderer;
-use Everblock\Tools\Shortcode\ShortcodeRenderingContext;
+use Everblock\Tools\Shortcode\ShortcodeRenderingContextFactory;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -47,9 +47,10 @@ class EverblockTools extends ObjectModel
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $renderer = static::resolveShortcodeRenderer($module);
+        $contextFactory = static::resolveShortcodeRenderingContextFactory($module);
 
-        if ($renderer instanceof ShortcodeRenderer) {
-            $renderContext = ShortcodeRenderingContext::fromContext($context);
+        if ($renderer instanceof ShortcodeRenderer && $contextFactory instanceof ShortcodeRenderingContextFactory) {
+            $renderContext = $contextFactory->createFromContext($context);
 
             return $renderer->render($txt, $renderContext, $module);
         }
@@ -85,6 +86,33 @@ class EverblockTools extends ObjectModel
         $service = $container->get(ShortcodeRenderer::class);
 
         return $service instanceof ShortcodeRenderer ? $service : null;
+    }
+
+    private static function resolveShortcodeRenderingContextFactory(Everblock $module): ?ShortcodeRenderingContextFactory
+    {
+        $container = null;
+
+        try {
+            if (method_exists($module, 'getContainer')) {
+                $container = $module->getContainer();
+            } elseif (method_exists(Module::class, 'getContainer')) {
+                $container = Module::getContainer();
+            }
+        } catch (\Throwable) {
+            $container = null;
+        }
+
+        if (!$container instanceof ContainerInterface) {
+            return null;
+        }
+
+        if (!$container->has(ShortcodeRenderingContextFactory::class)) {
+            return null;
+        }
+
+        $service = $container->get(ShortcodeRenderingContextFactory::class);
+
+        return $service instanceof ShortcodeRenderingContextFactory ? $service : null;
     }
 
     /**
