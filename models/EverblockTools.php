@@ -22,10 +22,12 @@ use Everblock\Tools\Entity\EverBlockTranslation;
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Service\EverBlockShortcodeProvider;
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Shortcode\ShortcodeRenderer;
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
+use Psr\Container\ContainerInterface;
 use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
@@ -43,87 +45,43 @@ class EverblockTools extends ObjectModel
 
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
+        $renderer = static::resolveShortcodeRenderer($module);
+
+        if ($renderer instanceof ShortcodeRenderer) {
+            return $renderer->render($txt, $context, $module);
+        }
+
         Hook::exec('displayBeforeRenderingShortcodes', ['html' => &$txt]);
-        $controllerTypes = [
-            'front',
-            'modulefront',
-        ];
-        $txt = static::getEverShortcodes($txt, $context);
-        $shortcodeHandlers = [
-            '[alert' => 'getAlertShortcode',
-            '[everfaq' => ['method' => 'getFaqShortcodes', 'args' => ['context', 'module']],
-            '[everinstagram]' => ['method' => 'getInstagramShortcodes', 'args' => ['context', 'module']],
-            '[product' => ['method' => 'getProductShortcodes', 'args' => ['context', 'module']],
-            '[product_image' => ['method' => 'getProductImageShortcodes', 'args' => ['context', 'module']],
-            '[productfeature' => ['method' => 'getFeatureProductShortcodes', 'args' => ['context', 'module']],
-            '[productfeaturevalue' => ['method' => 'getFeatureValueProductShortcodes', 'args' => ['context', 'module']],
-            '[category' => ['method' => 'getCategoryShortcodes', 'args' => ['context', 'module']],
-            '[manufacturer' => ['method' => 'getManufacturerShortcodes', 'args' => ['context', 'module']],
-            '[brands' => ['method' => 'getBrandsShortcode', 'args' => ['context', 'module']],
-            '[storelocator]' => ['method' => 'generateGoogleMap', 'args' => ['context', 'module']],
-            '[evermap]' => ['method' => 'getEverMapShortcode', 'args' => ['context', 'module']],
-            '{hook h=' => 'replaceHook',
-            '[llorem]' => ['method' => 'generateLoremIpsum', 'args' => ['context']],
-            '[everblock' => ['method' => 'getEverBlockShortcode', 'args' => ['context', 'module']],
-            '[subcategories' => ['method' => 'getSubcategoriesShortcode', 'args' => ['context', 'module']],
-            '[everstore' => ['method' => 'getStoreShortcode', 'args' => ['context', 'module']],
-            '[video' => 'getVideoShortcode',
-            '[qcdacf' => ['method' => 'getQcdAcfCode', 'args' => ['context']],
-            '[displayQcdSvg' => ['method' => 'getQcdSvgCode', 'args' => ['context']],
-            '[everimg' => ['method' => 'getEverImgShortcode', 'args' => ['context', 'module']],
-            '[wordpress-posts]' => ['method' => 'getWordpressPostsShortcode', 'args' => ['context', 'module']],
-            '[googlereviews' => ['method' => 'getGoogleReviewsShortcode', 'args' => ['context', 'module']],
-            '[best-sales' => ['method' => 'getBestSalesShortcode', 'args' => ['context', 'module']],
-            '[categorybestsales' => ['method' => 'getCategoryBestSalesShortcode', 'args' => ['context', 'module']],
-            '[brandbestsales' => ['method' => 'getBrandBestSalesShortcode', 'args' => ['context', 'module']],
-            '[featurebestsales' => ['method' => 'getFeatureBestSalesShortcode', 'args' => ['context', 'module']],
-            '[featurevaluebestsales' => ['method' => 'getFeatureValueBestSalesShortcode', 'args' => ['context', 'module']],
-            '[last-products' => ['method' => 'getLastProductsShortcode', 'args' => ['context', 'module']],
-            '[recently_viewed' => ['method' => 'getRecentlyViewedShortcode', 'args' => ['context', 'module']],
-            '[promo-products' => ['method' => 'getPromoProductsShortcode', 'args' => ['context', 'module']],
-            '[products_by_tag' => ['method' => 'getProductsByTagShortcode', 'args' => ['context', 'module']],
-            '[low_stock' => ['method' => 'getLowStockShortcode', 'args' => ['context', 'module']],
-            '[evercart]' => ['method' => 'getCartShortcode', 'args' => ['context', 'module']],
-            '[cart_total]' => ['method' => 'getCartTotalShortcode', 'args' => ['context']],
-            '[cart_quantity]' => ['method' => 'getCartQuantityShortcode', 'args' => ['context']],
-            '[shop_logo]' => ['method' => 'getShopLogoShortcode', 'args' => ['context']],
-            '[newsletter_form]' => ['method' => 'getNewsletterFormShortcode', 'args' => ['context', 'module']],
-            '[nativecontact]' => ['method' => 'getNativeContactShortcode', 'args' => ['context', 'module']],
-            '[evercontactform_open]' => ['method' => 'getFormShortcode', 'args' => ['context', 'module']],
-            '[everorderform_open]' => ['method' => 'getOrderFormShortcode', 'args' => ['context', 'module']],
-            '[random_product' => ['method' => 'getRandomProductsShortcode', 'args' => ['context', 'module']],
-            '[accessories' => ['method' => 'getAccessoriesShortcode', 'args' => ['context', 'module']],
-            '[linkedproducts' => ['method' => 'getLinkedProductsShortcode', 'args' => ['context', 'module']],
-            '[crosselling' => ['method' => 'getCrossSellingShortcode', 'args' => ['context', 'module']],
-            '[widget' => 'getWidgetShortcode',
-            '[prettyblocks' => ['method' => 'getPrettyblocksShortcodes', 'args' => ['context', 'module']],
-            '[everaddtocart' => ['method' => 'getAddToCartShortcode', 'args' => ['context', 'module']],
-            '[cms' => ['method' => 'getCmsShortcode', 'args' => ['context']],
-        ];
-
-        foreach ($shortcodeHandlers as $needle => $handler) {
-            if (strpos($txt, $needle) === false) {
-                continue;
-            }
-
-            if (is_string($handler)) {
-                $method = $handler;
-                $args = [];
-            } else {
-                $method = $handler['method'];
-                $args = $handler['args'] ?? [];
-            }
-
-            $callArgs = array_merge([$txt], static::resolveShortcodeArgs($args, $context, $module));
-            $txt = forward_static_call_array([static::class, $method], $callArgs);
-        }
-        if (in_array($context->controller->controller_type, $controllerTypes)) {
-            $txt = static::getCustomerShortcodes($txt, $context);
-            $txt = static::obfuscateTextByClass($txt);
-        }
-        $txt = static::renderSmartyVars($txt, $context);
         Hook::exec('displayAfterRenderingShortcodes', ['html' => &$txt]);
+
         return $txt;
+    }
+
+    private static function resolveShortcodeRenderer(Everblock $module): ?ShortcodeRenderer
+    {
+        $container = null;
+
+        try {
+            if (method_exists($module, 'getContainer')) {
+                $container = $module->getContainer();
+            } elseif (method_exists(Module::class, 'getContainer')) {
+                $container = Module::getContainer();
+            }
+        } catch (\Throwable) {
+            $container = null;
+        }
+
+        if (!$container instanceof ContainerInterface) {
+            return null;
+        }
+
+        if (!$container->has(ShortcodeRenderer::class)) {
+            return null;
+        }
+
+        $service = $container->get(ShortcodeRenderer::class);
+
+        return $service instanceof ShortcodeRenderer ? $service : null;
     }
 
     /**
