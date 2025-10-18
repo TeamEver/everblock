@@ -31,6 +31,11 @@ class EverBlockClass extends ObjectModel
     /** @var EverBlockProvider|null */
     protected static $provider;
 
+    private static function triggerLegacyDeprecation(string $method): void
+    {
+        @trigger_error(sprintf('%s::%s() is deprecated and will be removed in a future major version.', __CLASS__, $method), E_USER_DEPRECATED);
+    }
+
     public $id_everblock;
     public $name;
     public $content;
@@ -250,11 +255,13 @@ class EverBlockClass extends ObjectModel
 
     public static function setProvider(EverBlockProvider $provider): void
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         static::$provider = $provider;
     }
 
     protected static function getProvider(): EverBlockProvider
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockProvider) {
             return static::$provider;
         }
@@ -276,11 +283,13 @@ class EverBlockClass extends ObjectModel
 
     public static function getAllBlocks(int $idLang, int $idShop): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         return static::getProvider()->getAllBlocks($idLang, $idShop);
     }
 
     public static function cleanBlocksCacheOnDate(int $idLang, int $idShop)
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         $provider = static::getProvider();
         $blocks = $provider->getAllBlocks($idLang, $idShop);
         foreach ($blocks as $block) {
@@ -307,11 +316,13 @@ class EverBlockClass extends ObjectModel
 
     public static function getBlocks(int $idHook, int $idLang, int $idShop): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         return static::getProvider()->getBlocks($idHook, $idLang, $idShop);
     }
 
     public static function getBootstrapColClass(int $colNumber)
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         return static::getProvider()->getBootstrapColClass($colNumber);
     }
 }

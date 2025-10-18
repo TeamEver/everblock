@@ -29,6 +29,11 @@ class EverblockFaq extends ObjectModel
     /** @var EverBlockFaqProvider|null */
     protected static $provider;
 
+    private static function triggerLegacyDeprecation(string $method): void
+    {
+        @trigger_error(sprintf('%s::%s() is deprecated and will be removed in a future major version.', __CLASS__, $method), E_USER_DEPRECATED);
+    }
+
     public $id_everblock_faq;
     public $id_shop;
     public $id_lang;
@@ -99,11 +104,13 @@ class EverblockFaq extends ObjectModel
 
     public static function setProvider(EverBlockFaqProvider $provider): void
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         static::$provider = $provider;
     }
 
     protected static function getProvider(): EverBlockFaqProvider
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockFaqProvider) {
             return static::$provider;
         }
@@ -125,11 +132,13 @@ class EverblockFaq extends ObjectModel
 
     public static function getAllFaq(int $shopId, int $langId): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         return static::getProvider()->getAllFaq($shopId, $langId);
     }
 
     public static function getFaqByTagName(int $shopId, int $langId, string $tagName): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         return static::getProvider()->getFaqByTagName($shopId, $langId, $tagName);
     }
 }
