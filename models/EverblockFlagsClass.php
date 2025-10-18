@@ -17,13 +17,18 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+use Everblock\Tools\Service\EverBlockFlagProvider;
 use Everblock\Tools\Service\EverblockCache;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 class EverblockFlagsClass extends ObjectModel
 {
+    /** @var EverBlockFlagProvider|null */
+    protected static $provider;
+
     public $id_everblock_flags;
     public $id_product;
     public $id_shop;
@@ -66,6 +71,32 @@ class EverblockFlagsClass extends ObjectModel
             ],
         ],
     ];
+
+    public static function setProvider(EverBlockFlagProvider $provider): void
+    {
+        static::$provider = $provider;
+    }
+
+    protected static function getProvider(): ?EverBlockFlagProvider
+    {
+        if (static::$provider instanceof EverBlockFlagProvider) {
+            return static::$provider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockFlagProvider::class)) {
+                $provider = $container->get(EverBlockFlagProvider::class);
+                if ($provider instanceof EverBlockFlagProvider) {
+                    static::$provider = $provider;
+
+                    return $provider;
+                }
+            }
+        }
+
+        return null;
+    }
 
     /**
      * get tab object per product & shop, admin only (no cache)

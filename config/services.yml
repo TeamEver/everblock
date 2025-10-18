@@ -45,6 +45,12 @@ services:
         tags:
             - { name: 'console.command' }
 
+    everblock.tools.cleanup_legacy_models:
+        class: Everblock\Tools\Command\CleanupLegacyModelsCommand
+        public: true
+        tags:
+            - { name: 'console.command' }
+
     Everblock\Tools\Service\Admin\NavigationBuilder:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
@@ -125,8 +131,20 @@ services:
             $connection: '@doctrine.dbal.default_connection'
             $cache: '@cache.app'
 
+    Everblock\Tools\Repository\EverBlockFlagRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $cache: '@cache.app'
+
+    Everblock\Tools\Repository\EverBlockTabRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $cache: '@cache.app'
+
     Everblock\Tools\Service\EverBlockProvider: ~
     Everblock\Tools\Service\EverBlockFaqProvider: ~
+    Everblock\Tools\Service\EverBlockFlagProvider: ~
+    Everblock\Tools\Service\EverBlockTabProvider: ~
 
     Everblock\Tools\Controller\Admin\:
         resource: '../src/Controller/Admin'
