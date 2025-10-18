@@ -41,7 +41,6 @@ class CleanupLegacyModelsCommand extends Command
         $force = (bool) $input->getOption('force');
         $moduleRoot = dirname(__DIR__, 2);
         $targets = [
-            $moduleRoot . '/models/EverblockFlagsClass.php',
             $moduleRoot . '/models/EverblockTabsClass.php',
         ];
 

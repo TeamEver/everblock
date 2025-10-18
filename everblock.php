@@ -23,18 +23,20 @@ if (!defined('_PS_VERSION_')) {
 
 require_once('vendor/autoload.php');
 
+use ArrayObject;
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Application\Command\EverBlock\EverBlockTranslationCommand;
 use Everblock\Tools\Application\Command\EverBlock\UpsertEverBlockCommand;
 use Everblock\Tools\Application\EverBlockApplicationService;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\Domain\EverBlockDomainService;
+use Everblock\Tools\Service\Domain\EverBlockFlagDomainService;
 use Everblock\Tools\Service\Domain\EverBlockShortcodeDomainService;
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Entity\EverBlock;
+use Everblock\Tools\Entity\EverBlockFlag;
 use Everblock\Tools\Entity\EverBlockTranslation;
 use Everblock\Tools\Repository\EverBlockRepository;
-use Everblock\Tools\Service\EverBlockFlagProvider;
 use Everblock\Tools\Service\EverBlockProvider;
 use Everblock\Tools\Service\EverBlockShortcodeProvider;
 use Everblock\Tools\Service\EverBlockTabProvider;
@@ -71,7 +73,7 @@ class Everblock extends Module
     private ?EverBlockDomainService $everBlockDomainService = null;
     private ?EverBlockApplicationService $everBlockApplicationService = null;
     private ?EverBlockFaqProvider $everBlockFaqProvider = null;
-    private ?EverBlockFlagProvider $everBlockFlagProvider = null;
+    private ?EverBlockFlagDomainService $everBlockFlagDomainService = null;
     private ?EverBlockTabProvider $everBlockTabProvider = null;
     private ?EverBlockRepository $everBlockRepository = null;
     private ?EverBlockModalProvider $everBlockModalProvider = null;
@@ -84,7 +86,7 @@ class Everblock extends Module
         ?EverBlockDomainService $everBlockDomainService = null,
         ?EverBlockApplicationService $everBlockApplicationService = null,
         ?EverBlockFaqProvider $everBlockFaqProvider = null,
-        ?EverBlockFlagProvider $everBlockFlagProvider = null,
+        ?EverBlockFlagDomainService $everBlockFlagDomainService = null,
         ?EverBlockTabProvider $everBlockTabProvider = null,
         ?EverBlockRepository $everBlockRepository = null,
         ?EverBlockModalProvider $everBlockModalProvider = null,
@@ -101,7 +103,7 @@ class Everblock extends Module
         $this->everBlockDomainService = $everBlockDomainService;
         $this->everBlockApplicationService = $everBlockApplicationService;
         $this->everBlockFaqProvider = $everBlockFaqProvider;
-        $this->everBlockFlagProvider = $everBlockFlagProvider;
+        $this->everBlockFlagDomainService = $everBlockFlagDomainService;
         $this->everBlockTabProvider = $everBlockTabProvider;
         $this->everBlockRepository = $everBlockRepository;
         $this->everBlockModalProvider = $everBlockModalProvider;
@@ -147,8 +149,8 @@ class Everblock extends Module
                 $this->everBlockFaqProvider = $this->resolveService($container, EverBlockFaqProvider::class);
             }
 
-            if (null === $this->everBlockFlagProvider) {
-                $this->everBlockFlagProvider = $this->resolveService($container, EverBlockFlagProvider::class);
+            if (null === $this->everBlockFlagDomainService) {
+                $this->everBlockFlagDomainService = $this->resolveService($container, EverBlockFlagDomainService::class);
             }
 
             if (null === $this->everBlockTabProvider) {
@@ -269,11 +271,15 @@ class Everblock extends Module
         return $this->everBlockRepository;
     }
 
-    public function getEverBlockFlagProvider(): ?EverBlockFlagProvider
+    public function getEverBlockFlagDomainService(): EverBlockFlagDomainService
     {
         $this->bootstrapDependencies();
 
-        return $this->everBlockFlagProvider;
+        if (!$this->everBlockFlagDomainService instanceof EverBlockFlagDomainService) {
+            throw new \RuntimeException('EverBlockFlagDomainService service is not available.');
+        }
+
+        return $this->everBlockFlagDomainService;
     }
 
     public function getEverBlockTabProvider(): ?EverBlockTabProvider
@@ -1000,19 +1006,13 @@ class Everblock extends Module
             }
 
             if (!$needHook) {
-                $flagProvider = $this->getEverBlockFlagProvider();
-                if ($flagProvider instanceof EverBlockFlagProvider) {
-                    if ($flagProvider->hasFlagsForShop($idShop)) {
+                try {
+                    $flagDomainService = $this->getEverBlockFlagDomainService();
+                    if ($flagDomainService->hasFlagsForShop($idShop)) {
                         $needHook = true;
                     }
-                } else {
-                    $sql = new DbQuery();
-                    $sql->select('id_everblock_flags');
-                    $sql->from(EverblockFlagsClass::$definition['table']);
-                    $sql->where('id_shop = ' . (int) $idShop);
-                    if (Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql)) {
-                        $needHook = true;
-                    }
+                } catch (\RuntimeException $exception) {
+                    PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
                 }
             }
 
@@ -3446,11 +3446,14 @@ class Everblock extends Module
             $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
         }
 
-        $flagProvider = $this->getEverBlockFlagProvider();
-        if ($flagProvider instanceof EverBlockFlagProvider) {
-            $everpsflags = $flagProvider->getFlagsForAdmin($productId, (int) $this->context->shop->id);
-        } else {
-            $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
+        try {
+            $flagDomainService = $this->getEverBlockFlagDomainService();
+            $everpsflags = $this->mapFlagsForAdmin(
+                $flagDomainService->getFlagsForAdmin($productId, (int) $this->context->shop->id)
+            );
+        } catch (\RuntimeException $exception) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+            $everpsflags = [];
         }
 
         $tabsData = [];
@@ -3559,18 +3562,20 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
         EverblockCache::cacheDrop($cacheId);
-        $flagProvider = $this->getEverBlockFlagProvider();
-        if ($flagProvider instanceof EverBlockFlagProvider) {
+        try {
+            $flagDomainService = $this->getEverBlockFlagDomainService();
             $flag = $params['object'] ?? null;
             $productId = (int) ($flag->id_product ?? 0);
             $shopId = (int) ($flag->id_shop ?? ($this->context->shop->id ?? 0));
             if ($productId > 0 && $shopId > 0) {
-                $flagProvider->clearCacheForProduct($productId, $shopId);
+                $flagDomainService->clearCacheForProduct($productId, $shopId);
             } elseif ($shopId > 0) {
-                $flagProvider->clearCacheForShop($shopId);
+                $flagDomainService->clearCacheForShop($shopId);
             } else {
-                $flagProvider->clearCache();
+                $flagDomainService->clearCache();
             }
+        } catch (\RuntimeException $exception) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
         }
         $this->updateProductFlagsHook();
     }
@@ -3581,18 +3586,20 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
         EverblockCache::cacheDrop($cacheId);
-        $flagProvider = $this->getEverBlockFlagProvider();
-        if ($flagProvider instanceof EverBlockFlagProvider) {
+        try {
+            $flagDomainService = $this->getEverBlockFlagDomainService();
             $flag = $params['object'] ?? null;
             $productId = (int) ($flag->id_product ?? 0);
             $shopId = (int) ($flag->id_shop ?? ($this->context->shop->id ?? 0));
             if ($productId > 0 && $shopId > 0) {
-                $flagProvider->clearCacheForProduct($productId, $shopId);
+                $flagDomainService->clearCacheForProduct($productId, $shopId);
             } elseif ($shopId > 0) {
-                $flagProvider->clearCacheForShop($shopId);
+                $flagDomainService->clearCacheForShop($shopId);
             } else {
-                $flagProvider->clearCache();
+                $flagDomainService->clearCache();
             }
+        } catch (\RuntimeException $exception) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
         }
         $this->updateProductFlagsHook();
     }
@@ -3706,7 +3713,12 @@ class Everblock extends Module
             }
 
             // Traitement des flags
-            $flagProvider = $this->getEverBlockFlagProvider();
+            try {
+                $flagDomainService = $this->getEverBlockFlagDomainService();
+            } catch (\RuntimeException $exception) {
+                $flagDomainService = null;
+                PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+            }
             $flagsNumber = (int) Configuration::get('EVERPS_FLAG_NB');
             if ($flagsNumber < 1) {
                 $flagsNumber = 1;
@@ -3742,27 +3754,13 @@ class Everblock extends Module
                     ];
                 }
 
-                if ($flagProvider instanceof EverBlockFlagProvider) {
-                    $flagProvider->saveFlag(
-                        (int) $params['object']->id,
-                        (int) $context->shop->id,
-                        (int) $flag,
-                        $translations
-                    );
-                } else {
-                    $everpsflags = EverblockFlagsClass::getByIdProductIdFlag(
-                        (int) $params['object']->id,
-                        (int) $context->shop->id,
-                        (int) $flag
-                    );
-                    foreach ($translations as $languageId => $data) {
-                        $everpsflags->title[$languageId] = $data['title'];
-                        $everpsflags->content[$languageId] = $data['content'];
-                    }
-                    $everpsflags->id_flag = (int) $flag;
-                    $everpsflags->id_product = (int) $params['object']->id;
-                    $everpsflags->id_shop = (int) $context->shop->id;
-                    $everpsflags->save();
+                if ($flagDomainService instanceof EverBlockFlagDomainService) {
+                    $flagEntity = new EverBlockFlag();
+                    $flagEntity->setProductId((int) $params['object']->id);
+                    $flagEntity->setShopId((int) $context->shop->id);
+                    $flagEntity->setFlagId((int) $flag);
+
+                    $flagDomainService->save($flagEntity, $translations);
                 }
             }
 
@@ -3849,16 +3847,10 @@ class Everblock extends Module
             }
         }
 
-        $flagProvider = $this->getEverBlockFlagProvider();
-        if ($flagProvider instanceof EverBlockFlagProvider) {
-            $flagProvider->deleteFlagsByProduct($productId, $shopId);
-        } else {
-            $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $shopId);
-            foreach ($everpsflags as $everpsflag) {
-                if (Validate::isLoadedObject($everpsflag)) {
-                    $everpsflag->delete();
-                }
-            }
+        try {
+            $this->getEverBlockFlagDomainService()->deleteByProduct($productId, $shopId);
+        } catch (\RuntimeException $exception) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
         }
     }
 
@@ -3869,11 +3861,11 @@ class Everblock extends Module
             $shopId = (int) Context::getContext()->shop->id;
             $languageId = (int) Context::getContext()->language->id;
             // Current product flags
-            $flagProvider = $this->getEverBlockFlagProvider();
-            if ($flagProvider instanceof EverBlockFlagProvider) {
-                $everpsflags = $flagProvider->getFlags($productId, $shopId, $languageId);
-            } else {
-                $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
+            try {
+                $everpsflags = $this->getEverBlockFlagDomainService()->getFlags($productId, $shopId, $languageId);
+            } catch (\RuntimeException $exception) {
+                PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+                $everpsflags = [];
             }
 
             foreach ($everpsflags as $everpsflag) {
@@ -5479,6 +5471,42 @@ class Everblock extends Module
         }
 
         return null;
+    }
+
+    /**
+     * @param EverBlockFlag[] $flags
+     *
+     * @return ArrayObject<int, mixed>[]
+     */
+    private function mapFlagsForAdmin(array $flags): array
+    {
+        $mapped = [];
+
+        foreach ($flags as $flag) {
+            if (!$flag instanceof EverBlockFlag) {
+                continue;
+            }
+
+            $titles = [];
+            $contents = [];
+
+            foreach ($flag->getTranslations() as $translation) {
+                $languageId = $translation->getLanguageId();
+                $titles[$languageId] = $translation->getTitle();
+                $contents[$languageId] = $translation->getContent();
+            }
+
+            $mapped[] = new ArrayObject([
+                'id_everblock_flags' => $flag->getId() ?? 0,
+                'id_product' => $flag->getProductId(),
+                'id_shop' => $flag->getShopId(),
+                'id_flag' => $flag->getFlagId(),
+                'title' => $titles,
+                'content' => $contents,
+            ], ArrayObject::ARRAY_AS_PROPS);
+        }
+
+        return $mapped;
     }
 
     public function encrypt($data)
