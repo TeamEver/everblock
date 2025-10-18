@@ -40,6 +40,12 @@
                     {{ action.label }}
                 </a>
             {% endfor %}
+            {% set configurationUrl = configuration_url|default(path('everblock_admin_configuration')) %}
+            {% if configurationUrl and app.request.get('_route') != 'everblock_admin_configuration' %}
+                <a href="{{ configurationUrl }}" class="btn btn-primary">
+                    <i class="icon-cogs"></i> {{ 'Configuration'|trans({}, 'Modules.Everblock.Admin') }}
+                </a>
+            {% endif %}
             {% if donation_link is defined and donation_link %}
                 <a href="{{ donation_link }}" class="btn btn-warning" target="_blank">
                     <i class="icon-money"></i> {{ 'Make a donation'|trans({}, 'Modules.Everblock.Admin') }}
