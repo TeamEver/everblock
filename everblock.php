@@ -33,7 +33,9 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverBlockFaqProvider;
+use Everblock\Tools\Service\EverBlockFlagProvider;
 use Everblock\Tools\Service\EverBlockProvider;
+use Everblock\Tools\Service\EverBlockTabProvider;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\ImportFile;
@@ -64,6 +66,8 @@ class Everblock extends Module
     ];
     private ?EverBlockProvider $everBlockProvider = null;
     private ?EverBlockFaqProvider $everBlockFaqProvider = null;
+    private ?EverBlockFlagProvider $everBlockFlagProvider = null;
+    private ?EverBlockTabProvider $everBlockTabProvider = null;
 
     public function __construct()
     {
@@ -118,6 +122,48 @@ class Everblock extends Module
                     $this->everBlockFaqProvider = $provider;
 
                     return $this->everBlockFaqProvider;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function getEverBlockFlagProvider(): ?EverBlockFlagProvider
+    {
+        if ($this->everBlockFlagProvider instanceof EverBlockFlagProvider) {
+            return $this->everBlockFlagProvider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockFlagProvider::class)) {
+                $provider = $container->get(EverBlockFlagProvider::class);
+                if ($provider instanceof EverBlockFlagProvider) {
+                    $this->everBlockFlagProvider = $provider;
+
+                    return $this->everBlockFlagProvider;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function getEverBlockTabProvider(): ?EverBlockTabProvider
+    {
+        if ($this->everBlockTabProvider instanceof EverBlockTabProvider) {
+            return $this->everBlockTabProvider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockTabProvider::class)) {
+                $provider = $container->get(EverBlockTabProvider::class);
+                if ($provider instanceof EverBlockTabProvider) {
+                    $this->everBlockTabProvider = $provider;
+
+                    return $this->everBlockTabProvider;
                 }
             }
         }
@@ -834,12 +880,21 @@ class Everblock extends Module
                 $needHook = true;
             }
 
-            $sql = new DbQuery();
-            $sql->select('id_everblock_flags');
-            $sql->from(EverblockFlagsClass::$definition['table']);
-            $sql->where('id_shop = ' . (int) $idShop);
-            if (Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql)) {
-                $needHook = true;
+            if (!$needHook) {
+                $flagProvider = $this->getEverBlockFlagProvider();
+                if ($flagProvider instanceof EverBlockFlagProvider) {
+                    if ($flagProvider->hasFlagsForShop($idShop)) {
+                        $needHook = true;
+                    }
+                } else {
+                    $sql = new DbQuery();
+                    $sql->select('id_everblock_flags');
+                    $sql->from(EverblockFlagsClass::$definition['table']);
+                    $sql->where('id_shop = ' . (int) $idShop);
+                    if (Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql)) {
+                        $needHook = true;
+                    }
+                }
             }
 
             EverblockCache::cacheStore($cacheId, $needHook);
@@ -3265,38 +3320,41 @@ class Everblock extends Module
         $tabsNumber = max((int) Configuration::get('EVERPS_TAB_NB'), 1);
         $flagsNumber = max((int) Configuration::get('EVERPS_FLAG_NB'), 1);
         
-        $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
-        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
+        $tabProvider = $this->getEverBlockTabProvider();
+        if ($tabProvider instanceof EverBlockTabProvider) {
+            $everpstabs = $tabProvider->getTabsForAdmin($productId, (int) $this->context->shop->id);
+        } else {
+            $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
+        }
+
+        $flagProvider = $this->getEverBlockFlagProvider();
+        if ($flagProvider instanceof EverBlockFlagProvider) {
+            $everpsflags = $flagProvider->getFlagsForAdmin($productId, (int) $this->context->shop->id);
+        } else {
+            $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
+        }
 
         $tabsData = [];
-        $flagsData = [];
         for ($i = 1; $i <= $tabsNumber; $i++) {
+            $tabsData[$i] = null;
             foreach ($everpstabs as $everpstab) {
-                if (Validate::isLoadedObject($everpstab)
-                    && $everpstab->id_tab == $i
-                ) {
+                $tabId = (int) $this->getItemValue($everpstab, 'id_tab');
+                if ($tabId === $i) {
                     $tabsData[$i] = $everpstab;
                     break;
                 }
             }
-
-            if (!array_key_exists($i, $tabsData)) {
-                $tabsData[$i] = null;
-            }
         }
 
+        $flagsData = [];
         for ($i = 1; $i <= $flagsNumber; $i++) {
+            $flagsData[$i] = null;
             foreach ($everpsflags as $everpsflag) {
-                if (Validate::isLoadedObject($everpsflag)
-                    && $everpsflag->id_flag == $i
-                ) {
+                $flagId = (int) $this->getItemValue($everpsflag, 'id_flag');
+                if ($flagId === $i) {
                     $flagsData[$i] = $everpsflag;
                     break;
                 }
-            }
-
-            if (!array_key_exists($i, $flagsData)) {
-                $flagsData[$i] = null;
             }
         }
 
@@ -3380,6 +3438,19 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
         EverblockCache::cacheDrop($cacheId);
+        $flagProvider = $this->getEverBlockFlagProvider();
+        if ($flagProvider instanceof EverBlockFlagProvider) {
+            $flag = $params['object'] ?? null;
+            $productId = (int) ($flag->id_product ?? 0);
+            $shopId = (int) ($flag->id_shop ?? ($this->context->shop->id ?? 0));
+            if ($productId > 0 && $shopId > 0) {
+                $flagProvider->clearCacheForProduct($productId, $shopId);
+            } elseif ($shopId > 0) {
+                $flagProvider->clearCacheForShop($shopId);
+            } else {
+                $flagProvider->clearCache();
+            }
+        }
         $this->updateProductFlagsHook();
     }
 
@@ -3389,6 +3460,19 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
         EverblockCache::cacheDrop($cacheId);
+        $flagProvider = $this->getEverBlockFlagProvider();
+        if ($flagProvider instanceof EverBlockFlagProvider) {
+            $flag = $params['object'] ?? null;
+            $productId = (int) ($flag->id_product ?? 0);
+            $shopId = (int) ($flag->id_shop ?? ($this->context->shop->id ?? 0));
+            if ($productId > 0 && $shopId > 0) {
+                $flagProvider->clearCacheForProduct($productId, $shopId);
+            } elseif ($shopId > 0) {
+                $flagProvider->clearCacheForShop($shopId);
+            } else {
+                $flagProvider->clearCache();
+            }
+        }
         $this->updateProductFlagsHook();
     }
 
@@ -3445,13 +3529,10 @@ class Everblock extends Module
                 $tabsNumber = 1;
                 Configuration::updateValue('EVERPS_TAB_NB', 1);
             }
+            $tabProvider = $this->getEverBlockTabProvider();
             $tabsRange = range(1, $tabsNumber);
             foreach ($tabsRange as $tab) {
-                $everpstabs = EverblockTabsClass::getByIdProductIdTab(
-                    (int) $params['object']->id,
-                    (int) $context->shop->id,
-                    (int) $tab
-                );
+                $translations = [];
                 foreach (Language::getLanguages(true) as $language) {
                     $tabTitle = Tools::getValue((int) $tab . '_everblock_title_' . $language['id_lang']);
                     if ($tabTitle && !Validate::isCleanHtml($tabTitle)) {
@@ -3461,10 +3542,8 @@ class Everblock extends Module
                                 'error' => $this->l('Title is not valid'),
                             ]
                         ));
-                    } else {
-                        $everpstabs->title[$language['id_lang']] = $tabTitle;
                     }
-                    
+
                     $tabContent = Tools::getValue((int) $tab . '_everblock_content_' . $language['id_lang']);
                     if ($tabContent && !Validate::isCleanHtml($tabContent)) {
                         die(json_encode(
@@ -3473,17 +3552,40 @@ class Everblock extends Module
                                 'error' => $this->l('Content is not valid'),
                             ]
                         ));
-                    } else {
-                        $everpstabs->content[$language['id_lang']] = $tabContent;
                     }
+
+                    $translations[$language['id_lang']] = [
+                        'title' => $tabTitle,
+                        'content' => $tabContent,
+                    ];
                 }
-                $everpstabs->id_tab = (int) $tab;
-                $everpstabs->id_product = (int) $params['object']->id;
-                $everpstabs->id_shop = (int) $context->shop->id;
-                $everpstabs->save();
+
+                if ($tabProvider instanceof EverBlockTabProvider) {
+                    $tabProvider->saveTab(
+                        (int) $params['object']->id,
+                        (int) $context->shop->id,
+                        (int) $tab,
+                        $translations
+                    );
+                } else {
+                    $everpstabs = EverblockTabsClass::getByIdProductIdTab(
+                        (int) $params['object']->id,
+                        (int) $context->shop->id,
+                        (int) $tab
+                    );
+                    foreach ($translations as $languageId => $data) {
+                        $everpstabs->title[$languageId] = $data['title'];
+                        $everpstabs->content[$languageId] = $data['content'];
+                    }
+                    $everpstabs->id_tab = (int) $tab;
+                    $everpstabs->id_product = (int) $params['object']->id;
+                    $everpstabs->id_shop = (int) $context->shop->id;
+                    $everpstabs->save();
+                }
             }
 
             // Traitement des flags
+            $flagProvider = $this->getEverBlockFlagProvider();
             $flagsNumber = (int) Configuration::get('EVERPS_FLAG_NB');
             if ($flagsNumber < 1) {
                 $flagsNumber = 1;
@@ -3491,11 +3593,7 @@ class Everblock extends Module
             }
             $flagsRange = range(1, $flagsNumber);
             foreach ($flagsRange as $flag) {
-                $everpsflags = EverblockFlagsClass::getByIdProductIdFlag(
-                    (int) $params['object']->id,
-                    (int) $context->shop->id,
-                    (int) $flag
-                );
+                $translations = [];
                 foreach (Language::getLanguages(true) as $language) {
                     $flagTitle = Tools::getValue((int) $flag . '_everflag_title_' . $language['id_lang']);
                     if ($flagTitle && !Validate::isCleanHtml($flagTitle)) {
@@ -3505,10 +3603,8 @@ class Everblock extends Module
                                 'error' => $this->l('Title is not valid'),
                             ]
                         ));
-                    } else {
-                        $everpsflags->title[$language['id_lang']] = $flagTitle;
                     }
-                    
+
                     $flagContent = Tools::getValue((int) $flag . '_everflag_content_' . $language['id_lang']);
                     if ($flagContent && !Validate::isCleanHtml($flagContent)) {
                         die(json_encode(
@@ -3517,15 +3613,37 @@ class Everblock extends Module
                                 'error' => $this->l('Content is not valid'),
                             ]
                         ));
-                    } else {
-                        $everpsflags->content[$language['id_lang']] = $flagContent;
                     }
+
+                    $translations[$language['id_lang']] = [
+                        'title' => $flagTitle,
+                        'content' => $flagContent,
+                    ];
+                }
+
+                if ($flagProvider instanceof EverBlockFlagProvider) {
+                    $flagProvider->saveFlag(
+                        (int) $params['object']->id,
+                        (int) $context->shop->id,
+                        (int) $flag,
+                        $translations
+                    );
+                } else {
+                    $everpsflags = EverblockFlagsClass::getByIdProductIdFlag(
+                        (int) $params['object']->id,
+                        (int) $context->shop->id,
+                        (int) $flag
+                    );
+                    foreach ($translations as $languageId => $data) {
+                        $everpsflags->title[$languageId] = $data['title'];
+                        $everpsflags->content[$languageId] = $data['content'];
+                    }
+                    $everpsflags->id_flag = (int) $flag;
+                    $everpsflags->id_product = (int) $params['object']->id;
+                    $everpsflags->id_shop = (int) $context->shop->id;
+                    $everpsflags->save();
+                }
             }
-            $everpsflags->id_flag = (int) $flag;
-            $everpsflags->id_product = (int) $params['object']->id;
-            $everpsflags->id_shop = (int) $context->shop->id;
-            $everpsflags->save();
-        }
 
             // Modal management
             $modal = EverblockModal::getByProductId(
@@ -3594,22 +3712,30 @@ class Everblock extends Module
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
         }
-        $everpstabs = EverblockTabsClass::getByIdProductInAdmin(
-            (int) $params['object']->id,
-            (int) $this->context->shop->id
-        );
-        foreach ($everpstabs as $everpstab) {
-            if (Validate::isLoadedObject($everpstab)) {
-                $everpstab->delete();
+        $shopId = (int) $this->context->shop->id;
+        $productId = (int) $params['object']->id;
+
+        $tabProvider = $this->getEverBlockTabProvider();
+        if ($tabProvider instanceof EverBlockTabProvider) {
+            $tabProvider->deleteTabsByProduct($productId, $shopId);
+        } else {
+            $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $shopId);
+            foreach ($everpstabs as $everpstab) {
+                if (Validate::isLoadedObject($everpstab)) {
+                    $everpstab->delete();
+                }
             }
         }
-        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin(
-            (int) $params['object']->id,
-            (int) $this->context->shop->id
-        );
-        foreach ($everpsflags as $everpsflag) {
-            if (Validate::isLoadedObject($everpsflag)) {
-                $everpsflag->delete();
+
+        $flagProvider = $this->getEverBlockFlagProvider();
+        if ($flagProvider instanceof EverBlockFlagProvider) {
+            $flagProvider->deleteFlagsByProduct($productId, $shopId);
+        } else {
+            $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $shopId);
+            foreach ($everpsflags as $everpsflag) {
+                if (Validate::isLoadedObject($everpsflag)) {
+                    $everpsflag->delete();
+                }
             }
         }
     }
@@ -3621,16 +3747,23 @@ class Everblock extends Module
             $shopId = (int) Context::getContext()->shop->id;
             $languageId = (int) Context::getContext()->language->id;
             // Current product flags
-            $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
-            if ($everpsflags && !empty($everpsflags)) {
-                foreach ($everpsflags as $everpsflag) {
-                    if (Validate::isLoadedObject($everpsflag) && $everpsflag->title && $everpsflag->content) {
-                        $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
-                            'type' => 'custom-flag ' . $everpsflag->id_flag,
-                            'label' => strip_tags($everpsflag->content),
-                            'module' => $this->name,
-                        ];
-                    }
+            $flagProvider = $this->getEverBlockFlagProvider();
+            if ($flagProvider instanceof EverBlockFlagProvider) {
+                $everpsflags = $flagProvider->getFlags($productId, $shopId, $languageId);
+            } else {
+                $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
+            }
+
+            foreach ($everpsflags as $everpsflag) {
+                $flagId = (int) $this->getItemValue($everpsflag, 'id_flag');
+                $title = $this->getItemValue($everpsflag, 'title');
+                $content = $this->getItemValue($everpsflag, 'content');
+                if ($flagId > 0 && !empty($title) && !empty($content)) {
+                    $params['flags']['custom-flag-' . $flagId] = [
+                        'type' => 'custom-flag ' . $flagId,
+                        'label' => strip_tags((string) $content),
+                        'module' => $this->name,
+                    ];
                 }
             }
             // Product features as flags
@@ -3715,20 +3848,28 @@ class Everblock extends Module
             (int) $context->shop->id
         );
         // Specific product tab
-        $everpstabs = EverblockTabsClass::getByIdProduct(
-            (int) $product->id,
-            (int) $context->shop->id,
-            (int) $context->language->id
-        );
+        $tabProvider = $this->getEverBlockTabProvider();
+        if ($tabProvider instanceof EverBlockTabProvider) {
+            $everpstabs = $tabProvider->getTabs(
+                (int) $product->id,
+                (int) $context->shop->id,
+                (int) $context->language->id
+            );
+        } else {
+            $everpstabs = EverblockTabsClass::getByIdProduct(
+                (int) $product->id,
+                (int) $context->shop->id,
+                (int) $context->language->id
+            );
+        }
+
         foreach ($everpstabs as $everpstab) {
-            if (Validate::isLoadedObject($everpstab)) {
-                $title = $everpstab->title;
-                $content = $everpstab->content;
-                if (!empty($title) || !empty($content)) {
-                    $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
-                        ->setTitle($title)
-                        ->setContent($content);
-                }
+            $title = (string) $this->getItemValue($everpstab, 'title');
+            $content = $this->getItemValue($everpstab, 'content');
+            if (!empty($title) || !empty($content)) {
+                $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
+                    ->setTitle($title)
+                    ->setContent((string) $content);
             }
         }
         // Global tab
@@ -5106,6 +5247,26 @@ class Everblock extends Module
         ]);
 
         return $this->fetch('module:everblock/views/templates/hook/modal.tpl');
+    }
+
+    /**
+     * @param mixed $item
+     */
+    private function getItemValue($item, string $key)
+    {
+        if (is_array($item)) {
+            return $item[$key] ?? null;
+        }
+
+        if ($item instanceof \ArrayObject) {
+            return $item[$key] ?? null;
+        }
+
+        if (is_object($item) && isset($item->$key)) {
+            return $item->$key;
+        }
+
+        return null;
     }
 
     public function encrypt($data)
