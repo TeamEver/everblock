@@ -25,10 +25,17 @@ if (!defined('_PS_VERSION_')) {
 use Everblock\Tools\Entity\EverBlock;
 use Everblock\Tools\Entity\EverBlockTranslation;
 use Everblock\Tools\Repository\EverBlockRepository;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 class EverblockmodalModuleFrontController extends ModuleFrontController
 {
+    private ?EverBlockRepository $blockRepository;
+
+    public function __construct(?EverBlockRepository $blockRepository = null)
+    {
+        $this->blockRepository = $blockRepository;
+        parent::__construct();
+    }
+
     public function init()
     {
         parent::init();
@@ -189,17 +196,14 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
 
     private function getBlockRepository(): ?EverBlockRepository
     {
-        if (!class_exists(SymfonyContainer::class)) {
-            return null;
+        if ($this->blockRepository instanceof EverBlockRepository) {
+            return $this->blockRepository;
         }
 
-        $container = SymfonyContainer::getInstance();
-        if (null === $container || !$container->has(EverBlockRepository::class)) {
-            return null;
+        if ($this->module instanceof Everblock) {
+            $this->blockRepository = $this->module->getEverBlockRepository();
         }
 
-        $service = $container->get(EverBlockRepository::class);
-
-        return $service instanceof EverBlockRepository ? $service : null;
+        return $this->blockRepository instanceof EverBlockRepository ? $this->blockRepository : null;
     }
 }

@@ -19,7 +19,6 @@
  */
 use Everblock\Tools\Service\EverBlockFlagProvider;
 use Everblock\Tools\Service\EverblockCache;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -88,18 +87,6 @@ class EverblockFlagsClass extends ObjectModel
         static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockFlagProvider) {
             return static::$provider;
-        }
-
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockFlagProvider::class)) {
-                $provider = $container->get(EverBlockFlagProvider::class);
-                if ($provider instanceof EverBlockFlagProvider) {
-                    static::$provider = $provider;
-
-                    return $provider;
-                }
-            }
         }
 
         return null;

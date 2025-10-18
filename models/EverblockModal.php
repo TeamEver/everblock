@@ -18,7 +18,6 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 use Everblock\Tools\Service\EverBlockModalProvider;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -83,33 +82,24 @@ class EverblockModal extends ObjectModel
         static::$provider = $provider;
     }
 
-    protected static function getProvider(): EverBlockModalProvider
+    protected static function getProvider(?EverBlockModalProvider $provider = null): EverBlockModalProvider
     {
         static::triggerLegacyDeprecation(__METHOD__);
+        if ($provider instanceof EverBlockModalProvider) {
+            return $provider;
+        }
+
         if (static::$provider instanceof EverBlockModalProvider) {
             return static::$provider;
         }
-
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockModalProvider::class)) {
-                $provider = $container->get(EverBlockModalProvider::class);
-                if ($provider instanceof EverBlockModalProvider) {
-                    static::$provider = $provider;
-
-                    return $provider;
-                }
-            }
-        }
-
         throw new \RuntimeException('EverBlockModalProvider service is not available.');
     }
 
-    public static function getByProductId(int $idProduct, int $idShop)
+    public static function getByProductId(int $idProduct, int $idShop, ?EverBlockModalProvider $provider = null)
     {
         static::triggerLegacyDeprecation(__METHOD__);
-        $provider = static::getProvider();
-        $modalId = $provider->findModalIdByProduct($idProduct, $idShop);
+        $resolvedProvider = static::getProvider($provider);
+        $modalId = $resolvedProvider->findModalIdByProduct($idProduct, $idShop);
         if (null !== $modalId) {
             return new self($modalId, null, $idShop);
         }

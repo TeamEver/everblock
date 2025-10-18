@@ -18,7 +18,6 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 use Everblock\Tools\Service\EverBlockShortcodeProvider;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -84,18 +83,6 @@ class EverblockShortcode extends ObjectModel
         static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockShortcodeProvider) {
             return static::$provider;
-        }
-
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockShortcodeProvider::class)) {
-                $provider = $container->get(EverBlockShortcodeProvider::class);
-                if ($provider instanceof EverBlockShortcodeProvider) {
-                    static::$provider = $provider;
-
-                    return $provider;
-                }
-            }
         }
 
         throw new \RuntimeException('EverBlockShortcodeProvider service is not available.');
