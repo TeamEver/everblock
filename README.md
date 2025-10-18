@@ -205,6 +205,7 @@ Ever Block now exposes modal and shortcode data through dedicated Doctrine repos
 - `[everstore id="4"]`: Display store information for store ID 4 (several IDs can be separated with commas). Required parameter: `id`.
 - `[video url="https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj"]`: Display a YouTube iframe of the video whose sharing URL is in the parameter. Required parameter: `url`.
 - `[everaddtocart ref="1234" text="Add me to cart"]`: Create an add to cart button for product reference 1234. Required parameter: `ref`. Optional parameter: `text`.
+  The generated link targets the Symfony route `/everblock/cart/add`, which accepts `id_product`, `id_product_attribute` and `qty` query parameters and redirects visitors to the cart summary. When the request is performed via AJAX the controller returns a JSON payload containing the operation status and the redirect URL.
 - `[everfaq tag="faq1"]`: Show FAQs related to the `tag`. Required parameter: `tag`.
 - `[productfeature id="2" nb="12" carousel="true"]`: Display products with feature ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
 - `[productfeaturevalue id="2" nb="12" carousel="true"]`: Display products with feature value ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
