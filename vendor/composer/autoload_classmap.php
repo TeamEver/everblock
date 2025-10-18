@@ -7,11 +7,9 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
-    'EverBlockClass' => $baseDir . '/models/EverblockClass.php',
     'EverblockFaq' => $baseDir . '/models/EverblockFaq.php',
     'EverblockFlagsClass' => $baseDir . '/models/EverblockFlagsClass.php',
     'EverblockModal' => $baseDir . '/models/EverblockModal.php',
-    'EverblockShortcode' => $baseDir . '/models/EverblockShortcode.php',
     'EverblockTabsClass' => $baseDir . '/models/EverblockTabsClass.php',
     'EverblockTools' => $baseDir . '/models/EverblockTools.php',
 );

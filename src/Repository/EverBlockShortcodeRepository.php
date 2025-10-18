@@ -23,6 +23,7 @@ namespace Everblock\Tools\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
+use RuntimeException;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -180,6 +181,128 @@ class EverBlockShortcodeRepository
         });
     }
 
+    /**
+     * @return array{id_everblock_shortcode: int, id_shop: int, shortcode: string}|null
+     */
+    public function findShortcode(int $shortcodeId, int $shopId): ?array
+    {
+        $queryBuilder = $this->connection->createQueryBuilder();
+        $queryBuilder
+            ->select(
+                'shortcode.id_everblock_shortcode',
+                'shortcode.id_shop',
+                'shortcode.shortcode'
+            )
+            ->from($this->getTableName('everblock_shortcode'), 'shortcode')
+            ->where('shortcode.id_everblock_shortcode = :shortcodeId')
+            ->andWhere('shortcode.id_shop = :shopId')
+            ->setParameter('shortcodeId', $shortcodeId, ParameterType::INTEGER)
+            ->setParameter('shopId', $shopId, ParameterType::INTEGER)
+            ->setMaxResults(1);
+
+        $row = $queryBuilder->executeQuery()->fetchAssociative();
+
+        if (false === $row) {
+            return null;
+        }
+
+        return [
+            'id_everblock_shortcode' => (int) ($row['id_everblock_shortcode'] ?? 0),
+            'id_shop' => (int) ($row['id_shop'] ?? 0),
+            'shortcode' => (string) ($row['shortcode'] ?? ''),
+        ];
+    }
+
+    /**
+     * @param array<int, array{title: string, content: string}> $translations
+     */
+    public function createShortcode(string $shortcode, int $shopId, array $translations): int
+    {
+        $shortcodeId = $this->connection->transactional(function (Connection $connection) use ($shortcode, $shopId, $translations): int {
+            $connection->insert(
+                $this->getTableName('everblock_shortcode'),
+                [
+                    'shortcode' => $shortcode,
+                    'id_shop' => $shopId,
+                ],
+                [
+                    ParameterType::STRING,
+                    ParameterType::INTEGER,
+                ]
+            );
+
+            $id = (int) $connection->lastInsertId();
+            $this->replaceTranslations($connection, $id, $translations);
+
+            return $id;
+        });
+
+        $this->clearCacheForShop($shopId);
+        $this->clearCacheForShortcode($shortcode, $shopId);
+
+        return $shortcodeId;
+    }
+
+    /**
+     * @param array<int, array{title: string, content: string}> $translations
+     */
+    public function updateShortcode(int $shortcodeId, string $shortcode, int $shopId, array $translations): void
+    {
+        $this->connection->transactional(function (Connection $connection) use ($shortcodeId, $shortcode, $shopId, $translations): void {
+            $affected = $connection->update(
+                $this->getTableName('everblock_shortcode'),
+                [
+                    'shortcode' => $shortcode,
+                    'id_shop' => $shopId,
+                ],
+                ['id_everblock_shortcode' => $shortcodeId],
+                [
+                    ParameterType::STRING,
+                    ParameterType::INTEGER,
+                    ParameterType::INTEGER,
+                ]
+            );
+
+            if (0 === $affected) {
+                throw new RuntimeException(sprintf('Shortcode %d could not be updated.', $shortcodeId));
+            }
+
+            $this->replaceTranslations($connection, $shortcodeId, $translations);
+        });
+
+        $this->clearCacheForShop($shopId);
+        $this->clearCacheForShortcode($shortcode, $shopId);
+    }
+
+    public function deleteShortcode(int $shortcodeId, int $shopId): void
+    {
+        $this->connection->transactional(function (Connection $connection) use ($shortcodeId, $shopId): void {
+            $connection->delete(
+                $this->getTableName('everblock_shortcode_lang'),
+                ['id_everblock_shortcode' => $shortcodeId],
+                [ParameterType::INTEGER]
+            );
+
+            $affected = $connection->delete(
+                $this->getTableName('everblock_shortcode'),
+                [
+                    'id_everblock_shortcode' => $shortcodeId,
+                    'id_shop' => $shopId,
+                ],
+                [
+                    ParameterType::INTEGER,
+                    ParameterType::INTEGER,
+                ]
+            );
+
+            if (0 === $affected) {
+                throw new RuntimeException(sprintf('Shortcode %d could not be deleted.', $shortcodeId));
+            }
+        });
+
+        $this->clearCacheForShop($shopId);
+    }
+
     public function clearCache(): void
     {
         $this->cache->invalidateTags([self::CACHE_TAG]);
@@ -261,5 +384,35 @@ class EverBlockShortcodeRepository
     private function normalizeShortcode(string $shortcode): string
     {
         return preg_replace('/[^a-z0-9_\-]/i', '_', strtolower(trim($shortcode))) ?: 'default';
+    }
+
+    /**
+     * @param array<int, array{title: string, content: string}> $translations
+     */
+    private function replaceTranslations(Connection $connection, int $shortcodeId, array $translations): void
+    {
+        $connection->delete(
+            $this->getTableName('everblock_shortcode_lang'),
+            ['id_everblock_shortcode' => $shortcodeId],
+            [ParameterType::INTEGER]
+        );
+
+        foreach ($translations as $languageId => $translation) {
+            $connection->insert(
+                $this->getTableName('everblock_shortcode_lang'),
+                [
+                    'id_everblock_shortcode' => $shortcodeId,
+                    'id_lang' => (int) $languageId,
+                    'title' => (string) $translation['title'],
+                    'content' => (string) $translation['content'],
+                ],
+                [
+                    ParameterType::INTEGER,
+                    ParameterType::INTEGER,
+                    ParameterType::STRING,
+                    ParameterType::STRING,
+                ]
+            );
+        }
     }
 }

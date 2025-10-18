@@ -22,17 +22,12 @@ namespace Everblock\Tools\Service;
 
 use ArrayObject;
 use Everblock\Tools\Repository\EverBlockShortcodeRepository;
+use RuntimeException;
 
 class EverBlockShortcodeProvider
 {
     public function __construct(private readonly EverBlockShortcodeRepository $repository)
     {
-        if (class_exists(\EverblockShortcode::class) && method_exists(\EverblockShortcode::class, 'setProvider')) {
-            \EverblockShortcode::setProvider($this);
-        }
-        if (class_exists(EverblockPrettyBlocks::class) && method_exists(EverblockPrettyBlocks::class, 'setShortcodeProvider')) {
-            EverblockPrettyBlocks::setShortcodeProvider($this);
-        }
     }
 
     /**
@@ -109,5 +104,68 @@ class EverBlockShortcodeProvider
     public function clearCacheForShortcode(string $shortcode, int $shopId): void
     {
         $this->repository->clearCacheForShortcode($shortcode, $shopId);
+    }
+
+    /**
+     * @param array<int, array{title: string, content: string}> $translations
+     */
+    public function createShortcode(string $shortcode, int $shopId, array $translations): int
+    {
+        $id = $this->repository->createShortcode($shortcode, $shopId, $translations);
+
+        $this->clearCacheForShop($shopId);
+        $this->clearCacheForShortcode($shortcode, $shopId);
+
+        return $id;
+    }
+
+    /**
+     * @param array<int, array{title: string, content: string}> $translations
+     */
+    public function updateShortcode(int $shortcodeId, string $shortcode, int $shopId, array $translations): void
+    {
+        $existing = $this->repository->findShortcode($shortcodeId, $shopId);
+        if (null === $existing) {
+            throw new RuntimeException('The requested shortcode cannot be found.');
+        }
+
+        $this->repository->updateShortcode($shortcodeId, $shortcode, $shopId, $translations);
+
+        $this->clearCacheForShop($shopId);
+        $this->clearCacheForShortcode($shortcode, $shopId);
+        if ($existing['shortcode'] !== $shortcode) {
+            $this->clearCacheForShortcode($existing['shortcode'], $shopId);
+        }
+    }
+
+    public function deleteShortcode(int $shortcodeId, int $shopId): void
+    {
+        $existing = $this->repository->findShortcode($shortcodeId, $shopId);
+        if (null === $existing) {
+            throw new RuntimeException('The requested shortcode cannot be found.');
+        }
+
+        $this->repository->deleteShortcode($shortcodeId, $shopId);
+
+        $this->clearCacheForShop($shopId);
+        $this->clearCacheForShortcode($existing['shortcode'], $shopId);
+    }
+
+    public function duplicateShortcode(int $shortcodeId, int $shopId, string $newShortcode): int
+    {
+        $shortcode = $this->repository->getShortcodeForForm($shortcodeId, $shopId);
+        if (null === $shortcode) {
+            throw new RuntimeException('The requested shortcode cannot be found.');
+        }
+
+        $translations = [];
+        foreach ($shortcode['translations'] as $languageId => $translation) {
+            $translations[(int) $languageId] = [
+                'title' => (string) ($translation['title'] ?? ''),
+                'content' => $translation['content'] ?? '',
+            ];
+        }
+
+        return $this->createShortcode($newShortcode, $shopId, $translations);
     }
 }

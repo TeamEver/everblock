@@ -105,7 +105,7 @@ services:
     Everblock\Tools\Form\DataProvider\ShortcodeFormDataProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
-            $shortcodeProvider: '@Everblock\\Tools\\Service\\EverBlockShortcodeProvider'
+            $shortcodeService: '@Everblock\\Tools\\Service\\Domain\\EverBlockShortcodeDomainService'
     Everblock\Tools\Form\DataProvider\FaqFormDataProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
@@ -162,6 +162,7 @@ services:
     Everblock\Tools\Service\Domain\EverBlockFlagDomainService: ~
     Everblock\Tools\Service\Domain\EverBlockTabDomainService: ~
     Everblock\Tools\Service\Domain\EverBlockModalDomainService: ~
+    Everblock\Tools\Service\Domain\EverBlockShortcodeDomainService: ~
 
     Everblock\Tools\Service\EverBlockProvider: ~
     Everblock\Tools\Service\EverBlockFaqProvider: ~

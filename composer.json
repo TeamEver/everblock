@@ -16,7 +16,6 @@
       "models/EverblockFaq.php",
       "models/EverblockFlagsClass.php",
       "models/EverblockModal.php",
-      "models/EverblockShortcode.php",
       "models/EverblockTabsClass.php",
       "models/EverblockTools.php"
     ],
