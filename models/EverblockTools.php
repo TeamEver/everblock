@@ -17,7 +17,9 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Service\EverblockCache;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -956,7 +958,16 @@ class EverblockTools extends ObjectModel
         $txt = preg_replace_callback($pattern, function ($matches) use ($context, $templatePath) {
             $tagName = $matches[1];
 
-            $faqs = EverblockFaq::getFaqByTagName($context->shop->id, $context->language->id, $tagName);
+            $faqs = [];
+            if (class_exists(SymfonyContainer::class)) {
+                $container = SymfonyContainer::getInstance();
+                if (null !== $container && $container->has(EverBlockFaqProvider::class)) {
+                    $provider = $container->get(EverBlockFaqProvider::class);
+                    if ($provider instanceof EverBlockFaqProvider) {
+                        $faqs = $provider->getFaqByTagName($context->shop->id, $context->language->id, $tagName);
+                    }
+                }
+            }
 
             $context->smarty->assign('everFaqs', $faqs);
 

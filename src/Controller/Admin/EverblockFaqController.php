@@ -25,6 +25,7 @@ use Everblock\Tools\Form\DataProvider\FaqFormDataProvider;
 use Everblock\Tools\Form\Type\FaqFormType;
 use Everblock\Tools\Grid\Data\FaqGridDataFactory;
 use Everblock\Tools\Grid\Definition\Factory\FaqGridDefinitionFactory;
+use Everblock\Tools\Service\EverBlockFaqProvider;
 use PrestaShopException;
 use Shop;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -66,12 +67,18 @@ class EverblockFaqController extends BaseEverblockController
      */
     private $router;
 
+    /**
+     * @var EverBlockFaqProvider
+     */
+    private $faqProvider;
+
     public function __construct(
         FaqGridDefinitionFactory $gridDefinitionFactory,
         FaqGridDataFactory $gridDataFactory,
         FormFactoryInterface $formFactory,
         FaqFormDataProvider $formDataProvider,
         RouterInterface $router,
+        EverBlockFaqProvider $faqProvider,
         ?Context $context = null,
         ?\PrestaShop\PrestaShop\Adapter\Module\Repository\ModuleRepository $moduleRepository = null,
         ?\Symfony\Contracts\Translation\TranslatorInterface $translator = null,
@@ -84,6 +91,7 @@ class EverblockFaqController extends BaseEverblockController
         $this->formFactory = $formFactory;
         $this->formDataProvider = $formDataProvider;
         $this->router = $router;
+        $this->faqProvider = $faqProvider;
     }
 
     public function index(Request $request): Response
@@ -241,6 +249,10 @@ class EverblockFaqController extends BaseEverblockController
         try {
             if ($duplicate->save()) {
                 $this->addFlash('success', $this->translate('The FAQ entry has been duplicated successfully.', [], 'Modules.Everblock.Admin'));
+                $this->faqProvider->clearCacheForShop((int) $duplicate->id_shop);
+                if (!empty($duplicate->tag_name)) {
+                    $this->faqProvider->clearCacheForTag((int) $duplicate->id_shop, (string) $duplicate->tag_name);
+                }
             } else {
                 $this->addFlash('error', $this->translate('Unable to duplicate this FAQ entry.', [], 'Modules.Everblock.Admin'));
             }
@@ -265,6 +277,10 @@ class EverblockFaqController extends BaseEverblockController
         try {
             if ($faq->delete()) {
                 $this->addFlash('success', $this->translate('The FAQ entry has been deleted successfully.', [], 'Modules.Everblock.Admin'));
+                $this->faqProvider->clearCacheForShop((int) $faq->id_shop);
+                if (!empty($faq->tag_name)) {
+                    $this->faqProvider->clearCacheForTag((int) $faq->id_shop, (string) $faq->tag_name);
+                }
             } else {
                 $this->addFlash('error', $this->translate('Unable to delete this FAQ entry.', [], 'Modules.Everblock.Admin'));
             }
@@ -294,6 +310,10 @@ class EverblockFaqController extends BaseEverblockController
             try {
                 if ($faq->delete()) {
                     ++$deleted;
+                    $this->faqProvider->clearCacheForShop((int) $faq->id_shop);
+                    if (!empty($faq->tag_name)) {
+                        $this->faqProvider->clearCacheForTag((int) $faq->id_shop, (string) $faq->tag_name);
+                    }
                 }
             } catch (PrestaShopException $exception) {
                 $this->addFlash('error', $exception->getMessage());
@@ -410,6 +430,10 @@ class EverblockFaqController extends BaseEverblockController
 
         $result['success'] = true;
         $result['id'] = (int) $faq->id;
+        $this->faqProvider->clearCacheForShop((int) $faq->id_shop);
+        if (!empty($faq->tag_name)) {
+            $this->faqProvider->clearCacheForTag((int) $faq->id_shop, (string) $faq->tag_name);
+        }
 
         return $result;
     }

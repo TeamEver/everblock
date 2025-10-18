@@ -32,6 +32,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
+use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Service\EverBlockProvider;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
@@ -62,6 +63,7 @@ class Everblock extends Module
         'hookDisplayInvoiceLegalFreeText',
     ];
     private ?EverBlockProvider $everBlockProvider = null;
+    private ?EverBlockFaqProvider $everBlockFaqProvider = null;
 
     public function __construct()
     {
@@ -95,6 +97,27 @@ class Everblock extends Module
                     $this->everBlockProvider = $provider;
 
                     return $this->everBlockProvider;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function getEverBlockFaqProvider(): ?EverBlockFaqProvider
+    {
+        if ($this->everBlockFaqProvider instanceof EverBlockFaqProvider) {
+            return $this->everBlockFaqProvider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockFaqProvider::class)) {
+                $provider = $container->get(EverBlockFaqProvider::class);
+                if ($provider instanceof EverBlockFaqProvider) {
+                    $this->everBlockFaqProvider = $provider;
+
+                    return $this->everBlockFaqProvider;
                 }
             }
         }
@@ -3371,20 +3394,38 @@ class Everblock extends Module
 
     public function hookActionObjectEverblockFaqDeleteAfter($params)
     {
-        $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverblockShortcode_getFaqByTagName_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'fetchInstagramImages';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        $provider = $this->getEverBlockFaqProvider();
+        if ($provider instanceof EverBlockFaqProvider) {
+            $faq = $params['object'] ?? null;
+            $shopId = (int) ($faq->id_shop ?? ($this->context->shop->id ?? 0));
+            if ($shopId > 0) {
+                $provider->clearCacheForShop($shopId);
+            } else {
+                $provider->clearCache();
+            }
+
+            if (isset($faq->tag_name) && $faq->tag_name !== '') {
+                $provider->clearCacheForTag($shopId, (string) $faq->tag_name);
+            }
+        }
     }
 
     public function hookActionObjectEverblockFaqUpdateAfter($params)
     {
-        $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverblockShortcode_getFaqByTagName_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        $provider = $this->getEverBlockFaqProvider();
+        if ($provider instanceof EverBlockFaqProvider) {
+            $faq = $params['object'] ?? null;
+            $shopId = (int) ($faq->id_shop ?? ($this->context->shop->id ?? 0));
+            if ($shopId > 0) {
+                $provider->clearCacheForShop($shopId);
+            } else {
+                $provider->clearCache();
+            }
+
+            if (isset($faq->tag_name) && $faq->tag_name !== '') {
+                $provider->clearCacheForTag($shopId, (string) $faq->tag_name);
+            }
+        }
     }
 
     public function hookActionObjectProductUpdateAfter($params)
