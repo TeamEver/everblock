@@ -4025,8 +4025,7 @@ class Everblock extends Module
             if (Validate::isLoadedObject($product)) {
                 $presentedProducts = EverblockTools::everPresentProducts(
                     [$product->id],
-                    $this->context,
-                    $this
+                    $this->context
                 );
                 $presentedProduct = reset($presentedProducts);
 
