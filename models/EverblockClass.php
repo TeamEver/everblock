@@ -17,7 +17,10 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-use Everblock\Tools\Service\EverblockCache;
+use DateTime;
+use Everblock\Tools\Service\EverBlockProvider;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use RuntimeException;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -25,6 +28,9 @@ if (!defined('_PS_VERSION_')) {
 
 class EverBlockClass extends ObjectModel
 {
+    /** @var EverBlockProvider|null */
+    protected static $provider;
+
     public $id_everblock;
     public $name;
     public $content;
@@ -242,33 +248,43 @@ class EverBlockClass extends ObjectModel
         ],
     ];
 
+    public static function setProvider(EverBlockProvider $provider): void
+    {
+        static::$provider = $provider;
+    }
+
+    protected static function getProvider(): EverBlockProvider
+    {
+        if (static::$provider instanceof EverBlockProvider) {
+            return static::$provider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockProvider::class)) {
+                $provider = $container->get(EverBlockProvider::class);
+                if ($provider instanceof EverBlockProvider) {
+                    static::$provider = $provider;
+
+                    return $provider;
+                }
+            }
+        }
+
+        throw new RuntimeException('EverBlockProvider service is not available.');
+    }
+
     public static function getAllBlocks(int $idLang, int $idShop): array
     {
-        $cacheId = 'EverBlockClass_getAllBlocks_'
-        . (int) $idLang
-        . '_'
-        . (int) $idShop;
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            $sql = new DbQuery();
-            $sql->select('*');
-            $sql->from('everblock', 'eb');
-            $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
-            $sql->where('ebl.id_lang = ' . (int) $idLang);
-            $sql->where('eb.id_shop = ' . (int) $idShop);
-            $sql->orderBy('eb.position ASC');
-            $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            EverblockCache::cacheStore($cacheId, $allBlocks);
-            return $allBlocks;
-        }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return static::getProvider()->getAllBlocks($idLang, $idShop);
     }
 
     public static function cleanBlocksCacheOnDate(int $idLang, int $idShop)
     {
-        $blocks = static::getAllBlocks($idLang, $idShop);
-        $cacheNeedFlush = false;
-        $cacheIds = [];
+        $provider = static::getProvider();
+        $blocks = $provider->getAllBlocks($idLang, $idShop);
         foreach ($blocks as $block) {
+            $cacheNeedFlush = false;
             $now = new DateTime();
             $now = $now->format('Y-m-d H:i:s');
             if (!empty($block['date_start'])
@@ -284,100 +300,18 @@ class EverBlockClass extends ObjectModel
                 $cacheNeedFlush = true;
             }
             if ((bool) $cacheNeedFlush === true) {
-                $cacheStartId = 'everblock-id_hook-' . (int) $block['id_hook'];
-                EverblockCache::cacheDropByPattern($cacheStartId);
+                $provider->clearCacheForHook((int) $block['id_hook']);
             }
         }
     }
 
     public static function getBlocks(int $idHook, int $idLang, int $idShop): array
     {
-        $cacheId = 'EverBlockClass_getBlocks_'
-        . (int) $idHook
-        . '_'
-        . (int) $idLang
-        . '_'
-        . (int) $idShop;
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            $return = [];
-            $sql = new DbQuery();
-            $sql->select('*');
-            $sql->from('everblock', 'eb');
-            $sql->leftJoin('everblock_lang', 'ebl', 'eb.id_everblock = ebl.id_everblock');
-            $sql->where('eb.id_hook = ' . (int) $idHook);
-            $sql->where('ebl.id_lang = ' . (int) $idLang);
-            $sql->where('eb.id_shop = ' . (int) $idShop);
-            $sql->where('eb.active = 1');
-            $sql->orderBy('eb.position ASC');
-            $allBlocks = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            foreach ($allBlocks as $block) {
-                $block['bootstrap_class'] = self::getBootstrapColClass(
-                    $block['bootstrap_class']
-                );
-                $return[] = $block;
-            }
-            EverblockCache::cacheStore($cacheId, $return);
-            return $return;
-        }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return static::getProvider()->getBlocks($idHook, $idLang, $idShop);
     }
 
     public static function getBootstrapColClass(int $colNumber)
     {
-        $cacheId = 'EverBlockClass_getBootstrapColClass_'
-        . (int) $colNumber;
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            $class = 'col-';
-            switch ($colNumber) {
-                case 0:
-                    $class = '';
-                    break;
-                case 1:
-                    $class .= '12';
-                    break;
-                case 2:
-                    $class .= '6';
-                    break;
-                case 3:
-                    $class .= '4';
-                    break;
-                case 4:
-                    $class .= '3';
-                    break;
-                case 6:
-                    $class .= '2';
-                    break;
-                default:
-                    $class .= '12';
-                    break;
-            }
-            $class .= ' col-md-';
-            switch ($colNumber) {
-                case 0:
-                    $class = '';
-                    break;
-                case 1:
-                    $class .= '12';
-                    break;
-                case 2:
-                    $class .= '6';
-                    break;
-                case 3:
-                    $class .= '4';
-                    break;
-                case 4:
-                    $class .= '3';
-                    break;
-                case 6:
-                    $class .= '2';
-                    break;
-                default:
-                    $class .= '12';
-                    break;
-            }
-            EverblockCache::cacheStore($cacheId, $class);
-            return $class;
-        }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return static::getProvider()->getBootstrapColClass($colNumber);
     }
 }

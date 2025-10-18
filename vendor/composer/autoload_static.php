@@ -9,11 +9,16 @@ class ComposerStaticInitc44e5ac729cb9f81a689ee15bff0603d
     public static $prefixLengthsPsr4 = array (
         'E' => 
         array (
+            'Everblock\\Tools\\Tests\\' => 22,
             'Everblock\\Tools\\' => 16,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'Everblock\\Tools\\Tests\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/tests',
+        ),
         'Everblock\\Tools\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',

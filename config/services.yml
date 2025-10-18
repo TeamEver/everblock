@@ -115,6 +115,13 @@ services:
     Everblock\Tools\Form\Type\ShortcodeFormType: ~
     Everblock\Tools\Form\Type\FaqFormType: ~
 
+    Everblock\Tools\Repository\EverBlockRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $cache: '@cache.app'
+
+    Everblock\Tools\Service\EverBlockProvider: ~
+
     Everblock\Tools\Controller\Admin\:
         resource: '../src/Controller/Admin'
         arguments:

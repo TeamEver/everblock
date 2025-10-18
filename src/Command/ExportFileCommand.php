@@ -24,6 +24,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Service\EverBlockProvider;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PrestaShop\PrestaShop\Adapter\LegacyContext as ContextAdapter;
@@ -45,14 +46,16 @@ class ExportFileCommand extends Command
     public const ABORTED = 3;
     
     protected $filename;
+    private EverBlockProvider $everBlockProvider;
 
     private $allowedActions = [
         'getrandomcomment',
         'blocks'
     ];
 
-    public function __construct(KernelInterface $kernel)
+    public function __construct(KernelInterface $kernel, EverBlockProvider $everBlockProvider)
     {
+        $this->everBlockProvider = $everBlockProvider;
         parent::__construct();
     }
 
@@ -269,18 +272,7 @@ class ExportFileCommand extends Command
 
     protected function getAllBlocks($idShop, $idLang): array
     {
-        $sql = new \DbQuery();
-        $sql->select('*');
-        $sql->from('everblock_lang', 'ebl');
-        $sql->leftJoin(
-            'everblock',
-            'eb',
-            'eb.id_everblock = ebl.id_everblock'
-        );
-        $sql->where('eb.id_shop = ' . (int) $idShop);
-        $sql->where('ebl.id_lang = ' . (int) $idLang);
-        $allBlocks = \Db::getInstance()->executeS($sql);
-        return $allBlocks;
+        return $this->everBlockProvider->getAllBlocks((int) $idLang, (int) $idShop);
     }
 
     protected function decodeField($json)
