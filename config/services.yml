@@ -211,6 +211,18 @@ services:
             $navigationBuilder: '@Everblock\\Tools\\Service\\Admin\\NavigationBuilder'
         tags: ['controller.service_arguments']
 
+    Everblock\Tools\Controller\AddToCartController:
+        arguments:
+            $cartManager: '@Everblock\\Tools\\Application\\Cart\\CartManager'
+            $router: '@router'
+        tags: ['controller.service_arguments']
+
+    Everblock\Tools\Application\Cart\CartManager:
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+            $translator: '@translator'
+            $logger: '@?logger'
+
     Everblock\Tools\Shortcode\ShortcodeRenderer:
         public: true
         arguments:
@@ -635,11 +647,10 @@ services:
             - { name: 'everblock.shortcode_handler' }
 
     everblock.shortcode_handler.add_to_cart:
-        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        class: Everblock\Tools\Shortcode\Handler\AddToCartShortcodeHandler
         arguments:
-            $needle: '[everaddtocart'
-            $callback: ['EverblockTools', 'getAddToCartShortcode']
-            $argumentMap: ['context', 'module']
+            $router: '@router'
+            $translator: '@translator'
         tags:
             - { name: 'everblock.shortcode_handler' }
 
