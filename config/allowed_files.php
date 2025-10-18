@@ -71,7 +71,6 @@ return [
     'mails/uk/index.php',
     'src/Service/EverblockCache.php',
     'src/Checkout/EverblockCheckoutStep.php',
-    'models/EverblockClass.php',
     'models/EverblockFaq.php',
     'models/EverblockFlagsClass.php',
     'models/EverblockModal.php',
