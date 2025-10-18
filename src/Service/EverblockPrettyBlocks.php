@@ -21,7 +21,6 @@
 namespace Everblock\Tools\Service;
 
 use Configuration;
-use EverBlockClass;
 use Everblock\Tools\Service\EverblockCache;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use EverblockShortcode;

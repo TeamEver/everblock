@@ -20,18 +20,15 @@
 
 namespace Everblock\Tools\Form\Handler;
 
-use Configuration;
 use Context;
-use EverBlockClass;
-use EverblockTools;
+use DateTimeImmutable;
+use Everblock\Tools\Application\Command\EverBlock\EverBlockTranslationCommand;
+use Everblock\Tools\Application\Command\EverBlock\UpsertEverBlockCommand;
+use Everblock\Tools\Application\EverBlockApplicationService;
 use Group;
 use Language;
-use Hook;
-use Module;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Tools;
-use Validate;
 
 if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
     exit;
@@ -39,22 +36,19 @@ if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
 
 class EverblockFormHandler
 {
-    /**
-     * @var Context
-     */
-    private $context;
+    private Context $context;
 
-    public function __construct(Context $context)
-    {
+    public function __construct(
+        Context $context,
+        private readonly EverBlockApplicationService $applicationService
+    ) {
         $this->context = $context;
     }
 
     /**
-     * @param EverBlockClass|null $everBlock
-     *
      * @return array<string, mixed>
      */
-    public function handle(FormInterface $form, Request $request, ?EverBlockClass $everBlock = null): array
+    public function handle(FormInterface $form, Request $request, ?int $everBlockId = null): array
     {
         $form->handleRequest($request);
 
@@ -80,110 +74,126 @@ class EverblockFormHandler
 
         $data = $form->getData();
 
-        if (!$everBlock || !Validate::isLoadedObject($everBlock)) {
-            $everBlock = new EverBlockClass();
-        }
-
-        $everBlock->name = (string) $data['name'];
-        $everBlock->id_shop = (int) $this->context->shop->id;
-        $everBlock->id_hook = (int) $data['id_hook'];
-        $everBlock->only_home = (bool) $data['only_home'];
-        $everBlock->only_category = (bool) $data['only_category'];
-        $everBlock->only_category_product = (bool) $data['only_category_product'];
-        $everBlock->only_manufacturer = (bool) $data['only_manufacturer'];
-        $everBlock->only_supplier = (bool) $data['only_supplier'];
-        $everBlock->only_cms_category = (bool) $data['only_cms_category'];
-        $everBlock->obfuscate_link = (bool) $data['obfuscate_link'];
-        $everBlock->add_container = (bool) $data['add_container'];
-        $everBlock->lazyload = (bool) $data['lazyload'];
-        $everBlock->categories = json_encode(array_map('intval', (array) $data['categories']));
-        $everBlock->manufacturers = json_encode(array_map('intval', (array) $data['manufacturers']));
-        $everBlock->suppliers = json_encode(array_map('intval', (array) $data['suppliers']));
-        $everBlock->cms_categories = json_encode(array_map('intval', (array) $data['cms_categories']));
-        $everBlock->position = $data['position'] === '' ? $this->getNextPosition((int) $data['id_hook']) : (int) $data['position'];
-        $everBlock->background = (string) $data['background'];
-        $everBlock->css_class = (string) $data['css_class'];
-        $everBlock->data_attribute = (string) $data['data_attribute'];
-        $everBlock->bootstrap_class = (string) $data['bootstrap_class'];
-        $everBlock->device = (int) $data['device'];
-        $everBlock->delay = $data['delay'] === '' ? 0 : (int) $data['delay'];
-        $everBlock->timeout = $data['timeout'] === '' ? 0 : (int) $data['timeout'];
-        $everBlock->modal = (bool) $data['modal'];
-        $everBlock->date_start = $this->formatDate($data['date_start'] ?? null);
-        $everBlock->date_end = $this->formatDate($data['date_end'] ?? null);
-        $everBlock->active = (bool) $data['active'];
-
-        $groups = (array) $data['groupBox'];
-        if (empty($groups)) {
-            $groups = array_map(function (array $group) {
-                return (int) $group['id_group'];
-            }, Group::getGroups((int) $this->context->language->id));
-        }
-        $everBlock->groups = json_encode(array_map('intval', $groups));
-
-        $languages = Language::getLanguages(false);
-
-        foreach ($languages as $language) {
-            $idLang = (int) $language['id_lang'];
-            $content = $data['content'][$idLang] ?? '';
-            $everBlock->content[$idLang] = EverblockTools::convertImagesToWebP((string) $content);
-            $everBlock->custom_code[$idLang] = (string) ($data['custom_code'][$idLang] ?? '');
-        }
-
         try {
-            if (!$everBlock->save()) {
-                $result['errors'][] = $this->trans('An error occurred while saving the block.');
-
-                return $result;
-            }
-        } catch (\Exception $exception) {
+            $command = $this->buildCommand($data, $everBlockId);
+            $block = $this->applicationService->save($command);
+        } catch (\Throwable $exception) {
             $result['errors'][] = $exception->getMessage();
 
             return $result;
         }
 
-        $hookName = Hook::getNameById((int) $everBlock->id_hook);
-        $module = Module::getInstanceByName('everblock');
-        if ($module && $hookName) {
-            $module->registerHook($hookName);
-        }
-
-        if (Configuration::get('EVERPSCSS_CACHE')) {
-            Tools::clearAllCache();
-        }
-
         $result['success'] = true;
-        $result['id'] = (int) $everBlock->id;
+        $result['id'] = (int) $block->getId();
 
         return $result;
     }
 
-    private function getNextPosition(int $idHook): int
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function buildCommand(array $data, ?int $everBlockId): UpsertEverBlockCommand
     {
-        $sql = new \DbQuery();
-        $sql->select('MAX(position)');
-        $sql->from('everblock');
-        $sql->where('id_hook = ' . (int) $idHook);
-        $sql->where('id_shop = ' . (int) $this->context->shop->id);
-        $position = (int) \Db::getInstance()->getValue($sql);
+        $shopId = isset($this->context->shop) ? (int) $this->context->shop->id : 0;
 
-        return $position + 1;
+        $blockId = $everBlockId;
+        if (null === $blockId && isset($data['id_everblock']) && $data['id_everblock'] !== null && $data['id_everblock'] !== '') {
+            $blockId = (int) $data['id_everblock'];
+        }
+
+        $groups = (array) ($data['groupBox'] ?? []);
+        if (empty($groups)) {
+            $groups = array_map(function (array $group) {
+                return (int) $group['id_group'];
+            }, Group::getGroups(isset($this->context->language) ? (int) $this->context->language->id : 0));
+        }
+
+        $positionValue = $data['position'] ?? '';
+        $position = $positionValue === '' ? null : (int) $positionValue;
+
+        return new UpsertEverBlockCommand(
+            $blockId,
+            (string) $data['name'],
+            (int) $data['id_hook'],
+            $shopId,
+            (bool) $data['only_home'],
+            (bool) $data['only_category'],
+            (bool) $data['only_category_product'],
+            (bool) $data['only_manufacturer'],
+            (bool) $data['only_supplier'],
+            (bool) $data['only_cms_category'],
+            (bool) $data['obfuscate_link'],
+            (bool) $data['add_container'],
+            (bool) $data['lazyload'],
+            array_map('intval', $groups),
+            array_map('intval', (array) ($data['categories'] ?? [])),
+            array_map('intval', (array) ($data['manufacturers'] ?? [])),
+            array_map('intval', (array) ($data['suppliers'] ?? [])),
+            array_map('intval', (array) ($data['cms_categories'] ?? [])),
+            (string) ($data['background'] ?? ''),
+            (string) ($data['css_class'] ?? ''),
+            (string) ($data['data_attribute'] ?? ''),
+            (string) ($data['bootstrap_class'] ?? ''),
+            $position,
+            (int) $data['device'],
+            $this->normalizeInt($data['delay'] ?? null),
+            $this->normalizeInt($data['timeout'] ?? null),
+            (bool) $data['modal'],
+            $this->parseDate($data['date_start'] ?? null),
+            $this->parseDate($data['date_end'] ?? null),
+            (bool) $data['active'],
+            $this->buildTranslationCommands(
+                (array) ($data['content'] ?? []),
+                (array) ($data['custom_code'] ?? [])
+            )
+        );
     }
 
     /**
-     * @param mixed $value
+     * @param array<int, mixed> $content
+     * @param array<int, mixed> $customCode
+     *
+     * @return array<int, EverBlockTranslationCommand>
      */
-    private function formatDate($value): string
+    private function buildTranslationCommands(array $content, array $customCode): array
+    {
+        $commands = [];
+        foreach (Language::getLanguages(false) as $language) {
+            $idLang = (int) $language['id_lang'];
+            $commands[$idLang] = new EverBlockTranslationCommand(
+                $idLang,
+                (string) ($content[$idLang] ?? ''),
+                (string) ($customCode[$idLang] ?? '')
+            );
+        }
+
+        return $commands;
+    }
+
+    private function parseDate(mixed $value): ?DateTimeImmutable
     {
         if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d H:i:s');
+            return DateTimeImmutable::createFromInterface($value);
         }
 
         if (is_string($value) && $value !== '') {
-            return $value;
+            try {
+                return new DateTimeImmutable($value);
+            } catch (\Exception) {
+                return null;
+            }
         }
 
-        return '';
+        return null;
+    }
+
+    private function normalizeInt(mixed $value): ?int
+    {
+        if ($value === '' || $value === null) {
+            return null;
+        }
+
+        return (int) $value;
     }
 
     private function trans(string $message): string
