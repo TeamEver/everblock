@@ -34,21 +34,23 @@ everblock_admin_blocks_edit:
 
 everblock_admin_blocks_duplicate:
     path: /everblock/blocks/{everblockId}/duplicate
-    methods: [GET]
+    methods: [POST]
     defaults:
         _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::duplicate'
         _legacy_controller: 'AdminEverBlock'
         _legacy_link: 'AdminEverBlock:duplicate'
+        _token: true
     requirements:
         everblockId: "\\d+"
 
 everblock_admin_blocks_toggle:
     path: /everblock/blocks/{everblockId}/toggle
-    methods: [GET]
+    methods: [POST]
     defaults:
         _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::toggle'
         _legacy_controller: 'AdminEverBlock'
         _legacy_link: 'AdminEverBlock:status'
+        _token: true
     requirements:
         everblockId: "\\d+"
 
@@ -80,11 +82,12 @@ everblock_admin_blocks_export:
 
 everblock_admin_blocks_clear_cache:
     path: /everblock/blocks/cache/clear
-    methods: [GET]
+    methods: [POST]
     defaults:
         _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockBlockController::clearCache'
         _legacy_controller: 'AdminEverBlock'
         _legacy_link: 'AdminEverBlock:clearcache'
+        _token: true
 
 everblock_admin_hooks:
     path: /everblock/hooks

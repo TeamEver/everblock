@@ -225,9 +225,13 @@ class EverblockBlockController extends BaseEverblockController
         );
     }
 
-    public function duplicate(int $everblockId): RedirectResponse
+    public function duplicate(int $everblockId, Request $request): RedirectResponse
     {
         $this->denyAccessUnlessGranted('create', 'AdminEverBlock');
+
+        if (!$this->isTokenValid($request, sprintf('everblock_block_duplicate_%d', $everblockId))) {
+            return $this->redirectToRoute('everblock_admin_blocks');
+        }
 
         $source = new EverBlockClass($everblockId);
         if (!Validate::isLoadedObject($source)) {
@@ -278,9 +282,13 @@ class EverblockBlockController extends BaseEverblockController
         return $this->redirectToRoute('everblock_admin_blocks');
     }
 
-    public function toggle(int $everblockId): RedirectResponse
+    public function toggle(int $everblockId, Request $request): RedirectResponse
     {
         $this->denyAccessUnlessGranted('update', 'AdminEverBlock');
+
+        if (!$this->isTokenValid($request, sprintf('everblock_block_toggle_%d', $everblockId))) {
+            return $this->redirectToRoute('everblock_admin_blocks');
+        }
 
         $block = new EverBlockClass($everblockId);
         if (!Validate::isLoadedObject($block)) {
@@ -302,6 +310,10 @@ class EverblockBlockController extends BaseEverblockController
     public function bulkDelete(Request $request): RedirectResponse
     {
         $this->denyAccessUnlessGranted('delete', 'AdminEverBlock');
+
+        if (!$this->isTokenValid($request, 'everblock_blocks_bulk_delete')) {
+            return $this->redirectToRoute('everblock_admin_blocks');
+        }
 
         $ids = $request->request->all('ids');
         if (!is_array($ids)) {
@@ -328,6 +340,10 @@ class EverblockBlockController extends BaseEverblockController
     public function bulkDuplicate(Request $request): RedirectResponse
     {
         $this->denyAccessUnlessGranted('create', 'AdminEverBlock');
+
+        if (!$this->isTokenValid($request, 'everblock_blocks_bulk_duplicate')) {
+            return $this->redirectToRoute('everblock_admin_blocks');
+        }
 
         $ids = $request->request->all('ids');
         if (!is_array($ids)) {
@@ -381,9 +397,13 @@ class EverblockBlockController extends BaseEverblockController
         return $response;
     }
 
-    public function clearCache(): RedirectResponse
+    public function clearCache(Request $request): RedirectResponse
     {
         $this->denyAccessUnlessGranted('update', 'AdminEverBlock');
+
+        if (!$this->isTokenValid($request, 'everblock_blocks_clear_cache')) {
+            return $this->redirectToRoute('everblock_admin_blocks');
+        }
 
         Tools::clearAllCache();
 
@@ -398,5 +418,18 @@ class EverblockBlockController extends BaseEverblockController
         $this->addFlash('success', $this->translate('Cache has been cleared.'));
 
         return $this->redirectToRoute('everblock_admin_blocks');
+    }
+
+    private function isTokenValid(Request $request, string $tokenId): bool
+    {
+        $token = (string) $request->request->get('_token');
+
+        if (empty($token) || !$this->isCsrfTokenValid($tokenId, $token)) {
+            $this->addFlash('error', $this->translate('The form token is invalid. Please try again.'));
+
+            return false;
+        }
+
+        return true;
     }
 }
