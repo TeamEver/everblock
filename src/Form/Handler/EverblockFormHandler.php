@@ -104,7 +104,7 @@ class EverblockFormHandler
         $everBlock->background = (string) $data['background'];
         $everBlock->css_class = (string) $data['css_class'];
         $everBlock->data_attribute = (string) $data['data_attribute'];
-        $everBlock->bootstrap_class = (int) $data['bootstrap_class'];
+        $everBlock->bootstrap_class = (string) $data['bootstrap_class'];
         $everBlock->device = (int) $data['device'];
         $everBlock->delay = $data['delay'] === '' ? 0 : (int) $data['delay'];
         $everBlock->timeout = $data['timeout'] === '' ? 0 : (int) $data['timeout'];

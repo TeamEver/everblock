@@ -88,7 +88,7 @@ class EverblockFormDataProvider
             'background' => '',
             'css_class' => '',
             'data_attribute' => '',
-            'bootstrap_class' => 0,
+            'bootstrap_class' => '',
             'position' => '',
             'modal' => false,
             'delay' => '',
@@ -134,7 +134,7 @@ class EverblockFormDataProvider
         $default['background'] = (string) $block->background;
         $default['css_class'] = (string) $block->css_class;
         $default['data_attribute'] = (string) $block->data_attribute;
-        $default['bootstrap_class'] = (int) $block->bootstrap_class;
+        $default['bootstrap_class'] = (string) $block->bootstrap_class;
         $default['position'] = (string) $block->position;
         $default['modal'] = (bool) $block->modal;
         $default['delay'] = (string) $block->delay;
