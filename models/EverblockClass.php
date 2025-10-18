@@ -19,7 +19,6 @@
  */
 use DateTime;
 use Everblock\Tools\Service\EverBlockProvider;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use RuntimeException;
 
 if (!defined('_PS_VERSION_')) {
@@ -264,18 +263,6 @@ class EverBlockClass extends ObjectModel
         static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockProvider) {
             return static::$provider;
-        }
-
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockProvider::class)) {
-                $provider = $container->get(EverBlockProvider::class);
-                if ($provider instanceof EverBlockProvider) {
-                    static::$provider = $provider;
-
-                    return $provider;
-                }
-            }
         }
 
         throw new RuntimeException('EverBlockProvider service is not available.');

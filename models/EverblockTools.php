@@ -19,7 +19,6 @@
  */
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Service\EverblockCache;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -955,18 +954,14 @@ class EverblockTools extends ObjectModel
         $templatePath = static::getTemplatePath('hook/faq.tpl', $module);
         $pattern = '/\[everfaq tag="([^"]+)"\]/';
 
-        $txt = preg_replace_callback($pattern, function ($matches) use ($context, $templatePath) {
+        $faqProvider = $module->getEverBlockFaqProvider();
+
+        $txt = preg_replace_callback($pattern, function ($matches) use ($context, $templatePath, $faqProvider) {
             $tagName = $matches[1];
 
             $faqs = [];
-            if (class_exists(SymfonyContainer::class)) {
-                $container = SymfonyContainer::getInstance();
-                if (null !== $container && $container->has(EverBlockFaqProvider::class)) {
-                    $provider = $container->get(EverBlockFaqProvider::class);
-                    if ($provider instanceof EverBlockFaqProvider) {
-                        $faqs = $provider->getFaqByTagName($context->shop->id, $context->language->id, $tagName);
-                    }
-                }
+            if ($faqProvider instanceof EverBlockFaqProvider) {
+                $faqs = $faqProvider->getFaqByTagName($context->shop->id, $context->language->id, $tagName);
             }
 
             $context->smarty->assign('everFaqs', $faqs);

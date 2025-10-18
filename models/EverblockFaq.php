@@ -18,7 +18,6 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 use Everblock\Tools\Service\EverBlockFaqProvider;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -113,18 +112,6 @@ class EverblockFaq extends ObjectModel
         static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockFaqProvider) {
             return static::$provider;
-        }
-
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockFaqProvider::class)) {
-                $provider = $container->get(EverBlockFaqProvider::class);
-                if ($provider instanceof EverBlockFaqProvider) {
-                    static::$provider = $provider;
-
-                    return $provider;
-                }
-            }
         }
 
         throw new \RuntimeException('EverBlockFaqProvider service is not available.');

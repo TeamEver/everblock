@@ -22,7 +22,6 @@ namespace Everblock\Tools\Service;
 
 use Configuration;
 use Everblock\Tools\Service\EverblockCache;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use EverblockShortcode;
 use EverblockTools;
 use Hook;
@@ -55,44 +54,12 @@ class EverblockPrettyBlocks
 
     private static function resolveProvider(): ?EverBlockProvider
     {
-        if (static::$provider instanceof EverBlockProvider) {
-            return static::$provider;
-        }
-
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockProvider::class)) {
-                $resolved = $container->get(EverBlockProvider::class);
-                if ($resolved instanceof EverBlockProvider) {
-                    static::$provider = $resolved;
-
-                    return $resolved;
-                }
-            }
-        }
-
-        return null;
+        return static::$provider;
     }
 
     private static function resolveShortcodeProvider(): ?EverBlockShortcodeProvider
     {
-        if (static::$shortcodeProvider instanceof EverBlockShortcodeProvider) {
-            return static::$shortcodeProvider;
-        }
-
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockShortcodeProvider::class)) {
-                $resolved = $container->get(EverBlockShortcodeProvider::class);
-                if ($resolved instanceof EverBlockShortcodeProvider) {
-                    static::$shortcodeProvider = $resolved;
-
-                    return $resolved;
-                }
-            }
-        }
-
-        return null;
+        return static::$shortcodeProvider;
     }
 
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)

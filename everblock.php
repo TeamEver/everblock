@@ -41,7 +41,8 @@ use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContent;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use Everblock\Tools\Service\EverBlockModalProvider;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use ScssPhp\ScssPhp\Compiler;
 
 class Everblock extends Module
@@ -67,15 +68,31 @@ class Everblock extends Module
     private ?EverBlockFlagProvider $everBlockFlagProvider = null;
     private ?EverBlockTabProvider $everBlockTabProvider = null;
     private ?EverBlockRepository $everBlockRepository = null;
+    private ?EverBlockModalProvider $everBlockModalProvider = null;
+    private bool $dependenciesBootstrapped = false;
 
-    public function __construct()
-    {
+    public function __construct(
+        ?EverBlockProvider $everBlockProvider = null,
+        ?EverBlockDomainService $everBlockDomainService = null,
+        ?EverBlockFaqProvider $everBlockFaqProvider = null,
+        ?EverBlockFlagProvider $everBlockFlagProvider = null,
+        ?EverBlockTabProvider $everBlockTabProvider = null,
+        ?EverBlockRepository $everBlockRepository = null,
+        ?EverBlockModalProvider $everBlockModalProvider = null
+    ) {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
         $this->version = '8.0.4';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
+        $this->everBlockProvider = $everBlockProvider;
+        $this->everBlockDomainService = $everBlockDomainService;
+        $this->everBlockFaqProvider = $everBlockFaqProvider;
+        $this->everBlockFlagProvider = $everBlockFlagProvider;
+        $this->everBlockTabProvider = $everBlockTabProvider;
+        $this->everBlockRepository = $everBlockRepository;
+        $this->everBlockModalProvider = $everBlockModalProvider;
         parent::__construct();
         $this->displayName = $this->l('Ever Block');
         $this->description = $this->l('Add HTML block everywhere !');
@@ -84,132 +101,125 @@ class Everblock extends Module
             'min' => '1.7',
             'max' => _PS_VERSION_,
         ];
+        $this->bootstrapDependencies();
     }
 
-    private function getEverBlockProvider(): ?EverBlockProvider
+    private function bootstrapDependencies(): void
     {
-        if ($this->everBlockProvider instanceof EverBlockProvider) {
-            return $this->everBlockProvider;
+        if ($this->dependenciesBootstrapped) {
+            return;
         }
 
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockProvider::class)) {
-                $provider = $container->get(EverBlockProvider::class);
-                if ($provider instanceof EverBlockProvider) {
-                    $this->everBlockProvider = $provider;
+        $container = $this->resolveContainer();
 
-                    return $this->everBlockProvider;
-                }
+        if ($container instanceof ContainerInterface) {
+            if (null === $this->everBlockProvider) {
+                $this->everBlockProvider = $this->resolveService($container, EverBlockProvider::class);
+            }
+
+            if (null === $this->everBlockDomainService) {
+                $this->everBlockDomainService = $this->resolveService($container, EverBlockDomainService::class);
+            }
+
+            if (null === $this->everBlockFaqProvider) {
+                $this->everBlockFaqProvider = $this->resolveService($container, EverBlockFaqProvider::class);
+            }
+
+            if (null === $this->everBlockFlagProvider) {
+                $this->everBlockFlagProvider = $this->resolveService($container, EverBlockFlagProvider::class);
+            }
+
+            if (null === $this->everBlockTabProvider) {
+                $this->everBlockTabProvider = $this->resolveService($container, EverBlockTabProvider::class);
+            }
+
+            if (null === $this->everBlockRepository) {
+                $this->everBlockRepository = $this->resolveService($container, EverBlockRepository::class);
+            }
+
+            if (null === $this->everBlockModalProvider) {
+                $this->everBlockModalProvider = $this->resolveService($container, EverBlockModalProvider::class);
             }
         }
 
-        return null;
+        $this->dependenciesBootstrapped = true;
     }
 
-    private function getEverBlockDomainService(): ?EverBlockDomainService
+    private function resolveContainer(): ?ContainerInterface
     {
-        if ($this->everBlockDomainService instanceof EverBlockDomainService) {
-            return $this->everBlockDomainService;
-        }
-
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockDomainService::class)) {
-                $service = $container->get(EverBlockDomainService::class);
-                if ($service instanceof EverBlockDomainService) {
-                    $this->everBlockDomainService = $service;
-
-                    return $this->everBlockDomainService;
-                }
+        try {
+            if (method_exists($this, 'getContainer')) {
+                $container = $this->getContainer();
+            } elseif (method_exists(Module::class, 'getContainer')) {
+                $container = Module::getContainer();
+            } else {
+                return null;
             }
+        } catch (\Throwable) {
+            return null;
         }
 
-        return null;
+        return $container instanceof ContainerInterface ? $container : null;
     }
 
-    private function getEverBlockFaqProvider(): ?EverBlockFaqProvider
+    private function resolveService(ContainerInterface $container, string $serviceId): ?object
     {
-        if ($this->everBlockFaqProvider instanceof EverBlockFaqProvider) {
-            return $this->everBlockFaqProvider;
+        if (!$container->has($serviceId)) {
+            return null;
         }
 
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockFaqProvider::class)) {
-                $provider = $container->get(EverBlockFaqProvider::class);
-                if ($provider instanceof EverBlockFaqProvider) {
-                    $this->everBlockFaqProvider = $provider;
+        $service = $container->get($serviceId);
 
-                    return $this->everBlockFaqProvider;
-                }
-            }
-        }
-
-        return null;
+        return $service instanceof $serviceId ? $service : null;
     }
 
-    private function getEverBlockRepository(): ?EverBlockRepository
+    public function getEverBlockProvider(): ?EverBlockProvider
     {
-        if ($this->everBlockRepository instanceof EverBlockRepository) {
-            return $this->everBlockRepository;
-        }
+        $this->bootstrapDependencies();
 
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockRepository::class)) {
-                $repository = $container->get(EverBlockRepository::class);
-                if ($repository instanceof EverBlockRepository) {
-                    $this->everBlockRepository = $repository;
-
-                    return $this->everBlockRepository;
-                }
-            }
-        }
-
-        return null;
+        return $this->everBlockProvider;
     }
 
-    private function getEverBlockFlagProvider(): ?EverBlockFlagProvider
+    public function getEverBlockDomainService(): ?EverBlockDomainService
     {
-        if ($this->everBlockFlagProvider instanceof EverBlockFlagProvider) {
-            return $this->everBlockFlagProvider;
-        }
+        $this->bootstrapDependencies();
 
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockFlagProvider::class)) {
-                $provider = $container->get(EverBlockFlagProvider::class);
-                if ($provider instanceof EverBlockFlagProvider) {
-                    $this->everBlockFlagProvider = $provider;
-
-                    return $this->everBlockFlagProvider;
-                }
-            }
-        }
-
-        return null;
+        return $this->everBlockDomainService;
     }
 
-    private function getEverBlockTabProvider(): ?EverBlockTabProvider
+    public function getEverBlockFaqProvider(): ?EverBlockFaqProvider
     {
-        if ($this->everBlockTabProvider instanceof EverBlockTabProvider) {
-            return $this->everBlockTabProvider;
-        }
+        $this->bootstrapDependencies();
 
-        if (class_exists(SymfonyContainer::class)) {
-            $container = SymfonyContainer::getInstance();
-            if (null !== $container && $container->has(EverBlockTabProvider::class)) {
-                $provider = $container->get(EverBlockTabProvider::class);
-                if ($provider instanceof EverBlockTabProvider) {
-                    $this->everBlockTabProvider = $provider;
+        return $this->everBlockFaqProvider;
+    }
 
-                    return $this->everBlockTabProvider;
-                }
-            }
-        }
+    public function getEverBlockRepository(): ?EverBlockRepository
+    {
+        $this->bootstrapDependencies();
 
-        return null;
+        return $this->everBlockRepository;
+    }
+
+    public function getEverBlockFlagProvider(): ?EverBlockFlagProvider
+    {
+        $this->bootstrapDependencies();
+
+        return $this->everBlockFlagProvider;
+    }
+
+    public function getEverBlockTabProvider(): ?EverBlockTabProvider
+    {
+        $this->bootstrapDependencies();
+
+        return $this->everBlockTabProvider;
+    }
+
+    public function getEverBlockModalProvider(): ?EverBlockModalProvider
+    {
+        $this->bootstrapDependencies();
+
+        return $this->everBlockModalProvider;
     }
 
     public function __call($method, $args)
@@ -3422,7 +3432,8 @@ class Everblock extends Module
         }
         $modal = EverblockModal::getByProductId(
             (int) $params['id_product'],
-            (int) $this->context->shop->id
+            (int) $this->context->shop->id,
+            $this->getEverBlockModalProvider()
         );
         $fileUrl = '';
         $fileName = '';
@@ -3689,7 +3700,8 @@ class Everblock extends Module
             // Modal management
             $modal = EverblockModal::getByProductId(
                 (int) $params['object']->id,
-                (int) $context->shop->id
+                (int) $context->shop->id,
+                $this->getEverBlockModalProvider()
             );
             foreach (Language::getLanguages(true) as $language) {
                 $content = Tools::getValue('everblock_modal_content_' . $language['id_lang']);
@@ -5296,7 +5308,8 @@ class Everblock extends Module
 
         $modal = EverblockModal::getByProductId(
             $idProduct,
-            (int) $this->context->shop->id
+            (int) $this->context->shop->id,
+            $this->getEverBlockModalProvider()
         );
 
         // Vérifie si objet chargé
