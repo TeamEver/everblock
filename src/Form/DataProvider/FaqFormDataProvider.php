@@ -21,8 +21,8 @@
 namespace Everblock\Tools\Form\DataProvider;
 
 use Context;
+use Everblock\Tools\Service\Domain\EverBlockFaqDomainService;
 use Language;
-use Validate;
 
 if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
     exit;
@@ -35,9 +35,15 @@ class FaqFormDataProvider
      */
     private $context;
 
-    public function __construct(Context $context)
+    /**
+     * @var EverBlockFaqDomainService
+     */
+    private $faqDomainService;
+
+    public function __construct(Context $context, EverBlockFaqDomainService $faqDomainService)
     {
         $this->context = $context;
+        $this->faqDomainService = $faqDomainService;
     }
 
     /**
@@ -71,22 +77,26 @@ class FaqFormDataProvider
     public function getData(int $faqId): array
     {
         $default = $this->getDefaultData();
-        $faq = new \EverblockFaq($faqId);
-
-        if (!Validate::isLoadedObject($faq)) {
+        $faq = $this->faqDomainService->find($faqId, (int) $this->context->shop->id);
+        if (null === $faq) {
             throw new \RuntimeException($this->trans('The requested FAQ entry cannot be found.'));
         }
 
-        if ((int) $faq->id_shop !== (int) $this->context->shop->id) {
-            throw new \RuntimeException($this->trans('You cannot edit this FAQ entry from the current shop.'));
+        $default['id_everblock_faq'] = (int) $faq->getId();
+        $default['tag_name'] = (string) ($faq->getTagName() ?? '');
+        $default['position'] = (int) $faq->getPosition();
+        $default['active'] = (bool) $faq->isActive();
+
+        $titles = $default['title'];
+        $contents = $default['content'];
+        foreach ($faq->getTranslations() as $translation) {
+            $languageId = $translation->getLanguageId();
+            $titles[$languageId] = (string) ($translation->getTitle() ?? '');
+            $contents[$languageId] = (string) ($translation->getContent() ?? '');
         }
 
-        $default['id_everblock_faq'] = (int) $faq->id;
-        $default['tag_name'] = (string) $faq->tag_name;
-        $default['title'] = (array) $faq->title;
-        $default['content'] = (array) $faq->content;
-        $default['position'] = (int) $faq->position;
-        $default['active'] = (bool) $faq->active;
+        $default['title'] = $titles;
+        $default['content'] = $contents;
 
         return $default;
     }

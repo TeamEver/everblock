@@ -21,12 +21,13 @@
 namespace Everblock\Tools\Controller\Admin;
 
 use Context;
+use Everblock\Tools\Entity\EverBlockFaq;
 use Everblock\Tools\Form\DataProvider\FaqFormDataProvider;
 use Everblock\Tools\Form\Type\FaqFormType;
 use Everblock\Tools\Grid\Data\FaqGridDataFactory;
 use Everblock\Tools\Grid\Definition\Factory\FaqGridDefinitionFactory;
+use Everblock\Tools\Service\Domain\EverBlockFaqDomainService;
 use Everblock\Tools\Service\EverBlockFaqProvider;
-use PrestaShopException;
 use Shop;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -72,6 +73,11 @@ class EverblockFaqController extends BaseEverblockController
      */
     private $faqProvider;
 
+    /**
+     * @var EverBlockFaqDomainService
+     */
+    private $faqDomainService;
+
     public function __construct(
         FaqGridDefinitionFactory $gridDefinitionFactory,
         FaqGridDataFactory $gridDataFactory,
@@ -79,6 +85,7 @@ class EverblockFaqController extends BaseEverblockController
         FaqFormDataProvider $formDataProvider,
         RouterInterface $router,
         EverBlockFaqProvider $faqProvider,
+        EverBlockFaqDomainService $faqDomainService,
         ?Context $context = null,
         ?\PrestaShop\PrestaShop\Adapter\Module\Repository\ModuleRepository $moduleRepository = null,
         ?\Symfony\Contracts\Translation\TranslatorInterface $translator = null,
@@ -92,6 +99,7 @@ class EverblockFaqController extends BaseEverblockController
         $this->formDataProvider = $formDataProvider;
         $this->router = $router;
         $this->faqProvider = $faqProvider;
+        $this->faqDomainService = $faqDomainService;
     }
 
     public function index(Request $request): Response
@@ -194,7 +202,13 @@ class EverblockFaqController extends BaseEverblockController
         $formOptions = $this->formDataProvider->getFormOptions();
         $form = $this->formFactory->create(FaqFormType::class, $formData, $formOptions);
 
-        $faq = new \EverblockFaq($faqId);
+        $faq = $this->faqDomainService->find($faqId, (int) $this->context->shop->id);
+        if (!$faq instanceof EverBlockFaq) {
+            $this->addFlash('error', $this->translate('Unable to update this FAQ entry.', [], 'Modules.Everblock.Admin'));
+
+            return $this->redirectToRoute('everblock_admin_faq');
+        }
+
         $result = $this->handleForm($form, $request, $formOptions['languages'], $faq);
 
         if ($result['submitted'] && $result['success']) {
@@ -231,32 +245,39 @@ class EverblockFaqController extends BaseEverblockController
     {
         $this->denyAccessUnlessGranted('create', 'AdminEverBlockFaq');
 
-        $faq = new \EverblockFaq($faqId);
-        if (!Validate::isLoadedObject($faq)) {
+        $faq = $this->faqDomainService->find($faqId, (int) $this->context->shop->id);
+        if (!$faq instanceof EverBlockFaq) {
             $this->addFlash('error', $this->translate('Unable to duplicate this FAQ entry.', [], 'Modules.Everblock.Admin'));
 
             return $this->redirectToRoute('everblock_admin_faq');
         }
 
-        $duplicate = new \EverblockFaq();
-        $duplicate->id_shop = (int) $faq->id_shop;
-        $duplicate->tag_name = (string) $faq->tag_name;
-        $duplicate->active = (int) $faq->active;
-        $duplicate->position = (int) $faq->position;
-        $duplicate->title = (array) $faq->title;
-        $duplicate->content = (array) $faq->content;
+        $duplicate = new EverBlockFaq();
+        $duplicate->setShopId($faq->getShopId());
+        $duplicate->setTagName($faq->getTagName());
+        $duplicate->setActive($faq->isActive());
+        $duplicate->setPosition($faq->getPosition());
+
+        $translations = [];
+        foreach ($faq->getTranslations() as $translation) {
+            $translations[$translation->getLanguageId()] = [
+                'title' => $translation->getTitle(),
+                'content' => $translation->getContent(),
+            ];
+        }
 
         try {
-            if ($duplicate->save()) {
+            $saved = $this->faqDomainService->save($duplicate, $translations);
+            if ($saved->getId() !== null) {
                 $this->addFlash('success', $this->translate('The FAQ entry has been duplicated successfully.', [], 'Modules.Everblock.Admin'));
-                $this->faqProvider->clearCacheForShop((int) $duplicate->id_shop);
-                if (!empty($duplicate->tag_name)) {
-                    $this->faqProvider->clearCacheForTag((int) $duplicate->id_shop, (string) $duplicate->tag_name);
+                $this->faqProvider->clearCacheForShop($saved->getShopId());
+                if (!empty($saved->getTagName())) {
+                    $this->faqProvider->clearCacheForTag($saved->getShopId(), (string) $saved->getTagName());
                 }
             } else {
                 $this->addFlash('error', $this->translate('Unable to duplicate this FAQ entry.', [], 'Modules.Everblock.Admin'));
             }
-        } catch (PrestaShopException $exception) {
+        } catch (\Throwable $exception) {
             $this->addFlash('error', $exception->getMessage());
         }
 
@@ -267,24 +288,21 @@ class EverblockFaqController extends BaseEverblockController
     {
         $this->denyAccessUnlessGranted('delete', 'AdminEverBlockFaq');
 
-        $faq = new \EverblockFaq($faqId);
-        if (!Validate::isLoadedObject($faq)) {
+        $faq = $this->faqDomainService->find($faqId, (int) $this->context->shop->id);
+        if (!$faq instanceof EverBlockFaq) {
             $this->addFlash('error', $this->translate('Unable to delete this FAQ entry.', [], 'Modules.Everblock.Admin'));
 
             return $this->redirectToRoute('everblock_admin_faq');
         }
 
         try {
-            if ($faq->delete()) {
-                $this->addFlash('success', $this->translate('The FAQ entry has been deleted successfully.', [], 'Modules.Everblock.Admin'));
-                $this->faqProvider->clearCacheForShop((int) $faq->id_shop);
-                if (!empty($faq->tag_name)) {
-                    $this->faqProvider->clearCacheForTag((int) $faq->id_shop, (string) $faq->tag_name);
-                }
-            } else {
-                $this->addFlash('error', $this->translate('Unable to delete this FAQ entry.', [], 'Modules.Everblock.Admin'));
+            $this->faqDomainService->delete($faqId, $faq->getShopId());
+            $this->faqProvider->clearCacheForShop($faq->getShopId());
+            if (!empty($faq->getTagName())) {
+                $this->faqProvider->clearCacheForTag($faq->getShopId(), (string) $faq->getTagName());
             }
-        } catch (PrestaShopException $exception) {
+            $this->addFlash('success', $this->translate('The FAQ entry has been deleted successfully.', [], 'Modules.Everblock.Admin'));
+        } catch (\Throwable $exception) {
             $this->addFlash('error', $exception->getMessage());
         }
 
@@ -302,20 +320,19 @@ class EverblockFaqController extends BaseEverblockController
 
         $deleted = 0;
         foreach ($ids as $id) {
-            $faq = new \EverblockFaq((int) $id);
-            if (!Validate::isLoadedObject($faq)) {
+            $faq = $this->faqDomainService->find((int) $id, (int) $this->context->shop->id);
+            if (!$faq instanceof EverBlockFaq) {
                 continue;
             }
 
             try {
-                if ($faq->delete()) {
-                    ++$deleted;
-                    $this->faqProvider->clearCacheForShop((int) $faq->id_shop);
-                    if (!empty($faq->tag_name)) {
-                        $this->faqProvider->clearCacheForTag((int) $faq->id_shop, (string) $faq->tag_name);
-                    }
+                $this->faqDomainService->delete((int) $id, $faq->getShopId());
+                ++$deleted;
+                $this->faqProvider->clearCacheForShop($faq->getShopId());
+                if (!empty($faq->getTagName())) {
+                    $this->faqProvider->clearCacheForTag($faq->getShopId(), (string) $faq->getTagName());
                 }
-            } catch (PrestaShopException $exception) {
+            } catch (\Throwable $exception) {
                 $this->addFlash('error', $exception->getMessage());
             }
         }
@@ -334,7 +351,7 @@ class EverblockFaqController extends BaseEverblockController
      *
      * @return array{submitted: bool, success: bool, errors: string[], id: int|null, stay: bool}
      */
-    private function handleForm(FormInterface $form, Request $request, array $languages, ?\EverblockFaq $faq = null): array
+    private function handleForm(FormInterface $form, Request $request, array $languages, ?EverBlockFaq $faq = null): array
     {
         $form->handleRequest($request);
 
@@ -359,8 +376,8 @@ class EverblockFaqController extends BaseEverblockController
         }
 
         $data = $form->getData();
-        if (!$faq || !Validate::isLoadedObject($faq)) {
-            $faq = new \EverblockFaq();
+        if (!$faq instanceof EverBlockFaq) {
+            $faq = new EverBlockFaq();
         }
 
         $tagName = trim((string) ($data['tag_name'] ?? ''));
@@ -370,15 +387,17 @@ class EverblockFaqController extends BaseEverblockController
             $result['errors'][] = $this->translate('The FAQ tag cannot contain spaces.', [], 'Modules.Everblock.Admin');
         }
 
-        $faq->tag_name = (string) preg_replace('/\s+/', '', $tagName);
-        $faq->id_shop = (int) $this->context->shop->id;
-        $faq->position = (int) ($data['position'] ?? 0);
-        $faq->active = (int) (!empty($data['active']));
+        $faq->setTagName((string) preg_replace('/\s+/', '', $tagName));
+        $faq->setShopId((int) $this->context->shop->id);
+        $faq->setPosition((int) ($data['position'] ?? 0));
+        $faq->setActive(!empty($data['active']));
 
         $titles = (array) ($data['title'] ?? []);
         $contents = (array) ($data['content'] ?? []);
 
         $defaultLangId = (int) \Configuration::get('PS_LANG_DEFAULT');
+
+        $translations = [];
 
         foreach ($languages as $language) {
             $idLang = (int) ($language['id_lang'] ?? 0);
@@ -405,34 +424,40 @@ class EverblockFaqController extends BaseEverblockController
                 $result['errors'][] = $this->translate('Content is invalid for %lang%', ['%lang%' => $langName], 'Modules.Everblock.Admin');
             }
 
+            $normalizedContent = $content === '' ? '' : \EverblockTools::convertImagesToWebP($content);
+
             $titles[$idLang] = $title;
-            $contents[$idLang] = $content === '' ? '' : \EverblockTools::convertImagesToWebP($content);
+            $contents[$idLang] = $normalizedContent;
+
+            $translations[$idLang] = [
+                'title' => $title,
+                'content' => $normalizedContent,
+            ];
         }
 
         if (!empty($result['errors'])) {
             return $result;
         }
 
-        $faq->title = $titles;
-        $faq->content = $contents;
-
         try {
-            if (!$faq->save()) {
+            $savedFaq = $this->faqDomainService->save($faq, $translations);
+            if (null === $savedFaq->getId()) {
                 $result['errors'][] = $this->translate('An error occurred while saving the FAQ entry.', [], 'Modules.Everblock.Admin');
 
                 return $result;
             }
-        } catch (PrestaShopException $exception) {
+            $faq = $savedFaq;
+        } catch (\Throwable $exception) {
             $result['errors'][] = $exception->getMessage();
 
             return $result;
         }
 
         $result['success'] = true;
-        $result['id'] = (int) $faq->id;
-        $this->faqProvider->clearCacheForShop((int) $faq->id_shop);
-        if (!empty($faq->tag_name)) {
-            $this->faqProvider->clearCacheForTag((int) $faq->id_shop, (string) $faq->tag_name);
+        $result['id'] = (int) $faq->getId();
+        $this->faqProvider->clearCacheForShop($faq->getShopId());
+        if (!empty($faq->getTagName())) {
+            $this->faqProvider->clearCacheForTag($faq->getShopId(), (string) $faq->getTagName());
         }
 
         return $result;
