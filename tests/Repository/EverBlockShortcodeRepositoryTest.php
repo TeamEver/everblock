@@ -94,6 +94,83 @@ class EverBlockShortcodeRepositoryTest extends TestCase
         $this->assertSame(5, (int) $ids[0]['id_everblock_shortcode']);
     }
 
+    public function testCreateShortcodePersistsData(): void
+    {
+        $translations = [
+            1 => ['title' => 'Created EN', 'content' => '<p>EN</p>'],
+            2 => ['title' => 'Créé FR', 'content' => '<p>FR</p>'],
+        ];
+
+        $id = $this->repository->createShortcode('[created]', 1, $translations);
+
+        $row = $this->connection->fetchAssociative(
+            'SELECT shortcode, id_shop FROM ps_everblock_shortcode WHERE id_everblock_shortcode = ? LIMIT 1',
+            [$id]
+        );
+
+        $this->assertNotFalse($row);
+        $this->assertSame('[created]', $row['shortcode']);
+        $this->assertSame(1, (int) $row['id_shop']);
+
+        $frenchTitle = $this->connection->fetchOne(
+            'SELECT title FROM ps_everblock_shortcode_lang WHERE id_everblock_shortcode = ? AND id_lang = ?',
+            [$id, 2]
+        );
+
+        $this->assertSame('Créé FR', $frenchTitle);
+    }
+
+    public function testUpdateShortcodeReplacesTranslations(): void
+    {
+        $id = $this->repository->createShortcode('[initial]', 1, [
+            1 => ['title' => 'Initial EN', 'content' => '<p>EN</p>'],
+            2 => ['title' => 'Initial FR', 'content' => '<p>FR</p>'],
+        ]);
+
+        $this->repository->updateShortcode($id, '[updated]', 1, [
+            1 => ['title' => 'Updated EN', 'content' => '<p>Updated</p>'],
+        ]);
+
+        $updatedCode = $this->connection->fetchOne(
+            'SELECT shortcode FROM ps_everblock_shortcode WHERE id_everblock_shortcode = ?',
+            [$id]
+        );
+        $this->assertSame('[updated]', $updatedCode);
+
+        $translationCount = $this->connection->fetchOne(
+            'SELECT COUNT(*) FROM ps_everblock_shortcode_lang WHERE id_everblock_shortcode = ?',
+            [$id]
+        );
+        $this->assertSame('1', (string) $translationCount);
+
+        $englishTitle = $this->connection->fetchOne(
+            'SELECT title FROM ps_everblock_shortcode_lang WHERE id_everblock_shortcode = ? AND id_lang = ?',
+            [$id, 1]
+        );
+        $this->assertSame('Updated EN', $englishTitle);
+    }
+
+    public function testDeleteShortcodeRemovesData(): void
+    {
+        $id = $this->repository->createShortcode('[todelete]', 1, [
+            1 => ['title' => 'Delete me', 'content' => '<p>Bye</p>'],
+        ]);
+
+        $this->repository->deleteShortcode($id, 1);
+
+        $remaining = $this->connection->fetchOne(
+            'SELECT COUNT(*) FROM ps_everblock_shortcode WHERE id_everblock_shortcode = ?',
+            [$id]
+        );
+        $this->assertSame('0', (string) $remaining);
+
+        $translations = $this->connection->fetchOne(
+            'SELECT COUNT(*) FROM ps_everblock_shortcode_lang WHERE id_everblock_shortcode = ?',
+            [$id]
+        );
+        $this->assertSame('0', (string) $translations);
+    }
+
     private function createSchema(): void
     {
         $this->connection->executeStatement(

@@ -22,7 +22,6 @@ namespace Everblock\Tools\Service;
 
 use Configuration;
 use Everblock\Tools\Service\EverblockCache;
-use EverblockShortcode;
 use EverblockTools;
 use Hook;
 use Module;
@@ -226,10 +225,7 @@ class EverblockPrettyBlocks
                     (int) $context->language->id
                 );
             } else {
-                $allShortcodes = EverblockShortcode::getAllShortcodes(
-                    (int) $context->shop->id,
-                    (int) $context->language->id
-                );
+                $allShortcodes = [];
             }
             $provider = $provider ?? static::resolveProvider();
             $everblocks = [];

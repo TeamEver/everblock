@@ -21,7 +21,7 @@
 namespace Everblock\Tools\Form\DataProvider;
 
 use Context;
-use Everblock\Tools\Service\EverBlockShortcodeProvider;
+use Everblock\Tools\Service\Domain\EverBlockShortcodeDomainService;
 use Language;
 
 if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
@@ -37,7 +37,7 @@ class ShortcodeFormDataProvider
 
     public function __construct(
         Context $context,
-        private readonly EverBlockShortcodeProvider $shortcodeProvider
+        private readonly EverBlockShortcodeDomainService $shortcodeService
     ) {
         $this->context = $context;
     }
@@ -73,7 +73,7 @@ class ShortcodeFormDataProvider
         $default = $this->getDefaultData();
 
         try {
-            $shortcode = $this->shortcodeProvider->getShortcodeForForm(
+            $shortcode = $this->shortcodeService->getShortcodeForForm(
                 $shortcodeId,
                 (int) $this->context->shop->id
             );

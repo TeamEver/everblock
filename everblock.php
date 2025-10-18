@@ -29,12 +29,14 @@ use Everblock\Tools\Application\Command\EverBlock\UpsertEverBlockCommand;
 use Everblock\Tools\Application\EverBlockApplicationService;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\Domain\EverBlockDomainService;
+use Everblock\Tools\Service\Domain\EverBlockShortcodeDomainService;
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Entity\EverBlock;
 use Everblock\Tools\Entity\EverBlockTranslation;
 use Everblock\Tools\Repository\EverBlockRepository;
 use Everblock\Tools\Service\EverBlockFlagProvider;
 use Everblock\Tools\Service\EverBlockProvider;
+use Everblock\Tools\Service\EverBlockShortcodeProvider;
 use Everblock\Tools\Service\EverBlockTabProvider;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
@@ -73,6 +75,8 @@ class Everblock extends Module
     private ?EverBlockTabProvider $everBlockTabProvider = null;
     private ?EverBlockRepository $everBlockRepository = null;
     private ?EverBlockModalProvider $everBlockModalProvider = null;
+    private ?EverBlockShortcodeProvider $everBlockShortcodeProvider = null;
+    private ?EverBlockShortcodeDomainService $everBlockShortcodeDomainService = null;
     private bool $dependenciesBootstrapped = false;
 
     public function __construct(
@@ -83,7 +87,9 @@ class Everblock extends Module
         ?EverBlockFlagProvider $everBlockFlagProvider = null,
         ?EverBlockTabProvider $everBlockTabProvider = null,
         ?EverBlockRepository $everBlockRepository = null,
-        ?EverBlockModalProvider $everBlockModalProvider = null
+        ?EverBlockModalProvider $everBlockModalProvider = null,
+        ?EverBlockShortcodeProvider $everBlockShortcodeProvider = null,
+        ?EverBlockShortcodeDomainService $everBlockShortcodeDomainService = null
     ) {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
@@ -99,6 +105,8 @@ class Everblock extends Module
         $this->everBlockTabProvider = $everBlockTabProvider;
         $this->everBlockRepository = $everBlockRepository;
         $this->everBlockModalProvider = $everBlockModalProvider;
+        $this->everBlockShortcodeProvider = $everBlockShortcodeProvider;
+        $this->everBlockShortcodeDomainService = $everBlockShortcodeDomainService;
         parent::__construct();
         $this->displayName = $this->l('Ever Block');
         $this->description = $this->l('Add HTML block everywhere !');
@@ -107,6 +115,10 @@ class Everblock extends Module
             'min' => '1.7',
             'max' => _PS_VERSION_,
         ];
+        if ($this->everBlockShortcodeProvider instanceof EverBlockShortcodeProvider) {
+            EverblockPrettyBlocks::setShortcodeProvider($this->everBlockShortcodeProvider);
+            EverblockTools::setShortcodeProvider($this->everBlockShortcodeProvider);
+        }
         $this->bootstrapDependencies();
     }
 
@@ -150,6 +162,19 @@ class Everblock extends Module
             if (null === $this->everBlockModalProvider) {
                 $this->everBlockModalProvider = $this->resolveService($container, EverBlockModalProvider::class);
             }
+
+            if (null === $this->everBlockShortcodeProvider) {
+                $this->everBlockShortcodeProvider = $this->resolveService($container, EverBlockShortcodeProvider::class);
+            }
+
+            if (null === $this->everBlockShortcodeDomainService) {
+                $this->everBlockShortcodeDomainService = $this->resolveService($container, EverBlockShortcodeDomainService::class);
+            }
+        }
+
+        if ($this->everBlockShortcodeProvider instanceof EverBlockShortcodeProvider) {
+            EverblockPrettyBlocks::setShortcodeProvider($this->everBlockShortcodeProvider);
+            EverblockTools::setShortcodeProvider($this->everBlockShortcodeProvider);
         }
 
         $this->dependenciesBootstrapped = true;
@@ -217,6 +242,24 @@ class Everblock extends Module
         $this->bootstrapDependencies();
 
         return $this->everBlockFaqProvider;
+    }
+
+    public function getEverBlockShortcodeProvider(): ?EverBlockShortcodeProvider
+    {
+        $this->bootstrapDependencies();
+
+        return $this->everBlockShortcodeProvider;
+    }
+
+    public function getEverBlockShortcodeDomainService(): EverBlockShortcodeDomainService
+    {
+        $this->bootstrapDependencies();
+
+        if (!$this->everBlockShortcodeDomainService instanceof EverBlockShortcodeDomainService) {
+            throw new \RuntimeException('EverBlockShortcodeDomainService service is not available.');
+        }
+
+        return $this->everBlockShortcodeDomainService;
     }
 
     public function getEverBlockRepository(): ?EverBlockRepository

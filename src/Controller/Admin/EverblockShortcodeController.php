@@ -25,7 +25,7 @@ use Everblock\Tools\Form\DataProvider\ShortcodeFormDataProvider;
 use Everblock\Tools\Form\Type\ShortcodeFormType;
 use Everblock\Tools\Grid\Data\ShortcodeGridDataFactory;
 use Everblock\Tools\Grid\Definition\Factory\ShortcodeGridDefinitionFactory;
-use PrestaShopException;
+use Everblock\Tools\Service\Domain\EverBlockShortcodeDomainService;
 use Shop;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -66,11 +66,14 @@ class EverblockShortcodeController extends BaseEverblockController
      */
     private $router;
 
+    private EverBlockShortcodeDomainService $shortcodeService;
+
     public function __construct(
         ShortcodeGridDefinitionFactory $gridDefinitionFactory,
         ShortcodeGridDataFactory $gridDataFactory,
         FormFactoryInterface $formFactory,
         ShortcodeFormDataProvider $formDataProvider,
+        EverBlockShortcodeDomainService $shortcodeService,
         RouterInterface $router,
         ?Context $context = null,
         ?\PrestaShop\PrestaShop\Adapter\Module\Repository\ModuleRepository $moduleRepository = null,
@@ -83,6 +86,7 @@ class EverblockShortcodeController extends BaseEverblockController
         $this->gridDataFactory = $gridDataFactory;
         $this->formFactory = $formFactory;
         $this->formDataProvider = $formDataProvider;
+        $this->shortcodeService = $shortcodeService;
         $this->router = $router;
     }
 
@@ -185,8 +189,7 @@ class EverblockShortcodeController extends BaseEverblockController
         $formOptions = $this->formDataProvider->getFormOptions();
         $form = $this->formFactory->create(ShortcodeFormType::class, $formData, $formOptions);
 
-        $shortcode = new \EverblockShortcode($shortcodeId);
-        $result = $this->handleForm($form, $request, $formOptions['languages'], $shortcode);
+        $result = $this->handleForm($form, $request, $formOptions['languages'], $shortcodeId);
 
         if ($result['submitted'] && $result['success']) {
             $this->addFlash('success', $this->translate('The shortcode has been updated successfully.', [], 'Modules.Everblock.Admin'));
@@ -222,20 +225,10 @@ class EverblockShortcodeController extends BaseEverblockController
     {
         $this->denyAccessUnlessGranted('delete', 'AdminEverBlockShortcode');
 
-        $shortcode = new \EverblockShortcode($shortcodeId);
-        if (!Validate::isLoadedObject($shortcode)) {
-            $this->addFlash('error', $this->translate('Unable to delete this shortcode.', [], 'Modules.Everblock.Admin'));
-
-            return $this->redirectToRoute('everblock_admin_shortcodes');
-        }
-
         try {
-            if ($shortcode->delete()) {
-                $this->addFlash('success', $this->translate('The shortcode has been deleted successfully.', [], 'Modules.Everblock.Admin'));
-            } else {
-                $this->addFlash('error', $this->translate('Unable to delete this shortcode.', [], 'Modules.Everblock.Admin'));
-            }
-        } catch (PrestaShopException $exception) {
+            $this->shortcodeService->delete($shortcodeId, (int) $this->context->shop->id);
+            $this->addFlash('success', $this->translate('The shortcode has been deleted successfully.', [], 'Modules.Everblock.Admin'));
+        } catch (\RuntimeException $exception) {
             $this->addFlash('error', $exception->getMessage());
         }
 
@@ -251,21 +244,7 @@ class EverblockShortcodeController extends BaseEverblockController
             $ids = [];
         }
 
-        $deleted = 0;
-        foreach ($ids as $id) {
-            $shortcode = new \EverblockShortcode((int) $id);
-            if (!Validate::isLoadedObject($shortcode)) {
-                continue;
-            }
-
-            try {
-                if ($shortcode->delete()) {
-                    ++$deleted;
-                }
-            } catch (PrestaShopException $exception) {
-                $this->addFlash('error', $exception->getMessage());
-            }
-        }
+        $deleted = $this->shortcodeService->bulkDelete($ids, (int) $this->context->shop->id);
 
         if ($deleted > 0) {
             $this->addFlash('success', $this->translate('%count% shortcode(s) have been deleted.', ['%count%' => $deleted], 'Modules.Everblock.Admin'));
@@ -281,7 +260,7 @@ class EverblockShortcodeController extends BaseEverblockController
      *
      * @return array{submitted: bool, success: bool, errors: string[], id: int|null, stay: bool}
      */
-    private function handleForm(FormInterface $form, Request $request, array $languages, ?\EverblockShortcode $shortcode = null): array
+    private function handleForm(FormInterface $form, Request $request, array $languages, ?int $shortcodeId = null): array
     {
         $form->handleRequest($request);
 
@@ -306,13 +285,6 @@ class EverblockShortcodeController extends BaseEverblockController
         }
 
         $data = $form->getData();
-        if (!$shortcode || !Validate::isLoadedObject($shortcode)) {
-            $shortcode = new \EverblockShortcode();
-        }
-
-        $shortcode->shortcode = (string) $data['shortcode'];
-        $shortcode->id_shop = (int) $this->context->shop->id;
-
         $titles = (array) $data['title'];
         $contents = (array) $data['content'];
 
@@ -340,23 +312,30 @@ class EverblockShortcodeController extends BaseEverblockController
             return $result;
         }
 
-        $shortcode->title = $titles;
-        $shortcode->content = $contents;
+        $translations = [];
+        foreach ($languages as $language) {
+            $idLang = (int) $language['id_lang'];
+            $translations[$idLang] = [
+                'title' => $titles[$idLang],
+                'content' => $contents[$idLang],
+            ];
+        }
 
         try {
-            if (!$shortcode->save()) {
-                $result['errors'][] = $this->translate('An error occurred while saving the shortcode.', [], 'Modules.Everblock.Admin');
-
-                return $result;
-            }
-        } catch (PrestaShopException $exception) {
+            $savedId = $this->shortcodeService->save(
+                $shortcodeId,
+                (int) $this->context->shop->id,
+                (string) $data['shortcode'],
+                $translations
+            );
+        } catch (\RuntimeException $exception) {
             $result['errors'][] = $exception->getMessage();
 
             return $result;
         }
 
         $result['success'] = true;
-        $result['id'] = (int) $shortcode->id;
+        $result['id'] = $savedId;
 
         return $result;
     }

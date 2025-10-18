@@ -20,6 +20,7 @@
 use Everblock\Tools\Entity\EverBlock;
 use Everblock\Tools\Entity\EverBlockTranslation;
 use Everblock\Tools\Service\EverBlockFaqProvider;
+use Everblock\Tools\Service\EverBlockShortcodeProvider;
 use Everblock\Tools\Service\EverblockCache;
 
 if (!defined('_PS_VERSION_')) {
@@ -33,6 +34,13 @@ use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 
 class EverblockTools extends ObjectModel
 {
+    private static ?EverBlockShortcodeProvider $shortcodeProvider = null;
+
+    public static function setShortcodeProvider(EverBlockShortcodeProvider $provider): void
+    {
+        static::$shortcodeProvider = $provider;
+    }
+
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
         Hook::exec('displayBeforeRenderingShortcodes', ['html' => &$txt]);
@@ -4335,11 +4343,13 @@ class EverblockTools extends ObjectModel
 
     public static function getEverShortcodes(string $txt, Context $context): string
     {
-        $customShortcodes = EverblockShortcode::getAllShortcodes(
-            $context->shop->id,
-            $context->language->id
-        );
-        $returnedShortcodes = [];
+        $customShortcodes = [];
+        if (static::$shortcodeProvider instanceof EverBlockShortcodeProvider) {
+            $customShortcodes = static::$shortcodeProvider->getAllShortcodes(
+                (int) $context->shop->id,
+                (int) $context->language->id
+            );
+        }
         foreach ($customShortcodes as $sc) {
             $txt = str_replace($sc->shortcode, $sc->content, $txt);
         }
