@@ -18,28 +18,36 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-namespace Everblock\Tools\Controller\Admin;
-
-use Symfony\Component\HttpFoundation\Response;
+namespace Everblock\Tools\Grid\Column\ColumnDataFormatter;
 
 if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
     exit;
 }
 
-class FaqController extends BaseEverblockController
+class FaqContentColumnDataFormatter
 {
-    public function index(): Response
+    /**
+     * @param array<int, array<string, mixed>> $records
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function format(array $records): array
     {
-        return $this->renderLayout(
-            $this->translate('FAQ'),
-            [
-                'content_title' => $this->translate('Manage FAQ'),
-                'content_description' => $this->translate('FAQ entries will be migrated to Symfony views in this section.'),
-            ],
-            '@Modules/everblock/templates/admin/everblock/placeholder.html.twig',
-            [
-                'page_identifier' => 'faq',
-            ]
-        );
+        foreach ($records as &$record) {
+            if (!array_key_exists('content', $record)) {
+                continue;
+            }
+
+            $content = (string) $record['content'];
+            $cleanContent = trim(strip_tags($content));
+
+            if (\Tools::strlen($cleanContent) > 120) {
+                $cleanContent = \Tools::substr($cleanContent, 0, 117) . '...';
+            }
+
+            $record['content'] = $cleanContent;
+        }
+
+        return $records;
     }
 }

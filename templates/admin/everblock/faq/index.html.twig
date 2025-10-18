@@ -1,0 +1,128 @@
+<div class="everblock-grid card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title mb-0">{{ 'FAQ management'|trans({}, 'Modules.Everblock.Admin') }}</h3>
+    <a class="btn btn-primary" href="{{ create_url }}">{{ 'Add FAQ entry'|trans({}, 'Modules.Everblock.Admin') }}</a>
+  </div>
+  <div class="card-body">
+    <form method="get" class="row g-2 mb-3">
+      <div class="col-md-2">
+        <label class="form-label">{{ 'ID'|trans({}, 'Modules.Everblock.Admin') }}</label>
+        <input type="text" name="filters[id_everblock_faq]" value="{{ filters.id_everblock_faq|default('') }}" class="form-control" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ 'Tag'|trans({}, 'Modules.Everblock.Admin') }}</label>
+        <input type="text" name="filters[tag_name]" value="{{ filters.tag_name|default('') }}" class="form-control" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'Title'|trans({}, 'Modules.Everblock.Admin') }}</label>
+        <input type="text" name="filters[title]" value="{{ filters.title|default('') }}" class="form-control" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">{{ 'Content'|trans({}, 'Modules.Everblock.Admin') }}</label>
+        <input type="text" name="filters[content]" value="{{ filters.content|default('') }}" class="form-control" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ 'Position'|trans({}, 'Modules.Everblock.Admin') }}</label>
+        <input type="text" name="filters[position]" value="{{ filters.position|default('') }}" class="form-control" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ 'Status'|trans({}, 'Modules.Everblock.Admin') }}</label>
+        <select name="filters[active]" class="form-select">
+          <option value="">{{ 'All'|trans({}, 'Modules.Everblock.Admin') }}</option>
+          <option value="1" {{ filters.active is defined and filters.active == '1' ? 'selected' }}>{{ 'Enabled'|trans({}, 'Modules.Everblock.Admin') }}</option>
+          <option value="0" {{ filters.active is defined and filters.active == '0' ? 'selected' }}>{{ 'Disabled'|trans({}, 'Modules.Everblock.Admin') }}</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ 'Created at'|trans({}, 'Modules.Everblock.Admin') }}</label>
+        <input type="text" name="filters[date_add]" value="{{ filters.date_add|default('') }}" class="form-control" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">{{ 'Updated at'|trans({}, 'Modules.Everblock.Admin') }}</label>
+        <input type="text" name="filters[date_upd]" value="{{ filters.date_upd|default('') }}" class="form-control" />
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-outline-secondary">{{ 'Filter'|trans({}, 'Modules.Everblock.Admin') }}</button>
+        <a class="btn btn-link" href="{{ path('everblock_admin_faq') }}">{{ 'Reset'|trans({}, 'Modules.Everblock.Admin') }}</a>
+      </div>
+    </form>
+
+    <form method="post" id="everblock-faq-bulk-form">
+      <div class="table-responsive">
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th><input type="checkbox" class="js-everblock-select-all"></th>
+              {% for column in grid_definition.columns %}
+                <th>{{ column.label }}</th>
+              {% endfor %}
+              <th class="text-end">{{ 'Actions'|trans({}, 'Modules.Everblock.Admin') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in grid_data.records %}
+              <tr>
+                <td><input type="checkbox" name="ids[]" value="{{ record.id_everblock_faq }}"></td>
+                {% for column in grid_definition.columns %}
+                  <td>
+                    {% set value = attribute(record, column.name) %}
+                    {% if column.name == 'active' %}
+                      {% if value %}
+                        <span class="badge bg-success">{{ 'Enabled'|trans({}, 'Modules.Everblock.Admin') }}</span>
+                      {% else %}
+                        <span class="badge bg-secondary">{{ 'Disabled'|trans({}, 'Modules.Everblock.Admin') }}</span>
+                      {% endif %}
+                    {% else %}
+                      {{ value }}
+                    {% endif %}
+                  </td>
+                {% endfor %}
+                <td class="text-end">
+                  <div class="btn-group" role="group">
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ path(edit_route, {faqId: record.id_everblock_faq}) }}">{{ 'Edit'|trans({}, 'Modules.Everblock.Admin') }}</a>
+                    <button type="submit" class="btn btn-outline-primary btn-sm" formaction="{{ path(duplicate_route, {faqId: record.id_everblock_faq}) }}" formmethod="post" data-confirm="{{ 'Duplicate this FAQ entry?'|trans({}, 'Modules.Everblock.Admin') }}">{{ 'Duplicate'|trans({}, 'Modules.Everblock.Admin') }}</button>
+                    <button type="submit" class="btn btn-outline-danger btn-sm" formaction="{{ path(delete_route, {faqId: record.id_everblock_faq}) }}" formmethod="post" data-confirm="{{ 'Are you sure you want to delete this FAQ entry?'|trans({}, 'Modules.Everblock.Admin') }}">{{ 'Delete'|trans({}, 'Modules.Everblock.Admin') }}</button>
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="{{ grid_definition.columns|length + 2 }}" class="text-center text-muted">{{ 'No FAQ entries found.'|trans({}, 'Modules.Everblock.Admin') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" formaction="{{ bulk_delete_url }}" class="btn btn-danger" data-confirm="{{ grid_definition.bulk_actions.delete.confirm }}">{{ grid_definition.bulk_actions.delete.label }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var bulkForm = document.getElementById('everblock-faq-bulk-form');
+    if (!bulkForm) {
+      return;
+    }
+
+    var toggle = bulkForm.querySelector('.js-everblock-select-all');
+    if (toggle) {
+      toggle.addEventListener('change', function (event) {
+        bulkForm.querySelectorAll('input[name="ids[]"]').forEach(function (checkbox) {
+          checkbox.checked = event.target.checked;
+        });
+      });
+    }
+
+    bulkForm.querySelectorAll('button[data-confirm]').forEach(function (button) {
+      button.addEventListener('click', function (event) {
+        var confirmMessage = button.getAttribute('data-confirm');
+        if (confirmMessage && !confirm(confirmMessage)) {
+          event.preventDefault();
+        }
+      });
+    });
+  });
+</script>
