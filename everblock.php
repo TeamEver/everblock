@@ -32,10 +32,13 @@ use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\Domain\EverBlockDomainService;
 use Everblock\Tools\Service\Domain\EverBlockFlagDomainService;
 use Everblock\Tools\Service\Domain\EverBlockShortcodeDomainService;
+use Everblock\Tools\Service\Domain\EverBlockTabDomainService;
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Entity\EverBlock;
 use Everblock\Tools\Entity\EverBlockFlag;
 use Everblock\Tools\Entity\EverBlockTranslation;
+use Everblock\Tools\Entity\EverBlockTab;
+use Everblock\Tools\Entity\EverBlockTabTranslation;
 use Everblock\Tools\Repository\EverBlockRepository;
 use Everblock\Tools\Service\EverBlockProvider;
 use Everblock\Tools\Service\EverBlockShortcodeProvider;
@@ -74,6 +77,7 @@ class Everblock extends Module
     private ?EverBlockApplicationService $everBlockApplicationService = null;
     private ?EverBlockFaqProvider $everBlockFaqProvider = null;
     private ?EverBlockFlagDomainService $everBlockFlagDomainService = null;
+    private ?EverBlockTabDomainService $everBlockTabDomainService = null;
     private ?EverBlockTabProvider $everBlockTabProvider = null;
     private ?EverBlockRepository $everBlockRepository = null;
     private ?EverBlockModalProvider $everBlockModalProvider = null;
@@ -87,6 +91,7 @@ class Everblock extends Module
         ?EverBlockApplicationService $everBlockApplicationService = null,
         ?EverBlockFaqProvider $everBlockFaqProvider = null,
         ?EverBlockFlagDomainService $everBlockFlagDomainService = null,
+        ?EverBlockTabDomainService $everBlockTabDomainService = null,
         ?EverBlockTabProvider $everBlockTabProvider = null,
         ?EverBlockRepository $everBlockRepository = null,
         ?EverBlockModalProvider $everBlockModalProvider = null,
@@ -104,6 +109,7 @@ class Everblock extends Module
         $this->everBlockApplicationService = $everBlockApplicationService;
         $this->everBlockFaqProvider = $everBlockFaqProvider;
         $this->everBlockFlagDomainService = $everBlockFlagDomainService;
+        $this->everBlockTabDomainService = $everBlockTabDomainService;
         $this->everBlockTabProvider = $everBlockTabProvider;
         $this->everBlockRepository = $everBlockRepository;
         $this->everBlockModalProvider = $everBlockModalProvider;
@@ -151,6 +157,10 @@ class Everblock extends Module
 
             if (null === $this->everBlockFlagDomainService) {
                 $this->everBlockFlagDomainService = $this->resolveService($container, EverBlockFlagDomainService::class);
+            }
+
+            if (null === $this->everBlockTabDomainService) {
+                $this->everBlockTabDomainService = $this->resolveService($container, EverBlockTabDomainService::class);
             }
 
             if (null === $this->everBlockTabProvider) {
@@ -280,6 +290,17 @@ class Everblock extends Module
         }
 
         return $this->everBlockFlagDomainService;
+    }
+
+    public function getEverBlockTabDomainService(): EverBlockTabDomainService
+    {
+        $this->bootstrapDependencies();
+
+        if (!$this->everBlockTabDomainService instanceof EverBlockTabDomainService) {
+            throw new \RuntimeException('EverBlockTabDomainService service is not available.');
+        }
+
+        return $this->everBlockTabDomainService;
     }
 
     public function getEverBlockTabProvider(): ?EverBlockTabProvider
@@ -3439,11 +3460,24 @@ class Everblock extends Module
         $tabsNumber = max((int) Configuration::get('EVERPS_TAB_NB'), 1);
         $flagsNumber = max((int) Configuration::get('EVERPS_FLAG_NB'), 1);
         
-        $tabProvider = $this->getEverBlockTabProvider();
-        if ($tabProvider instanceof EverBlockTabProvider) {
-            $everpstabs = $tabProvider->getTabsForAdmin($productId, (int) $this->context->shop->id);
-        } else {
-            $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
+        $everpstabs = [];
+        $tabServiceAvailable = true;
+
+        try {
+            $tabDomainService = $this->getEverBlockTabDomainService();
+            $everpstabs = $this->mapTabsForAdmin(
+                $tabDomainService->getTabsForAdmin($productId, (int) $this->context->shop->id)
+            );
+        } catch (\RuntimeException $exception) {
+            $tabServiceAvailable = false;
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+        }
+
+        if (!$tabServiceAvailable) {
+            $tabProvider = $this->getEverBlockTabProvider();
+            if ($tabProvider instanceof EverBlockTabProvider) {
+                $everpstabs = $tabProvider->getTabsForAdmin($productId, (int) $this->context->shop->id);
+            }
         }
 
         try {
@@ -3658,6 +3692,21 @@ class Everblock extends Module
                 Configuration::updateValue('EVERPS_TAB_NB', 1);
             }
             $tabProvider = $this->getEverBlockTabProvider();
+            $tabDomainService = null;
+            $existingTabsById = [];
+
+            try {
+                $tabDomainService = $this->getEverBlockTabDomainService();
+                foreach ($tabDomainService->getTabsForAdmin((int) $params['object']->id, (int) $context->shop->id) as $existingTab) {
+                    if ($existingTab instanceof EverBlockTab) {
+                        $existingTabsById[$existingTab->getTabId()] = $existingTab;
+                    }
+                }
+            } catch (\RuntimeException $exception) {
+                PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+                $tabDomainService = null;
+            }
+
             $tabsRange = range(1, $tabsNumber);
             foreach ($tabsRange as $tab) {
                 $translations = [];
@@ -3688,6 +3737,23 @@ class Everblock extends Module
                     ];
                 }
 
+                if ($tabDomainService instanceof EverBlockTabDomainService) {
+                    $tabEntity = $existingTabsById[$tab] ?? new EverBlockTab();
+                    $tabEntity->setProductId((int) $params['object']->id);
+                    $tabEntity->setShopId((int) $context->shop->id);
+                    $tabEntity->setTabId((int) $tab);
+
+                    $finalTranslations = $this->buildTabTranslationsArray($tabEntity);
+                    foreach ($translations as $languageId => $data) {
+                        $finalTranslations[(int) $languageId] = $data;
+                    }
+
+                    $this->applyTranslationsToTab($tabEntity, $finalTranslations, (int) $context->shop->id);
+                    $existingTabsById[$tab] = $tabDomainService->save($tabEntity, $finalTranslations);
+
+                    continue;
+                }
+
                 if ($tabProvider instanceof EverBlockTabProvider) {
                     $tabProvider->saveTab(
                         (int) $params['object']->id,
@@ -3695,20 +3761,6 @@ class Everblock extends Module
                         (int) $tab,
                         $translations
                     );
-                } else {
-                    $everpstabs = EverblockTabsClass::getByIdProductIdTab(
-                        (int) $params['object']->id,
-                        (int) $context->shop->id,
-                        (int) $tab
-                    );
-                    foreach ($translations as $languageId => $data) {
-                        $everpstabs->title[$languageId] = $data['title'];
-                        $everpstabs->content[$languageId] = $data['content'];
-                    }
-                    $everpstabs->id_tab = (int) $tab;
-                    $everpstabs->id_product = (int) $params['object']->id;
-                    $everpstabs->id_shop = (int) $context->shop->id;
-                    $everpstabs->save();
                 }
             }
 
@@ -3835,15 +3887,18 @@ class Everblock extends Module
         $shopId = (int) $this->context->shop->id;
         $productId = (int) $params['object']->id;
 
-        $tabProvider = $this->getEverBlockTabProvider();
-        if ($tabProvider instanceof EverBlockTabProvider) {
-            $tabProvider->deleteTabsByProduct($productId, $shopId);
-        } else {
-            $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $shopId);
-            foreach ($everpstabs as $everpstab) {
-                if (Validate::isLoadedObject($everpstab)) {
-                    $everpstab->delete();
-                }
+        $tabDeletionHandled = true;
+        try {
+            $this->getEverBlockTabDomainService()->deleteByProduct($productId, $shopId);
+        } catch (\RuntimeException $exception) {
+            $tabDeletionHandled = false;
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+        }
+
+        if (!$tabDeletionHandled) {
+            $tabProvider = $this->getEverBlockTabProvider();
+            if ($tabProvider instanceof EverBlockTabProvider) {
+                $tabProvider->deleteTabsByProduct($productId, $shopId);
             }
         }
 
@@ -3962,19 +4017,30 @@ class Everblock extends Module
             (int) $context->shop->id
         );
         // Specific product tab
-        $tabProvider = $this->getEverBlockTabProvider();
-        if ($tabProvider instanceof EverBlockTabProvider) {
-            $everpstabs = $tabProvider->getTabs(
+        $everpstabs = [];
+        $tabServiceAvailable = true;
+
+        try {
+            $tabDomainService = $this->getEverBlockTabDomainService();
+            $everpstabs = $tabDomainService->getTabs(
                 (int) $product->id,
                 (int) $context->shop->id,
                 (int) $context->language->id
             );
-        } else {
-            $everpstabs = EverblockTabsClass::getByIdProduct(
-                (int) $product->id,
-                (int) $context->shop->id,
-                (int) $context->language->id
-            );
+        } catch (\RuntimeException $exception) {
+            $tabServiceAvailable = false;
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+        }
+
+        if (!$tabServiceAvailable) {
+            $tabProvider = $this->getEverBlockTabProvider();
+            if ($tabProvider instanceof EverBlockTabProvider) {
+                $everpstabs = $tabProvider->getTabs(
+                    (int) $product->id,
+                    (int) $context->shop->id,
+                    (int) $context->language->id
+                );
+            }
         }
 
         foreach ($everpstabs as $everpstab) {
@@ -4812,28 +4878,56 @@ class Everblock extends Module
             return;
         }
         try {
-            $tab = EverblockTabsClass::getByIdProductIdTab(
+            $tabDomainService = $this->getEverBlockTabDomainService();
+            $existingTabs = $tabDomainService->getTabsForAdmin(
                 (int) $line['id_product'],
-                (int) $id_shop,
-                (int) $line['id_tab']
+                (int) $id_shop
             );
-            $tab->id_tab = (int) $line['id_tab'];
-            $tab->id_product = (int) $line['id_product'];
-            $tab->id_shop = (int) $id_shop;
-            foreach (Language::getLanguages(false, $id_shop) as $lang) {
-                $titleKey = 'title_' . $lang['iso_code'];
-                $contentKey = 'content_' . $lang['iso_code'];
-                // Vérifier et assigner le titre s'il existe et n'est pas vide
-                if (isset($line[$titleKey]) && !empty($line[$titleKey])) {
-                    $tab->title[(int) $lang['id_lang']] = $line[$titleKey];
-                }
-                // Vérifier et assigner le contenu s'il existe et n'est pas vide
-                if (isset($line[$contentKey]) && !empty($line[$contentKey])) {
-                    $tab->content[(int) $lang['id_lang']] = $line[$contentKey];
+
+            $tabEntity = null;
+            foreach ($existingTabs as $existingTab) {
+                if ($existingTab instanceof EverBlockTab && $existingTab->getTabId() === (int) $line['id_tab']) {
+                    $tabEntity = $existingTab;
+                    break;
                 }
             }
-            $tab->save();
+
+            if (!$tabEntity instanceof EverBlockTab) {
+                $tabEntity = new EverBlockTab();
+            }
+
+            $tabEntity->setTabId((int) $line['id_tab']);
+            $tabEntity->setProductId((int) $line['id_product']);
+            $tabEntity->setShopId((int) $id_shop);
+
+            $translations = $this->buildTabTranslationsArray($tabEntity);
+
+            foreach (Language::getLanguages(false, $id_shop) as $lang) {
+                $langId = (int) $lang['id_lang'];
+                $titleKey = 'title_' . $lang['iso_code'];
+                $contentKey = 'content_' . $lang['iso_code'];
+
+                if (!array_key_exists($langId, $translations)) {
+                    $translations[$langId] = [
+                        'title' => null,
+                        'content' => null,
+                    ];
+                }
+
+                if (isset($line[$titleKey]) && $line[$titleKey] !== '') {
+                    $translations[$langId]['title'] = $line[$titleKey];
+                }
+
+                if (isset($line[$contentKey]) && $line[$contentKey] !== '') {
+                    $translations[$langId]['content'] = $line[$contentKey];
+                }
+            }
+
+            $this->applyTranslationsToTab($tabEntity, $translations, (int) $id_shop);
+            $tabDomainService->save($tabEntity, $translations);
             Tools::clearAllCache();
+        } catch (\RuntimeException $exception) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
             EverblockTools::setLog(
@@ -5474,6 +5568,44 @@ class Everblock extends Module
     }
 
     /**
+     * @param EverBlockTab[] $tabs
+     *
+     * @return ArrayObject<int, mixed>[]
+     */
+    private function mapTabsForAdmin(array $tabs): array
+    {
+        $mapped = [];
+
+        foreach ($tabs as $tab) {
+            if (!$tab instanceof EverBlockTab) {
+                continue;
+            }
+
+            $titles = [];
+            $contents = [];
+
+            foreach ($tab->getTranslations() as $translation) {
+                if ($translation instanceof EverBlockTabTranslation) {
+                    $languageId = $translation->getLanguageId();
+                    $titles[$languageId] = $translation->getTitle();
+                    $contents[$languageId] = $translation->getContent();
+                }
+            }
+
+            $mapped[] = new ArrayObject([
+                'id_everblock_tabs' => $tab->getId() ?? 0,
+                'id_product' => $tab->getProductId(),
+                'id_shop' => $tab->getShopId(),
+                'id_tab' => $tab->getTabId(),
+                'title' => $titles,
+                'content' => $contents,
+            ], ArrayObject::ARRAY_AS_PROPS);
+        }
+
+        return $mapped;
+    }
+
+    /**
      * @param EverBlockFlag[] $flags
      *
      * @return ArrayObject<int, mixed>[]
@@ -5507,6 +5639,44 @@ class Everblock extends Module
         }
 
         return $mapped;
+    }
+
+    /**
+     * @return array<int, array{title: string|null, content: string|null}>
+     */
+    private function buildTabTranslationsArray(EverBlockTab $tab): array
+    {
+        $translations = [];
+
+        foreach ($tab->getTranslations() as $translation) {
+            if ($translation instanceof EverBlockTabTranslation) {
+                $translations[$translation->getLanguageId()] = [
+                    'title' => $translation->getTitle(),
+                    'content' => $translation->getContent(),
+                ];
+            }
+        }
+
+        return $translations;
+    }
+
+    /**
+     * @param array<int, array{title: string|null, content: string|null}> $translations
+     */
+    private function applyTranslationsToTab(EverBlockTab $tab, array $translations, int $shopId): void
+    {
+        foreach ($translations as $languageId => $data) {
+            $languageId = (int) $languageId;
+            $translation = $tab->getTranslation($languageId, $shopId);
+
+            if (!$translation instanceof EverBlockTabTranslation) {
+                $translation = new EverBlockTabTranslation($tab, $languageId, $shopId);
+            }
+
+            $translation->setTitle($data['title'] ?? null);
+            $translation->setContent($data['content'] ?? null);
+            $tab->addTranslation($translation);
+        }
     }
 
     public function encrypt($data)

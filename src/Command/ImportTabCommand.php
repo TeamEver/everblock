@@ -24,8 +24,9 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Entity\EverBlockTab;
+use Everblock\Tools\Entity\EverBlockTabTranslation;
 use Everblock\Tools\Service\ImportFile;
-use Language;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
@@ -114,6 +115,14 @@ class ImportTabCommand extends Command
             );
             return;
         }
+        if (!isset($line['id_tab'])
+            || !Validate::isInt($line['id_tab'])
+        ) {
+            $output->writeln(
+                '<error>Missing or non valid id_tab column</error>'
+            );
+            return;
+        }
         if (!isset($line['title'])
             || !Validate::isCleanHtml($line['title'])
         ) {
@@ -131,21 +140,99 @@ class ImportTabCommand extends Command
             return;
         }
         try {
-            $tab = \EverblockTabsClass::getByIdProduct(
-                $line['id_product'],
-                $line['id_shop']
-            );
-            foreach (Language::getLanguages(false, $line['id_shop']) as $lang) {
-                $tab->title[(int) $line['id_lang']] = $line['title'];
-                $tab->content[(int) $line['id_lang']] = $line['content'];
+            $module = \Module::getInstanceByName('everblock');
+            if (!$module instanceof \Everblock) {
+                $output->writeln('<error>Unable to load everblock module instance</error>');
+                return;
             }
-            $tab->id_product = (int) $line['id_product'];
-            $tab->id_shop = (int) $line['id_shop'];
-            $tab->save();
+
+            try {
+                $tabDomainService = $module->getEverBlockTabDomainService();
+            } catch (\RuntimeException $exception) {
+                $output->writeln('<error>' . $exception->getMessage() . '</error>');
+                return;
+            }
+
+            $productId = (int) $line['id_product'];
+            $shopId = (int) $line['id_shop'];
+            $tabId = (int) $line['id_tab'];
+            $languageId = (int) $line['id_lang'];
+
+            $existingTabs = $tabDomainService->getTabsForAdmin($productId, $shopId);
+            $tabEntity = $this->findTabEntity($existingTabs, $tabId);
+
+            if (!$tabEntity instanceof EverBlockTab) {
+                $tabEntity = new EverBlockTab();
+            }
+
+            $tabEntity->setProductId($productId);
+            $tabEntity->setShopId($shopId);
+            $tabEntity->setTabId($tabId);
+
+            $translations = $this->buildTabTranslationsArray($tabEntity);
+            $translations[$languageId] = [
+                'title' => $line['title'],
+                'content' => $line['content'],
+            ];
+
+            $this->applyTranslationsToTab($tabEntity, $translations, $shopId);
+            $tabDomainService->save($tabEntity, $translations);
         } catch (Exception $e) {
             $output->writeln(
                 '<error>Error on saving obj : ' . $e->getMessage() . '</error>'
             );
+        }
+    }
+
+    /**
+     * @param EverBlockTab[] $tabs
+     */
+    private function findTabEntity(array $tabs, int $tabId): ?EverBlockTab
+    {
+        foreach ($tabs as $tab) {
+            if ($tab instanceof EverBlockTab && $tab->getTabId() === $tabId) {
+                return $tab;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<int, array{title: string|null, content: string|null}>
+     */
+    private function buildTabTranslationsArray(EverBlockTab $tab): array
+    {
+        $translations = [];
+
+        foreach ($tab->getTranslations() as $translation) {
+            if ($translation instanceof EverBlockTabTranslation) {
+                $translations[$translation->getLanguageId()] = [
+                    'title' => $translation->getTitle(),
+                    'content' => $translation->getContent(),
+                ];
+            }
+        }
+
+        return $translations;
+    }
+
+    /**
+     * @param array<int, array{title: string|null, content: string|null}> $translations
+     */
+    private function applyTranslationsToTab(EverBlockTab $tab, array $translations, int $shopId): void
+    {
+        foreach ($translations as $languageId => $data) {
+            $languageId = (int) $languageId;
+            $translation = $tab->getTranslation($languageId, $shopId);
+
+            if (!$translation instanceof EverBlockTabTranslation) {
+                $translation = new EverBlockTabTranslation($tab, $languageId, $shopId);
+            }
+
+            $translation->setTitle($data['title'] ?? null);
+            $translation->setContent($data['content'] ?? null);
+            $tab->addTranslation($translation);
         }
     }
 
