@@ -40,6 +40,32 @@ class EverBlockModalDomainService
         return $this->repository->findById($modalId, $shopId);
     }
 
+    public function findEntityByProduct(int $productId, int $shopId): ?EverBlockModal
+    {
+        $modalId = $this->repository->findModalIdByProduct($productId, $shopId);
+
+        if (null === $modalId) {
+            return null;
+        }
+
+        return $this->repository->findById($modalId, $shopId);
+    }
+
+    public function getOrCreateForProduct(int $productId, int $shopId): EverBlockModal
+    {
+        $modal = $this->findEntityByProduct($productId, $shopId);
+
+        if ($modal instanceof EverBlockModal) {
+            return $modal;
+        }
+
+        $modal = new EverBlockModal();
+        $modal->setProductId($productId);
+        $modal->setShopId($shopId);
+
+        return $modal;
+    }
+
     /**
      * @param array<int, array{content: string|null}> $translations
      */

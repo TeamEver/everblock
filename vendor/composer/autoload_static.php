@@ -27,7 +27,6 @@ class ComposerStaticInitc44e5ac729cb9f81a689ee15bff0603d
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'EverblockModal' => __DIR__ . '/../..' . '/models/EverblockModal.php',
         'EverblockTools' => __DIR__ . '/../..' . '/models/EverblockTools.php',
     );
 
