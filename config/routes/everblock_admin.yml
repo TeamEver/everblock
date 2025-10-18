@@ -194,6 +194,52 @@ everblock_admin_faq:
     path: /everblock/faq
     methods: [GET]
     defaults:
-        _controller: 'Everblock\\Tools\\Controller\\Admin\\FaqController::index'
+        _controller: 'Everblock\Tools\Controller\Admin\EverblockFaqController::index'
         _legacy_controller: 'AdminEverBlockFaq'
         _legacy_link: 'AdminEverBlockFaq'
+
+everblock_admin_faq_create:
+    path: /everblock/faq/new
+    methods: [GET, POST]
+    defaults:
+        _controller: 'Everblock\Tools\Controller\Admin\EverblockFaqController::create'
+        _legacy_controller: 'AdminEverBlockFaq'
+        _legacy_link: 'AdminEverBlockFaq:add'
+
+everblock_admin_faq_edit:
+    path: /everblock/faq/{faqId}/edit
+    methods: [GET, POST]
+    defaults:
+        _controller: 'Everblock\Tools\Controller\Admin\EverblockFaqController::edit'
+        _legacy_controller: 'AdminEverBlockFaq'
+        _legacy_link: 'AdminEverBlockFaq:update'
+    requirements:
+        faqId: "\d+"
+
+everblock_admin_faq_duplicate:
+    path: /everblock/faq/{faqId}/duplicate
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\Tools\Controller\Admin\EverblockFaqController::duplicate'
+        _legacy_controller: 'AdminEverBlockFaq'
+        _legacy_link: 'AdminEverBlockFaq:duplicate'
+    requirements:
+        faqId: "\d+"
+
+everblock_admin_faq_delete:
+    path: /everblock/faq/{faqId}/delete
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\Tools\Controller\Admin\EverblockFaqController::delete'
+        _legacy_controller: 'AdminEverBlockFaq'
+        _legacy_link: 'AdminEverBlockFaq:delete'
+    requirements:
+        faqId: "\d+"
+
+everblock_admin_faq_bulk_delete:
+    path: /everblock/faq/bulk/delete
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\Tools\Controller\Admin\EverblockFaqController::bulkDelete'
+        _legacy_controller: 'AdminEverBlockFaq'
+        _legacy_link: 'AdminEverBlockFaq:bulkdelete'
