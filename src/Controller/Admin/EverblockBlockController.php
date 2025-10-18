@@ -105,6 +105,8 @@ class EverblockBlockController extends BaseEverblockController
 
     public function index(Request $request): Response
     {
+        $this->denyAccessUnlessGranted('view', 'AdminEverBlock');
+
         $filters = $request->query->all('filters');
         if (!is_array($filters)) {
             $filters = [];
@@ -135,6 +137,8 @@ class EverblockBlockController extends BaseEverblockController
 
     public function create(Request $request): Response
     {
+        $this->denyAccessUnlessGranted('create', 'AdminEverBlock');
+
         $formData = $this->formDataProvider->getDefaultData();
         $formOptions = $this->formDataProvider->getFormOptions();
         $form = $this->formFactory->create(EverblockFormType::class, $formData, $formOptions);
@@ -178,6 +182,8 @@ class EverblockBlockController extends BaseEverblockController
 
     public function edit(int $everblockId, Request $request): Response
     {
+        $this->denyAccessUnlessGranted('update', 'AdminEverBlock');
+
         $formData = $this->formDataProvider->getData($everblockId);
         $formOptions = $this->formDataProvider->getFormOptions();
         $form = $this->formFactory->create(EverblockFormType::class, $formData, $formOptions);
@@ -221,6 +227,8 @@ class EverblockBlockController extends BaseEverblockController
 
     public function duplicate(int $everblockId): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('create', 'AdminEverBlock');
+
         $source = new EverBlockClass($everblockId);
         if (!Validate::isLoadedObject($source)) {
             $this->addFlash('error', $this->translate('Unable to find the block to duplicate.'));
@@ -272,6 +280,8 @@ class EverblockBlockController extends BaseEverblockController
 
     public function toggle(int $everblockId): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('update', 'AdminEverBlock');
+
         $block = new EverBlockClass($everblockId);
         if (!Validate::isLoadedObject($block)) {
             $this->addFlash('error', $this->translate('Unable to update the block status.'));
@@ -291,6 +301,8 @@ class EverblockBlockController extends BaseEverblockController
 
     public function bulkDelete(Request $request): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('delete', 'AdminEverBlock');
+
         $ids = $request->request->all('ids');
         if (!is_array($ids)) {
             $ids = [];
@@ -315,6 +327,8 @@ class EverblockBlockController extends BaseEverblockController
 
     public function bulkDuplicate(Request $request): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('create', 'AdminEverBlock');
+
         $ids = $request->request->all('ids');
         if (!is_array($ids)) {
             $ids = [];
@@ -346,6 +360,8 @@ class EverblockBlockController extends BaseEverblockController
 
     public function export(int $everblockId): Response
     {
+        $this->denyAccessUnlessGranted('view', 'AdminEverBlock');
+
         $sql = EverblockTools::exportBlockSQL((int) $everblockId);
 
         if (!$sql) {
@@ -367,6 +383,8 @@ class EverblockBlockController extends BaseEverblockController
 
     public function clearCache(): RedirectResponse
     {
+        $this->denyAccessUnlessGranted('update', 'AdminEverBlock');
+
         Tools::clearAllCache();
 
         if (isset($this->context->language, $this->context->shop)) {
