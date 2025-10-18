@@ -13,7 +13,6 @@
       "Everblock\\Tools\\": "src/"
     },
     "classmap": [
-      "models/EverblockFlagsClass.php",
       "models/EverblockModal.php",
       "models/EverblockTabsClass.php",
       "models/EverblockTools.php"

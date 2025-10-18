@@ -87,6 +87,16 @@ class EverBlockFlagDomainService
         $this->repository->clearCache();
     }
 
+    public function clearCacheForProduct(int $productId, int $shopId): void
+    {
+        $this->repository->clearCacheForProduct($productId, $shopId);
+    }
+
+    public function clearCacheForShop(int $shopId): void
+    {
+        $this->repository->clearCacheForShop($shopId);
+    }
+
     private function hydrateFlag(array $row, int $shopId): EverBlockFlag
     {
         $flag = new EverBlockFlag();
