@@ -224,11 +224,13 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $fileRenderType = $this->resolveFileRenderType($fileExtension);
         }
 
-        $renderedContent = EverblockTools::renderShortcodes(
-            $content,
-            $this->context,
-            $this->module
-        );
+        $renderer = $this->module instanceof Everblock
+            ? $this->module->getShortcodeRenderer()
+            : null;
+
+        $renderedContent = $renderer instanceof \Everblock\Tools\Shortcode\ShortcodeRenderer
+            ? $renderer->render($content, $this->context, $this->module)
+            : EverblockTools::renderShortcodes($content, $this->context, $this->module);
 
         return new ModalDto(
             $renderedContent,

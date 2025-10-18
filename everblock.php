@@ -47,6 +47,7 @@ use Everblock\Tools\Service\EverBlockShortcodeProvider;
 use Everblock\Tools\Service\EverBlockTabProvider;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Shortcode\ShortcodeRenderer;
 use Everblock\Tools\Service\ImportFile;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
@@ -86,6 +87,7 @@ class Everblock extends Module
     private ?EverBlockShortcodeProvider $everBlockShortcodeProvider = null;
     private ?EverBlockShortcodeDomainService $everBlockShortcodeDomainService = null;
     private ?EverBlockModalDomainService $everBlockModalDomainService = null;
+    private ?ShortcodeRenderer $shortcodeRenderer = null;
     private bool $dependenciesBootstrapped = false;
 
     public function __construct(
@@ -100,7 +102,8 @@ class Everblock extends Module
         ?EverBlockModalProvider $everBlockModalProvider = null,
         ?EverBlockModalDomainService $everBlockModalDomainService = null,
         ?EverBlockShortcodeProvider $everBlockShortcodeProvider = null,
-        ?EverBlockShortcodeDomainService $everBlockShortcodeDomainService = null
+        ?EverBlockShortcodeDomainService $everBlockShortcodeDomainService = null,
+        ?ShortcodeRenderer $shortcodeRenderer = null
     ) {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
@@ -120,6 +123,7 @@ class Everblock extends Module
         $this->everBlockModalDomainService = $everBlockModalDomainService;
         $this->everBlockShortcodeProvider = $everBlockShortcodeProvider;
         $this->everBlockShortcodeDomainService = $everBlockShortcodeDomainService;
+        $this->shortcodeRenderer = $shortcodeRenderer;
         parent::__construct();
         $this->displayName = $this->l('Ever Block');
         $this->description = $this->l('Add HTML block everywhere !');
@@ -190,6 +194,10 @@ class Everblock extends Module
 
             if (null === $this->everBlockShortcodeDomainService) {
                 $this->everBlockShortcodeDomainService = $this->resolveService($container, EverBlockShortcodeDomainService::class);
+            }
+
+            if (null === $this->shortcodeRenderer) {
+                $this->shortcodeRenderer = $this->resolveService($container, ShortcodeRenderer::class);
             }
         }
 
@@ -270,6 +278,17 @@ class Everblock extends Module
         $this->bootstrapDependencies();
 
         return $this->everBlockShortcodeProvider;
+    }
+
+    public function getShortcodeRenderer(): ShortcodeRenderer
+    {
+        $this->bootstrapDependencies();
+
+        if (!$this->shortcodeRenderer instanceof ShortcodeRenderer) {
+            throw new \RuntimeException('ShortcodeRenderer service is not available.');
+        }
+
+        return $this->shortcodeRenderer;
     }
 
     public function getEverBlockShortcodeDomainService(): EverBlockShortcodeDomainService
@@ -3099,8 +3118,7 @@ class Everblock extends Module
         $txt = $params['html'];
         try {
             $context = Context::getContext();
-            // @Todo : move to EverblockShortcodes
-            $txt = EverblockTools::renderShortcodes($txt, $context, $this);
+            $txt = $this->getShortcodeRenderer()->render($txt, $context, $this);
             $params['html'] = $txt;
             return $params['html'];
         } catch (Exception $e) {
@@ -3385,8 +3403,9 @@ class Everblock extends Module
                 (int) $languageId
             );
             $context->language = $lang;
-            $params['template_txt'] = EverblockTools::renderShortcodes($params['template_txt'], $context, $this);
-            $params['template_html'] = EverblockTools::renderShortcodes($params['template_html'], $context, $this);
+            $renderer = $this->getShortcodeRenderer();
+            $params['template_txt'] = $renderer->render($params['template_txt'], $context, $this);
+            $params['template_html'] = $renderer->render($params['template_html'], $context, $this);
             return $params;
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());

@@ -195,3 +195,440 @@ services:
             $translator: '@translator'
             $navigationBuilder: '@Everblock\\Tools\\Service\\Admin\\NavigationBuilder'
         tags: ['controller.service_arguments']
+
+    Everblock\Tools\Shortcode\ShortcodeRenderer:
+        public: true
+        arguments:
+            $handlers: !tagged_iterator everblock.shortcode_handler
+
+    Everblock\Tools\Shortcode\Handler\FaqShortcodeHandler:
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.alert:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[alert'
+            $callback: ['EverblockTools', 'getAlertShortcode']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.instagram:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[everinstagram]'
+            $callback: ['EverblockTools', 'getInstagramShortcodes']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.product:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[product'
+            $callback: ['EverblockTools', 'getProductShortcodes']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.product_image:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[product_image'
+            $callback: ['EverblockTools', 'getProductImageShortcodes']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.product_feature:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[productfeature'
+            $callback: ['EverblockTools', 'getFeatureProductShortcodes']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.product_feature_value:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[productfeaturevalue'
+            $callback: ['EverblockTools', 'getFeatureValueProductShortcodes']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.category:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[category'
+            $callback: ['EverblockTools', 'getCategoryShortcodes']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.manufacturer:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[manufacturer'
+            $callback: ['EverblockTools', 'getManufacturerShortcodes']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.brands:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[brands'
+            $callback: ['EverblockTools', 'getBrandsShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.storelocator:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[storelocator]'
+            $callback: ['EverblockTools', 'generateGoogleMap']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.evermap:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[evermap]'
+            $callback: ['EverblockTools', 'getEverMapShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.hook:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '{hook h='
+            $callback: ['EverblockTools', 'replaceHook']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.lorem:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[llorem]'
+            $callback: ['EverblockTools', 'generateLoremIpsum']
+            $argumentMap: ['context']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.everblock:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[everblock'
+            $callback: ['EverblockTools', 'getEverBlockShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.subcategories:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[subcategories'
+            $callback: ['EverblockTools', 'getSubcategoriesShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.everstore:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[everstore'
+            $callback: ['EverblockTools', 'getStoreShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.video:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[video'
+            $callback: ['EverblockTools', 'getVideoShortcode']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.qcdacf:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[qcdacf'
+            $callback: ['EverblockTools', 'getQcdAcfCode']
+            $argumentMap: ['context']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.qcdsvg:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[displayQcdSvg'
+            $callback: ['EverblockTools', 'getQcdSvgCode']
+            $argumentMap: ['context']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.everimg:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[everimg'
+            $callback: ['EverblockTools', 'getEverImgShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.wordpress:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[wordpress-posts]'
+            $callback: ['EverblockTools', 'getWordpressPostsShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.google_reviews:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[googlereviews'
+            $callback: ['EverblockTools', 'getGoogleReviewsShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.best_sales:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[best-sales'
+            $callback: ['EverblockTools', 'getBestSalesShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.category_best_sales:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[categorybestsales'
+            $callback: ['EverblockTools', 'getCategoryBestSalesShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.brand_best_sales:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[brandbestsales'
+            $callback: ['EverblockTools', 'getBrandBestSalesShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.feature_best_sales:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[featurebestsales'
+            $callback: ['EverblockTools', 'getFeatureBestSalesShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.feature_value_best_sales:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[featurevaluebestsales'
+            $callback: ['EverblockTools', 'getFeatureValueBestSalesShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.last_products:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[last-products'
+            $callback: ['EverblockTools', 'getLastProductsShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.recently_viewed:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[recently_viewed'
+            $callback: ['EverblockTools', 'getRecentlyViewedShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.promo_products:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[promo-products'
+            $callback: ['EverblockTools', 'getPromoProductsShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.products_by_tag:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[products_by_tag'
+            $callback: ['EverblockTools', 'getProductsByTagShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.low_stock:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[low_stock'
+            $callback: ['EverblockTools', 'getLowStockShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.cart:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[evercart]'
+            $callback: ['EverblockTools', 'getCartShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.cart_total:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[cart_total]'
+            $callback: ['EverblockTools', 'getCartTotalShortcode']
+            $argumentMap: ['context']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.cart_quantity:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[cart_quantity]'
+            $callback: ['EverblockTools', 'getCartQuantityShortcode']
+            $argumentMap: ['context']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.shop_logo:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[shop_logo]'
+            $callback: ['EverblockTools', 'getShopLogoShortcode']
+            $argumentMap: ['context']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.newsletter:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[newsletter_form]'
+            $callback: ['EverblockTools', 'getNewsletterFormShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.native_contact:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[nativecontact]'
+            $callback: ['EverblockTools', 'getNativeContactShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.form:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[evercontactform_open]'
+            $callback: ['EverblockTools', 'getFormShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.order_form:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[everorderform_open]'
+            $callback: ['EverblockTools', 'getOrderFormShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.random_product:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[random_product'
+            $callback: ['EverblockTools', 'getRandomProductsShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.accessories:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[accessories'
+            $callback: ['EverblockTools', 'getAccessoriesShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.linked_products:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[linkedproducts'
+            $callback: ['EverblockTools', 'getLinkedProductsShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.crosselling:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[crosselling'
+            $callback: ['EverblockTools', 'getCrossSellingShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.widget:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[widget'
+            $callback: ['EverblockTools', 'getWidgetShortcode']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.prettyblocks:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[prettyblocks'
+            $callback: ['EverblockTools', 'getPrettyblocksShortcodes']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.add_to_cart:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[everaddtocart'
+            $callback: ['EverblockTools', 'getAddToCartShortcode']
+            $argumentMap: ['context', 'module']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    everblock.shortcode_handler.cms:
+        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
+        arguments:
+            $needle: '[cms'
+            $callback: ['EverblockTools', 'getCmsShortcode']
+            $argumentMap: ['context']
+        tags:
+            - { name: 'everblock.shortcode_handler' }
