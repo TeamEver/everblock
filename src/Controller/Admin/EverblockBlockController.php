@@ -23,6 +23,7 @@ namespace Everblock\Tools\Controller\Admin;
 use Context;
 use EverBlockClass;
 use EverblockTools;
+use Everblock\Tools\Bridge\Legacy\EverBlockLegacyAdapter;
 use Everblock\Tools\Form\DataProvider\EverblockFormDataProvider;
 use Everblock\Tools\Form\Handler\EverblockFormHandler;
 use Everblock\Tools\Form\Type\EverblockFormType;
@@ -73,6 +74,11 @@ class EverblockBlockController extends BaseEverblockController
      */
     private $router;
 
+    /**
+     * @var EverBlockLegacyAdapter
+     */
+    private $legacyAdapter;
+
     public function __construct(
         EverblockGridDefinitionFactory $gridDefinitionFactory,
         EverblockGridDataFactory $gridDataFactory,
@@ -80,6 +86,7 @@ class EverblockBlockController extends BaseEverblockController
         EverblockFormDataProvider $formDataProvider,
         EverblockFormHandler $formHandler,
         RouterInterface $router,
+        EverBlockLegacyAdapter $legacyAdapter,
         ?Context $context = null,
         ?\PrestaShop\PrestaShop\Adapter\Module\Repository\ModuleRepository $moduleRepository = null,
         ?\Symfony\Contracts\Translation\TranslatorInterface $translator = null,
@@ -93,6 +100,7 @@ class EverblockBlockController extends BaseEverblockController
         $this->formDataProvider = $formDataProvider;
         $this->formHandler = $formHandler;
         $this->router = $router;
+        $this->legacyAdapter = $legacyAdapter;
     }
 
     public function index(Request $request): Response
@@ -360,6 +368,15 @@ class EverblockBlockController extends BaseEverblockController
     public function clearCache(): RedirectResponse
     {
         Tools::clearAllCache();
+
+        if (isset($this->context->language, $this->context->shop)) {
+            $this->legacyAdapter->clearCacheForLanguageAndShop(
+                (int) $this->context->language->id,
+                (int) $this->context->shop->id
+            );
+        } else {
+            $this->legacyAdapter->clearCache();
+        }
         $this->addFlash('success', $this->translate('Cache has been cleared.'));
 
         return $this->redirectToRoute('everblock_admin_blocks');

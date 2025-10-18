@@ -28,6 +28,7 @@ use Configuration;
 use Currency;
 use Db;
 use DbQuery;
+use Everblock\Tools\Bridge\Legacy\EverBlockLegacyAdapter;
 use Everblock\Tools\Service\ImportFile;
 use Everblock\Tools\Service\EverblockCache;
 use EverblockTools;
@@ -140,9 +141,15 @@ class ExecuteAction extends Command
         ],
     ];
 
-    public function __construct(KernelInterface $kernel)
+    /**
+     * @var EverBlockLegacyAdapter
+     */
+    private $legacyAdapter;
+
+    public function __construct(KernelInterface $kernel, EverBlockLegacyAdapter $legacyAdapter)
     {
         parent::__construct();
+        $this->legacyAdapter = $legacyAdapter;
     }
 
     protected function configure()
@@ -428,6 +435,11 @@ class ExecuteAction extends Command
                     $output->writeln('<warning>' . $e->getMessage() . '</warning>');
                 }
             }
+            $this->legacyAdapter->clearCacheForLanguageAndShop((int) $idLangFrom, (int) $shop->id);
+            if ((int) $idLangTo !== (int) $idLangFrom) {
+                $this->legacyAdapter->clearCacheForLanguageAndShop((int) $idLangTo, (int) $shop->id);
+            }
+
             $output->writeln('<success>All blocks duplicated from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</success>');
             return self::SUCCESS;
         }

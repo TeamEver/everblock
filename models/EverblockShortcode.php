@@ -29,6 +29,11 @@ class EverblockShortcode extends ObjectModel
     /** @var EverBlockShortcodeProvider|null */
     protected static $provider;
 
+    private static function triggerLegacyDeprecation(string $method): void
+    {
+        @trigger_error(sprintf('%s::%s() is deprecated and will be removed in a future major version.', __CLASS__, $method), E_USER_DEPRECATED);
+    }
+
     public $id_everblock_shortcode;
     public $shortcode;
     public $id_shop;
@@ -70,11 +75,13 @@ class EverblockShortcode extends ObjectModel
 
     public static function setProvider(EverBlockShortcodeProvider $provider): void
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         static::$provider = $provider;
     }
 
     protected static function getProvider(): EverBlockShortcodeProvider
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockShortcodeProvider) {
             return static::$provider;
         }
@@ -96,16 +103,19 @@ class EverblockShortcode extends ObjectModel
 
     public static function getAllShortcodes(int $idShop, int $langId): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         return static::getProvider()->getAllShortcodes($idShop, $langId);
     }
 
     public static function getAllShortcodeIds(int $idShop): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         return static::getProvider()->getAllShortcodeIds($idShop);
     }
 
     public static function getEverShortcode(string $shortcode, int $shopId, int $langId): string
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         return static::getProvider()->getEverShortcode($shortcode, $shopId, $langId);
     }
 }

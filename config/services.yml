@@ -159,6 +159,22 @@ services:
     Everblock\Tools\Service\EverBlockModalProvider: ~
     Everblock\Tools\Service\EverBlockShortcodeProvider: ~
 
+    Everblock\Tools\Bridge\Legacy\EverBlockLegacyAdapter:
+        arguments:
+            $provider: '@Everblock\\Tools\\Service\\EverBlockProvider'
+
+    Everblock\Tools\Bridge\Legacy\EverBlockFaqLegacyAdapter:
+        arguments:
+            $provider: '@Everblock\\Tools\\Service\\EverBlockFaqProvider'
+
+    Everblock\Tools\Bridge\Legacy\EverBlockModalLegacyAdapter:
+        arguments:
+            $provider: '@Everblock\\Tools\\Service\\EverBlockModalProvider'
+
+    Everblock\Tools\Bridge\Legacy\EverBlockShortcodeLegacyAdapter:
+        arguments:
+            $provider: '@Everblock\\Tools\\Service\\EverBlockShortcodeProvider'
+
     Everblock\Tools\Controller\Admin\:
         resource: '../src/Controller/Admin'
         arguments:

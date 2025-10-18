@@ -29,6 +29,11 @@ class EverblockFlagsClass extends ObjectModel
     /** @var EverBlockFlagProvider|null */
     protected static $provider;
 
+    private static function triggerLegacyDeprecation(string $method): void
+    {
+        @trigger_error(sprintf('%s::%s() is deprecated and will be removed in a future major version.', __CLASS__, $method), E_USER_DEPRECATED);
+    }
+
     public $id_everblock_flags;
     public $id_product;
     public $id_shop;
@@ -74,11 +79,13 @@ class EverblockFlagsClass extends ObjectModel
 
     public static function setProvider(EverBlockFlagProvider $provider): void
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         static::$provider = $provider;
     }
 
     protected static function getProvider(): ?EverBlockFlagProvider
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockFlagProvider) {
             return static::$provider;
         }
@@ -106,6 +113,7 @@ class EverblockFlagsClass extends ObjectModel
     */
     public static function getByIdProductInAdmin(int $productId, int $shopId): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         $sql = new DbQuery();
         $sql->select(self::$definition['primary']);
         $sql->from(self::$definition['table']);
@@ -123,6 +131,7 @@ class EverblockFlagsClass extends ObjectModel
 
     public static function getByIdProductIdFlag(int $productId, int $shopId, int $flagId)
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         $sql = new DbQuery();
         $sql->select(self::$definition['primary']);
         $sql->from(self::$definition['table']);
@@ -146,6 +155,7 @@ class EverblockFlagsClass extends ObjectModel
     */
     public static function getByIdProduct(int $productId, int $shopId, int $langId): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         $cache_id = 'EverblockFlagsClass_getByIdProduct_'
         . (int) $productId
         . '_'

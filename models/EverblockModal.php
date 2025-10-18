@@ -29,6 +29,11 @@ class EverblockModal extends ObjectModel
     /** @var EverBlockModalProvider|null */
     protected static $provider;
 
+    private static function triggerLegacyDeprecation(string $method): void
+    {
+        @trigger_error(sprintf('%s::%s() is deprecated and will be removed in a future major version.', __CLASS__, $method), E_USER_DEPRECATED);
+    }
+
     /** @var int */
     public $id_everblock_modal;
 
@@ -74,11 +79,13 @@ class EverblockModal extends ObjectModel
 
     public static function setProvider(EverBlockModalProvider $provider): void
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         static::$provider = $provider;
     }
 
     protected static function getProvider(): EverBlockModalProvider
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockModalProvider) {
             return static::$provider;
         }
@@ -100,6 +107,7 @@ class EverblockModal extends ObjectModel
 
     public static function getByProductId(int $idProduct, int $idShop)
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         $provider = static::getProvider();
         $modalId = $provider->findModalIdByProduct($idProduct, $idShop);
         if (null !== $modalId) {

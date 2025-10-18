@@ -28,6 +28,11 @@ class EverblockTabsClass extends ObjectModel
     /** @var EverBlockTabProvider|null */
     protected static $provider;
 
+    private static function triggerLegacyDeprecation(string $method): void
+    {
+        @trigger_error(sprintf('%s::%s() is deprecated and will be removed in a future major version.', __CLASS__, $method), E_USER_DEPRECATED);
+    }
+
     public $id_everblock_tabs;
     public $id_product;
     public $id_shop;
@@ -73,11 +78,13 @@ class EverblockTabsClass extends ObjectModel
 
     public static function setProvider(EverBlockTabProvider $provider): void
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         static::$provider = $provider;
     }
 
     protected static function getProvider(): ?EverBlockTabProvider
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         if (static::$provider instanceof EverBlockTabProvider) {
             return static::$provider;
         }
@@ -105,6 +112,7 @@ class EverblockTabsClass extends ObjectModel
     */
     public static function getByIdProductInAdmin(int $productId, int $shopId): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         $sql = new DbQuery();
         $sql->select(self::$definition['primary']);
         $sql->from(self::$definition['table']);
@@ -122,6 +130,7 @@ class EverblockTabsClass extends ObjectModel
 
     public static function getByIdProductIdTab(int $productId, int $shopId, int $tabId)
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         $sql = new DbQuery();
         $sql->select(self::$definition['primary']);
         $sql->from(self::$definition['table']);
@@ -145,6 +154,7 @@ class EverblockTabsClass extends ObjectModel
     */
     public static function getByIdProduct(int $productId, int $shopId, int $langId): array
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         $sql = new DbQuery();
         $sql->select(self::$definition['primary']);
         $sql->from(self::$definition['table']);
@@ -165,6 +175,7 @@ class EverblockTabsClass extends ObjectModel
 
     public static function createTabForAllProducts(int $idShop, array $titles, array $contents, bool $drop = false): void
     {
+        static::triggerLegacyDeprecation(__METHOD__);
         if ($drop) {
             Db::getInstance()->execute('DELETE FROM `' . _DB_PREFIX_ . 'everblock_tabs`');
             Db::getInstance()->execute('DELETE FROM `' . _DB_PREFIX_ . 'everblock_tabs_lang`');
