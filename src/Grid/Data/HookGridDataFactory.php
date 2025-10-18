@@ -18,28 +18,40 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-namespace Everblock\Tools\Controller\Admin;
+namespace Everblock\Tools\Grid\Data;
 
-use Symfony\Component\HttpFoundation\Response;
+use Db;
+use Everblock\Tools\Grid\Query\HookQueryBuilder;
 
 if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
     exit;
 }
 
-class HooksController extends BaseEverblockController
+class HookGridDataFactory
 {
-    public function index(): Response
+    /**
+     * @var HookQueryBuilder
+     */
+    private $queryBuilder;
+
+    public function __construct(HookQueryBuilder $queryBuilder)
     {
-        return $this->renderLayout(
-            $this->translate('Hooks'),
-            [
-                'content_title' => $this->translate('Manage hooks'),
-                'content_description' => $this->translate('Symfony-based management screens for hooks will land here shortly.'),
-            ],
-            '@Modules/everblock/templates/admin/everblock/placeholder.html.twig',
-            [
-                'page_identifier' => 'hooks',
-            ]
-        );
+        $this->queryBuilder = $queryBuilder;
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return array<string, mixed>
+     */
+    public function getData(array $filters = []): array
+    {
+        $query = $this->queryBuilder->buildQuery($filters);
+        $records = Db::getInstance()->executeS($query);
+
+        return [
+            'records' => $records ?: [],
+            'records_total' => is_array($records) ? count($records) : 0,
+        ];
     }
 }

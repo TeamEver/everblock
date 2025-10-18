@@ -56,6 +56,8 @@ services:
             $context: '@prestashop.adapter.legacy.context'
 
     Everblock\Tools\Grid\Definition\Factory\EverblockGridDefinitionFactory: ~
+    Everblock\Tools\Grid\Definition\Factory\HookGridDefinitionFactory: ~
+
 
     Everblock\Tools\Grid\Query\EverblockQueryBuilder:
         arguments:
@@ -63,7 +65,15 @@ services:
 
     Everblock\Tools\Grid\Data\EverblockGridDataFactory: ~
 
+    Everblock\Tools\Grid\Query\HookQueryBuilder: ~
+
+    Everblock\Tools\Grid\Data\HookGridDataFactory: ~
+
     Everblock\Tools\Form\DataProvider\EverblockFormDataProvider:
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+
+    Everblock\Tools\Form\DataProvider\HookFormDataProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
 
@@ -71,7 +81,13 @@ services:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
 
+    Everblock\Tools\Form\Handler\HookFormHandler:
+        arguments:
+            $context: '@prestashop.adapter.legacy.context'
+
     Everblock\Tools\Form\Type\EverblockFormType: ~
+
+    Everblock\Tools\Form\Type\HookFormType: ~
 
     Everblock\Tools\Controller\Admin\:
         resource: '../src/Controller/Admin'

@@ -90,9 +90,61 @@ everblock_admin_hooks:
     path: /everblock/hooks
     methods: [GET]
     defaults:
-        _controller: 'Everblock\\Tools\\Controller\\Admin\\HooksController::index'
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockHookController::index'
         _legacy_controller: 'AdminEverBlockHook'
         _legacy_link: 'AdminEverBlockHook'
+
+everblock_admin_hooks_create:
+    path: /everblock/hooks/new
+    methods: [GET, POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockHookController::create'
+        _legacy_controller: 'AdminEverBlockHook'
+        _legacy_link: 'AdminEverBlockHook:add'
+
+everblock_admin_hooks_edit:
+    path: /everblock/hooks/{hookId}/edit
+    methods: [GET, POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockHookController::edit'
+        _legacy_controller: 'AdminEverBlockHook'
+        _legacy_link: 'AdminEverBlockHook:update'
+    requirements:
+        hookId: "\\d+"
+
+everblock_admin_hooks_toggle:
+    path: /everblock/hooks/{hookId}/toggle
+    methods: [GET]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockHookController::toggle'
+        _legacy_controller: 'AdminEverBlockHook'
+        _legacy_link: 'AdminEverBlockHook:status'
+    requirements:
+        hookId: "\\d+"
+
+everblock_admin_hooks_bulk_enable:
+    path: /everblock/hooks/bulk/enable
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockHookController::bulkEnable'
+        _legacy_controller: 'AdminEverBlockHook'
+        _legacy_link: 'AdminEverBlockHook:bulkenable'
+
+everblock_admin_hooks_bulk_disable:
+    path: /everblock/hooks/bulk/disable
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockHookController::bulkDisable'
+        _legacy_controller: 'AdminEverBlockHook'
+        _legacy_link: 'AdminEverBlockHook:bulkdisable'
+
+everblock_admin_hooks_bulk_delete:
+    path: /everblock/hooks/bulk/delete
+    methods: [POST]
+    defaults:
+        _controller: 'Everblock\\Tools\\Controller\\Admin\\EverblockHookController::bulkDelete'
+        _legacy_controller: 'AdminEverBlockHook'
+        _legacy_link: 'AdminEverBlockHook:bulkdelete'
 
 everblock_admin_shortcodes:
     path: /everblock/shortcodes
