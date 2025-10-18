@@ -14,7 +14,6 @@
     },
     "classmap": [
       "models/EverblockModal.php",
-      "models/EverblockTabsClass.php",
       "models/EverblockTools.php"
     ],
     "exclude-from-classmap": []

@@ -106,7 +106,6 @@ return [
     'src/Controller/Admin/ShortcodesController.php',
     'src/Service/Admin/NavigationBuilder.php',
     'src/Service/Admin/StatisticsProvider.php',
-    'models/EverblockTabsClass.php',
     'models/EverblockTools.php',
     'models/index.php',
     'output/index.php',
