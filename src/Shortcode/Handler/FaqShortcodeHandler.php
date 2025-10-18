@@ -2,11 +2,11 @@
 
 namespace Everblock\Tools\Shortcode\Handler;
 
-use Context;
 use Everblock;
 use EverblockTools;
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Shortcode\ShortcodeHandlerInterface;
+use Everblock\Tools\Shortcode\ShortcodeRenderingContext;
 
 final class FaqShortcodeHandler implements ShortcodeHandlerInterface
 {
@@ -19,7 +19,7 @@ final class FaqShortcodeHandler implements ShortcodeHandlerInterface
         return str_contains($content, '[everfaq');
     }
 
-    public function render(string $content, Context $context, Everblock $module): string
+    public function render(string $content, ShortcodeRenderingContext $context, Everblock $module): string
     {
         $templatePath = EverblockTools::getTemplatePath('hook/faq.tpl', $module);
 
@@ -29,14 +29,14 @@ final class FaqShortcodeHandler implements ShortcodeHandlerInterface
                 $tagName = $matches[1];
 
                 $faqs = $this->faqProvider->getFaqByTagName(
-                    (int) $context->shop->id,
-                    (int) $context->language->id,
+                    $context->getShopId(),
+                    $context->getLanguageId(),
                     $tagName
                 );
 
-                $context->smarty->assign('everFaqs', $faqs);
+                $context->getSmarty()->assign('everFaqs', $faqs);
 
-                return $context->smarty->fetch($templatePath);
+                return $context->getSmarty()->fetch($templatePath);
             },
             $content
         );

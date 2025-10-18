@@ -2,9 +2,9 @@
 
 namespace Everblock\Tools\Shortcode\Handler;
 
-use Context;
 use Everblock;
 use Everblock\Tools\Shortcode\ShortcodeHandlerInterface;
+use Everblock\Tools\Shortcode\ShortcodeRenderingContext;
 
 final class CallbackShortcodeHandler implements ShortcodeHandlerInterface
 {
@@ -24,18 +24,22 @@ final class CallbackShortcodeHandler implements ShortcodeHandlerInterface
         return str_contains($content, $this->needle);
     }
 
-    public function render(string $content, Context $context, Everblock $module): string
+    public function render(string $content, ShortcodeRenderingContext $context, Everblock $module): string
     {
         $arguments = [];
 
         foreach ($this->argumentMap as $argument) {
             switch ($argument) {
                 case 'context':
-                    $arguments[] = $context;
+                    $arguments[] = $context->getPrestashopContext();
 
                     break;
                 case 'module':
                     $arguments[] = $module;
+
+                    break;
+                case 'renderContext':
+                    $arguments[] = $context;
 
                     break;
             }

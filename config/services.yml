@@ -156,6 +156,21 @@ services:
             $connection: '@doctrine.dbal.default_connection'
             $cache: '@cache.app'
 
+    Everblock\Tools\Infrastructure\Repository\ProductTagRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+
+    Everblock\Tools\Infrastructure\Repository\SalesRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+
+    Everblock\Tools\Infrastructure\Repository\StockRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $salesRepository: '@Everblock\\Tools\\Infrastructure\\Repository\\SalesRepository'
+
+    Everblock\Tools\Infrastructure\Repository\ProductRepository: ~
+
     Everblock\Tools\Service\Domain\EverBlockDomainService: ~
     Everblock\Tools\Service\Domain\EverBlockFaqDomainService: ~
     Everblock\Tools\Service\Domain\LegacyModelMap: ~
@@ -202,6 +217,14 @@ services:
             $handlers: !tagged_iterator everblock.shortcode_handler
 
     Everblock\Tools\Shortcode\Handler\FaqShortcodeHandler:
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    Everblock\Tools\Shortcode\Handler\ProductsByTagShortcodeHandler:
+        tags:
+            - { name: 'everblock.shortcode_handler' }
+
+    Everblock\Tools\Shortcode\Handler\LowStockShortcodeHandler:
         tags:
             - { name: 'everblock.shortcode_handler' }
 
@@ -472,23 +495,6 @@ services:
         tags:
             - { name: 'everblock.shortcode_handler' }
 
-    everblock.shortcode_handler.products_by_tag:
-        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
-        arguments:
-            $needle: '[products_by_tag'
-            $callback: ['EverblockTools', 'getProductsByTagShortcode']
-            $argumentMap: ['context', 'module']
-        tags:
-            - { name: 'everblock.shortcode_handler' }
-
-    everblock.shortcode_handler.low_stock:
-        class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
-        arguments:
-            $needle: '[low_stock'
-            $callback: ['EverblockTools', 'getLowStockShortcode']
-            $argumentMap: ['context', 'module']
-        tags:
-            - { name: 'everblock.shortcode_handler' }
 
     everblock.shortcode_handler.cart:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
