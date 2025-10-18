@@ -17,12 +17,18 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+use Everblock\Tools\Service\EverBlockModalProvider;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
 class EverblockModal extends ObjectModel
 {
+    /** @var EverBlockModalProvider|null */
+    protected static $provider;
+
     /** @var int */
     public $id_everblock_modal;
 
@@ -66,18 +72,44 @@ class EverblockModal extends ObjectModel
         ],
     ];
 
+    public static function setProvider(EverBlockModalProvider $provider): void
+    {
+        static::$provider = $provider;
+    }
+
+    protected static function getProvider(): EverBlockModalProvider
+    {
+        if (static::$provider instanceof EverBlockModalProvider) {
+            return static::$provider;
+        }
+
+        if (class_exists(SymfonyContainer::class)) {
+            $container = SymfonyContainer::getInstance();
+            if (null !== $container && $container->has(EverBlockModalProvider::class)) {
+                $provider = $container->get(EverBlockModalProvider::class);
+                if ($provider instanceof EverBlockModalProvider) {
+                    static::$provider = $provider;
+
+                    return $provider;
+                }
+            }
+        }
+
+        throw new \RuntimeException('EverBlockModalProvider service is not available.');
+    }
+
     public static function getByProductId(int $idProduct, int $idShop)
     {
-        $id = (int) Db::getInstance()->getValue(
-            'SELECT `'.self::$definition['primary'].'` FROM `'. _DB_PREFIX_ . self::$definition['table'] . '`'
-            .' WHERE id_product='.(int) $idProduct.' AND id_shop='.(int) $idShop
-        );
-        if ($id) {
-            return new self($id);
+        $provider = static::getProvider();
+        $modalId = $provider->findModalIdByProduct($idProduct, $idShop);
+        if (null !== $modalId) {
+            return new self($modalId, null, $idShop);
         }
+
         $modal = new self();
         $modal->id_product = (int) $idProduct;
         $modal->id_shop = (int) $idShop;
+
         return $modal;
     }
 }
