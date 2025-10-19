@@ -1,7 +1,0 @@
-everblock_admin:
-    resource: "config/routes/everblock_admin.yml"
-    prefix: /
-
-everblock_front:
-    resource: "config/routes/everblock_front.yml"
-    prefix: /

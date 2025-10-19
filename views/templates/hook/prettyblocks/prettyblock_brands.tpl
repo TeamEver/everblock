@@ -30,7 +30,7 @@
   {if isset($block.states) && $block.states}
     {foreach from=$block.states item=state}
       {if isset($state.brand.id) && $state.brand.id}
-        {assign var=brandData value=$everblockToolsService->getBrandDataById($state.brand.id, Context::getContext())}
+        {assign var=brandData value=EverblockTools::getBrandDataById($state.brand.id, Context::getContext())}
         {if $brandData}
           {assign var=brands value=$brands|@array_merge:[$brandData]}
         {/if}

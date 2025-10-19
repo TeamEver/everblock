@@ -149,7 +149,7 @@ Run `php bin/console everblock:tools:execute --list` to display the maintenance 
 
 ## Media directory hygiene
 
-Only image and media assets should be stored inside `views/img/`. The automated clean-up run by `EverblockLegacyTools::cleanObsoleteFiles()` will remove any executable files (such as `.php`, `.phtml` or `.phar`) that are found there, even if they match patterns from `.gitignore`, while preserving placeholder `index.php` files.
+Only image and media assets should be stored inside `views/img/`. The automated clean-up run by `EverblockTools::cleanObsoleteFiles()` will remove any executable files (such as `.php`, `.phtml` or `.phar`) that are found there, even if they match patterns from `.gitignore`, while preserving placeholder `index.php` files.
 
 | Action | Label | Description | Parameters |
 | --- | --- | --- | --- |
@@ -175,9 +175,6 @@ Only image and media assets should be stored inside `views/img/`. The automated 
 The module allows you to use many shortcodes anywhere in your store. However, restrictions may be in place, such as not allowing a hook shortcode or store locator to be used in a modal.
 
 You can create your own shortcodes from the "Shortcodes" tab accessible in the "Ever block" submenu.
-
-### Doctrine-backed repositories
-Ever Block now exposes modal and shortcode data through dedicated Doctrine repositories and Symfony cache aware providers. Services such as the Pretty Blocks integration and the back-office form data providers rely on these services instead of the legacy static helpers, ensuring that multilingual and multishop shortcodes resolve the expected content consistently. When extending the module you can inject `EverBlockModalProvider` or `EverBlockShortcodeProvider` to reuse the same cached queries in your own services.
 
 -### Basic shortcodes
 - `[product id="1"]`: Display product with ID 1. Optional parameter: `carousel`.
@@ -205,7 +202,6 @@ Ever Block now exposes modal and shortcode data through dedicated Doctrine repos
 - `[everstore id="4"]`: Display store information for store ID 4 (several IDs can be separated with commas). Required parameter: `id`.
 - `[video url="https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj"]`: Display a YouTube iframe of the video whose sharing URL is in the parameter. Required parameter: `url`.
 - `[everaddtocart ref="1234" text="Add me to cart"]`: Create an add to cart button for product reference 1234. Required parameter: `ref`. Optional parameter: `text`.
-  The generated link targets the Symfony route `/everblock/cart/add`, which accepts `id_product`, `id_product_attribute` and `qty` query parameters and redirects visitors to the cart summary. When the request is performed via AJAX the controller returns a JSON payload containing the operation status and the redirect URL.
 - `[everfaq tag="faq1"]`: Show FAQs related to the `tag`. Required parameter: `tag`.
 - `[productfeature id="2" nb="12" carousel="true"]`: Display products with feature ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
 - `[productfeaturevalue id="2" nb="12" carousel="true"]`: Display products with feature value ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.

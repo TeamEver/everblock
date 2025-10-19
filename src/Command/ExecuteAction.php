@@ -28,12 +28,9 @@ use Configuration;
 use Currency;
 use Db;
 use DbQuery;
-use Everblock\Tools\Bridge\Legacy\EverBlockLegacyAdapter;
-use Everblock\Tools\Entity\EverBlockTranslation;
-use Everblock\Tools\Repository\EverBlockRepository;
 use Everblock\Tools\Service\ImportFile;
 use Everblock\Tools\Service\EverblockCache;
-use Everblock\Tools\Service\Legacy\EverblockToolsService;
+use EverblockTools;
 use Language;
 use Module;
 use PrestaShop\PrestaShop\Adapter\LegacyContext as ContextAdapter;
@@ -143,22 +140,9 @@ class ExecuteAction extends Command
         ],
     ];
 
-    /**
-     * @var EverBlockLegacyAdapter
-     */
-    private $legacyAdapter;
-    private EverblockToolsService $legacyToolsService;
-
-    public function __construct(
-        KernelInterface $kernel,
-        EverBlockLegacyAdapter $legacyAdapter,
-        private readonly EverBlockRepository $blockRepository,
-        EverblockToolsService $legacyToolsService
-    )
+    public function __construct(KernelInterface $kernel)
     {
         parent::__construct();
-        $this->legacyAdapter = $legacyAdapter;
-        $this->legacyToolsService = $legacyToolsService;
     }
 
     protected function configure()
@@ -237,7 +221,7 @@ class ExecuteAction extends Command
         }
         if ($action === 'refreshtokens') {
             // Instagram
-            $newToken = $this->legacyToolsService->refreshInstagramToken();
+            $newToken = EverblockTools::refreshInstagramToken();
             if ($newToken) {
                 EverblockCache::cacheDropByPattern('fetchInstagramImages');
                 $output->writeln(
@@ -250,7 +234,7 @@ class ExecuteAction extends Command
         }
         if ($action === 'securewithapache') {
             // Instagram
-            $secured = $this->legacyToolsService->secureModuleFoldersWithApache();
+            $secured = EverblockTools::secureModuleFoldersWithApache();
             if (is_array($secured)
                 && isset($secured['postErrors'])
                 && count($secured['postErrors']) > 0
@@ -273,15 +257,15 @@ class ExecuteAction extends Command
         }
         if ($action === 'fetchinstagramimages') {
             $output->writeln('<comment>Fetching Instagram medias…</comment>');
-            $images = $this->legacyToolsService->fetchInstagramImages();
+            $images = EverblockTools::fetchInstagramImages();
             $count = is_array($images) ? count($images) : 0;
             $output->writeln(sprintf('<success>%d media files processed</success>', $count));
 
             return self::SUCCESS;
         }
         if ($action === 'saveblocks') {
-            $backuped = $this->legacyToolsService->exportModuleTablesSQL();
-            $configBackuped = $this->legacyToolsService->exportConfigurationSQL();
+            $backuped = EverblockTools::exportModuleTablesSQL();
+            $configBackuped = EverblockTools::exportConfigurationSQL();
             if ((bool) $backuped === true && (bool) $configBackuped === true) {
                 try {
                     $modulePath = _PS_MODULE_DIR_ . 'everblock/';
@@ -299,7 +283,7 @@ class ExecuteAction extends Command
             }
         }
         if ($action === 'restoreblocks') {
-            $restored = $this->legacyToolsService->restoreModuleTablesFromBackup();
+            $restored = EverblockTools::restoreModuleTablesFromBackup();
             if ((bool) $restored === true) {
                 try {
                     $modulePath = _PS_MODULE_DIR_ . 'everblock/';
@@ -317,7 +301,7 @@ class ExecuteAction extends Command
             }
         }
         if ($action === 'droplogs') {
-            $purged = $this->legacyToolsService->purgeNativePrestashopLogsTable();
+            $purged = EverblockTools::purgeNativePrestashopLogsTable();
             if ((bool) $purged === true) {
                 $output->writeln(
                     '<success>Logs table purged</success>'
@@ -367,7 +351,7 @@ class ExecuteAction extends Command
         }
         if ($action == 'webpprettyblock') {
             $output->writeln('<comment>Start converting Prettyblock images to webp</comment>');
-            $this->legacyToolsService->convertAllPrettyblocksImagesToWebP();
+            EverblockTools::convertAllPrettyblocksImagesToWebP();
             $output->writeln('<comment>Prettyblock images have been improved into webp</comment>');
             return self::SUCCESS;
         }
@@ -402,7 +386,7 @@ class ExecuteAction extends Command
         }
         if ($action === 'generateproducts') {
             $output->writeln('<comment>Generating demo products for shop ' . (int) $shop->id . '</comment>');
-            $generated = $this->legacyToolsService->generateProducts((int) $shop->id);
+            $generated = EverblockTools::generateProducts((int) $shop->id);
             if ($generated) {
                 $output->writeln('<success>Demo products created successfully</success>');
 
@@ -430,55 +414,20 @@ class ExecuteAction extends Command
             $sql->where('id_shop = ' . (int) $shop->id);
             $blocks = Db::getInstance()->executeS($sql);
             foreach ($blocks as $blk) {
-                $block = $this->blockRepository->findById((int) $blk['id_everblock'], (int) $shop->id);
-                if (!$block) {
-                    continue;
+                $block = new EverBlockClass((int) $blk['id_everblock']);
+                if (isset($block->content[$idLangFrom])) {
+                    $block->content[(int) $idLangTo] = $block->content[$idLangFrom];
                 }
-
-                $source = $this->findTranslation($block->getTranslations(), (int) $idLangFrom);
-                if (!$source) {
-                    continue;
+                if (isset($block->custom_code[$idLangFrom])) {
+                    $block->custom_code[(int) $idLangTo] = $block->custom_code[$idLangFrom];
                 }
-
-                $translations = [];
-                foreach ($block->getTranslations() as $translation) {
-                    if (!$translation instanceof EverBlockTranslation) {
-                        continue;
-                    }
-
-                    $languageId = $translation->getLanguageId();
-                    if ($languageId === (int) $idLangTo) {
-                        $translations[$languageId] = [
-                            'content' => $source->getContent(),
-                            'custom_code' => $source->getCustomCode(),
-                        ];
-                    } else {
-                        $translations[$languageId] = [
-                            'content' => $translation->getContent(),
-                            'custom_code' => $translation->getCustomCode(),
-                        ];
-                    }
-                }
-
-                if (!isset($translations[(int) $idLangTo])) {
-                    $translations[(int) $idLangTo] = [
-                        'content' => $source->getContent(),
-                        'custom_code' => $source->getCustomCode(),
-                    ];
-                }
-
                 try {
-                    $this->blockRepository->save($block, $translations);
-                    $output->writeln('<comment>Duplicated block ' . $block->getId() . ' from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</comment>');
-                } catch (\Throwable $exception) {
-                    $output->writeln('<warning>' . $exception->getMessage() . '</warning>');
+                    $block->save();
+                    $output->writeln('<comment>Duplicated block ' . $block->id . ' from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</comment>');
+                } catch (Exception $e) {
+                    $output->writeln('<warning>' . $e->getMessage() . '</warning>');
                 }
             }
-            $this->legacyAdapter->clearCacheForLanguageAndShop((int) $idLangFrom, (int) $shop->id);
-            if ((int) $idLangTo !== (int) $idLangFrom) {
-                $this->legacyAdapter->clearCacheForLanguageAndShop((int) $idLangTo, (int) $shop->id);
-            }
-
             $output->writeln('<success>All blocks duplicated from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</success>');
             return self::SUCCESS;
         }
@@ -571,19 +520,19 @@ class ExecuteAction extends Command
             return self::SUCCESS;
         }
         if ($action === 'fetchwordpressposts') {
-            $this->legacyToolsService->fetchWordpressPosts();
+            EverblockTools::fetchWordpressPosts();
             $output->writeln('<comment>WordPress posts fetched</comment>');
             return self::SUCCESS;
         }
         if ($action === 'checkdatabase') {
-            $this->legacyToolsService->checkAndFixDatabase();
+            EverblockTools::checkAndFixDatabase();
             $output->writeln('<success>Database schema verified successfully</success>');
 
             return self::SUCCESS;
         }
         if ($action === 'dropunusedlangs') {
             $output->writeln('<comment>Removing orphan translations…</comment>');
-            $result = $this->legacyToolsService->dropUnusedLangs();
+            $result = EverblockTools::dropUnusedLangs();
             $hasErrors = false;
             if (!empty($result['querySuccess'])) {
                 foreach ($result['querySuccess'] as $message) {
@@ -606,20 +555,6 @@ class ExecuteAction extends Command
             return self::SUCCESS;
         }
         return self::ABORTED;
-    }
-
-    /**
-     * @param iterable<EverBlockTranslation> $translations
-     */
-    private function findTranslation(iterable $translations, int $languageId): ?EverBlockTranslation
-    {
-        foreach ($translations as $translation) {
-            if ($translation instanceof EverBlockTranslation && $translation->getLanguageId() === $languageId) {
-                return $translation;
-            }
-        }
-
-        return null;
     }
 
     /**

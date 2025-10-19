@@ -54,7 +54,7 @@
           'heading' => $state.title|default:'',
           'intro' => $state.intro|default:'',
         ]}
-        {assign var=resolved value=$everblockToolsService->resolveGoogleReviews($overrides)}
+        {assign var=resolved value=EverblockTools::resolveGoogleReviews($overrides)}
         {if !$resolved.options.is_configured}
           {continue}
         {/if}

@@ -1,4 +1,0 @@
-everblock_cart_add:
-    path: /everblock/cart/add
-    controller: Everblock\Tools\Controller\AddToCartController::add
-    methods: [GET, POST]

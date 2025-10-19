@@ -22,28 +22,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-use Everblock\Tools\Dto\ModalDto;
-use Everblock\Tools\Entity\EverBlock;
-use Everblock\Tools\Entity\EverBlockModal;
-use Everblock\Tools\Entity\EverBlockTranslation;
-use Everblock\Tools\Repository\EverBlockRepository;
-use Everblock\Tools\Service\Domain\EverBlockModalDomainService;
-use Everblock\Tools\Service\Legacy\EverblockToolsService;
-
 class EverblockmodalModuleFrontController extends ModuleFrontController
 {
-    private ?EverBlockRepository $blockRepository;
-    private ?EverBlockModalDomainService $modalDomainService;
-
-    public function __construct(
-        ?EverBlockRepository $blockRepository = null,
-        ?EverBlockModalDomainService $modalDomainService = null
-    ) {
-        $this->blockRepository = $blockRepository;
-        $this->modalDomainService = $modalDomainService;
-        parent::__construct();
-    }
-
     public function init()
     {
         parent::init();
@@ -71,35 +51,67 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             if (!Validate::isLoadedObject($cms) || !(bool) $cms->active) {
                 die();
             }
-
-            $this->renderModal($this->createModalDto((string) $cms->content));
-        }
-
-        if ($productModalId && !$blockId && !$cmsId) {
-            $modalDomainService = $this->getModalDomainService();
-            if (!$modalDomainService instanceof EverBlockModalDomainService) {
-                die();
-            }
-
-            $modalEntity = $modalDomainService->find(
-                $productModalId,
-                (int) $this->context->shop->id
+            $cmsContent = EverblockTools::renderShortcodes(
+                $cms->content,
+                $this->context,
+                $this->module
             );
-
-            if (!$modalEntity instanceof EverBlockModal) {
+            $this->context->smarty->assign([
+                'everblock_modal' => (object) ['content' => $cmsContent],
+            ]);
+            $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
+            die($response);
+        }
+        if ($productModalId && !$blockId && !$cmsId) {
+            $modal = new EverblockModal(
+                $productModalId,
+                $this->context->language->id,
+                $this->context->shop->id
+            );
+            if (!Validate::isLoadedObject($modal)) {
                 die();
             }
-
-            $translation = $modalEntity->getTranslation((int) $this->context->language->id);
-            $content = $translation ? $translation->getContent() : '';
-
-            $this->renderModal($this->createModalDto(
-                (string) $content,
-                $modalEntity->getFile()
-            ));
+            $content = isset($modal->content[$this->context->language->id])
+                ? $modal->content[$this->context->language->id]
+                : '';
+            $fileUrl = '';
+            $fileRenderType = '';
+            $fileExtension = '';
+            if (!empty($modal->file)) {
+                $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
+                $fileExtension = Tools::strtolower(pathinfo($modal->file, PATHINFO_EXTENSION));
+                $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg'];
+                $videoExtensions = ['mp4', 'webm', 'ogg', 'ogv'];
+                if (in_array($fileExtension, $imageExtensions, true)) {
+                    $fileRenderType = 'image';
+                } elseif (in_array($fileExtension, $videoExtensions, true)) {
+                    $fileRenderType = 'video';
+                } else {
+                    $fileRenderType = 'iframe';
+                }
+            }
+            $this->context->smarty->assign([
+                'everblock_modal' => (object) [
+                    'content' => EverblockTools::renderShortcodes(
+                        $content,
+                        $this->context,
+                        $this->module
+                    ),
+                    'file' => $fileUrl,
+                    'file_render_type' => $fileRenderType,
+                    'file_extension' => $fileExtension,
+                ],
+            ]);
+            $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
+            die($response);
         }
-        $block = $this->findBlock($blockId);
-        if (null === $block) {
+        $block = new EverBlockClass(
+            $blockId,
+            $this->context->language->id,
+            $this->context->shop->id
+
+        );
+        if (!Validate::isLoadedObject($block)) {
             die();
         }
         $modalDelay = (int) $block->delay;
@@ -128,143 +140,17 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             if (strpos($block->content, '[storelocator]') !== false) {
                 $block->content = str_replace('[storelocator]', '', $block->content);
             }
-            $this->renderModal($this->createModalDto(
+            $block->content = EverBlockTools::renderShortcodes(
                 $block->content,
-                null,
-                $block->background ?? null
-            ));
+                $this->context,
+                $this->module
+            );
+            $this->context->smarty->assign([
+                'everblock_modal' => $block,
+            ]);
+            $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
+            die($response);
         }
         die();
-    }
-
-    private function findBlock(int $blockId): ?\stdClass
-    {
-        $repository = $this->getBlockRepository();
-        if (!$repository instanceof EverBlockRepository) {
-            return null;
-        }
-
-        $block = $repository->findById($blockId, (int) $this->context->shop->id);
-        if (!$block instanceof EverBlock) {
-            return null;
-        }
-
-        $translation = $this->resolveTranslation($block, (int) $this->context->language->id);
-        $content = $translation ? (string) $translation->getContent() : '';
-
-        return (object) [
-            'id' => $block->getId(),
-            'delay' => $block->getDelay(),
-            'content' => $content,
-            'background' => $block->getBackground(),
-        ];
-    }
-
-    private function resolveTranslation(EverBlock $block, int $languageId): ?EverBlockTranslation
-    {
-        foreach ($block->getTranslations() as $translation) {
-            if ($translation instanceof EverBlockTranslation && $translation->getLanguageId() === $languageId) {
-                return $translation;
-            }
-        }
-
-        return null;
-    }
-
-    private function getBlockRepository(): ?EverBlockRepository
-    {
-        if ($this->blockRepository instanceof EverBlockRepository) {
-            return $this->blockRepository;
-        }
-
-        if ($this->module instanceof Everblock) {
-            $this->blockRepository = $this->module->getEverBlockRepository();
-        }
-
-        return $this->blockRepository instanceof EverBlockRepository ? $this->blockRepository : null;
-    }
-
-    private function getModalDomainService(): ?EverBlockModalDomainService
-    {
-        if ($this->modalDomainService instanceof EverBlockModalDomainService) {
-            return $this->modalDomainService;
-        }
-
-        if ($this->module instanceof Everblock) {
-            try {
-                $this->modalDomainService = $this->module->getEverBlockModalDomainService();
-            } catch (\RuntimeException $exception) {
-                $this->modalDomainService = null;
-            }
-        }
-
-        return $this->modalDomainService instanceof EverBlockModalDomainService
-            ? $this->modalDomainService
-            : null;
-    }
-
-    private function renderModal(ModalDto $modal): void
-    {
-        $this->context->smarty->assign([
-            'everblock_modal' => $modal,
-        ]);
-
-        $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
-        die($response);
-    }
-
-    private function createModalDto(string $content, ?string $file = null, ?string $background = null): ModalDto
-    {
-        $fileUrl = null;
-        $fileExtension = null;
-        $fileRenderType = null;
-
-        if (!empty($file)) {
-            $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . ltrim($file, '/');
-            $fileExtension = Tools::strtolower(pathinfo($file, PATHINFO_EXTENSION));
-            $fileRenderType = $this->resolveFileRenderType($fileExtension);
-        }
-
-        $renderer = $this->module instanceof Everblock
-            ? $this->module->getShortcodeRenderer()
-            : null;
-
-        $toolsService = $this->module instanceof Everblock
-            ? $this->module->getLegacyToolsService()
-            : null;
-
-        $renderedContent = $renderer instanceof \Everblock\Tools\Shortcode\ShortcodeRenderer
-            ? $renderer->render($content, $this->context, $this->module)
-            : ($toolsService instanceof EverblockToolsService
-                ? $toolsService->renderShortcodes($content, $this->context, $this->module)
-                : $content);
-
-        return new ModalDto(
-            $renderedContent,
-            $fileUrl,
-            $fileRenderType,
-            $fileExtension,
-            $background
-        );
-    }
-
-    private function resolveFileRenderType(?string $fileExtension): ?string
-    {
-        if (!$fileExtension) {
-            return null;
-        }
-
-        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg'];
-        $videoExtensions = ['mp4', 'webm', 'ogg', 'ogv'];
-
-        if (in_array($fileExtension, $imageExtensions, true)) {
-            return 'image';
-        }
-
-        if (in_array($fileExtension, $videoExtensions, true)) {
-            return 'video';
-        }
-
-        return 'iframe';
     }
 }

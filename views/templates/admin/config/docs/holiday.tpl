@@ -22,6 +22,6 @@
         </h3>
         <p>{l s='Preview the upcoming holidays detected by the module to help you schedule store specific opening hours.' mod='everblock'}</p>
         <p>{l s='Use this data when configuring the dedicated block types that display exceptional openings or closures.' mod='everblock'}</p>
-        <p>{l s='If your country requires additional dates, extend the helper inside EverblockLegacyTools::getFrenchHolidays().' mod='everblock'}</p>
+        <p>{l s='If your country requires additional dates, extend the helper inside EverblockTools::getFrenchHolidays().' mod='everblock'}</p>
     </div>
 </div>

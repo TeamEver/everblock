@@ -385,10 +385,6 @@
     box-shadow: none;
 }
 
-#module_form .everblock-form-group--anchor {
-    display: none;
-}
-
 #module_form .form-group:last-of-type {
     margin-bottom: 0;
 }

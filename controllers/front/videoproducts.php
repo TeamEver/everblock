@@ -21,8 +21,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-use Everblock\Tools\Service\Legacy\EverblockToolsService;
-
 class EverblockVideoproductsModuleFrontController extends ModuleFrontController
 {
     public function initContent()
@@ -40,13 +38,7 @@ class EverblockVideoproductsModuleFrontController extends ModuleFrontController
             exit;
         }
         $ids = array_map('intval', explode(',', $productIds));
-        $toolsService = $this->module instanceof Everblock
-            ? $this->module->getLegacyToolsService()
-            : null;
-
-        $products = $toolsService instanceof EverblockToolsService
-            ? $toolsService->everPresentProducts($ids, $this->context)
-            : [];
+        $products = EverblockTools::everPresentProducts($ids, $this->context);
         if (empty($products)) {
             http_response_code(404);
             exit;
