@@ -1,0 +1,83 @@
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  {{ form_stylesheet(form) }}
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  {{ form_javascript(form) }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var dateInputs = document.querySelectorAll('.datetimepicker');
+      if (!dateInputs.length) {
+        return;
+      }
+
+      if (typeof window.jQuery !== 'undefined' && typeof jQuery.fn.datetimepicker === 'function') {
+        jQuery(dateInputs).datetimepicker({
+          format: 'Y-m-d H:i:s'
+        });
+        return;
+      }
+
+      if (typeof window.flatpickr === 'function') {
+        dateInputs.forEach(function (input) {
+          window.flatpickr(input, {
+            enableTime: true,
+            dateFormat: 'Y-m-d H:i:S'
+          });
+        });
+      }
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+  <div class="everblock-config-wrapper">
+    {{ include('@PrestaShop/Admin/Common/Alert/flash_messages.html.twig') }}
+    <div class="everblock-config__card everblock-config__card--form">
+      <div class="panel">
+        <div class="panel-heading">
+          <i class="material-icons">settings</i>
+          {% if is_edit %}
+            {{ 'Edit block'|trans({}, 'Modules.Everblock.Admin') }}
+          {% else %}
+            {{ 'Create block'|trans({}, 'Modules.Everblock.Admin') }}
+          {% endif %}
+        </div>
+        {{ form_start(form) }}
+          <ul class="nav nav-tabs" role="tablist">
+            {% for tabId, tabLabel in tabs %}
+              <li role="presentation" class="{% if loop.first %}active{% endif %}">
+                <a href="#tab-{{ tabId }}" aria-controls="tab-{{ tabId }}" role="tab" data-toggle="tab">{{ tabLabel }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+          <div class="tab-content">
+            {% for tabId, tabLabel in tabs %}
+              <div role="tabpanel" class="tab-pane {% if loop.first %}active{% endif %}" id="tab-{{ tabId }}">
+                {% for child in form %}
+                  {% if child.vars.row_attr['data-tab'] is defined and child.vars.row_attr['data-tab'] == tabId %}
+                    {{ form_row(child) }}
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="everblock-form-actions">
+            <button class="btn btn-primary" type="submit">
+              <i class="material-icons">save</i>
+              {{ 'Save'|trans({}, 'Modules.Everblock.Admin') }}
+            </button>
+            <a class="btn btn-default" href="{{ path('admin_everblock_index') }}">
+              <i class="material-icons">arrow_back</i>
+              {{ 'Back to list'|trans({}, 'Modules.Everblock.Admin') }}
+            </a>
+          </div>
+        {{ form_end(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}
