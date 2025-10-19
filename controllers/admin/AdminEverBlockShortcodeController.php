@@ -23,11 +23,14 @@ if (!defined('_PS_VERSION_')) {
 
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
+require_once _PS_MODULE_DIR_ . 'everblock/controllers/admin/EverblockConfirmationTrait.php';
 
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 
 class AdminEverBlockShortcodeController extends ModuleAdminController
 {
+    use EverblockConfirmationTrait;
+
     private $html;
 
     public function __construct()
