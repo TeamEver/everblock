@@ -1,0 +1,208 @@
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+
+{% block content %}
+  <div class="everblock-config-wrapper">
+    {{ include('@PrestaShop/Admin/Common/Alert/flash_messages.html.twig') }}
+
+    <section class="everblock-config__hero">
+      <div class="everblock-config__hero-main">
+        <span class="everblock-config__badge">{{ 'Module'|trans({}, 'Modules.Everblock.Admin') }}</span>
+        <h2 class="everblock-config__hero-title">{{ module_name }}</h2>
+        <p class="everblock-config__hero-description">
+          {{ 'Fine-tune the behaviour, integrations and automation rules of Ever Block from a single, curated control centre.'|trans({}, 'Modules.Everblock.Admin') }}
+        </p>
+        <div class="everblock-config__hero-meta">
+          <span class="everblock-chip">
+            <i class="icon-tag"></i>
+            {{ 'Version'|trans({}, 'Modules.Everblock.Admin') }} {{ module_version }}
+          </span>
+          <span class="everblock-chip">
+            <i class="icon-check"></i>
+            {{ 'Content managed today'|trans({}, 'Modules.Everblock.Admin') }}: {{ stats.blocks_total|default(0) }}
+          </span>
+          {% if shortcode_docs is not empty %}
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#everblockShortcodeModal">
+              <i class="icon-book"></i>
+              {{ 'Shortcode documentation'|trans({}, 'Modules.Everblock.Admin') }}
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      <div class="everblock-config__hero-stats">
+        <div class="everblock-config__stat">
+          <div class="everblock-config__stat-value">{{ stats.blocks_active|default(0) }}</div>
+          <div class="everblock-config__stat-label">{{ 'Active blocks'|trans({}, 'Modules.Everblock.Admin') }}</div>
+        </div>
+        <div class="everblock-config__stat">
+          <div class="everblock-config__stat-value">{{ stats.shortcodes|default(0) }}</div>
+          <div class="everblock-config__stat-label">{{ 'Shortcodes'|trans({}, 'Modules.Everblock.Admin') }}</div>
+        </div>
+        <div class="everblock-config__stat">
+          <div class="everblock-config__stat-value">{{ stats.flags|default(0) }}</div>
+          <div class="everblock-config__stat-label">{{ 'Flags'|trans({}, 'Modules.Everblock.Admin') }}</div>
+        </div>
+        <div class="everblock-config__stat">
+          <div class="everblock-config__stat-value">{{ stats.tabs|default(0) }}</div>
+          <div class="everblock-config__stat-label">{{ 'Product tabs'|trans({}, 'Modules.Everblock.Admin') }}</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="everblock-config__layout">
+      <div class="everblock-config__main">
+        <div class="everblock-config__card everblock-config__card--form">
+          <div class="everblock-grid-toolbar">
+            {% if can_add_block %}
+              <a class="btn btn-primary" href="{{ path('admin_everblock_create') }}">
+                <i class="material-icons">add_circle</i>
+                {{ 'Add new block'|trans({}, 'Modules.Everblock.Admin') }}
+              </a>
+            {% endif %}
+            <a class="btn btn-default" href="{{ header_links.module_configuration }}">
+              <i class="material-icons">settings</i>
+              {{ 'Module configuration'|trans({}, 'Modules.Everblock.Admin') }}
+            </a>
+          </div>
+          {% include '@PrestaShop/Admin/Common/Grid/grid_panel.html.twig' with {grid: grid} %}
+        </div>
+      </div>
+      <aside class="everblock-config__aside">
+        <div class="everblock-sidecard">
+          <h3 class="everblock-sidecard__title">
+            <i class="icon-th-large"></i>
+            {{ 'Quick actions'|trans({}, 'Modules.Everblock.Admin') }}
+          </h3>
+          <ul class="everblock-sidecard__actions">
+            <li>
+              <a class="everblock-sidecard__link" href="{{ header_links.block_admin }}">
+                <span class="everblock-sidecard__icon"><i class="icon-puzzle-piece"></i></span>
+                <span>
+                  <strong>{{ 'Legacy block manager'|trans({}, 'Modules.Everblock.Admin') }}</strong>
+                  <small>{{ 'Access the historical back office for reference.'|trans({}, 'Modules.Everblock.Admin') }}</small>
+                </span>
+              </a>
+            </li>
+            <li>
+              <a class="everblock-sidecard__link" href="{{ header_links.shortcode_admin }}">
+                <span class="everblock-sidecard__icon"><i class="icon-code"></i></span>
+                <span>
+                  <strong>{{ 'Shortcodes'|trans({}, 'Modules.Everblock.Admin') }}</strong>
+                  <small>{{ 'Manage reusable snippets.'|trans({}, 'Modules.Everblock.Admin') }}</small>
+                </span>
+              </a>
+            </li>
+            <li>
+              <a class="everblock-sidecard__link" href="{{ header_links.faq_admin }}">
+                <span class="everblock-sidecard__icon"><i class="icon-question-sign"></i></span>
+                <span>
+                  <strong>{{ 'FAQ'|trans({}, 'Modules.Everblock.Admin') }}</strong>
+                  <small>{{ 'Adjust customer facing answers.'|trans({}, 'Modules.Everblock.Admin') }}</small>
+                </span>
+              </a>
+            </li>
+            <li>
+              <a class="everblock-sidecard__link" href="{{ header_links.hook_admin }}">
+                <span class="everblock-sidecard__icon"><i class="icon-sitemap"></i></span>
+                <span>
+                  <strong>{{ 'Hooks'|trans({}, 'Modules.Everblock.Admin') }}</strong>
+                  <small>{{ 'Control placements across your shop.'|trans({}, 'Modules.Everblock.Admin') }}</small>
+                </span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="everblock-sidecard">
+          <h3 class="everblock-sidecard__title">
+            <i class="icon-bullhorn"></i>
+            {{ 'Support & resources'|trans({}, 'Modules.Everblock.Admin') }}
+          </h3>
+          <ul class="everblock-sidecard__badges">
+            <li>
+              <span class="everblock-sidecard__badge">
+                <i class="icon-bar-chart"></i>
+                {{ 'Total blocks: %count%'|trans({'%count%': stats.blocks_total|default(0)}, 'Modules.Everblock.Admin') }}
+              </span>
+            </li>
+            <li>
+              <span class="everblock-sidecard__badge">
+                <i class="icon-comments"></i>
+                {{ 'FAQ entries: %count%'|trans({'%count%': stats.faqs|default(0)}, 'Modules.Everblock.Admin') }}
+              </span>
+            </li>
+            <li>
+              <span class="everblock-sidecard__badge">
+                <i class="icon-gamepad"></i>
+                {{ 'Gamification sessions: %count%'|trans({'%count%': stats.game_sessions|default(0)}, 'Modules.Everblock.Admin') }}
+              </span>
+            </li>
+          </ul>
+          <a class="everblock-sidecard__cta" href="{{ header_links.donation }}" target="_blank">
+            <i class="icon-heart"></i>
+            {{ 'Support ongoing development'|trans({}, 'Modules.Everblock.Admin') }}
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  {% if shortcode_docs is not empty %}
+    <div class="modal fade" id="everblockShortcodeModal" tabindex="-1" role="dialog" aria-labelledby="everblockShortcodeModalLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="{{ 'Close'|trans({}, 'Modules.Everblock.Admin') }}">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="everblockShortcodeModalLabel">
+              <i class="icon-code"></i>
+              {{ 'Available shortcodes'|trans({}, 'Modules.Everblock.Admin') }}
+            </h4>
+          </div>
+          <div class="modal-body">
+            {% for category in shortcode_docs %}
+              <div class="panel panel-default everblock-shortcode-panel">
+                <div class="panel-heading">
+                  <strong>{{ category.title }}</strong>
+                </div>
+                <div class="panel-body">
+                  {% if category.entries is defined %}
+                    <ul class="list-unstyled everblock-shortcode-list">
+                      {% for entry in category.entries %}
+                        <li class="everblock-shortcode-list__item">
+                          <div class="everblock-shortcode-list__header">
+                            <code class="everblock-shortcode-list__code">{{ entry.code }}</code>
+                          </div>
+                          <p class="everblock-shortcode-list__description">{{ entry.description }}</p>
+                          {% if entry.parameters is defined %}
+                            <ul class="list-unstyled everblock-shortcode-params">
+                              {% for parameter in entry.parameters %}
+                                <li class="everblock-shortcode-params__item">
+                                  <span class="label {{ parameter.required ? 'label-primary' : 'label-default' }}">
+                                    {{ parameter.required ? 'Required'|trans({}, 'Modules.Everblock.Admin') : 'Optional'|trans({}, 'Modules.Everblock.Admin') }}
+                                  </span>
+                                  <strong class="everblock-shortcode-params__name">{{ parameter.name }}</strong>
+                                  {% if parameter.description %}
+                                    <span class="everblock-shortcode-params__description">- {{ parameter.description }}</span>
+                                  {% endif %}
+                                </li>
+                              {% endfor %}
+                            </ul>
+                          {% endif %}
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              {{ 'Close'|trans({}, 'Modules.Everblock.Admin') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

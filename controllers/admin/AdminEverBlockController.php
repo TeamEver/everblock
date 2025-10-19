@@ -24,8 +24,27 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
 
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 
+/**
+ * @deprecated since 5.0.0. Use the Symfony based controller instead.
+ */
 class AdminEverBlockController extends ModuleAdminController
 {
+    public function init()
+    {
+        parent::init();
+
+        $symfonyUrl = $this->context->link->getAdminLink(
+            'AdminEverBlock',
+            true,
+            [],
+            [
+                'route' => 'admin_everblock_index',
+            ]
+        );
+
+        Tools::redirectAdmin($symfonyUrl);
+    }
+
     private $html;
     public function __construct()
     {

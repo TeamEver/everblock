@@ -45,3 +45,46 @@ services:
         tags:
             - { name: 'console.command' }
 
+    Everblock\Tools\Grid\Definition\Factory\EverBlockGridDefinitionFactory: ~
+
+    Everblock\Tools\Grid\Query\EverBlockQueryBuilder:
+        arguments:
+            - '@doctrine.dbal.default_connection'
+            - '@prestashop.adapter.legacy.context'
+
+    Everblock\Tools\Grid\Data\EverBlockGridDataFactory:
+        arguments:
+            - '@Everblock\Tools\Grid\Query\EverBlockQueryBuilder'
+
+    Everblock\Tools\Grid\Filters\EverBlockFilters: ~
+
+    Everblock\Tools\Form\Admin\EverBlockFormDataProvider: ~
+
+    Everblock\Tools\Form\Admin\EverBlockFormHandler:
+        arguments:
+            - '@form.factory'
+            - '@Everblock\Tools\Form\Admin\EverBlockFormDataProvider'
+            - '@Everblock\Tools\Service\EverBlockManager'
+
+    Everblock\Tools\Service\EverBlockManager: ~
+
+    everblock.grid.factory:
+        class: PrestaShop\PrestaShop\Core\Grid\GridFactory
+        arguments:
+            - '@Everblock\Tools\Grid\Definition\Factory\EverBlockGridDefinitionFactory'
+            - '@Everblock\Tools\Grid\Data\EverBlockGridDataFactory'
+            - '@prestashop.core.grid.filter.form_factory'
+            - '@prestashop.core.grid.presenter.grid_presenter'
+
+    Everblock\Tools\Controller\Admin\EverBlockController:
+        class: Everblock\Tools\Controller\Admin\EverBlockController
+        arguments:
+            - '@everblock.grid.factory'
+            - '@prestashop.core.grid.presenter.grid_presenter'
+            - '@Everblock\Tools\Service\EverBlockManager'
+            - '@Everblock\Tools\Form\Admin\EverBlockFormHandler'
+            - '@prestashop.adapter.legacy.context'
+            - '@?prestashop.core.grid.filter.filters_builder'
+        tags:
+            - { name: controller.service_arguments }
+
