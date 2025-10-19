@@ -206,7 +206,7 @@ class Everblock extends Module
             && $this->registerHook('beforeRenderingEverblockSpecialEvent')
             && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
             && $this->installModuleTab('AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'))
-            && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'), 'admin_everblock_index')
+            && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
             && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
             && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes'))
             && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'));
@@ -448,7 +448,7 @@ class Everblock extends Module
         );
     }
 
-    protected function installModuleTab($tabClass, $parent, $tabName, $routeName = null)
+    protected function installModuleTab($tabClass, $parent, $tabName)
     {
         $tab = new Tab();
         $tab->active = 1;
@@ -456,9 +456,6 @@ class Everblock extends Module
         $tab->id_parent = (int) Tab::getIdFromClassName($parent);
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
         $tab->module = $this->name;
-        if ($routeName) {
-            $tab->route_name = $routeName;
-        }
         if ($tabClass == 'AdminEverBlockParent') {
             $tab->icon = 'icon-team-ever';
         }
@@ -652,18 +649,10 @@ class Everblock extends Module
             $tab->module = $this->name;
             $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
             $tab->position = Tab::getNewLastPosition($tab->id_parent);
-            $tab->route_name = 'admin_everblock_index';
             foreach (Language::getLanguages(false) as $lang) {
-                $tab->name[(int) $lang['id_lang']] = $this->l('HTML Blocks');
+                $tab->name[(int) $lang['id_lang']] = $this->l('HTML blocks management');
             }
             $tab->add();
-        } else {
-            $tab = new Tab($id_tab);
-            $tab->route_name = 'admin_everblock_index';
-            foreach (Language::getLanguages(false) as $lang) {
-                $tab->name[(int) $lang['id_lang']] = $this->l('HTML Blocks');
-            }
-            $tab->update();
         }
         // Vérifier si l'onglet "Hook management" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockHook');
