@@ -7,5 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
-    'EverblockTools' => $baseDir . '/models/EverblockTools.php',
+    'EverblockLegacyTools' => $baseDir . '/src/Legacy/EverblockLegacyTools.php',
 );

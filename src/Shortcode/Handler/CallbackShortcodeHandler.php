@@ -8,13 +8,10 @@ use Everblock\Tools\Shortcode\ShortcodeRenderingContext;
 
 final class CallbackShortcodeHandler implements ShortcodeHandlerInterface
 {
-    /**
-     * @param callable(string, mixed ...$args): string $callback
-     * @param array<int, string> $argumentMap
-     */
     public function __construct(
         private readonly string $needle,
-        private $callback,
+        private readonly object $service,
+        private readonly string $method,
         private readonly array $argumentMap = []
     ) {
     }
@@ -45,7 +42,13 @@ final class CallbackShortcodeHandler implements ShortcodeHandlerInterface
             }
         }
 
-        $result = ($this->callback)($content, ...$arguments);
+        $callback = [$this->service, $this->method];
+
+        if (!is_callable($callback)) {
+            return $content;
+        }
+
+        $result = $callback($content, ...$arguments);
 
         return is_string($result) ? $result : (string) $result;
     }

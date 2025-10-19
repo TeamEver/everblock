@@ -41,7 +41,7 @@ class LegacyModelMap
                 'service' => EverBlockTabProvider::class,
                 'usage' => [
                     'everblock.php',
-                    'models/EverblockTools.php',
+                    'src/Legacy/EverblockLegacyTools.php',
                     'controllers/front/videoproducts.php',
                 ],
             ],

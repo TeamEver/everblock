@@ -21,6 +21,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
+
 class EverblockLookbookModuleFrontController extends ModuleFrontController
 {
     public function initContent()
@@ -41,7 +43,13 @@ class EverblockLookbookModuleFrontController extends ModuleFrontController
             http_response_code(400);
             exit;
         }
-        $presented = EverblockTools::everPresentProducts([$idProduct], $this->context);
+        $toolsService = $this->module instanceof Everblock
+            ? $this->module->getLegacyToolsService()
+            : null;
+
+        $presented = $toolsService instanceof EverblockToolsService
+            ? $toolsService->everPresentProducts([$idProduct], $this->context)
+            : [];
         if (empty($presented)) {
             http_response_code(404);
             exit;

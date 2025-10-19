@@ -28,6 +28,7 @@ use Everblock\Tools\Entity\EverBlockModal;
 use Everblock\Tools\Entity\EverBlockTranslation;
 use Everblock\Tools\Repository\EverBlockRepository;
 use Everblock\Tools\Service\Domain\EverBlockModalDomainService;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 
 class EverblockmodalModuleFrontController extends ModuleFrontController
 {
@@ -228,9 +229,15 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             ? $this->module->getShortcodeRenderer()
             : null;
 
+        $toolsService = $this->module instanceof Everblock
+            ? $this->module->getLegacyToolsService()
+            : null;
+
         $renderedContent = $renderer instanceof \Everblock\Tools\Shortcode\ShortcodeRenderer
             ? $renderer->render($content, $this->context, $this->module)
-            : EverblockTools::renderShortcodes($content, $this->context, $this->module);
+            : ($toolsService instanceof EverblockToolsService
+                ? $toolsService->renderShortcodes($content, $this->context, $this->module)
+                : $content);
 
         return new ModalDto(
             $renderedContent,

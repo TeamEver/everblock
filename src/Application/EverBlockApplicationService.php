@@ -26,14 +26,17 @@ use Everblock\Tools\Application\Command\EverBlock\UpsertEverBlockCommand;
 use Everblock\Tools\Entity\EverBlock;
 use Everblock\Tools\Entity\EverBlockTranslation;
 use Everblock\Tools\Repository\EverBlockRepository;
-use EverblockTools;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 use Hook;
 use Module;
 use Tools;
 
 class EverBlockApplicationService
 {
-    public function __construct(private readonly EverBlockRepository $repository)
+    public function __construct(
+        private readonly EverBlockRepository $repository,
+        private readonly EverblockToolsService $legacyToolsService
+    )
     {
     }
 
@@ -200,7 +203,7 @@ class EverBlockApplicationService
                 continue;
             }
 
-            $content = EverblockTools::convertImagesToWebP($translationCommand->getContent());
+            $content = $this->legacyToolsService->convertImagesToWebP($translationCommand->getContent());
             $payload[$translationCommand->getLanguageId()] = [
                 'content' => $content,
                 'custom_code' => $translationCommand->getCustomCode(),

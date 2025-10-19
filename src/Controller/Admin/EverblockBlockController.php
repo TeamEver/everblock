@@ -21,7 +21,6 @@
 namespace Everblock\Tools\Controller\Admin;
 
 use Context;
-use EverblockTools;
 use Everblock\Tools\Bridge\Legacy\EverBlockLegacyAdapter;
 use Everblock\Tools\Application\EverBlockApplicationService;
 use Everblock\Tools\Form\DataProvider\EverblockFormDataProvider;
@@ -29,6 +28,7 @@ use Everblock\Tools\Form\Handler\EverblockFormHandler;
 use Everblock\Tools\Form\Type\EverblockFormType;
 use Everblock\Tools\Grid\Data\EverblockGridDataFactory;
 use Everblock\Tools\Grid\Definition\Factory\EverblockGridDefinitionFactory;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -79,6 +79,7 @@ class EverblockBlockController extends BaseEverblockController
     private $legacyAdapter;
 
     private EverBlockApplicationService $applicationService;
+    private EverblockToolsService $legacyToolsService;
 
     public function __construct(
         EverblockGridDefinitionFactory $gridDefinitionFactory,
@@ -89,6 +90,7 @@ class EverblockBlockController extends BaseEverblockController
         RouterInterface $router,
         EverBlockLegacyAdapter $legacyAdapter,
         EverBlockApplicationService $applicationService,
+        ?EverblockToolsService $legacyToolsService = null,
         ?Context $context = null,
         ?\PrestaShop\PrestaShop\Adapter\Module\Repository\ModuleRepository $moduleRepository = null,
         ?\Symfony\Contracts\Translation\TranslatorInterface $translator = null,
@@ -104,6 +106,7 @@ class EverblockBlockController extends BaseEverblockController
         $this->router = $router;
         $this->legacyAdapter = $legacyAdapter;
         $this->applicationService = $applicationService;
+        $this->legacyToolsService = $legacyToolsService ?? new EverblockToolsService();
     }
 
     public function index(Request $request): Response
@@ -332,7 +335,7 @@ class EverblockBlockController extends BaseEverblockController
     {
         $this->denyAccessUnlessGranted('view', 'AdminEverBlock');
 
-        $sql = EverblockTools::exportBlockSQL((int) $everblockId);
+        $sql = $this->legacyToolsService->exportBlockSQL((int) $everblockId);
 
         if (!$sql) {
             $this->addFlash('error', $this->translate('An error occurred during the export.'));

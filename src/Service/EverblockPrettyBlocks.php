@@ -22,7 +22,7 @@ namespace Everblock\Tools\Service;
 
 use Configuration;
 use Everblock\Tools\Service\EverblockCache;
-use EverblockTools;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 use Hook;
 use Module;
 use PrettyBlocksModel;
@@ -38,6 +38,7 @@ class EverblockPrettyBlocks
 {
     private static ?EverBlockProvider $provider = null;
     private static ?EverBlockShortcodeProvider $shortcodeProvider = null;
+    private static ?EverblockToolsService $legacyToolsService = null;
 
     private const MEDIA_PATH = '$/img/cms/prettyblocks/';
 
@@ -51,6 +52,11 @@ class EverblockPrettyBlocks
         static::$shortcodeProvider = $provider;
     }
 
+    public static function setLegacyToolsService(EverblockToolsService $service): void
+    {
+        static::$legacyToolsService = $service;
+    }
+
     private static function resolveProvider(): ?EverBlockProvider
     {
         return static::$provider;
@@ -59,6 +65,27 @@ class EverblockPrettyBlocks
     private static function resolveShortcodeProvider(): ?EverBlockShortcodeProvider
     {
         return static::$shortcodeProvider;
+    }
+
+    private static function resolveLegacyToolsService(): ?EverblockToolsService
+    {
+        return static::$legacyToolsService;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function resolveSvgIconChoices(): array
+    {
+        $service = static::resolveLegacyToolsService();
+
+        if ($service instanceof EverblockToolsService) {
+            $icons = $service->getAvailableSvgIcons();
+
+            return is_array($icons) ? $icons : [];
+        }
+
+        return [];
     }
 
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
@@ -585,7 +612,7 @@ class EverblockPrettyBlocks
                         'icon' => [
                             'type' => 'select',
                             'label' => $module->l('Select an icon'),
-                            'choices' => EverblockTools::getAvailableSvgIcons(),
+                            'choices' => static::resolveSvgIconChoices(),
                             'default' => 'payment.svg',
                         ],
                         'title' => [
@@ -2067,7 +2094,7 @@ class EverblockPrettyBlocks
                         'icon' => [
                             'type' => 'select',
                             'label' => $module->l('Select an icon'),
-                            'choices' => EverblockTools::getAvailableSvgIcons(),
+                            'choices' => static::resolveSvgIconChoices(),
                             'default' => 'file.svg',
                         ],
                     ], $module),
@@ -2179,7 +2206,7 @@ class EverblockPrettyBlocks
                         'icon' => [
                             'type' => 'select',
                             'label' => $module->l('Select an icon'),
-                            'choices' => EverblockTools::getAvailableSvgIcons(),
+                            'choices' => static::resolveSvgIconChoices(),
                             'default' => 'facebook.svg',
                         ],
                     ], $module),
@@ -2325,7 +2352,7 @@ class EverblockPrettyBlocks
                         'icon' => [
                             'type' => 'select',
                             'label' => $module->l('Select an icon'),
-                            'choices' => EverblockTools::getAvailableSvgIcons(),
+                            'choices' => static::resolveSvgIconChoices(),
                             'default' => 'payment.svg',
                         ],
                         'value' => [

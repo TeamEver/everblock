@@ -25,6 +25,7 @@ require_once('vendor/autoload.php');
 
 use ArrayObject;
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use Context;
 use Everblock\Tools\Application\Command\EverBlock\EverBlockTranslationCommand;
 use Everblock\Tools\Application\Command\EverBlock\UpsertEverBlockCommand;
 use Everblock\Tools\Application\EverBlockApplicationService;
@@ -44,6 +45,7 @@ use Everblock\Tools\Entity\EverBlockTabTranslation;
 use Everblock\Tools\Repository\EverBlockRepository;
 use Everblock\Tools\Service\EverBlockProvider;
 use Everblock\Tools\Service\EverBlockShortcodeProvider;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 use Everblock\Tools\Service\EverBlockTabProvider;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
@@ -88,6 +90,7 @@ class Everblock extends Module
     private ?EverBlockShortcodeDomainService $everBlockShortcodeDomainService = null;
     private ?EverBlockModalDomainService $everBlockModalDomainService = null;
     private ?ShortcodeRenderer $shortcodeRenderer = null;
+    private ?EverblockToolsService $legacyToolsService = null;
     private bool $dependenciesBootstrapped = false;
 
     public function __construct(
@@ -103,7 +106,8 @@ class Everblock extends Module
         ?EverBlockModalDomainService $everBlockModalDomainService = null,
         ?EverBlockShortcodeProvider $everBlockShortcodeProvider = null,
         ?EverBlockShortcodeDomainService $everBlockShortcodeDomainService = null,
-        ?ShortcodeRenderer $shortcodeRenderer = null
+        ?ShortcodeRenderer $shortcodeRenderer = null,
+        ?EverblockToolsService $legacyToolsService = null
     ) {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
@@ -124,6 +128,7 @@ class Everblock extends Module
         $this->everBlockShortcodeProvider = $everBlockShortcodeProvider;
         $this->everBlockShortcodeDomainService = $everBlockShortcodeDomainService;
         $this->shortcodeRenderer = $shortcodeRenderer;
+        $this->legacyToolsService = $legacyToolsService;
         parent::__construct();
         $this->displayName = $this->l('Ever Block');
         $this->description = $this->l('Add HTML block everywhere !');
@@ -134,7 +139,8 @@ class Everblock extends Module
         ];
         if ($this->everBlockShortcodeProvider instanceof EverBlockShortcodeProvider) {
             EverblockPrettyBlocks::setShortcodeProvider($this->everBlockShortcodeProvider);
-            EverblockTools::setShortcodeProvider($this->everBlockShortcodeProvider);
+            EverblockPrettyBlocks::setLegacyToolsService($this->getLegacyToolsService());
+            $this->getLegacyToolsService()->setShortcodeProvider($this->everBlockShortcodeProvider);
         }
         $this->bootstrapDependencies();
     }
@@ -199,11 +205,15 @@ class Everblock extends Module
             if (null === $this->shortcodeRenderer) {
                 $this->shortcodeRenderer = $this->resolveService($container, ShortcodeRenderer::class);
             }
+
+            if (null === $this->legacyToolsService) {
+                $this->legacyToolsService = $this->resolveService($container, EverblockToolsService::class);
+            }
         }
 
         if ($this->everBlockShortcodeProvider instanceof EverBlockShortcodeProvider) {
             EverblockPrettyBlocks::setShortcodeProvider($this->everBlockShortcodeProvider);
-            EverblockTools::setShortcodeProvider($this->everBlockShortcodeProvider);
+            $this->getLegacyToolsService()->setShortcodeProvider($this->everBlockShortcodeProvider);
         }
 
         $this->dependenciesBootstrapped = true;
@@ -264,6 +274,21 @@ class Everblock extends Module
         }
 
         return $this->everBlockApplicationService;
+    }
+
+    public function getLegacyToolsService(): EverblockToolsService
+    {
+        $this->bootstrapDependencies();
+
+        if (!$this->legacyToolsService instanceof EverblockToolsService) {
+            $this->legacyToolsService = new EverblockToolsService();
+        }
+
+        if (isset($this->context) && $this->context instanceof Context && isset($this->context->smarty)) {
+            $this->context->smarty->assign('everblockToolsService', $this->legacyToolsService);
+        }
+
+        return $this->legacyToolsService;
     }
 
     public function getEverBlockFaqProvider(): ?EverBlockFaqProvider
@@ -869,7 +894,7 @@ class Everblock extends Module
         }
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+            && (bool) $this->getLegacyToolsService()->moduleDirectoryExists('prettyblocks') === true
         ) {
             if (!Hook::getIdByName('beforeRenderingEverblockProductHighlight')) {
                 $hook = new Hook();
@@ -1038,7 +1063,7 @@ class Everblock extends Module
         $this->registerHook('actionEmailAddAfterContent');
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+            && (bool) $this->getLegacyToolsService()->moduleDirectoryExists('prettyblocks') === true
         ) {
             $this->registerHook('actionRegisterBlock');
             $this->registerHook('beforeRenderingEverblockProductSelector');
@@ -1092,7 +1117,7 @@ class Everblock extends Module
     {
         $this->createUpgradeFile();
         $this->secureModuleFolder();
-        EverblockTools::checkAndFixDatabase();
+        $this->getLegacyToolsService()->checkAndFixDatabase();
         $this->checkHooks();
         $this->html = '';
 
@@ -1128,7 +1153,7 @@ class Everblock extends Module
             $this->emptyAllCache();
         }
         if ((bool) Tools::isSubmit('submitEmptyLogs') === true) {
-            $purged = EverblockTools::purgeNativePrestashopLogsTable();
+            $purged = $this->getLegacyToolsService()->purgeNativePrestashopLogsTable();
             if ((bool) $purged === true) {
                 $this->postSuccess[] = $this->l('Log tables emptied');
             } else {
@@ -1136,7 +1161,7 @@ class Everblock extends Module
             }
         }
         if ((bool) Tools::isSubmit('submitDropUnusedLangs') === true) {
-            $dropped = EverblockTools::dropUnusedLangs();
+            $dropped = $this->getLegacyToolsService()->dropUnusedLangs();
             if (is_array($dropped)
                 && isset($dropped['postErrors'])
                 && count($dropped['postErrors']) > 0
@@ -1155,7 +1180,7 @@ class Everblock extends Module
             }
         }
         if ((bool) Tools::isSubmit('submitSecureModuleFoldersWithApache') === true) {
-            $secured = EverblockTools::secureModuleFoldersWithApache();
+            $secured = $this->getLegacyToolsService()->secureModuleFoldersWithApache();
             if (is_array($secured)
                 && isset($secured['postErrors'])
                 && count($secured['postErrors']) > 0
@@ -1175,8 +1200,8 @@ class Everblock extends Module
         }
 
         if ((bool) Tools::isSubmit('submitBackupBlocks') === true) {
-            $backuped = EverblockTools::exportModuleTablesSQL();
-            $configBackuped = EverblockTools::exportConfigurationSQL();
+            $backuped = $this->getLegacyToolsService()->exportModuleTablesSQL();
+            $configBackuped = $this->getLegacyToolsService()->exportConfigurationSQL();
             if ((bool) $backuped === true && (bool) $configBackuped === true) {
                 $this->postSuccess[] = $this->l('Backup done');
             } else {
@@ -1184,7 +1209,7 @@ class Everblock extends Module
             }
         }
         if ((bool) Tools::isSubmit('submitRestoreBackup') === true) {
-            $restored = EverblockTools::restoreModuleTablesFromBackup();
+            $restored = $this->getLegacyToolsService()->restoreModuleTablesFromBackup();
             if ((bool) $restored === true) {
                 $this->postSuccess[] = $this->l('Restore done');
             } else {
@@ -1192,7 +1217,7 @@ class Everblock extends Module
             }
         }
         if ((bool) Tools::isSubmit('submitCreateProduct') === true) {
-            $created = EverblockTools::generateProducts(
+            $created = $this->getLegacyToolsService()->generateProducts(
                 (int) $this->context->shop->id
             );
             if ((bool) $created === true) {
@@ -1205,7 +1230,7 @@ class Everblock extends Module
             && Tools::getValue('EVERPS_OLD_URL')
             && Tools::getValue('EVERPS_NEW_URL')
         ) {
-            $migration = EverblockTools::migrateUrls(
+            $migration = $this->getLegacyToolsService()->migrateUrls(
                 Tools::getValue('EVERPS_OLD_URL'),
                 Tools::getValue('EVERPS_NEW_URL'),
                 (int) $this->context->shop->id
@@ -1298,7 +1323,7 @@ class Everblock extends Module
 
         $isPrettyBlocksEnabled = (bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+            && (bool) $this->getLegacyToolsService()->moduleDirectoryExists('prettyblocks') === true;
 
         if ($isPrettyBlocksEnabled) {
             $tabs['prettyblock'] = $this->l('Prettyblock');
@@ -2182,7 +2207,7 @@ class Everblock extends Module
         $stores = Store::getStores((int) $this->context->language->id);
         $holidayInputs = [];
         if (!empty($stores)) {
-            $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
+            $holidays = $this->getLegacyToolsService()->getFrenchHolidays((int) date('Y'));
             foreach ($stores as $store) {
                 foreach ($holidays as $date) {
                     $holidayInputs[] = [
@@ -2400,7 +2425,7 @@ class Everblock extends Module
             'CUSTOM_SVG' => '',
         ];
         $stores = Store::getStores((int) $this->context->language->id);
-        $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
+        $holidays = $this->getLegacyToolsService()->getFrenchHolidays((int) date('Y'));
         foreach ($stores as $store) {
             foreach ($holidays as $date) {
                 $hoursKey = 'EVERBLOCK_HOLIDAY_HOURS_' . (int) $store['id_store'] . '_' . $date;
@@ -2695,7 +2720,7 @@ class Everblock extends Module
         if (Tools::getValue('EVERINSTA_ACCESS_TOKEN')
             && !empty(Tools::getValue('EVERINSTA_ACCESS_TOKEN'))
         ) {
-            EverblockTools::refreshInstagramToken();
+            $this->getLegacyToolsService()->refreshInstagramToken();
         }
         Configuration::updateValue(
             'EVERINSTA_LINK',
@@ -2817,7 +2842,7 @@ class Everblock extends Module
             }
         }
         $stores = Store::getStores((int) $this->context->language->id);
-        $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
+        $holidays = $this->getLegacyToolsService()->getFrenchHolidays((int) date('Y'));
         foreach ($stores as $store) {
             foreach ($holidays as $date) {
                 $hoursKey = 'EVERBLOCK_HOLIDAY_HOURS_' . (int) $store['id_store'] . '_' . $date;
@@ -2878,7 +2903,7 @@ class Everblock extends Module
         if ((bool) Tools::getValue('EVERPSCSS_CACHE') === true) {
             $this->emptyAllCache();
         }
-        $stores = EverblockTools::getStoreLocatorData();
+        $stores = $this->getLegacyToolsService()->getStoreLocatorData();
         $filename = 'store-locator-' . $idShop . '.js';
         $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
         if (!empty($stores) && Tools::getValue('EVERBLOCK_GMAP_KEY')) {
@@ -2915,7 +2940,7 @@ class Everblock extends Module
                 }
                 $markers[] = $marker;
             }
-            $gmapScript = EverblockTools::generateGoogleMapScript($markers);
+            $gmapScript = $this->getLegacyToolsService()->generateGoogleMapScript($markers);
             if ($gmapScript) {
                 file_put_contents($filePath, $gmapScript);
             }
@@ -3125,7 +3150,7 @@ class Everblock extends Module
             PrestaShopLogger::addLog(
                 'Ever Block hookActionOutputHTMLBefore : ' . $e->getMessage()
             );
-            EverblockTools::setLog(
+            $this->getLegacyToolsService()->setLog(
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
@@ -3144,7 +3169,7 @@ class Everblock extends Module
     {
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+            && (bool) $this->getLegacyToolsService()->moduleDirectoryExists('prettyblocks') === true
         ) {
             if (Tools::getValue('id_product')) {
                 $idObj = (int) Tools::getValue('id_product');
@@ -3181,7 +3206,7 @@ class Everblock extends Module
     {
         if ((bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+            && (bool) $this->getLegacyToolsService()->moduleDirectoryExists('prettyblocks') === true
         ) {
             if (Tools::getValue('id_product')) {
                 $idObj = (int) Tools::getValue('id_product');
@@ -3318,7 +3343,7 @@ class Everblock extends Module
             }
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
+            $this->getLegacyToolsService()->setLog(
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
@@ -3343,7 +3368,7 @@ class Everblock extends Module
             }
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
+            $this->getLegacyToolsService()->setLog(
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
@@ -3387,7 +3412,7 @@ class Everblock extends Module
             }
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
+            $this->getLegacyToolsService()->setLog(
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
@@ -3409,7 +3434,7 @@ class Everblock extends Module
             return $params;
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
+            $this->getLegacyToolsService()->setLog(
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
@@ -3455,7 +3480,7 @@ class Everblock extends Module
                 }
             } catch (Exception $e) {
                 PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-                EverblockTools::setLog(
+                $this->getLegacyToolsService()->setLog(
                     $this->name . date('y-m-d'),
                     $e->getMessage()
                 );
@@ -3928,7 +3953,7 @@ class Everblock extends Module
             $modalDomainService->save($modalEntity, $translations);
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
+            $this->getLegacyToolsService()->setLog(
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
@@ -4031,7 +4056,7 @@ class Everblock extends Module
             }
         } catch (Exception $e) {
             PrestaShopLogger::addLog('Error on hookActionProductFlagsModifier : ' . $e->getMessage());
-            EverblockTools::setLog(
+            $this->getLegacyToolsService()->setLog(
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
@@ -4272,7 +4297,7 @@ class Everblock extends Module
             $currentBlock = [];
             foreach ($everblock as $block) {
                 if ((bool) $block['modal'] === true
-                    && (bool) EverblockTools::isBot() === true
+                    && (bool) $this->getLegacyToolsService()->isBot() === true
                 ) {
                     continue;
                 }
@@ -4402,12 +4427,12 @@ class Everblock extends Module
                     continue;
                 }
                 if ((bool) $block['obfuscate_link'] === true) {
-                    $block['content'] = EverblockTools::obfuscateText(
+                    $block['content'] = $this->getLegacyToolsService()->obfuscateText(
                         $block['content']
                     );
                 }
                 if ((bool) $block['lazyload'] === true) {
-                    $block['content'] = EverblockTools::addLazyLoadToImages(
+                    $block['content'] = $this->getLegacyToolsService()->addLazyLoadToImages(
                         $block['content']
                     );
                 }
@@ -4429,7 +4454,7 @@ class Everblock extends Module
             );
             if ((bool) Module::isInstalled('prettyblocks') === true
                 && (bool) Module::isEnabled('prettyblocks') === true
-                && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+                && (bool) $this->getLegacyToolsService()->moduleDirectoryExists('prettyblocks') === true
             ) {
                 $context->smarty->assign([
                     'prettyblocks_installed' => true,
@@ -4457,7 +4482,7 @@ class Everblock extends Module
         if (Tools::getValue('eac')
             && Validate::isInt(Tools::getValue('eac'))
         ) {
-            EverblockTools::addToCartByUrl(
+            $this->getLegacyToolsService()->addToCartByUrl(
                 $this->context,
                 (int) Tools::getValue('id_product'),
                 (int) Tools::getValue('id_product_attribute'),
@@ -4487,7 +4512,7 @@ class Everblock extends Module
 
             $product = new Product($modelId, true, $this->context->language->id);
             if (Validate::isLoadedObject($product)) {
-                $presentedProducts = EverblockTools::everPresentProducts(
+                $presentedProducts = $this->getLegacyToolsService()->everPresentProducts(
                     [$product->id],
                     $this->context
                 );
@@ -4701,7 +4726,7 @@ class Everblock extends Module
             return false;
         } catch (Exception $e) {
             PrestaShopLogger::addLog('Unable to check latest ' . $this->displayName . ' version');
-            EverblockTools::setLog(
+            $this->getLegacyToolsService()->setLog(
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
@@ -4735,8 +4760,8 @@ class Everblock extends Module
     {
         $currentVersion = $this->version;
         $updateDir = _PS_MODULE_DIR_ . $this->name . '/upgrade/';
-        $licenceHeader = EverblockTools::getPhpLicenceHeader();
-        $upgradeFunction = EverblockTools::getUpgradeMethod($this->version);
+        $licenceHeader = $this->getLegacyToolsService()->getPhpLicenceHeader();
+        $upgradeFunction = $this->getLegacyToolsService()->getUpgradeMethod($this->version);
         $newFilename = 'upgrade-' . str_replace('.', '_', $currentVersion) . '.php';
         $content = $licenceHeader . PHP_EOL . PHP_EOL . $upgradeFunction . PHP_EOL;
         if (file_put_contents($updateDir . $newFilename, $content) !== false) {
@@ -4995,7 +5020,7 @@ class Everblock extends Module
             PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
-            EverblockTools::setLog(
+            $this->getLegacyToolsService()->setLog(
                 $this->name . date('y-m-d'),
                 $e->getMessage()
             );
@@ -5256,11 +5281,11 @@ class Everblock extends Module
                 if ($limit <= 0) {
                     $limit = (int) Configuration::get('PS_PRODUCTS_PER_PAGE');
                 }
-                $rawProducts = EverblockTools::getProductsByCategoryId(
+                $rawProducts = $this->getLegacyToolsService()->getProductsByCategoryId(
                     (int) $state['id_category'],
                     $limit
                 );
-                $presented = EverblockTools::everPresentProducts(
+                $presented = $this->getLegacyToolsService()->everPresentProducts(
                     array_column($rawProducts, 'id_product'),
                     $this->context
                 );
@@ -5351,7 +5376,7 @@ class Everblock extends Module
     {
         $product = false;
         if (!empty($params['block']['settings']['id_product'])) {
-            $presented = EverblockTools::everPresentProducts(
+            $presented = $this->getLegacyToolsService()->everPresentProducts(
                 [(int) $params['block']['settings']['id_product']],
                 $this->context
             );
@@ -5375,7 +5400,7 @@ class Everblock extends Module
                 if ($idProduct <= 0) {
                     continue;
                 }
-                $presented = EverblockTools::everPresentProducts([
+                $presented = $this->getLegacyToolsService()->everPresentProducts([
                     $idProduct,
                 ], $this->context);
                 if (!empty($presented)) {
@@ -5399,7 +5424,7 @@ class Everblock extends Module
                 if (empty($ids)) {
                     continue;
                 }
-                $presented = EverblockTools::everPresentProducts($ids, $this->context);
+                $presented = $this->getLegacyToolsService()->everPresentProducts($ids, $this->context);
                 if (!empty($presented)) {
                     $products[$key] = $presented;
                 }
@@ -5421,7 +5446,7 @@ class Everblock extends Module
                 if (empty($ids)) {
                     continue;
                 }
-                $presented = EverblockTools::everPresentProducts($ids, $this->context);
+                $presented = $this->getLegacyToolsService()->everPresentProducts($ids, $this->context);
                 if (!empty($presented)) {
                     $products[$key] = $presented;
                 }
@@ -5471,7 +5496,7 @@ class Everblock extends Module
                 if (!$endDate) {
                     continue;
                 }
-                $presented = EverblockTools::everPresentProducts([
+                $presented = $this->getLegacyToolsService()->everPresentProducts([
                     $idProduct,
                 ], $this->context);
                 if (!empty($presented)) {
@@ -5539,7 +5564,7 @@ class Everblock extends Module
                 }
                 $limit = !empty($state['product_limit']) ? (int) $state['product_limit'] : 4;
                 $includeSub = !empty($state['include_subcategories']);
-                $categoryProducts = EverblockTools::getProductsByCategoryId(
+                $categoryProducts = $this->getLegacyToolsService()->getProductsByCategoryId(
                     $idCategory,
                     $limit,
                     'id_product',
@@ -5548,7 +5573,7 @@ class Everblock extends Module
                 );
                 if (!empty($categoryProducts)) {
                     $ids = array_column($categoryProducts, 'id_product');
-                    $presented = EverblockTools::everPresentProducts($ids, $this->context);
+                    $presented = $this->getLegacyToolsService()->everPresentProducts($ids, $this->context);
                     if (!empty($presented)) {
                         $products[$key] = $presented;
                     }

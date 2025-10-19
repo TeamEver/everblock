@@ -25,7 +25,7 @@ services:
         class: Everblock\Tools\Command\ExecuteAction
         public: true
         arguments:
-            $blockRepository: '@Everblock\\Tools\\Repository\\EverBlockRepository'
+            $blockRepository: '@Everblock\Tools\Repository\EverBlockRepository'
         tags:
             - { name: 'console.command' }
 
@@ -96,7 +96,7 @@ services:
     Everblock\Tools\Form\DataProvider\EverblockFormDataProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
-            $blockRepository: '@Everblock\\Tools\\Repository\\EverBlockRepository'
+            $blockRepository: '@Everblock\Tools\Repository\EverBlockRepository'
 
     Everblock\Tools\Form\DataProvider\HookFormDataProvider:
         arguments:
@@ -105,7 +105,7 @@ services:
     Everblock\Tools\Form\DataProvider\ShortcodeFormDataProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
-            $shortcodeService: '@Everblock\\Tools\\Service\\Domain\\EverBlockShortcodeDomainService'
+            $shortcodeService: '@Everblock\Tools\Service\Domain\EverBlockShortcodeDomainService'
     Everblock\Tools\Form\DataProvider\FaqFormDataProvider:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
@@ -113,7 +113,7 @@ services:
     Everblock\Tools\Form\Handler\EverblockFormHandler:
         arguments:
             $context: '@prestashop.adapter.legacy.context'
-            $applicationService: '@Everblock\\Tools\\Application\\EverBlockApplicationService'
+            $applicationService: '@Everblock\Tools\Application\EverBlockApplicationService'
 
     Everblock\Tools\Form\Handler\HookFormHandler:
         arguments:
@@ -167,7 +167,7 @@ services:
     Everblock\Tools\Infrastructure\Repository\StockRepository:
         arguments:
             $connection: '@doctrine.dbal.default_connection'
-            $salesRepository: '@Everblock\\Tools\\Infrastructure\\Repository\\SalesRepository'
+            $salesRepository: '@Everblock\Tools\Infrastructure\Repository\SalesRepository'
 
     Everblock\Tools\Infrastructure\Repository\ProductRepository: ~
 
@@ -188,19 +188,19 @@ services:
 
     Everblock\Tools\Bridge\Legacy\EverBlockLegacyAdapter:
         arguments:
-            $provider: '@Everblock\\Tools\\Service\\EverBlockProvider'
+            $provider: '@Everblock\Tools\Service\EverBlockProvider'
 
     Everblock\Tools\Bridge\Legacy\EverBlockFaqLegacyAdapter:
         arguments:
-            $provider: '@Everblock\\Tools\\Service\\EverBlockFaqProvider'
+            $provider: '@Everblock\Tools\Service\EverBlockFaqProvider'
 
     Everblock\Tools\Bridge\Legacy\EverBlockModalLegacyAdapter:
         arguments:
-            $provider: '@Everblock\\Tools\\Service\\EverBlockModalProvider'
+            $provider: '@Everblock\Tools\Service\EverBlockModalProvider'
 
     Everblock\Tools\Bridge\Legacy\EverBlockShortcodeLegacyAdapter:
         arguments:
-            $provider: '@Everblock\\Tools\\Service\\EverBlockShortcodeProvider'
+            $provider: '@Everblock\Tools\Service\EverBlockShortcodeProvider'
 
     Everblock\Tools\Controller\Admin\:
         resource: '../src/Controller/Admin'
@@ -208,12 +208,12 @@ services:
             $context: '@prestashop.adapter.legacy.context'
             $moduleRepository: '@prestashop.core.module.repository'
             $translator: '@translator'
-            $navigationBuilder: '@Everblock\\Tools\\Service\\Admin\\NavigationBuilder'
+            $navigationBuilder: '@Everblock\Tools\Service\Admin\NavigationBuilder'
         tags: ['controller.service_arguments']
 
     Everblock\Tools\Controller\AddToCartController:
         arguments:
-            $cartManager: '@Everblock\\Tools\\Application\\Cart\\CartManager'
+            $cartManager: '@Everblock\Tools\Application\Cart\CartManager'
             $router: '@router'
         tags: ['controller.service_arguments']
 
@@ -257,7 +257,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[alert'
-            $callback: ['EverblockTools', 'getAlertShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getAlertShortcode'
         tags:
             - { name: 'everblock.shortcode_handler' }
 
@@ -265,7 +266,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[everinstagram]'
-            $callback: ['EverblockTools', 'getInstagramShortcodes']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getInstagramShortcodes'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -274,7 +276,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[product'
-            $callback: ['EverblockTools', 'getProductShortcodes']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getProductShortcodes'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -283,7 +286,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[product_image'
-            $callback: ['EverblockTools', 'getProductImageShortcodes']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getProductImageShortcodes'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -292,7 +296,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[productfeature'
-            $callback: ['EverblockTools', 'getFeatureProductShortcodes']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getFeatureProductShortcodes'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -301,7 +306,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[productfeaturevalue'
-            $callback: ['EverblockTools', 'getFeatureValueProductShortcodes']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getFeatureValueProductShortcodes'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -310,7 +316,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[category'
-            $callback: ['EverblockTools', 'getCategoryShortcodes']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getCategoryShortcodes'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -319,7 +326,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[manufacturer'
-            $callback: ['EverblockTools', 'getManufacturerShortcodes']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getManufacturerShortcodes'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -328,7 +336,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[brands'
-            $callback: ['EverblockTools', 'getBrandsShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getBrandsShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -337,7 +346,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[storelocator]'
-            $callback: ['EverblockTools', 'generateGoogleMap']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'generateGoogleMap'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -346,7 +356,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[evermap]'
-            $callback: ['EverblockTools', 'getEverMapShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getEverMapShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -355,7 +366,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '{hook h='
-            $callback: ['EverblockTools', 'replaceHook']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'replaceHook'
         tags:
             - { name: 'everblock.shortcode_handler' }
 
@@ -363,7 +375,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[llorem]'
-            $callback: ['EverblockTools', 'generateLoremIpsum']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'generateLoremIpsum'
             $argumentMap: ['context']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -372,7 +385,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[everblock'
-            $callback: ['EverblockTools', 'getEverBlockShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getEverBlockShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -381,7 +395,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[subcategories'
-            $callback: ['EverblockTools', 'getSubcategoriesShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getSubcategoriesShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -390,7 +405,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[everstore'
-            $callback: ['EverblockTools', 'getStoreShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getStoreShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -399,7 +415,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[video'
-            $callback: ['EverblockTools', 'getVideoShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getVideoShortcode'
         tags:
             - { name: 'everblock.shortcode_handler' }
 
@@ -407,7 +424,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[qcdacf'
-            $callback: ['EverblockTools', 'getQcdAcfCode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getQcdAcfCode'
             $argumentMap: ['context']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -416,7 +434,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[displayQcdSvg'
-            $callback: ['EverblockTools', 'getQcdSvgCode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getQcdSvgCode'
             $argumentMap: ['context']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -425,7 +444,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[everimg'
-            $callback: ['EverblockTools', 'getEverImgShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getEverImgShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -434,7 +454,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[wordpress-posts]'
-            $callback: ['EverblockTools', 'getWordpressPostsShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getWordpressPostsShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -443,7 +464,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[googlereviews'
-            $callback: ['EverblockTools', 'getGoogleReviewsShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getGoogleReviewsShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -452,7 +474,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[best-sales'
-            $callback: ['EverblockTools', 'getBestSalesShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getBestSalesShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -461,7 +484,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[categorybestsales'
-            $callback: ['EverblockTools', 'getCategoryBestSalesShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getCategoryBestSalesShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -470,7 +494,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[brandbestsales'
-            $callback: ['EverblockTools', 'getBrandBestSalesShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getBrandBestSalesShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -479,7 +504,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[featurebestsales'
-            $callback: ['EverblockTools', 'getFeatureBestSalesShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getFeatureBestSalesShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -488,7 +514,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[featurevaluebestsales'
-            $callback: ['EverblockTools', 'getFeatureValueBestSalesShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getFeatureValueBestSalesShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -497,7 +524,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[last-products'
-            $callback: ['EverblockTools', 'getLastProductsShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getLastProductsShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -506,7 +534,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[recently_viewed'
-            $callback: ['EverblockTools', 'getRecentlyViewedShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getRecentlyViewedShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -515,7 +544,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[promo-products'
-            $callback: ['EverblockTools', 'getPromoProductsShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getPromoProductsShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -525,7 +555,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[evercart]'
-            $callback: ['EverblockTools', 'getCartShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getCartShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -534,7 +565,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[cart_total]'
-            $callback: ['EverblockTools', 'getCartTotalShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getCartTotalShortcode'
             $argumentMap: ['context']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -543,7 +575,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[cart_quantity]'
-            $callback: ['EverblockTools', 'getCartQuantityShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getCartQuantityShortcode'
             $argumentMap: ['context']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -552,7 +585,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[shop_logo]'
-            $callback: ['EverblockTools', 'getShopLogoShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getShopLogoShortcode'
             $argumentMap: ['context']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -561,7 +595,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[newsletter_form]'
-            $callback: ['EverblockTools', 'getNewsletterFormShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getNewsletterFormShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -570,7 +605,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[nativecontact]'
-            $callback: ['EverblockTools', 'getNativeContactShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getNativeContactShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -579,7 +615,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[evercontactform_open]'
-            $callback: ['EverblockTools', 'getFormShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getFormShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -588,7 +625,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[everorderform_open]'
-            $callback: ['EverblockTools', 'getOrderFormShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getOrderFormShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -597,7 +635,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[random_product'
-            $callback: ['EverblockTools', 'getRandomProductsShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getRandomProductsShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -606,7 +645,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[accessories'
-            $callback: ['EverblockTools', 'getAccessoriesShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getAccessoriesShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -615,7 +655,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[linkedproducts'
-            $callback: ['EverblockTools', 'getLinkedProductsShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getLinkedProductsShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -624,7 +665,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[crosselling'
-            $callback: ['EverblockTools', 'getCrossSellingShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getCrossSellingShortcode'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -633,7 +675,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[widget'
-            $callback: ['EverblockTools', 'getWidgetShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getWidgetShortcode'
         tags:
             - { name: 'everblock.shortcode_handler' }
 
@@ -641,7 +684,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[prettyblocks'
-            $callback: ['EverblockTools', 'getPrettyblocksShortcodes']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getPrettyblocksShortcodes'
             $argumentMap: ['context', 'module']
         tags:
             - { name: 'everblock.shortcode_handler' }
@@ -658,7 +702,8 @@ services:
         class: Everblock\Tools\Shortcode\Handler\CallbackShortcodeHandler
         arguments:
             $needle: '[cms'
-            $callback: ['EverblockTools', 'getCmsShortcode']
+            $service: '@Everblock\Tools\Service\Legacy\EverblockToolsService'
+            $method: 'getCmsShortcode'
             $argumentMap: ['context']
         tags:
             - { name: 'everblock.shortcode_handler' }

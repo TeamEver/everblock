@@ -31,12 +31,18 @@ use Symfony\Component\Console\Output\OutputInterface;
 use PrestaShop\PrestaShop\Adapter\LegacyContext as ContextAdapter;
 use Module;
 use Configuration;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 
 class SearchReplaceCommand extends Command
 {
     public const SUCCESS = 0;
     public const FAILURE = 1;
     public const INVALID = 2;
+
+    public function __construct(private readonly EverblockToolsService $legacyToolsService)
+    {
+        parent::__construct();
+    }
 
     protected function configure()
     {
@@ -58,7 +64,7 @@ class SearchReplaceCommand extends Command
             $idShop = (int) Configuration::get('PS_SHOP_DEFAULT');
         }
 
-        $result = \EverblockTools::migrateUrls($search, $replace, (int) $idShop);
+        $result = $this->legacyToolsService->migrateUrls($search, $replace, (int) $idShop);
 
         foreach ($result['postErrors'] as $error) {
             $output->writeln('<error>' . $error . '</error>');

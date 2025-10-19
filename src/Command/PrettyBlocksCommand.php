@@ -32,7 +32,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Module;
 use Validate;
 use Db;
-use EverblockTools;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 
 class PrettyBlocksCommand extends Command
 {
@@ -46,7 +46,7 @@ class PrettyBlocksCommand extends Command
         'migrate-media',
     ];
 
-    public function __construct(KernelInterface $kernel)
+    public function __construct(KernelInterface $kernel, private readonly EverblockToolsService $legacyToolsService)
     {
         parent::__construct();
     }
@@ -87,7 +87,7 @@ class PrettyBlocksCommand extends Command
         }
 
         if ($action === 'migrate-media') {
-            $count = EverblockTools::moveAllPrettyblocksMediasToCms();
+            $count = $this->legacyToolsService->moveAllPrettyblocksMediasToCms();
             $output->writeln('<success>' . $count . ' block(s) updated</success>');
             return self::SUCCESS;
         }

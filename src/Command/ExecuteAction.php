@@ -33,7 +33,7 @@ use Everblock\Tools\Entity\EverBlockTranslation;
 use Everblock\Tools\Repository\EverBlockRepository;
 use Everblock\Tools\Service\ImportFile;
 use Everblock\Tools\Service\EverblockCache;
-use EverblockTools;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 use Language;
 use Module;
 use PrestaShop\PrestaShop\Adapter\LegacyContext as ContextAdapter;
@@ -147,15 +147,18 @@ class ExecuteAction extends Command
      * @var EverBlockLegacyAdapter
      */
     private $legacyAdapter;
+    private EverblockToolsService $legacyToolsService;
 
     public function __construct(
         KernelInterface $kernel,
         EverBlockLegacyAdapter $legacyAdapter,
-        private readonly EverBlockRepository $blockRepository
+        private readonly EverBlockRepository $blockRepository,
+        EverblockToolsService $legacyToolsService
     )
     {
         parent::__construct();
         $this->legacyAdapter = $legacyAdapter;
+        $this->legacyToolsService = $legacyToolsService;
     }
 
     protected function configure()
@@ -234,7 +237,7 @@ class ExecuteAction extends Command
         }
         if ($action === 'refreshtokens') {
             // Instagram
-            $newToken = EverblockTools::refreshInstagramToken();
+            $newToken = $this->legacyToolsService->refreshInstagramToken();
             if ($newToken) {
                 EverblockCache::cacheDropByPattern('fetchInstagramImages');
                 $output->writeln(
@@ -247,7 +250,7 @@ class ExecuteAction extends Command
         }
         if ($action === 'securewithapache') {
             // Instagram
-            $secured = EverblockTools::secureModuleFoldersWithApache();
+            $secured = $this->legacyToolsService->secureModuleFoldersWithApache();
             if (is_array($secured)
                 && isset($secured['postErrors'])
                 && count($secured['postErrors']) > 0
@@ -270,15 +273,15 @@ class ExecuteAction extends Command
         }
         if ($action === 'fetchinstagramimages') {
             $output->writeln('<comment>Fetching Instagram medias…</comment>');
-            $images = EverblockTools::fetchInstagramImages();
+            $images = $this->legacyToolsService->fetchInstagramImages();
             $count = is_array($images) ? count($images) : 0;
             $output->writeln(sprintf('<success>%d media files processed</success>', $count));
 
             return self::SUCCESS;
         }
         if ($action === 'saveblocks') {
-            $backuped = EverblockTools::exportModuleTablesSQL();
-            $configBackuped = EverblockTools::exportConfigurationSQL();
+            $backuped = $this->legacyToolsService->exportModuleTablesSQL();
+            $configBackuped = $this->legacyToolsService->exportConfigurationSQL();
             if ((bool) $backuped === true && (bool) $configBackuped === true) {
                 try {
                     $modulePath = _PS_MODULE_DIR_ . 'everblock/';
@@ -296,7 +299,7 @@ class ExecuteAction extends Command
             }
         }
         if ($action === 'restoreblocks') {
-            $restored = EverblockTools::restoreModuleTablesFromBackup();
+            $restored = $this->legacyToolsService->restoreModuleTablesFromBackup();
             if ((bool) $restored === true) {
                 try {
                     $modulePath = _PS_MODULE_DIR_ . 'everblock/';
@@ -314,7 +317,7 @@ class ExecuteAction extends Command
             }
         }
         if ($action === 'droplogs') {
-            $purged = EverblockTools::purgeNativePrestashopLogsTable();
+            $purged = $this->legacyToolsService->purgeNativePrestashopLogsTable();
             if ((bool) $purged === true) {
                 $output->writeln(
                     '<success>Logs table purged</success>'
@@ -364,7 +367,7 @@ class ExecuteAction extends Command
         }
         if ($action == 'webpprettyblock') {
             $output->writeln('<comment>Start converting Prettyblock images to webp</comment>');
-            EverblockTools::convertAllPrettyblocksImagesToWebP();
+            $this->legacyToolsService->convertAllPrettyblocksImagesToWebP();
             $output->writeln('<comment>Prettyblock images have been improved into webp</comment>');
             return self::SUCCESS;
         }
@@ -399,7 +402,7 @@ class ExecuteAction extends Command
         }
         if ($action === 'generateproducts') {
             $output->writeln('<comment>Generating demo products for shop ' . (int) $shop->id . '</comment>');
-            $generated = EverblockTools::generateProducts((int) $shop->id);
+            $generated = $this->legacyToolsService->generateProducts((int) $shop->id);
             if ($generated) {
                 $output->writeln('<success>Demo products created successfully</success>');
 
@@ -568,19 +571,19 @@ class ExecuteAction extends Command
             return self::SUCCESS;
         }
         if ($action === 'fetchwordpressposts') {
-            EverblockTools::fetchWordpressPosts();
+            $this->legacyToolsService->fetchWordpressPosts();
             $output->writeln('<comment>WordPress posts fetched</comment>');
             return self::SUCCESS;
         }
         if ($action === 'checkdatabase') {
-            EverblockTools::checkAndFixDatabase();
+            $this->legacyToolsService->checkAndFixDatabase();
             $output->writeln('<success>Database schema verified successfully</success>');
 
             return self::SUCCESS;
         }
         if ($action === 'dropunusedlangs') {
             $output->writeln('<comment>Removing orphan translations…</comment>');
-            $result = EverblockTools::dropUnusedLangs();
+            $result = $this->legacyToolsService->dropUnusedLangs();
             $hasErrors = false;
             if (!empty($result['querySuccess'])) {
                 foreach ($result['querySuccess'] as $message) {
