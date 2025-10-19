@@ -3,7 +3,6 @@ parameters:
     paths:
         - src
         - controllers
-        - models
         - everblock.php
         - index.php
     bootstrapFiles:

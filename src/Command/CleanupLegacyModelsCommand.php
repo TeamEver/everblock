@@ -42,6 +42,8 @@ class CleanupLegacyModelsCommand extends Command
         $moduleRoot = dirname(__DIR__, 2);
         $targets = [
             $moduleRoot . '/models/EverblockTabsClass.php',
+            $moduleRoot . '/models/EverblockShortcode.php',
+            $moduleRoot . '/models/index.php',
         ];
 
         $hasFailure = false;
