@@ -4,10 +4,10 @@ namespace Everblock\Tools\Shortcode;
 
 use Customer;
 use Everblock;
-use EverblockTools;
 use Everblock\Tools\Service\EverBlockFaqProvider;
 use Everblock\Tools\Service\EverBlockShortcodeProvider;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 use Gender;
 use Hook;
 use Traversable;
@@ -24,11 +24,12 @@ final class ShortcodeRenderer
         iterable $handlers,
         private readonly EverBlockShortcodeProvider $shortcodeProvider,
         private readonly EverBlockFaqProvider $faqProvider,
-        private readonly EverblockPrettyBlocks $prettyBlocks
+        private readonly EverblockPrettyBlocks $prettyBlocks,
+        private readonly EverblockToolsService $legacyToolsService
     ) {
         $this->handlers = $handlers instanceof Traversable ? $handlers : (array) $handlers;
 
-        EverblockTools::setShortcodeProvider($this->shortcodeProvider);
+        $this->legacyToolsService->setShortcodeProvider($this->shortcodeProvider);
         EverblockPrettyBlocks::setShortcodeProvider($this->shortcodeProvider);
     }
 

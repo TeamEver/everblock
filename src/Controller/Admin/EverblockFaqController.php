@@ -28,6 +28,7 @@ use Everblock\Tools\Grid\Data\FaqGridDataFactory;
 use Everblock\Tools\Grid\Definition\Factory\FaqGridDefinitionFactory;
 use Everblock\Tools\Service\Domain\EverBlockFaqDomainService;
 use Everblock\Tools\Service\EverBlockFaqProvider;
+use Everblock\Tools\Service\Legacy\EverblockToolsService;
 use Shop;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -78,6 +79,8 @@ class EverblockFaqController extends BaseEverblockController
      */
     private $faqDomainService;
 
+    private EverblockToolsService $legacyToolsService;
+
     public function __construct(
         FaqGridDefinitionFactory $gridDefinitionFactory,
         FaqGridDataFactory $gridDataFactory,
@@ -86,6 +89,7 @@ class EverblockFaqController extends BaseEverblockController
         RouterInterface $router,
         EverBlockFaqProvider $faqProvider,
         EverBlockFaqDomainService $faqDomainService,
+        ?EverblockToolsService $legacyToolsService = null,
         ?Context $context = null,
         ?\PrestaShop\PrestaShop\Adapter\Module\Repository\ModuleRepository $moduleRepository = null,
         ?\Symfony\Contracts\Translation\TranslatorInterface $translator = null,
@@ -100,6 +104,7 @@ class EverblockFaqController extends BaseEverblockController
         $this->router = $router;
         $this->faqProvider = $faqProvider;
         $this->faqDomainService = $faqDomainService;
+        $this->legacyToolsService = $legacyToolsService ?? new EverblockToolsService();
     }
 
     public function index(Request $request): Response
@@ -424,7 +429,7 @@ class EverblockFaqController extends BaseEverblockController
                 $result['errors'][] = $this->translate('Content is invalid for %lang%', ['%lang%' => $langName], 'Modules.Everblock.Admin');
             }
 
-            $normalizedContent = $content === '' ? '' : \EverblockTools::convertImagesToWebP($content);
+            $normalizedContent = $content === '' ? '' : $this->legacyToolsService->convertImagesToWebP($content);
 
             $titles[$idLang] = $title;
             $contents[$idLang] = $normalizedContent;

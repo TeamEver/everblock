@@ -35,7 +35,7 @@ use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 
-class EverblockTools extends ObjectModel
+class EverblockLegacyTools extends ObjectModel
 {
     private static ?EverBlockShortcodeProvider $shortcodeProvider = null;
 
@@ -4113,7 +4113,7 @@ class EverblockTools extends ObjectModel
 
     public static function getAllProducts(int $shopId, int $langId, $start = null, $limit = null, $orderBy = null, $orderWay = null): array
     {
-        $cacheId = 'EverblockTools::getAllProducts_' . (int) $shopId . '_' . $langId;
+        $cacheId = 'EverblockLegacyTools::getAllProducts_' . (int) $shopId . '_' . $langId;
         if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = 'SELECT p.id_product, pl.name
                     FROM ' . _DB_PREFIX_ . 'product_shop AS p
@@ -4136,7 +4136,7 @@ class EverblockTools extends ObjectModel
 
     public static function getAllManufacturers(int $shopId, int $langId): array
     {
-        $cacheId = 'EverblockTools::getAllManufacturers_' . (int) $shopId . '_' . $langId;
+        $cacheId = 'EverblockLegacyTools::getAllManufacturers_' . (int) $shopId . '_' . $langId;
         
         if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = 'SELECT m.id_manufacturer, m.name
@@ -4168,7 +4168,7 @@ class EverblockTools extends ObjectModel
 
     public static function getAllSuppliers(int $shopId, int $langId): array
     {
-        $cacheId = 'EverblockTools::getAllSuppliers_' . (int) $shopId . '_' . $langId;
+        $cacheId = 'EverblockLegacyTools::getAllSuppliers_' . (int) $shopId . '_' . $langId;
         if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = 'SELECT m.id_supplier, m.name
                     FROM ' . _DB_PREFIX_ . 'supplier AS m
@@ -5087,7 +5087,7 @@ class EverblockTools extends ObjectModel
     {
         return 'function upgrade_module_' . str_replace('.', '_', $version) . '($module)' . PHP_EOL .
             '{' . PHP_EOL .
-            '    EverblockTools::checkAndFixDatabase();' . PHP_EOL .
+            '    EverblockLegacyTools::checkAndFixDatabase();' . PHP_EOL .
             '    $module->checkHooks();' . PHP_EOL .
             '    return true;' . PHP_EOL .
             '}';

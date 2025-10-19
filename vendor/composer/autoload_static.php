@@ -27,7 +27,7 @@ class ComposerStaticInitc44e5ac729cb9f81a689ee15bff0603d
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'EverblockTools' => __DIR__ . '/../..' . '/models/EverblockTools.php',
+        'EverblockLegacyTools' => __DIR__ . '/../..' . '/src/Legacy/EverblockLegacyTools.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
