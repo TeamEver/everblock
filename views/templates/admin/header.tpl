@@ -28,7 +28,7 @@
     </div>
     <div class="col-md-4 text-right mt-3">
         {if isset($everblock_shortcode_docs) && $everblock_shortcode_docs}
-            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#everblockShortcodeModal">
+            <button type="button" class="btn btn-info" data-toggle="modal" data-bs-toggle="modal" data-target="#everblockShortcodeModal" data-bs-target="#everblockShortcodeModal">
                 <i class="icon-book"></i> {l s='Shortcode documentation' mod='everblock'}
             </button>
         {/if}
@@ -65,7 +65,7 @@
     </div>
 </div>
 {if isset($everblock_shortcode_docs) && $everblock_shortcode_docs}
-    <div class="modal fade everblock-shortcode-modal" id="everblockShortcodeModal" tabindex="-1" role="dialog" aria-labelledby="everblockShortcodeModalLabel">
+    <div class="modal fade everblock-shortcode-modal" id="everblockShortcodeModal" tabindex="-1" role="dialog" aria-labelledby="everblockShortcodeModalLabel" aria-modal="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="everblock-shortcode-modal__header">
@@ -80,22 +80,22 @@
                             {l s='Use these shortcodes inside your blocks, CMS pages or PrettyBlocks zones.' mod='everblock'}
                         </p>
                     </div>
-                    <button type="button" class="everblock-shortcode-modal__close" data-dismiss="modal" aria-label="{l s='Close' mod='everblock'}">
+                    <button type="button" class="everblock-shortcode-modal__close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="{l s='Close' mod='everblock'}">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="everblock-shortcode-modal__tools">
-                    <label for="everblockShortcodeSearch" class="sr-only">
+                    <label for="everblockShortcodeSearch" class="sr-only visually-hidden">
                         {l s='Search shortcodes' mod='everblock'}
                     </label>
                     <div class="everblock-shortcode-search input-group">
-                        <span class="input-group-addon"><i class="icon-search"></i></span>
+                        <span class="input-group-addon input-group-text"><i class="icon-search"></i></span>
                         <input type="search" class="form-control" id="everblockShortcodeSearch" placeholder="{l s='Search shortcodes…' mod='everblock'}" autocomplete="off">
-                        <span class="input-group-btn">
-                            <button class="btn btn-default everblock-shortcode-clear" type="button">
+                        <div class="input-group-btn input-group-append">
+                            <button class="btn btn-default btn-secondary everblock-shortcode-clear" type="button">
                                 {l s='Clear' mod='everblock'}
                             </button>
-                        </span>
+                        </div>
                     </div>
                 </div>
                 <div class="everblock-shortcode-modal__body">
@@ -115,7 +115,7 @@
                                         <h4 class="everblock-shortcode-category-card__title">{$everblock_shortcode_category.title|escape:'htmlall':'UTF-8'}</h4>
                                         {if $shortcodeCount}
                                             <span class="everblock-shortcode-category-card__count" aria-hidden="true">{$shortcodeCount}</span>
-                                            <span class="sr-only">
+                                            <span class="sr-only visually-hidden">
                                                 {if $shortcodeCount == 1}
                                                     {l s='1 shortcode in this category' mod='everblock'}
                                                 {else}
@@ -133,7 +133,7 @@
                                                     <code class="everblock-shortcode-entry__code">{$everblock_shortcode_entry.code|escape:'htmlall':'UTF-8'}</code>
                                                     <button type="button" class="btn btn-link everblock-shortcode-entry__copy" data-everblock-copy="{$everblock_shortcode_entry.code|escape:'htmlall':'UTF-8'}" title="{l s='Copy shortcode' mod='everblock'}">
                                                         <i class="icon-files-o" aria-hidden="true"></i>
-                                                        <span class="sr-only">{l s='Copy shortcode' mod='everblock'}</span>
+                                                    <span class="sr-only visually-hidden">{l s='Copy shortcode' mod='everblock'}</span>
                                                     </button>
                                                 </div>
                                                 <p class="everblock-shortcode-entry__description">
@@ -167,7 +167,7 @@
                     </div>
                 </div>
                 <div class="everblock-shortcode-modal__footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                    <button type="button" class="btn btn-default btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">
                         {l s='Close' mod='everblock'}
                     </button>
                 </div>

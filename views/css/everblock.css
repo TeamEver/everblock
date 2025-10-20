@@ -2266,7 +2266,8 @@
     gap: 0.75rem;
 }
 
-.everblock-shortcode-search .input-group-addon {
+.everblock-shortcode-search .input-group-addon,
+.everblock-shortcode-search .input-group-text {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2295,7 +2296,14 @@
     box-shadow: 0 0 0 3px rgba(31, 71, 136, 0.15);
 }
 
-.everblock-shortcode-search .input-group-btn .btn {
+.everblock-shortcode-search .input-group-btn,
+.everblock-shortcode-search .input-group-append {
+    display: flex;
+}
+
+.everblock-shortcode-search .input-group-btn .btn,
+.everblock-shortcode-search .input-group-append .btn,
+.everblock-shortcode-search .everblock-shortcode-clear {
     border-radius: 999px;
     border: none;
     background: #1f4788;
@@ -2308,14 +2316,14 @@
 }
 
 .everblock-shortcode-search .input-group-btn .btn:hover,
-.everblock-shortcode-search .input-group-btn .btn:focus {
+.everblock-shortcode-search .input-group-btn .btn:focus,
+.everblock-shortcode-search .input-group-append .btn:hover,
+.everblock-shortcode-search .input-group-append .btn:focus,
+.everblock-shortcode-search .everblock-shortcode-clear:hover,
+.everblock-shortcode-search .everblock-shortcode-clear:focus {
     background: #152642;
     color: #fff;
     box-shadow: 0 10px 18px rgba(21, 38, 66, 0.22);
-}
-
-.everblock-shortcode-search .input-group-btn {
-    display: flex;
 }
 
 .everblock-shortcode-clear.is-disabled {
