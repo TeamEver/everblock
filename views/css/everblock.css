@@ -872,6 +872,35 @@
     width: 100%;
 }
 
+#everblock-storelocator-wrapper.map-hidden .tab-content {
+    display: block;
+}
+
+#everblock-storelocator-wrapper.map-hidden #everblock-storelist {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-height: none;
+    overflow: visible;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
+}
+
+#everblock-storelocator-wrapper.map-hidden #everblock-storelist .everblock-store-item {
+    width: 100%;
+    margin-top: 0;
+}
+
+#everblock-storelocator-wrapper.map-hidden #everblock-storelist .everblock-store-item .d-flex {
+    height: 100%;
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    gap: 1rem;
+}
+
 #everblock-storelocator-wrapper.map-hidden #storeLocatorTabs {
     display: none !important;
 }
