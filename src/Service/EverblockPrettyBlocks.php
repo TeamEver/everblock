@@ -1952,6 +1952,16 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Open in new tab (only if not obfuscated)'),
                             'default' => '0',
                         ],
+                        'start_date' => [
+                            'type' => 'text',
+                            'label' => $module->l('Start date (YYYY-MM-DD HH:MM:SS)'),
+                            'default' => '',
+                        ],
+                        'end_date' => [
+                            'type' => 'text',
+                            'label' => $module->l('End date (YYYY-MM-DD HH:MM:SS)'),
+                            'default' => '',
+                        ],
                     ], $module),
                 ],
             ];
