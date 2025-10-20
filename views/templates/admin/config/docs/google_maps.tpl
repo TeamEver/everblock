@@ -18,9 +18,9 @@
     <div class="card-body">
         <h3 class="card-title">
             <i class="icon-map-marker"></i>
-            {l s='Google Maps settings' mod='everblock'}
+            {l s='Google Tools settings' mod='everblock'}
         </h3>
-        <p>{l s='Configure the Google Maps integration used by the store locator shortcode.' mod='everblock'}</p>
+        <p>{l s='Configure the Google APIs used by the store locator and reviews shortcodes.' mod='everblock'}</p>
         <ul>
             <li>{l s='Generate an API key with Places and Maps JavaScript enabled so the autocomplete widget can work on CMS pages.' mod='everblock'}</li>
             <li>{l s='Upload your own SVG marker to match your branding. Leave it empty to keep the default pin.' mod='everblock'}</li>

@@ -1030,7 +1030,7 @@ class Everblock extends Module
             'settings' => $this->l('Réglages'),
             'stats' => $this->l('Statistiques'),
             'meta_tools' => $this->l('Meta Tools'),
-            'google_maps' => $this->l('Google Maps'),
+            'google_maps' => $this->l('Google Tools'),
             'migration' => $this->l('Migration des URL'),
             'tools' => $this->l('Outils'),
             'files' => $this->l('Gestionnaire de fichiers'),
@@ -1378,18 +1378,6 @@ class Everblock extends Module
             ],
             [
                 'type' => 'text',
-                'label' => $this->l('Google Places API key'),
-                'desc' => $this->l('API key used to retrieve reviews from Google Places.'),
-                'name' => 'EVERBLOCK_GOOGLE_API_KEY',
-            ],
-            [
-                'type' => 'text',
-                'label' => $this->l('Google Place ID'),
-                'desc' => $this->l('Place identifier for your business listing.'),
-                'name' => 'EVERBLOCK_GOOGLE_PLACE_ID',
-            ],
-            [
-                'type' => 'text',
                 'label' => $this->l('Maximum number of reviews'),
                 'desc' => $this->l('Number of reviews to display (minimum 1).'),
                 'name' => 'EVERBLOCK_GOOGLE_REVIEWS_LIMIT',
@@ -1499,6 +1487,18 @@ class Everblock extends Module
                 'name' => 'anchor_everblock_google_maps',
                 'html_content' => '<span id="everblock_google_maps"></span>',
                 'form_group_class' => 'hidden everblock-anchor',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Google Places API key'),
+                'desc' => $this->l('API key used to retrieve reviews from Google Places.'),
+                'name' => 'EVERBLOCK_GOOGLE_API_KEY',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Google Place ID'),
+                'desc' => $this->l('Place identifier for your business listing.'),
+                'name' => 'EVERBLOCK_GOOGLE_PLACE_ID',
             ],
             [
                 'type' => 'text',
