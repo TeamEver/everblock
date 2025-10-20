@@ -17,6 +17,7 @@
 *}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$block.settings assign='prettyblock_spacing_style'}
+{assign var=everblockNow value=$smarty.now}
 
 <div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}">
   {if $block.settings.default.force_full_width}
@@ -25,52 +26,97 @@
     <div class="row">
   {/if}
 {if isset($block.states) && $block.states}
-  <section class="prettyblocks-slider container-fluid px-0 mt-3 {if $block.settings.default.container}container{/if}" style="{$prettyblock_spacing_style}{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
-    <div class="ever-wrapper overflow-auto px-2 px-md-0 pb-2">
-      <div class="d-flex flex-nowrap gap-3 pe-1">
-        {foreach from=$block.states item=state}
-          {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_img_slider_state_spacing_style'}
-          <div class="flex-shrink-0 prettyblocks-slider-item" style="
-            width: 90%; /* Mobile fallback */
-            max-width: 90%;
-          ">
-            <div class="w-100" style="{$prettyblock_img_slider_state_spacing_style}{if isset($state.default.bg_color) && $state.default.bg_color}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
-              {if $state.link}
-                {if $state.obfuscate}
-                  {assign var="obflink" value=$state.link|base64_encode}
-                  <span class="obflink d-block" data-obflink="{$obflink}">
-                {else}
-                  <a href="{$state.link}" title="{$state.name}" {if $state.target_blank}target="_blank"{/if} class="d-block">
-                {/if}
-              {/if}
-                    <picture>
-                      <source srcset="{$state.image.url}" type="image/webp">
-                      <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-                      <img src="{$state.image.url|replace:'.webp':'.jpg'}" title="{$state.name}" alt="{$state.name}" class="img img-fluid lazyload" loading="lazy">
-                    </picture>
-              {if $state.link}
-                {if $state.obfuscate}
-                  </span>
-                {else}
-                  </a>
-                {/if}
-              {/if}
-            </div>
-          </div>
-        {/foreach}
-      </div>
-    </div>
-  </section>
+  {assign var=visibleStatesCount value=0}
+  {foreach from=$block.states item=state}
+    {assign var=isStateVisible value=true}
+    {assign var=startDateStr value=$state.start_date|default:''}
+    {if $startDateStr ne ''}
+      {assign var=startTimestamp value=$startDateStr|@strtotime}
+      {if $startTimestamp && $everblockNow < $startTimestamp}
+        {assign var=isStateVisible value=false}
+      {/if}
+    {/if}
+    {if $isStateVisible}
+      {assign var=endDateStr value=$state.end_date|default:''}
+      {if $endDateStr ne ''}
+        {assign var=endTimestamp value=$endDateStr|@strtotime}
+        {if $endTimestamp && $everblockNow > $endTimestamp}
+          {assign var=isStateVisible value=false}
+        {/if}
+      {/if}
+    {/if}
+    {if $isStateVisible}
+      {assign var=visibleStatesCount value=$visibleStatesCount+1}
+    {/if}
+  {/foreach}
 
-  {* Ajout d’un style responsive pour forcer 4 par ligne en desktop *}
-  <style>
-    @media (min-width: 768px) {
-      .prettyblocks-slider-item {
-        width: 25% !important;
-        max-width: 25% !important;
+  {if $visibleStatesCount > 0}
+    <section class="prettyblocks-slider container-fluid px-0 mt-3 {if $block.settings.default.container}container{/if}" style="{$prettyblock_spacing_style}{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
+      <div class="ever-wrapper overflow-auto px-2 px-md-0 pb-2">
+        <div class="d-flex flex-nowrap gap-3 pe-1">
+          {foreach from=$block.states item=state}
+            {assign var=isStateVisible value=true}
+            {assign var=startDateStr value=$state.start_date|default:''}
+            {if $startDateStr ne ''}
+              {assign var=startTimestamp value=$startDateStr|@strtotime}
+              {if $startTimestamp && $everblockNow < $startTimestamp}
+                {assign var=isStateVisible value=false}
+              {/if}
+            {/if}
+            {if $isStateVisible}
+              {assign var=endDateStr value=$state.end_date|default:''}
+              {if $endDateStr ne ''}
+                {assign var=endTimestamp value=$endDateStr|@strtotime}
+                {if $endTimestamp && $everblockNow > $endTimestamp}
+                  {assign var=isStateVisible value=false}
+                {/if}
+              {/if}
+            {/if}
+            {if $isStateVisible}
+              {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_img_slider_state_spacing_style'}
+              <div class="flex-shrink-0 prettyblocks-slider-item" style="
+                width: 90%; /* Mobile fallback */
+                max-width: 90%;
+              ">
+                <div class="w-100" style="{$prettyblock_img_slider_state_spacing_style}{if isset($state.default.bg_color) && $state.default.bg_color}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
+                  {if $state.link}
+                    {if $state.obfuscate}
+                      {assign var="obflink" value=$state.link|base64_encode}
+                      <span class="obflink d-block" data-obflink="{$obflink}">
+                    {else}
+                      <a href="{$state.link}" title="{$state.name}" {if $state.target_blank}target="_blank"{/if} class="d-block">
+                    {/if}
+                  {/if}
+                        <picture>
+                          <source srcset="{$state.image.url}" type="image/webp">
+                          <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                          <img src="{$state.image.url|replace:'.webp':'.jpg'}" title="{$state.name}" alt="{$state.name}" class="img img-fluid lazyload" loading="lazy">
+                        </picture>
+                  {if $state.link}
+                    {if $state.obfuscate}
+                      </span>
+                    {else}
+                      </a>
+                    {/if}
+                  {/if}
+                </div>
+              </div>
+            {/if}
+          {/foreach}
+        </div>
+      </div>
+    </section>
+
+    {* Ajout d’un style responsive pour forcer 4 par ligne en desktop *}
+    <style>
+      @media (min-width: 768px) {
+        .prettyblocks-slider-item {
+          width: 25% !important;
+          max-width: 25% !important;
+        }
       }
-    }
-  </style>
+    </style>
+  {/if}
 {/if}
 
   {if $block.settings.default.force_full_width || $block.settings.default.container}
