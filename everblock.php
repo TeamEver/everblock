@@ -1096,6 +1096,7 @@ class Everblock extends Module
             'type' => 'html',
             'name' => 'anchor_everblock_tools',
             'html_content' => '<span id="everblock_tools"></span>',
+            'form_group_class' => 'hidden everblock-anchor',
             'tab' => 'tools',
         ];
 
@@ -1154,6 +1155,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_settings',
                 'html_content' => '<span id="everblock_settings"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ],
             [
                 'type' => 'text',
@@ -1315,6 +1317,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_meta_tools',
                 'html_content' => '<span id="everblock_meta_tools"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ],
             [
                 'type' => 'text',
@@ -1335,6 +1338,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_wordpress',
                 'html_content' => '<span id="everblock_wordpress"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ],
             [
                 'type' => 'text',
@@ -1370,6 +1374,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_google_reviews',
                 'html_content' => '<span id="everblock_google_reviews"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ],
             [
                 'type' => 'text',
@@ -1493,6 +1498,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_google_maps',
                 'html_content' => '<span id="everblock_google_maps"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ],
             [
                 'type' => 'text',
@@ -1584,6 +1590,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_feature_colors',
                 'html_content' => '<span id="everblock_feature_colors"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ],
         ];
 
@@ -1673,6 +1680,7 @@ class Everblock extends Module
             'type' => 'html',
             'name' => 'anchor_everblock_soldout_colors',
             'html_content' => '<span id="everblock_soldout_colors"></span>',
+            'form_group_class' => 'hidden everblock-anchor',
             'tab' => 'flags',
         ];
 
@@ -1700,6 +1708,7 @@ class Everblock extends Module
                     'type' => 'html',
                     'name' => 'anchor_everblock_instagram',
                     'html_content' => '<span id="everblock_instagram"></span>',
+                    'form_group_class' => 'hidden everblock-anchor',
                 ],
                 [
                     'type' => 'text',
@@ -1741,6 +1750,7 @@ class Everblock extends Module
                     'type' => 'html',
                     'name' => 'anchor_everblock_prettyblocks',
                     'html_content' => '<span id="everblock_prettyblocks"></span>',
+                    'form_group_class' => 'hidden everblock-anchor',
                 ],
                 [
                     'type' => 'file',
@@ -1775,6 +1785,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_file_management',
                 'html_content' => '<span id="everblock_file_management"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ],
             [
                 'type' => 'file',
@@ -1808,6 +1819,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_advanced',
                 'html_content' => '<span id="everblock_advanced"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ],
             [
                 'type' => 'select',
@@ -1878,6 +1890,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_migration',
                 'html_content' => '<span id="everblock_migration"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ],
             [
                 'type' => 'text',
@@ -1943,6 +1956,7 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'anchor_everblock_holiday',
                 'html_content' => '<span id="everblock_holiday"></span>',
+                'form_group_class' => 'hidden everblock-anchor',
             ]);
             foreach ($holidayInputs as $input) {
                 $input['tab'] = 'holiday';
