@@ -23,8 +23,32 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
+{assign var=everblockNow value=$smarty.now}
+{assign var=visibleStatesCount value=0}
 {if isset($block.states) && $block.states}
-  {assign var='use_slider' value=(isset($block.settings.slider) && $block.settings.slider && $block.states|@count > 1)}
+  {foreach from=$block.states item=state}
+    {assign var=isStateVisible value=true}
+    {assign var=startDateStr value=$state.start_date|default:''}
+    {if $startDateStr ne ''}
+      {assign var=startTimestamp value=$startDateStr|@strtotime}
+      {if $startTimestamp && $everblockNow < $startTimestamp}
+        {assign var=isStateVisible value=false}
+      {/if}
+    {/if}
+    {if $isStateVisible}
+      {assign var=endDateStr value=$state.end_date|default:''}
+      {if $endDateStr ne ''}
+        {assign var=endTimestamp value=$endDateStr|@strtotime}
+        {if $endTimestamp && $everblockNow > $endTimestamp}
+          {assign var=isStateVisible value=false}
+        {/if}
+      {/if}
+    {/if}
+    {if $isStateVisible}
+      {assign var=visibleStatesCount value=$visibleStatesCount+1}
+    {/if}
+  {/foreach}
+  {assign var='use_slider' value=(isset($block.settings.slider) && $block.settings.slider && $visibleStatesCount > 1)}
   {if $use_slider}
     <div class="mt-4 ever-cover-carousel"
          data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}"
@@ -32,106 +56,144 @@
          data-infinite="{if isset($block.settings.slider_infinite) && $block.settings.slider_infinite}1{else}0{/if}"
          data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}">
       {foreach from=$block.states item=state key=key}
-        {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
-        <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
-          {$prettyblock_state_spacing_style}
-          {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
-        ">
-          {if isset($state.url) && $state.url}
-            <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative">
+        {assign var=isStateVisible value=true}
+        {assign var=startDateStr value=$state.start_date|default:''}
+        {if $startDateStr ne ''}
+          {assign var=startTimestamp value=$startDateStr|@strtotime}
+          {if $startTimestamp && $everblockNow < $startTimestamp}
+            {assign var=isStateVisible value=false}
           {/if}
-            <picture>
-              {if isset($state.banner_mobile.url) && $state.banner_mobile.url}
-                <source media="(max-width: 767px)" srcset="{$state.banner_mobile.url|replace:'.webp':'.jpg'}">
-              {/if}
-              <source srcset="{$state.banner.url}" type="image/webp">
-              <source srcset="{$state.banner.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-              <img src="{$state.banner.url|replace:'.webp':'.jpg'}"
-                   {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
-                   {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
-                   {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
-                   class="img img-fluid lazyload" loading="lazy">
-            </picture>
+        {/if}
+        {if $isStateVisible}
+          {assign var=endDateStr value=$state.end_date|default:''}
+          {if $endDateStr ne ''}
+            {assign var=endTimestamp value=$endDateStr|@strtotime}
+            {if $endTimestamp && $everblockNow > $endTimestamp}
+              {assign var=isStateVisible value=false}
+            {/if}
+          {/if}
+        {/if}
+        {if $isStateVisible}
+          {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
+          <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
+            {$prettyblock_state_spacing_style}
+            {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
+          ">
+            {if isset($state.url) && $state.url}
+              <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative">
+            {/if}
+              <picture>
+                {if isset($state.banner_mobile.url) && $state.banner_mobile.url}
+                  <source media="(max-width: 767px)" srcset="{$state.banner_mobile.url|replace:'.webp':'.jpg'}">
+                {/if}
+                <source srcset="{$state.banner.url}" type="image/webp">
+                <source srcset="{$state.banner.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                <img src="{$state.banner.url|replace:'.webp':'.jpg'}"
+                     {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
+                     {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
+                     {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
+                     class="img img-fluid lazyload" loading="lazy">
+              </picture>
 
-            <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
-              {if $state.text_highlight_1}
-                <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
-              {/if}
-              {if $state.text_highlight_2}
-                <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
-              {/if}
-            </div>
-          {if isset($state.url) && $state.url}
-            </a>
-          {/if}
-        </div>
-        {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
-            (isset($state.margin_right_mobile) && $state.margin_right_mobile) ||
-            (isset($state.margin_top_mobile) && $state.margin_top_mobile) ||
-            (isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile)}
-          <style>
-            @media (max-width: 767px) {
-              #block-{$block.id_prettyblocks}-{$key} {
-                {if isset($state.margin_left_mobile) && $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if isset($state.margin_right_mobile) && $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if isset($state.margin_top_mobile) && $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall':'UTF-8'};{/if}
+              <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
+                {if $state.text_highlight_1}
+                  <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
+                {/if}
+                {if $state.text_highlight_2}
+                  <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
+                {/if}
+              </div>
+            {if isset($state.url) && $state.url}
+              </a>
+            {/if}
+          </div>
+          {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
+              (isset($state.margin_right_mobile) && $state.margin_right_mobile) ||
+              (isset($state.margin_top_mobile) && $state.margin_top_mobile) ||
+              (isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile)}
+            <style>
+              @media (max-width: 767px) {
+                #block-{$block.id_prettyblocks}-{$key} {
+                  {if isset($state.margin_left_mobile) && $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall':'UTF-8'};{/if}
+                  {if isset($state.margin_right_mobile) && $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall':'UTF-8'};{/if}
+                  {if isset($state.margin_top_mobile) && $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall':'UTF-8'};{/if}
+                  {if isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall':'UTF-8'};{/if}
+                }
               }
-            }
-          </style>
+            </style>
+          {/if}
         {/if}
       {/foreach}
     </div>
   {else}
     <div class="row mt-4 g-3 justify-content-center">
       {foreach from=$block.states item=state key=key}
-        {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
-        <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden col-12{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
-          {$prettyblock_state_spacing_style}
-          {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
-        ">
-          {if isset($state.url) && $state.url}
-            <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative">
+        {assign var=isStateVisible value=true}
+        {assign var=startDateStr value=$state.start_date|default:''}
+        {if $startDateStr ne ''}
+          {assign var=startTimestamp value=$startDateStr|@strtotime}
+          {if $startTimestamp && $everblockNow < $startTimestamp}
+            {assign var=isStateVisible value=false}
           {/if}
-            <picture>
-              {if isset($state.banner_mobile.url) && $state.banner_mobile.url}
-                <source media="(max-width: 767px)" srcset="{$state.banner_mobile.url|replace:'.webp':'.jpg'}">
-              {/if}
-              <source srcset="{$state.banner.url}" type="image/webp">
-              <source srcset="{$state.banner.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-              <img src="{$state.banner.url|replace:'.webp':'.jpg'}"
-                   {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
-                   {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
-                   {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
-                   class="img img-fluid lazyload" loading="lazy">
-            </picture>
+        {/if}
+        {if $isStateVisible}
+          {assign var=endDateStr value=$state.end_date|default:''}
+          {if $endDateStr ne ''}
+            {assign var=endTimestamp value=$endDateStr|@strtotime}
+            {if $endTimestamp && $everblockNow > $endTimestamp}
+              {assign var=isStateVisible value=false}
+            {/if}
+          {/if}
+        {/if}
+        {if $isStateVisible}
+          {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
+          <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden col-12{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
+            {$prettyblock_state_spacing_style}
+            {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
+          ">
+            {if isset($state.url) && $state.url}
+              <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative">
+            {/if}
+              <picture>
+                {if isset($state.banner_mobile.url) && $state.banner_mobile.url}
+                  <source media="(max-width: 767px)" srcset="{$state.banner_mobile.url|replace:'.webp':'.jpg'}">
+                {/if}
+                <source srcset="{$state.banner.url}" type="image/webp">
+                <source srcset="{$state.banner.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                <img src="{$state.banner.url|replace:'.webp':'.jpg'}"
+                     {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
+                     {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
+                     {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
+                     class="img img-fluid lazyload" loading="lazy">
+              </picture>
 
-            <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
-              {if $state.text_highlight_1}
-                <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
-              {/if}
-              {if $state.text_highlight_2}
-                <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
-              {/if}
-            </div>
-          {if isset($state.url) && $state.url}
-            </a>
-          {/if}
-        </div>
-        {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
-            (isset($state.margin_right_mobile) && $state.margin_right_mobile) ||
-            (isset($state.margin_top_mobile) && $state.margin_top_mobile) ||
-            (isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile)}
-          <style>
-            @media (max-width: 767px) {
-              #block-{$block.id_prettyblocks}-{$key} {
-                {if isset($state.margin_left_mobile) && $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if isset($state.margin_right_mobile) && $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if isset($state.margin_top_mobile) && $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall':'UTF-8'};{/if}
-                {if isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall':'UTF-8'};{/if}
+              <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
+                {if $state.text_highlight_1}
+                  <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
+                {/if}
+                {if $state.text_highlight_2}
+                  <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
+                {/if}
+              </div>
+            {if isset($state.url) && $state.url}
+              </a>
+            {/if}
+          </div>
+          {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
+              (isset($state.margin_right_mobile) && $state.margin_right_mobile) ||
+              (isset($state.margin_top_mobile) && $state.margin_top_mobile) ||
+              (isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile)}
+            <style>
+              @media (max-width: 767px) {
+                #block-{$block.id_prettyblocks}-{$key} {
+                  {if isset($state.margin_left_mobile) && $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall':'UTF-8'};{/if}
+                  {if isset($state.margin_right_mobile) && $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall':'UTF-8'};{/if}
+                  {if isset($state.margin_top_mobile) && $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall':'UTF-8'};{/if}
+                  {if isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall':'UTF-8'};{/if}
+                }
               }
-            }
-          </style>
+            </style>
+          {/if}
         {/if}
       {/foreach}
     </div>

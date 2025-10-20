@@ -1271,6 +1271,16 @@ class EverblockPrettyBlocks
                                 'url' => '',
                             ],
                         ],
+                        'start_date' => [
+                            'type' => 'text',
+                            'label' => $module->l('Start date (YYYY-MM-DD HH:MM:SS)'),
+                            'default' => '',
+                        ],
+                        'end_date' => [
+                            'type' => 'text',
+                            'label' => $module->l('End date (YYYY-MM-DD HH:MM:SS)'),
+                            'default' => '',
+                        ],
                         'text_highlight_1' => [
                             'type' => 'editor',
                             'label' => $module->l('Highlight text 1'),
