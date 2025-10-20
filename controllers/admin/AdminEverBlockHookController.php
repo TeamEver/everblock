@@ -29,6 +29,25 @@ class AdminEverBlockHookController extends ModuleAdminController
 {
     private $html;
 
+    protected function displayConfirmation($message)
+    {
+        if (is_array($message)) {
+            $message = implode('<br>', array_map(function ($item) {
+                return Tools::safeOutput((string) $item);
+            }, $message));
+        } else {
+            $message = Tools::safeOutput((string) $message);
+        }
+
+        if ('' === trim($message)) {
+            return '';
+        }
+
+        return '<div class="bootstrap"><div class="alert alert-success" role="alert">'
+            . $message
+            . '</div></div>';
+    }
+
     public function __construct()
     {
         $this->bootstrap = true;
