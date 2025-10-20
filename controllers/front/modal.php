@@ -22,6 +22,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Service\EverblockTools;
+
 class EverblockmodalModuleFrontController extends ModuleFrontController
 {
     public function init()

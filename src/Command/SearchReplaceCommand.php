@@ -31,6 +31,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use PrestaShop\PrestaShop\Adapter\LegacyContext as ContextAdapter;
 use Module;
 use Configuration;
+use Everblock\Tools\Service\EverblockTools;
 
 class SearchReplaceCommand extends Command
 {
@@ -58,7 +59,7 @@ class SearchReplaceCommand extends Command
             $idShop = (int) Configuration::get('PS_SHOP_DEFAULT');
         }
 
-        $result = \EverblockTools::migrateUrls($search, $replace, (int) $idShop);
+        $result = EverblockTools::migrateUrls($search, $replace, (int) $idShop);
 
         foreach ($result['postErrors'] as $error) {
             $output->writeln('<error>' . $error . '</error>');

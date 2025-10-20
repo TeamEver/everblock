@@ -30,7 +30,7 @@ use Db;
 use DbQuery;
 use Everblock\Tools\Service\ImportFile;
 use Everblock\Tools\Service\EverblockCache;
-use EverblockTools;
+use Everblock\Tools\Service\EverblockTools;
 use Language;
 use Module;
 use PrestaShop\PrestaShop\Adapter\LegacyContext as ContextAdapter;

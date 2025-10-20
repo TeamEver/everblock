@@ -32,7 +32,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Module;
 use Validate;
 use Db;
-use EverblockTools;
+use Everblock\Tools\Service\EverblockTools;
 
 class PrettyBlocksCommand extends Command
 {

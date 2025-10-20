@@ -79,7 +79,7 @@ return [
     'src/Service/ShortcodeDocumentationProvider.php',
     'models/EverblockShortcode.php',
     'models/EverblockTabsClass.php',
-    'models/EverblockTools.php',
+    'src/Service/EverblockTools.php',
     'models/index.php',
     'output/index.php',
     'sql/index.php',

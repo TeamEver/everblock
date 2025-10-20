@@ -20,8 +20,7 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
-
+use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 
 class AdminEverBlockController extends ModuleAdminController
