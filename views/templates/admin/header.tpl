@@ -108,9 +108,22 @@
                     </div>
                     <div class="everblock-shortcode-categories">
                         {foreach from=$everblock_shortcode_docs item=everblock_shortcode_category}
+                            {assign var=shortcodeCount value=($everblock_shortcode_category.entries|default:[])|@count}
                             <article class="everblock-shortcode-category-card">
                                 <header class="everblock-shortcode-category-card__header">
-                                    <h4 class="everblock-shortcode-category-card__title">{$everblock_shortcode_category.title|escape:'htmlall':'UTF-8'}</h4>
+                                    <div class="everblock-shortcode-category-card__heading">
+                                        <h4 class="everblock-shortcode-category-card__title">{$everblock_shortcode_category.title|escape:'htmlall':'UTF-8'}</h4>
+                                        {if $shortcodeCount}
+                                            <span class="everblock-shortcode-category-card__count" aria-hidden="true">{$shortcodeCount}</span>
+                                            <span class="sr-only">
+                                                {if $shortcodeCount == 1}
+                                                    {l s='1 shortcode in this category' mod='everblock'}
+                                                {else}
+                                                    {l s='%d shortcodes in this category' sprintf=[$shortcodeCount] mod='everblock'}
+                                                {/if}
+                                            </span>
+                                        {/if}
+                                    </div>
                                 </header>
                                 {if isset($everblock_shortcode_category.entries) && $everblock_shortcode_category.entries}
                                     <div class="everblock-shortcode-category-card__entries">
