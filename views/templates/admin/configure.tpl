@@ -39,7 +39,7 @@
                 </span>
                 <span class="everblock-chip">
                     <i class="icon-check"></i>
-                    {l s='Content managed today' mod='everblock'}: {$everblock_stats.blocks_total|intval}
+                    {l s='Content managed (total)' mod='everblock'}: {$everblock_stats.blocks_total|intval}
                 </span>
             </div>
         </div>
