@@ -1026,6 +1026,9 @@ class Everblock extends Module
             (int) $this->context->language->id
         );
 
+        $stores = Store::getStores((int) $this->context->language->id);
+        $hasStores = !empty($stores);
+
         $tabs = [
             'settings' => $this->l('Réglages'),
             'stats' => $this->l('Statistiques'),
@@ -1045,7 +1048,9 @@ class Everblock extends Module
             $tabs['prettyblock'] = $this->l('Prettyblock');
         }
 
-        $tabs['holiday'] = $this->l('Holiday opening hours by store');
+        if ($hasStores) {
+            $tabs['holiday'] = $this->l('Holiday opening hours by store');
+        }
 
         $tabs['cron'] = $this->l('Tâches crons');
 
@@ -1069,9 +1074,13 @@ class Everblock extends Module
             'tools' => 'tools.tpl',
             'files' => 'files.tpl',
             'flags' => 'flags.tpl',
-            'holiday' => 'holiday.tpl',
-            'cron' => 'cron.tpl',
         ];
+
+        if ($hasStores) {
+            $docTemplates['holiday'] = 'holiday.tpl';
+        }
+
+        $docTemplates['cron'] = 'cron.tpl';
 
         if ($isPrettyBlocksEnabled) {
             $docTemplates['prettyblock'] = 'prettyblock.tpl';
@@ -1933,9 +1942,8 @@ class Everblock extends Module
             'tab' => 'settings',
         ];
 
-        $stores = Store::getStores((int) $this->context->language->id);
         $holidayInputs = [];
-        if (!empty($stores)) {
+        if ($hasStores) {
             $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
             foreach ($stores as $store) {
                 foreach ($holidays as $date) {
