@@ -17,16 +17,62 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-use Everblock\Tools\Service\EverblockCache;
+
+namespace Everblock\Tools\Service;
+
+use Address;
+use Cart;
+use CartRule;
+use Category;
+use CMS;
+use Combination;
+use Configuration;
+use Context;
+use Country;
+use Customer;
+use Db;
+use DbQuery;
+use DirectoryIterator;
+use Everblock;
+use EverblockClass;
+use EverblockFaq;
+use EverblockShortcode;
+use Gender;
+use Hook;
+use Image;
+use ImageManager;
+use ImageType;
+use Language;
+use Link;
+use Media;
+use Module;
+use NewsletterProSubscription;
+use ObjectModel;
+use PrestaShop\Module\PrestashopCheckout\Order\PaymentStepCheckoutOrderBuilder;
+use PrestaShop\PrestaShop\Adapter\Configuration as ConfigurationAdapter;
+use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
+use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
+use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
+use PrestaShop\PrestaShop\Adapter\Product\ProductPresenterFactory;
+use PrestaShop\PrestaShop\Adapter\StockManager as StockManagerAdapter;
+use PrestaShop\PrestaShop\Core\Product\ProductAssembler;
+use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
+use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use PrestaShopDatabaseException;
+use PrestaShopException;
+use PrestaShopLogger;
+use Product;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use StockAvailable;
+use Store;
+use Tools;
+use Validate;
+use WebP;
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
-use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
-use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
-use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
-use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 
 class EverblockTools extends ObjectModel
 {
@@ -5785,3 +5831,5 @@ class EverblockTools extends ObjectModel
     }
 
 }
+
+class_alias(__NAMESPACE__ . '\\EverblockTools', 'EverblockTools');

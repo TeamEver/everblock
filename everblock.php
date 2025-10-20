@@ -24,7 +24,6 @@ if (!defined('_PS_VERSION_')) {
 require_once('vendor/autoload.php');
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTools.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTabsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
@@ -34,6 +33,7 @@ use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ImportFile;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
@@ -42,6 +42,8 @@ use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContent;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use ScssPhp\ScssPhp\Compiler;
+
+class_exists(EverblockTools::class);
 
 class Everblock extends Module
 {

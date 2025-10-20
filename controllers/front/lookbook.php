@@ -21,6 +21,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Service\EverblockTools;
+
 class EverblockLookbookModuleFrontController extends ModuleFrontController
 {
     public function initContent()

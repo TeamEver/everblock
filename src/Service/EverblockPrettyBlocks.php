@@ -24,7 +24,7 @@ use Configuration;
 use EverBlockClass;
 use Everblock\Tools\Service\EverblockCache;
 use EverblockShortcode;
-use EverblockTools;
+use Everblock\Tools\Service\EverblockTools;
 use Hook;
 use Module;
 use PrettyBlocksModel;
