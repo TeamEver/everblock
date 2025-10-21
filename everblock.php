@@ -113,6 +113,7 @@ class Everblock extends Module
         Configuration::updateValue('EVER_SOLDOUT_COLOR', '#ff0000');
         Configuration::updateValue('EVER_SOLDOUT_TEXTCOLOR', '#ffffff');
         Configuration::updateValue('EVERINSTA_SHOW_CAPTION', 0);
+        Configuration::updateValue('EVERBLOCK_USE_SLICK', 1);
         Configuration::updateValue('EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE', 2097152);
         Configuration::updateValue(
             'EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS',
@@ -4125,7 +4126,11 @@ class Everblock extends Module
                 ['media' => 'all', 'priority' => 200]
             );
         }
-        if ((bool) Configuration::get('EVERBLOCK_USE_SLICK') === true) {
+        $useSlick = Configuration::get('EVERBLOCK_USE_SLICK');
+        if ($useSlick === false) {
+            $useSlick = true;
+        }
+        if ((bool) $useSlick === true) {
             $this->context->controller->registerStylesheet(
                 'module-slick-min-css',
                 'modules/' . $this->name . '/views/css/slick-min.css',
