@@ -45,7 +45,7 @@
   {assign var='columns_item_classes' value=''}
   {if $use_columns_layout}
     {assign var='columns_row_classes' value="row row-cols-1 row-cols-md-"|cat:$cover_columns_count|cat:" g-0 prettyblock-cover-row prettyblock-cover-row--cols-"|cat:$cover_columns_count|cat:" prettyblock-cover-row--spaced"}
-    {assign var='columns_item_classes' value='col prettyblock-cover-item'}
+    {assign var='columns_item_classes' value='col'}
   {/if}
   {if $use_slider}
     <div class="ever-cover-carousel">
