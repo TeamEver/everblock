@@ -187,6 +187,36 @@ $(document).ready(function(){
                 }]
             });
         });
+        $('.prettyblocks-image-slider:not(.slick-initialised)').each(function(){
+            var $slider = $(this);
+            if ($slider.children().length <= 1) {
+                return;
+            }
+            var autoplay = parseInt($slider.data('autoplay'), 10) === 1;
+            var autoplaySpeed = parseInt($slider.data('autoplaySpeed'), 10);
+            if (isNaN(autoplaySpeed) || autoplaySpeed < 0) {
+                autoplaySpeed = 5000;
+            }
+            var transitionSpeed = parseInt($slider.data('transitionSpeed'), 10);
+            if (isNaN(transitionSpeed) || transitionSpeed < 0) {
+                transitionSpeed = 500;
+            }
+            var pauseOnHover = parseInt($slider.data('pauseOnHover'), 10) !== 0;
+            var showArrows = parseInt($slider.data('showArrows'), 10) === 1;
+            var showDots = parseInt($slider.data('showDots'), 10) === 1;
+            $slider.slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                autoplay: autoplay,
+                autoplaySpeed: autoplaySpeed,
+                speed: transitionSpeed,
+                arrows: showArrows,
+                dots: showDots,
+                adaptiveHeight: true,
+                pauseOnHover: pauseOnHover,
+            });
+            $slider.addClass('slick-initialised');
+        });
     }
     $('.ever_instagram img').on('click', function() {
         // Mettre à jour le src de l'image dans la modal

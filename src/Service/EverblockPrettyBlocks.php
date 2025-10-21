@@ -1921,6 +1921,40 @@ class EverblockPrettyBlocks
                 'templates' => [
                     'default' => $imgSliderTemplate,
                 ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'slider_autoplay' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable auto scroll'),
+                            'default' => 1,
+                        ],
+                        'slider_autoplay_delay' => [
+                            'type' => 'text',
+                            'label' => $module->l('Auto scroll delay (ms)'),
+                            'default' => 5000,
+                        ],
+                        'slider_transition_speed' => [
+                            'type' => 'text',
+                            'label' => $module->l('Transition speed (ms)'),
+                            'default' => 500,
+                        ],
+                        'slider_pause_on_hover' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Pause on hover'),
+                            'default' => 1,
+                        ],
+                        'slider_show_arrows' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Show navigation arrows'),
+                            'default' => 1,
+                        ],
+                        'slider_show_dots' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Show pagination dots'),
+                            'default' => 1,
+                        ],
+                    ], $module),
+                ],
                 'repeater' => [
                     'name' => 'Image',
                     'nameFrom' => 'name',
