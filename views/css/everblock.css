@@ -722,6 +722,11 @@
     align-items: flex-end;
     text-align: right;
 }
+.prettyblock-cover-overlay.position-desktop-center-bottom {
+    justify-content: flex-end;
+    align-items: center;
+    text-align: center;
+}
 
 @media (max-width: 767px) {
     .prettyblock-cover-item--parallax {
@@ -792,6 +797,11 @@
         justify-content: flex-end;
         align-items: flex-end;
         text-align: right;
+    }
+    .prettyblock-cover-overlay.position-mobile-center-bottom {
+        justify-content: flex-end;
+        align-items: center;
+        text-align: center;
     }
 }
 
