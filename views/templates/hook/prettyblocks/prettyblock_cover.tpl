@@ -32,7 +32,19 @@
     <div class="row">
   {/if}
 {if isset($block.states) && $block.states}
+  {assign var='cover_columns_count' value=$block.settings.default.columns|default:'1'}
+  {assign var='cover_columns_count' value=$cover_columns_count|intval}
+  {if $cover_columns_count < 1}
+    {assign var='cover_columns_count' value=1}
+  {/if}
   {assign var='use_slider' value=(isset($block.settings.slider) && $block.settings.slider && $block.states|@count > 1)}
+  {assign var='use_columns_layout' value=(!$use_slider && $cover_columns_count > 1)}
+  {assign var='columns_row_classes' value=''}
+  {assign var='columns_item_classes' value=''}
+  {if $use_columns_layout}
+    {assign var='columns_row_classes' value="row row-cols-1 row-cols-md-"|cat:$cover_columns_count|cat:" g-0 prettyblock-cover-row"}
+    {assign var='columns_item_classes' value='col'}
+  {/if}
   {if $use_slider}
     <div class="ever-cover-carousel">
       {foreach from=$block.states item=state key=key}
@@ -116,6 +128,9 @@
         {/if}
       {/foreach}
   {else}
+    {if $use_columns_layout}
+      <div class="{$columns_row_classes}">
+    {/if}
     {foreach from=$block.states item=state key=key}
       {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_cover_state_spacing_style'}
       {capture name='prettyblock_cover_state_style'}
@@ -133,7 +148,7 @@
       {/capture}
       {assign var='prettyblock_cover_state_style' value=$smarty.capture.prettyblock_cover_state_style|trim}
       <div id="block-{$block.id_prettyblocks}-{$key}"
-           class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
+           class="prettyblock-cover-item{if $columns_item_classes} {$columns_item_classes}{/if}{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
         {if isset($state.background_image.url) && $state.background_image.url}
           {if $state.parallax}
             {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
@@ -196,6 +211,9 @@
         </style>
       {/if}
     {/foreach}
+    {if $use_columns_layout}
+      </div>
+    {/if}
   {/if}
 {/if}
 </div>

@@ -2506,6 +2506,12 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
                         ],
+                        'columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns per row'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '1',
+                        ],
                     ], $module),
                 ],
                 'repeater' => [
