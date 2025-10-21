@@ -147,8 +147,12 @@
         {/if}
       {/capture}
       {assign var='prettyblock_cover_state_style' value=$smarty.capture.prettyblock_cover_state_style|trim}
+      {assign var='prettyblock_cover_item_base_class' value='prettyblock-cover-item'}
+      {if $use_columns_layout}
+        {assign var='prettyblock_cover_item_base_class' value=$columns_item_classes}
+      {/if}
       <div id="block-{$block.id_prettyblocks}-{$key}"
-           class="prettyblock-cover-item{if $columns_item_classes} {$columns_item_classes}{/if}{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
+           class="{$prettyblock_cover_item_base_class}{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
         {if isset($state.background_image.url) && $state.background_image.url}
           {if $state.parallax}
             {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
