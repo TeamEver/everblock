@@ -643,38 +643,38 @@
 @media (min-width: 768px) {
     .prettyblock-cover-row--cols-1 > .prettyblock-cover-item,
     .prettyblock-cover-row--cols-1 > .col {
-        flex: 0 0 100%;
-        max-width: 100%;
+        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 0)) / 1);
+        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 0)) / 1);
     }
 
     .prettyblock-cover-row--cols-2 > .prettyblock-cover-item,
     .prettyblock-cover-row--cols-2 > .col {
-        flex: 0 0 50%;
-        max-width: 50%;
+        flex: 0 0 calc((100% - var(--prettyblock-cover-columns-gap, 2rem)) / 2);
+        max-width: calc((100% - var(--prettyblock-cover-columns-gap, 2rem)) / 2);
     }
 
     .prettyblock-cover-row--cols-3 > .prettyblock-cover-item,
     .prettyblock-cover-row--cols-3 > .col {
-        flex: 0 0 33.3333%;
-        max-width: 33.3333%;
+        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 2)) / 3);
+        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 2)) / 3);
     }
 
     .prettyblock-cover-row--cols-4 > .prettyblock-cover-item,
     .prettyblock-cover-row--cols-4 > .col {
-        flex: 0 0 25%;
-        max-width: 25%;
+        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 3)) / 4);
+        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 3)) / 4);
     }
 
     .prettyblock-cover-row--cols-5 > .prettyblock-cover-item,
     .prettyblock-cover-row--cols-5 > .col {
-        flex: 0 0 20%;
-        max-width: 20%;
+        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 4)) / 5);
+        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 4)) / 5);
     }
 
     .prettyblock-cover-row--cols-6 > .prettyblock-cover-item,
     .prettyblock-cover-row--cols-6 > .col {
-        flex: 0 0 16.6667%;
-        max-width: 16.6667%;
+        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 5)) / 6);
+        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 5)) / 6);
     }
 }
 
