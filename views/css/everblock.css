@@ -692,7 +692,8 @@
     min-height: 300px;
 }
 
-.prettyblock-cover-item img.prettyblock-cover-image {
+.prettyblock-cover-item img.prettyblock-cover-image,
+.prettyblock-cover-row > .col img.prettyblock-cover-image {
     width: 100%;
     height: auto;
     display: block;
