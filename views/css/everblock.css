@@ -630,6 +630,10 @@
     flex-wrap: wrap;
 }
 
+.prettyblock-cover-row--spaced {
+    gap: var(--prettyblock-cover-columns-gap, 2rem);
+}
+
 .prettyblock-cover-row > .prettyblock-cover-item,
 .prettyblock-cover-row > .col {
     flex: 0 0 100%;
