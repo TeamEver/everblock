@@ -53,8 +53,12 @@
           {/if}
 
         {if $state.name}
+          {assign var='title_desktop_style' value=''}
+          {if isset($state.title_font_size_desktop) && $state.title_font_size_desktop}
+            {assign var='title_desktop_style' value="font-size:{$state.title_font_size_desktop|escape:'htmlall'};"}
+          {/if}
           <div class="prettyblock-cover-overlay category_state_name position-desktop-{$state.title_position_desktop|default:'center'|lower|replace:' ':'-'|escape:'htmlall'} position-mobile-{$state.title_position_mobile|default:'center'|lower|replace:' ':'-'|escape:'htmlall'}">
-            <h2 class="m-0 text-white">{$state.name nofilter}</h2>
+            <h2 class="m-0 text-white"{if $title_desktop_style} style="{$title_desktop_style}"{/if}>{$state.name nofilter}</h2>
           </div>
         {/if}
 
@@ -65,18 +69,28 @@
         {/if}
       </div>
     </div>
-    {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
-        (isset($state.margin_right_mobile) && $state.margin_right_mobile) ||
-        (isset($state.margin_top_mobile) && $state.margin_top_mobile) ||
-        (isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile)}
+    {capture assign='mobile_position_styles'}
+      {if isset($state.margin_left_mobile) && $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall'};{/if}
+      {if isset($state.margin_right_mobile) && $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall'};{/if}
+      {if isset($state.margin_top_mobile) && $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall'};{/if}
+      {if isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall'};{/if}
+    {/capture}
+    {capture assign='mobile_title_styles'}
+      {if isset($state.title_font_size_mobile) && $state.title_font_size_mobile}font-size:{$state.title_font_size_mobile|escape:'htmlall'};{/if}
+    {/capture}
+    {if $mobile_position_styles|trim || $mobile_title_styles|trim}
       <style>
         @media (max-width: 767px) {
+          {if $mobile_position_styles|trim}
           #block-{$block.id_prettyblocks}-{$key} .position-relative {
-            {if isset($state.margin_left_mobile) && $state.margin_left_mobile}margin-left:{$state.margin_left_mobile|escape:'htmlall'};{/if}
-            {if isset($state.margin_right_mobile) && $state.margin_right_mobile}margin-right:{$state.margin_right_mobile|escape:'htmlall'};{/if}
-            {if isset($state.margin_top_mobile) && $state.margin_top_mobile}margin-top:{$state.margin_top_mobile|escape:'htmlall'};{/if}
-            {if isset($state.margin_bottom_mobile) && $state.margin_bottom_mobile}margin-bottom:{$state.margin_bottom_mobile|escape:'htmlall'};{/if}
+            {$mobile_position_styles|trim}
           }
+          {/if}
+          {if $mobile_title_styles|trim}
+          #block-{$block.id_prettyblocks}-{$key} .category_state_name h2 {
+            {$mobile_title_styles|trim}
+          }
+          {/if}
         }
       </style>
     {/if}

@@ -985,6 +985,16 @@ class EverblockPrettyBlocks
                             ],
                             'default' => 'center',
                         ],
+                        'title_font_size_desktop' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title font size (desktop)'),
+                            'default' => '',
+                        ],
+                        'title_font_size_mobile' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title font size (mobile)'),
+                            'default' => '',
+                        ],
                         'css_class' => [
                             'type' => 'text',
                             'label' => $module->l('Custom CSS class'),
