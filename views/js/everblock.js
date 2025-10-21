@@ -187,35 +187,54 @@ $(document).ready(function(){
                 }]
             });
         });
-        $('.prettyblocks-image-slider:not(.slick-initialised)').each(function(){
-            var $slider = $(this);
-            if ($slider.children().length <= 1) {
+        $('.prettyblocks-image-slider').each(function(){
+            var $carousel = $(this);
+            if ($carousel.hasClass('prettyblocks-carousel-initialised')) {
                 return;
             }
-            var autoplay = parseInt($slider.data('autoplay'), 10) === 1;
-            var autoplaySpeed = parseInt($slider.data('autoplaySpeed'), 10);
-            if (isNaN(autoplaySpeed) || autoplaySpeed < 0) {
+            var $slides = $carousel.find('.carousel-item');
+            if ($slides.length <= 1) {
+                $carousel.addClass('prettyblocks-carousel-initialised');
+                return;
+            }
+            var autoplay = parseInt($carousel.data('autoplay'), 10) === 1;
+            var autoplaySpeed = parseInt($carousel.data('autoplaySpeed'), 10);
+            if (isNaN(autoplaySpeed) || autoplaySpeed <= 0) {
                 autoplaySpeed = 5000;
             }
-            var transitionSpeed = parseInt($slider.data('transitionSpeed'), 10);
-            if (isNaN(transitionSpeed) || transitionSpeed < 0) {
-                transitionSpeed = 500;
+            var transitionSpeed = parseInt($carousel.data('transitionSpeed'), 10);
+            if (!isNaN(transitionSpeed) && transitionSpeed > 0) {
+                $carousel.css('--prettyblocks-transition-speed', transitionSpeed + 'ms');
             }
-            var pauseOnHover = parseInt($slider.data('pauseOnHover'), 10) !== 0;
-            var showArrows = parseInt($slider.data('showArrows'), 10) === 1;
-            var showDots = parseInt($slider.data('showDots'), 10) === 1;
-            $slider.slick({
-                slidesToShow: 1,
-                slidesToScroll: 1,
-                autoplay: autoplay,
-                autoplaySpeed: autoplaySpeed,
-                speed: transitionSpeed,
-                arrows: showArrows,
-                dots: showDots,
-                adaptiveHeight: true,
-                pauseOnHover: pauseOnHover,
-            });
-            $slider.addClass('slick-initialised');
+            var pauseOnHover = parseInt($carousel.data('pauseOnHover'), 10) !== 0 ? 'hover' : false;
+            var config = {
+                interval: autoplay ? autoplaySpeed : false,
+                pause: pauseOnHover,
+                ride: autoplay ? 'carousel' : false,
+                wrap: true,
+                keyboard: true,
+                touch: true
+            };
+            try {
+                if (typeof bootstrap !== 'undefined' && typeof bootstrap.Carousel !== 'undefined') {
+                    var existingInstance = bootstrap.Carousel.getInstance($carousel[0]);
+                    if (existingInstance) {
+                        existingInstance.dispose();
+                    }
+                    var newInstance = new bootstrap.Carousel($carousel[0], config);
+                    if (!autoplay && newInstance && typeof newInstance.pause === 'function') {
+                        newInstance.pause();
+                    }
+                } else if (typeof $carousel.carousel === 'function') {
+                    $carousel.carousel(config);
+                    if (!autoplay) {
+                        $carousel.carousel('pause');
+                    }
+                }
+            } catch (e) {
+                console.error('Prettyblocks carousel initialization failed', e);
+            }
+            $carousel.addClass('prettyblocks-carousel-initialised');
         });
     }
     $('.ever_instagram img').on('click', function() {

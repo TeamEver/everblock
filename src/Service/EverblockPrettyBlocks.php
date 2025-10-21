@@ -1966,6 +1966,13 @@ class EverblockPrettyBlocks
                                 'url' => '',
                             ],
                         ],
+                        'image_mobile' => [
+                            'type' => 'fileupload',
+                            'label' => 'Mobile layout image',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
                         'name' => [
                             'type' => 'text',
                             'label' => 'Image title',
