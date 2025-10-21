@@ -32,7 +32,7 @@
     <div class="row">
   {/if}
 {if isset($block.states) && $block.states}
-  {assign var='cover_columns_count' value=$block.settings.default.columns|default:'1'}
+  {assign var='cover_columns_count' value=$block.settings.columns|default:$block.settings.default.columns|default:'1'}
   {assign var='cover_columns_count' value=$cover_columns_count|intval}
   {if $cover_columns_count < 1}
     {assign var='cover_columns_count' value=1}
