@@ -1971,6 +1971,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Show pagination dots'),
                             'default' => 1,
                         ],
+                        'slider_disable_lazyload' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Disable lazy loading'),
+                            'default' => 0,
+                        ],
                     ], $module),
                 ],
                 'repeater' => [

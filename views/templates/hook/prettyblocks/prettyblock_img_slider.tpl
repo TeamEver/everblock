@@ -68,6 +68,7 @@
     {assign var=pauseOnHover value=(isset($block.settings.slider_pause_on_hover) && $block.settings.slider_pause_on_hover)}
     {assign var=showArrows value=(isset($block.settings.slider_show_arrows) && $block.settings.slider_show_arrows && $visibleStatesCount > 1)}
     {assign var=showDots value=(isset($block.settings.slider_show_dots) && $block.settings.slider_show_dots && $visibleStatesCount > 1)}
+    {assign var=lazyloadDisabled value=(isset($block.settings.slider_disable_lazyload) && $block.settings.slider_disable_lazyload)}
     {assign var='carouselId' value="prettyblocks-carousel-{$block.id_prettyblocks}"}
 
     <section class="prettyblocks-slider container-fluid px-0 mt-3 {if $block.settings.default.container}container{/if}"
@@ -194,7 +195,7 @@
                           <source media="(min-width: 768px)" srcset="{$desktopImageUrl}" type="image/webp">
                           <source media="(min-width: 768px)" srcset="{$desktopImageJpgUrl}" type="image/jpeg">
                         {/if}
-                        <img src="{$fallbackImageJpgUrl}" title="{$state.name}" alt="{$state.name}" class="img img-fluid w-100 prettyblocks-slider-image lazyload" loading="lazy"{if $fallbackWidth ne ''} width="{$fallbackWidth}"{/if}{if $fallbackHeight ne ''} height="{$fallbackHeight}"{/if}>
+                        <img src="{$fallbackImageJpgUrl}" title="{$state.name}" alt="{$state.name}" class="img img-fluid w-100 prettyblocks-slider-image{if not $lazyloadDisabled} lazyload{/if}"{if not $lazyloadDisabled} loading="lazy"{/if}{if $fallbackWidth ne ''} width="{$fallbackWidth}"{/if}{if $fallbackHeight ne ''} height="{$fallbackHeight}"{/if}>
                       </picture>
                     {if $state.link}
                       {if $state.obfuscate}
