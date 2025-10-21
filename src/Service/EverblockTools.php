@@ -50,13 +50,12 @@ use NewsletterProSubscription;
 use ObjectModel;
 use PrestaShop\Module\PrestashopCheckout\Order\PaymentStepCheckoutOrderBuilder;
 use PrestaShop\PrestaShop\Adapter\Configuration as ConfigurationAdapter;
+use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
-use PrestaShop\PrestaShop\Adapter\Product\ProductPresenterFactory;
-use PrestaShop\PrestaShop\Adapter\StockManager as StockManagerAdapter;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
-use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use PrestaShop\PrestaShop\Adapter\StockManager as StockManagerAdapter;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use PrestaShopLogger;
@@ -588,8 +587,8 @@ class EverblockTools extends ObjectModel
                         }, $rows);
                         $products = static::everPresentProducts($ids, $context);
                     } else {
-                        $assembler = static::createProductAssembler($context);
-                        $presenterFactory = new ProductPresenterFactory($context);
+                        $assembler = new \ProductAssembler($context);
+                        $presenterFactory = new \ProductPresenterFactory($context);
                         $presentationSettings = $presenterFactory->getPresentationSettings();
                         $presenter = new ProductListingPresenter(
                             new ImageRetriever($context->link),
@@ -4666,8 +4665,8 @@ class EverblockTools extends ObjectModel
 
         if (!EverblockCache::isCacheStored($cacheId)) {
             if (!empty($result)) {
-                $assembler = static::createProductAssembler($context);
-                $presenterFactory = new ProductPresenterFactory($context);
+                $assembler = new \ProductAssembler($context);
+                $presenterFactory = new \ProductPresenterFactory($context);
                 $presentationSettings = $presenterFactory->getPresentationSettings();
 
                 // compatibilité PS 8 et PS 9
@@ -5791,23 +5790,6 @@ class EverblockTools extends ObjectModel
         $data = static::replaceUrlsRecursively($data, $oldUrl, $newUrl);
 
         return json_encode($data);
-    }
-
-    private static function createProductAssembler(Context $context)
-    {
-        if (class_exists(\PrestaShop\PrestaShop\Core\Product\ProductAssembler::class)) {
-            return new \PrestaShop\PrestaShop\Core\Product\ProductAssembler($context);
-        }
-
-        if (class_exists(\PrestaShop\PrestaShop\Adapter\Product\ProductAssembler::class)) {
-            return new \PrestaShop\PrestaShop\Adapter\Product\ProductAssembler($context);
-        }
-
-        if (class_exists(\PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductAssembler::class)) {
-            return new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductAssembler($context);
-        }
-
-        throw new \Exception('No suitable product assembler class found for this PrestaShop version.');
     }
 
     private static function replaceUrlsRecursively($data, $oldUrl, $newUrl)
