@@ -830,6 +830,100 @@
     right: 10px;
 }
 
+/* Prettyblocks image slider (Bootstrap) */
+.prettyblocks-image-slider-wrapper {
+    max-width: 100%;
+}
+
+.prettyblocks-image-slider.carousel {
+    --prettyblocks-transition-speed: 600ms;
+}
+
+.prettyblocks-image-slider.carousel .carousel-inner {
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.prettyblocks-slider-item-inner {
+    position: relative;
+}
+
+.prettyblocks-slider-picture,
+.prettyblocks-slider-image {
+    display: block;
+    width: 100%;
+}
+
+.prettyblocks-slider-image {
+    height: auto;
+}
+
+.prettyblocks-image-slider .carousel-indicators {
+    bottom: 1rem;
+    gap: 0.5rem;
+}
+
+.prettyblocks-image-slider .carousel-indicators li {
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.6);
+    border: 0;
+    border-radius: 50%;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.prettyblocks-image-slider .carousel-indicators li.active,
+.prettyblocks-image-slider .carousel-indicators li:hover {
+    background-color: #ffffff;
+    transform: scale(1.15);
+}
+
+.prettyblocks-image-slider .carousel-control-prev,
+.prettyblocks-image-slider .carousel-control-next {
+    width: 3rem;
+    height: 3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.45);
+    border-radius: 50%;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+
+.prettyblocks-image-slider .carousel-control-prev:hover,
+.prettyblocks-image-slider .carousel-control-next:hover {
+    background-color: rgba(0, 0, 0, 0.65);
+}
+
+.prettyblocks-image-slider .carousel-control-prev-icon,
+.prettyblocks-image-slider .carousel-control-next-icon {
+    filter: invert(1);
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.prettyblocks-image-slider.carousel .carousel-item {
+    transition: transform var(--prettyblocks-transition-speed, 600ms) ease-in-out,
+        opacity var(--prettyblocks-transition-speed, 600ms) ease-in-out;
+}
+
+@media (max-width: 767.98px) {
+    .prettyblocks-image-slider-wrapper {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .prettyblocks-image-slider .carousel-control-prev,
+    .prettyblocks-image-slider .carousel-control-next {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .prettyblocks-image-slider .carousel-indicators {
+        bottom: 0.5rem;
+    }
+}
+
 /* Store locator adjustments */
 #store_search {
     max-width: 400px;
