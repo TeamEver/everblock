@@ -157,6 +157,10 @@
                 {assign var='desktopImageJpgUrl' value=$desktopImageUrl|replace:'.webp':'.jpg'}
                 {assign var='mobileImageUrl' value=$state.image_mobile.url|default:''}
                 {assign var='mobileImageJpgUrl' value=$mobileImageUrl|replace:'.webp':'.jpg'}
+                {if $mobileImageUrl eq '' && $desktopImageUrl ne ''}
+                  {assign var='mobileImageUrl' value=$desktopImageUrl}
+                  {assign var='mobileImageJpgUrl' value=$desktopImageJpgUrl}
+                {/if}
                 {assign var='fallbackImageUrl' value=$desktopImageUrl}
                 {assign var='fallbackImageJpgUrl' value=$desktopImageJpgUrl}
                 {if $fallbackImageUrl eq ''}
