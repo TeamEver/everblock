@@ -28,8 +28,10 @@
 <div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if $prettyblock_cover_wrapper_style} style="{$prettyblock_cover_wrapper_style}"{/if}>
   {if $block.settings.default.force_full_width}
     <div class="row gx-0 no-gutters">
+      <div class="col-12 px-0">
   {elseif $block.settings.default.container}
     <div class="row">
+      <div class="col-12">
   {/if}
 {if isset($block.states) && $block.states}
   {assign var='cover_columns_count' value=$block.settings.columns|default:$block.settings.default.columns|default:'1'}
@@ -127,6 +129,7 @@
           </style>
         {/if}
       {/foreach}
+    </div>
   {else}
     {if $use_columns_layout}
       <div class="{$columns_row_classes}">
@@ -220,9 +223,8 @@
     {/if}
   {/if}
 {/if}
-</div>
-
   {if $block.settings.default.force_full_width || $block.settings.default.container}
+      </div>
     </div>
   {/if}
 </div>
