@@ -45,27 +45,3 @@ services:
         tags:
             - { name: 'console.command' }
 
-    everblock.grid.definition.factory.ever_block:
-        class: Everblock\PrestaShopBundle\Grid\Definition\Factory\EverBlockGridDefinitionFactory
-        public: true
-        arguments:
-            - '@translator'
-            - '@prestashop.core.hook.dispatcher'
-
-    everblock.grid.data.factory.ever_block:
-        class: Everblock\PrestaShopBundle\Grid\Data\Factory\EverBlockGridDataFactory
-        public: true
-        arguments:
-            - '@doctrine.dbal.default_connection'
-            - '@prestashop.adapter.legacy.context'
-            - '%database_prefix%'
-
-    everblock.grid.factory.ever_block:
-        class: PrestaShop\PrestaShop\Core\Grid\GridFactory
-        public: true
-        arguments:
-            - '@everblock.grid.definition.factory.ever_block'
-            - '@everblock.grid.data.factory.ever_block'
-            - '@prestashop.core.grid.filter.form_factory'
-            - '@prestashop.core.hook.dispatcher'
-

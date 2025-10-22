@@ -168,7 +168,6 @@ return [
     'views/templates/admin/block/docs/schedule.tpl',
     'views/templates/admin/block/docs/targeting.tpl',
     'views/templates/admin/configure.tpl',
-    'views/templates/admin/everblock/index.html.twig',
     'views/templates/admin/customerConnect.tpl',
     'views/templates/admin/footer.tpl',
     'views/templates/admin/header.tpl',

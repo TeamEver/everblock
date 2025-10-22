@@ -10,7 +10,6 @@ class ComposerStaticInitc44e5ac729cb9f81a689ee15bff0603d
         'E' => 
         array (
             'Everblock\\Tools\\' => 16,
-            'Everblock\\PrestaShopBundle\\' => 27,
         ),
     );
 
@@ -18,10 +17,6 @@ class ComposerStaticInitc44e5ac729cb9f81a689ee15bff0603d
         'Everblock\\Tools\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
-        ),
-        'Everblock\\PrestaShopBundle\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/src/PrestaShopBundle',
         ),
     );
 

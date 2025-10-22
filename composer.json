@@ -10,8 +10,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Everblock\\Tools\\": "src/",
-      "Everblock\\PrestaShopBundle\\": "src/PrestaShopBundle/"
+      "Everblock\\Tools\\": "src/"
     },
     "exclude-from-classmap": []
   },
