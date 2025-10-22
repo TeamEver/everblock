@@ -5,3 +5,83 @@ admin_everblock_index:
     _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::indexAction'
     _legacy_controller: 'AdminEverBlock'
     _legacy_link: 'AdminEverBlock'
+
+admin_everblock_duplicate:
+  path: /everblock/{everBlockId}/duplicate
+  methods: [POST]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::duplicateAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'
+  requirements:
+    everBlockId: '\\d+'
+
+admin_everblock_toggle_status:
+  path: /everblock/{everBlockId}/toggle-status
+  methods: [POST]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::toggleStatusAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'
+  requirements:
+    everBlockId: '\\d+'
+
+admin_everblock_export_sql:
+  path: /everblock/{everBlockId}/export
+  methods: [GET]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::exportSqlAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'
+  requirements:
+    everBlockId: '\\d+'
+
+admin_everblock_delete:
+  path: /everblock/{everBlockId}/delete
+  methods: [POST]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::deleteAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'
+  requirements:
+    everBlockId: '\\d+'
+
+admin_everblock_bulk_delete:
+  path: /everblock/bulk/delete
+  methods: [POST]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::bulkDeleteAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'
+
+admin_everblock_bulk_enable:
+  path: /everblock/bulk/enable
+  methods: [POST]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::bulkEnableAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'
+
+admin_everblock_bulk_disable:
+  path: /everblock/bulk/disable
+  methods: [POST]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::bulkDisableAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'
+
+admin_everblock_bulk_duplicate:
+  path: /everblock/bulk/duplicate
+  methods: [POST]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::bulkDuplicateAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'
+
+admin_everblock_clear_cache:
+  path: /everblock/clear-cache
+  methods: [GET]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::clearCacheAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'

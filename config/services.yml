@@ -69,3 +69,30 @@ services:
             - '@prestashop.core.grid.filter.form_factory'
             - '@prestashop.core.hook.dispatcher'
 
+    Everblock\PrestaShopBundle\Service\EverBlockDatabaseMaintainer: ~
+
+    Everblock\PrestaShopBundle\Service\EverBlockSqlExporter: ~
+
+    Everblock\PrestaShopBundle\Service\EverBlockContentConverter: ~
+
+    Everblock\PrestaShopBundle\Service\EverBlockCacheRefresher: ~
+
+    Everblock\PrestaShopBundle\Service\EverBlockBulkActionIdsExtractor: ~
+
+    Everblock\PrestaShopBundle\Domain\EverBlock\Repository\LegacyEverBlockRepository: ~
+
+    Everblock\PrestaShopBundle\Domain\EverBlock\Repository\EverBlockRepositoryInterface:
+        alias: Everblock\PrestaShopBundle\Domain\EverBlock\Repository\LegacyEverBlockRepository
+
+    Everblock\PrestaShopBundle\Controller\Admin\EverBlockController:
+        arguments:
+            $duplicateHandler: '@Everblock\PrestaShopBundle\Domain\EverBlock\CommandHandler\DuplicateEverBlockHandler'
+            $toggleStatusHandler: '@Everblock\PrestaShopBundle\Domain\EverBlock\CommandHandler\ToggleEverBlockStatusHandler'
+            $exportSqlHandler: '@Everblock\PrestaShopBundle\Domain\EverBlock\CommandHandler\ExportEverBlockSqlHandler'
+            $everBlockRepository: '@Everblock\PrestaShopBundle\Domain\EverBlock\Repository\EverBlockRepositoryInterface'
+            $cacheRefresher: '@Everblock\PrestaShopBundle\Service\EverBlockCacheRefresher'
+            $databaseMaintainer: '@Everblock\PrestaShopBundle\Service\EverBlockDatabaseMaintainer'
+            $bulkActionIdsExtractor: '@Everblock\PrestaShopBundle\Service\EverBlockBulkActionIdsExtractor'
+        tags:
+            - { name: controller.service_arguments }
+

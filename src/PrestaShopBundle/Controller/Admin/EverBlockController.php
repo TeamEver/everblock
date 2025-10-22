@@ -19,7 +19,18 @@
 
 namespace Everblock\PrestaShopBundle\Controller\Admin;
 
+use Everblock\PrestaShopBundle\Domain\EverBlock\Command\DuplicateEverBlockCommand;
+use Everblock\PrestaShopBundle\Domain\EverBlock\Command\ExportEverBlockSqlCommand;
+use Everblock\PrestaShopBundle\Domain\EverBlock\Command\ToggleEverBlockStatusCommand;
+use Everblock\PrestaShopBundle\Domain\EverBlock\CommandHandler\DuplicateEverBlockHandler;
+use Everblock\PrestaShopBundle\Domain\EverBlock\CommandHandler\ExportEverBlockSqlHandler;
+use Everblock\PrestaShopBundle\Domain\EverBlock\CommandHandler\ToggleEverBlockStatusHandler;
+use Everblock\PrestaShopBundle\Domain\EverBlock\Exception\EverBlockException;
+use Everblock\PrestaShopBundle\Domain\EverBlock\Repository\EverBlockRepositoryInterface;
 use Everblock\PrestaShopBundle\Grid\Search\Filters\EverBlockFilters;
+use Everblock\PrestaShopBundle\Service\EverBlockBulkActionIdsExtractor;
+use Everblock\PrestaShopBundle\Service\EverBlockCacheRefresher;
+use Everblock\PrestaShopBundle\Service\EverBlockDatabaseMaintainer;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use Module;
 use PrestaShop\PrestaShop\Core\Grid\GridFactoryInterface;
@@ -29,6 +40,7 @@ use PrestaShop\PrestaShop\Core\Toolbar\Button\SimpleButton;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use PrestaShopBundle\Security\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Tools;
 
@@ -37,8 +49,63 @@ class EverBlockController extends FrameworkBundleAdminController
     private const MODULE_NAME = 'everblock';
     private const TRANSLATION_DOMAIN = 'Modules.Everblock.Admin';
 
+    /**
+     * @var DuplicateEverBlockHandler
+     */
+    private $duplicateHandler;
+
+    /**
+     * @var ToggleEverBlockStatusHandler
+     */
+    private $toggleStatusHandler;
+
+    /**
+     * @var ExportEverBlockSqlHandler
+     */
+    private $exportSqlHandler;
+
+    /**
+     * @var EverBlockRepositoryInterface
+     */
+    private $everBlockRepository;
+
+    /**
+     * @var EverBlockCacheRefresher
+     */
+    private $cacheRefresher;
+
+    /**
+     * @var EverBlockDatabaseMaintainer
+     */
+    private $databaseMaintainer;
+
+    /**
+     * @var EverBlockBulkActionIdsExtractor
+     */
+    private $bulkActionIdsExtractor;
+
+    public function __construct(
+        DuplicateEverBlockHandler $duplicateHandler,
+        ToggleEverBlockStatusHandler $toggleStatusHandler,
+        ExportEverBlockSqlHandler $exportSqlHandler,
+        EverBlockRepositoryInterface $everBlockRepository,
+        EverBlockCacheRefresher $cacheRefresher,
+        EverBlockDatabaseMaintainer $databaseMaintainer,
+        EverBlockBulkActionIdsExtractor $bulkActionIdsExtractor
+    ) {
+        $this->duplicateHandler = $duplicateHandler;
+        $this->toggleStatusHandler = $toggleStatusHandler;
+        $this->exportSqlHandler = $exportSqlHandler;
+        $this->everBlockRepository = $everBlockRepository;
+        $this->cacheRefresher = $cacheRefresher;
+        $this->databaseMaintainer = $databaseMaintainer;
+        $this->bulkActionIdsExtractor = $bulkActionIdsExtractor;
+    }
+
     public function indexAction(Request $request): Response
     {
+        $this->databaseMaintainer->ensureSchema();
+
         /** @var GridFactoryInterface $gridFactory */
         $gridFactory = $this->get('everblock.grid.factory.ever_block');
 
@@ -67,6 +134,169 @@ class EverBlockController extends FrameworkBundleAdminController
         return $this->render('@Modules/everblock/views/templates/admin/everblock/index.html.twig', $templateVariables);
     }
 
+    public function duplicateAction(int $everBlockId, Request $request): RedirectResponse
+    {
+        try {
+            $newId = $this->duplicateHandler->handle(new DuplicateEverBlockCommand($everBlockId));
+            $this->cacheRefresher->clear();
+            $this->addTranslatedFlash('success', 'The block has been duplicated. New block ID: %id%', [
+                '%id%' => $newId,
+            ]);
+        } catch (EverBlockException $exception) {
+            $this->addTranslatedFlash('error', 'An error occurred while duplicating the block.');
+        }
+
+        return $this->redirectToGrid($request);
+    }
+
+    public function toggleStatusAction(int $everBlockId, Request $request): RedirectResponse
+    {
+        try {
+            $isEnabled = $this->toggleStatusHandler->handle(new ToggleEverBlockStatusCommand($everBlockId));
+            $this->cacheRefresher->clear();
+            $this->addTranslatedFlash(
+                'success',
+                $isEnabled
+                    ? 'The block has been enabled.'
+                    : 'The block has been disabled.'
+            );
+        } catch (EverBlockException $exception) {
+            $this->addTranslatedFlash('error', 'An error occurred while updating the block status.');
+        }
+
+        return $this->redirectToGrid($request);
+    }
+
+    public function exportSqlAction(int $everBlockId)
+    {
+        try {
+            $sql = $this->exportSqlHandler->handle(new ExportEverBlockSqlCommand($everBlockId));
+        } catch (EverBlockException $exception) {
+            $this->addTranslatedFlash('error', 'Unable to export the SQL for this block.');
+
+            return $this->redirectToRoute('admin_everblock_index');
+        }
+
+        $response = new Response($sql);
+        $response->headers->set('Content-Type', 'application/sql');
+        $response->headers->set(
+            'Content-Disposition',
+            sprintf('attachment; filename="everblock_%d.sql"', $everBlockId)
+        );
+
+        return $response;
+    }
+
+    public function deleteAction(int $everBlockId, Request $request): RedirectResponse
+    {
+        try {
+            $this->everBlockRepository->delete($everBlockId);
+            $this->cacheRefresher->clear();
+            $this->addTranslatedFlash('success', 'The block has been deleted.');
+        } catch (EverBlockException $exception) {
+            $this->addTranslatedFlash('error', 'An error occurred while deleting the block.');
+        }
+
+        return $this->redirectToGrid($request);
+    }
+
+    public function bulkDeleteAction(Request $request): RedirectResponse
+    {
+        return $this->handleBulkAction(
+            $request,
+            function (int $id): void {
+                $this->everBlockRepository->delete($id);
+            },
+            'Selected blocks have been deleted.'
+        );
+    }
+
+    public function bulkEnableAction(Request $request): RedirectResponse
+    {
+        return $this->handleBulkAction(
+            $request,
+            function (int $id): void {
+                $this->everBlockRepository->updateStatus($id, true);
+            },
+            'Selected blocks have been enabled.'
+        );
+    }
+
+    public function bulkDisableAction(Request $request): RedirectResponse
+    {
+        return $this->handleBulkAction(
+            $request,
+            function (int $id): void {
+                $this->everBlockRepository->updateStatus($id, false);
+            },
+            'Selected blocks have been disabled.'
+        );
+    }
+
+    public function bulkDuplicateAction(Request $request): RedirectResponse
+    {
+        return $this->handleBulkAction(
+            $request,
+            function (int $id): void {
+                $this->duplicateHandler->handle(new DuplicateEverBlockCommand($id));
+            },
+            'Selected blocks have been duplicated.'
+        );
+    }
+
+    public function clearCacheAction(Request $request): RedirectResponse
+    {
+        $this->cacheRefresher->clear();
+        $this->addTranslatedFlash('success', 'Cache has been cleared.');
+
+        return $this->redirectToGrid($request);
+    }
+
+    private function handleBulkAction(Request $request, callable $operation, string $successMessageKey): RedirectResponse
+    {
+        $ids = $this->bulkActionIdsExtractor->extractFromRequest($request);
+
+        if (empty($ids)) {
+            $this->addTranslatedFlash('error', 'You must select at least one block.');
+
+            return $this->redirectToGrid($request);
+        }
+
+        try {
+            foreach ($ids as $id) {
+                $operation($id);
+            }
+            $this->cacheRefresher->clear();
+            $this->addTranslatedFlash('success', $successMessageKey, [
+                '%count%' => count($ids),
+            ]);
+        } catch (EverBlockException $exception) {
+            $this->addTranslatedFlash('error', 'An error occurred while processing the selected blocks.');
+        }
+
+        return $this->redirectToGrid($request);
+    }
+
+    private function redirectToGrid(Request $request): RedirectResponse
+    {
+        $filters = $request->get(EverBlockFilters::FILTER_ID, $request->query->get(EverBlockFilters::FILTER_ID, []));
+        if (!is_array($filters)) {
+            $filters = [];
+        }
+
+        return $this->redirectToRoute('admin_everblock_index', [
+            EverBlockFilters::FILTER_ID => $filters,
+        ]);
+    }
+
+    private function addTranslatedFlash(string $type, string $message, array $parameters = []): void
+    {
+        $this->addFlash(
+            sprintf('everblock_%s', $type),
+            $this->trans($message, $parameters, self::TRANSLATION_DOMAIN)
+        );
+    }
+
     private function buildToolbarButtons(Module $module): ButtonCollection
     {
         $collection = new ButtonCollection();
@@ -87,9 +317,7 @@ class EverBlockController extends FrameworkBundleAdminController
         $collection->add((new SimpleButton('clear-cache-everblock'))
             ->setLabel($this->trans('Clear cache', self::TRANSLATION_DOMAIN))
             ->setIcon('refresh')
-            ->setHref($context->link->getAdminLink('AdminEverBlock', true, [], [
-                'clearcache' => 1,
-            ]))
+            ->setHref($this->generateUrl('admin_everblock_clear_cache'))
         );
 
         $collection->add((new LinkToolbarButton('configure-everblock'))

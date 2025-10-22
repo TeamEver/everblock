@@ -20,7 +20,13 @@
 namespace Everblock\PrestaShopBundle\Grid\Definition\Factory;
 
 use Everblock\PrestaShopBundle\Grid\Search\Filters\EverBlockFilters;
+use PrestaShop\PrestaShop\Core\Grid\Action\Bulk\BulkActionCollection;
+use PrestaShop\PrestaShop\Core\Grid\Action\Bulk\Type\SubmitBulkAction;
+use PrestaShop\PrestaShop\Core\Grid\Action\Row\RowActionCollection;
+use PrestaShop\PrestaShop\Core\Grid\Action\Row\Type\LinkRowAction;
+use PrestaShop\PrestaShop\Core\Grid\Action\Row\Type\SubmitRowAction;
 use PrestaShop\PrestaShop\Core\Grid\Column\ColumnCollection;
+use PrestaShop\PrestaShop\Core\Grid\Column\Type\Common\ToggleColumn;
 use PrestaShop\PrestaShop\Core\Grid\Column\Type\DataColumn;
 use PrestaShop\PrestaShop\Core\Grid\Definition\Factory\AbstractGridDefinitionFactory;
 use PrestaShop\PrestaShop\Core\Grid\Filter\FilterCollection;
@@ -79,7 +85,6 @@ class EverBlockGridDefinitionFactory extends AbstractGridDefinitionFactory
             'only_supplier' => $this->trans('Supplier only', 'Modules.Everblock.Admin'),
             'only_cms_category' => $this->trans('CMS category only', 'Modules.Everblock.Admin'),
             'modal' => $this->trans('Is modal', 'Modules.Everblock.Admin'),
-            'active' => $this->trans('Status', 'Modules.Everblock.Admin'),
         ] as $field => $label) {
             $columns->add((new DataColumn($field))
                 ->setName($label)
@@ -88,6 +93,17 @@ class EverBlockGridDefinitionFactory extends AbstractGridDefinitionFactory
                 ])
             );
         }
+
+        $columns->add((new ToggleColumn('active'))
+            ->setName($this->trans('Status', 'Modules.Everblock.Admin'))
+            ->setOptions([
+                'field' => 'active',
+                'primary_field' => 'id_everblock',
+                'route' => 'admin_everblock_toggle_status',
+                'route_param_name' => 'everBlockId',
+                'route_param_field' => 'id_everblock',
+            ])
+        );
 
         $columns->add((new DataColumn('date_start'))
             ->setName($this->trans('Date start', 'Modules.Everblock.Admin'))
@@ -142,5 +158,80 @@ class EverBlockGridDefinitionFactory extends AbstractGridDefinitionFactory
         }
 
         return $filters;
+    }
+
+    protected function getRowActions(): RowActionCollection
+    {
+        $rowActions = new RowActionCollection();
+
+        $rowActions->add((new SubmitRowAction('duplicate'))
+            ->setName($this->trans('Duplicate', 'Modules.Everblock.Admin'))
+            ->setIcon('content_copy')
+            ->setOptions([
+                'route' => 'admin_everblock_duplicate',
+                'route_param_name' => 'everBlockId',
+                'route_param_field' => 'id_everblock',
+                'confirm_message' => $this->trans('Duplicate this block?', 'Modules.Everblock.Admin'),
+            ])
+        );
+
+        $rowActions->add((new LinkRowAction('export'))
+            ->setName($this->trans('Export SQL', 'Modules.Everblock.Admin'))
+            ->setIcon('cloud_download')
+            ->setOptions([
+                'route' => 'admin_everblock_export_sql',
+                'route_param_name' => 'everBlockId',
+                'route_param_field' => 'id_everblock',
+            ])
+        );
+
+        $rowActions->add((new SubmitRowAction('delete'))
+            ->setName($this->trans('Delete', 'Modules.Everblock.Admin'))
+            ->setIcon('delete')
+            ->setOptions([
+                'route' => 'admin_everblock_delete',
+                'route_param_name' => 'everBlockId',
+                'route_param_field' => 'id_everblock',
+                'confirm_message' => $this->trans('Delete this block?', 'Modules.Everblock.Admin'),
+            ])
+        );
+
+        return $rowActions;
+    }
+
+    protected function getBulkActions(): BulkActionCollection
+    {
+        $bulkActions = new BulkActionCollection();
+
+        $bulkActions->add((new SubmitBulkAction('delete'))
+            ->setName($this->trans('Delete selected', 'Modules.Everblock.Admin'))
+            ->setOptions([
+                'submit_route' => 'admin_everblock_bulk_delete',
+                'confirm_message' => $this->trans('Delete selected blocks?', 'Modules.Everblock.Admin'),
+            ])
+        );
+
+        $bulkActions->add((new SubmitBulkAction('disable'))
+            ->setName($this->trans('Disable selected', 'Modules.Everblock.Admin'))
+            ->setOptions([
+                'submit_route' => 'admin_everblock_bulk_disable',
+            ])
+        );
+
+        $bulkActions->add((new SubmitBulkAction('enable'))
+            ->setName($this->trans('Enable selected', 'Modules.Everblock.Admin'))
+            ->setOptions([
+                'submit_route' => 'admin_everblock_bulk_enable',
+            ])
+        );
+
+        $bulkActions->add((new SubmitBulkAction('duplicate'))
+            ->setName($this->trans('Duplicate selected', 'Modules.Everblock.Admin'))
+            ->setOptions([
+                'submit_route' => 'admin_everblock_bulk_duplicate',
+            ])
+        );
+
+        return $bulkActions;
     }
 }
