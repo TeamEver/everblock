@@ -1,0 +1,7 @@
+admin_everblock_index:
+  path: /everblock
+  methods: [GET]
+  defaults:
+    _controller: 'Everblock\\PrestaShopBundle\\Controller\\Admin\\EverBlockController::indexAction'
+    _legacy_controller: 'AdminEverBlock'
+    _legacy_link: 'AdminEverBlock'
