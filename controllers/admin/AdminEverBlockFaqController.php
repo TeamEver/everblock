@@ -58,6 +58,11 @@ class AdminEverBlockFaqController extends ModuleAdminController
         $this->context = Context::getContext();
         $this->identifier = 'id_everblock_faq';
         $this->name = 'AdminEverFaq';
+        $this->position_identifier = 'id_everblock_faq';
+        $this->_defaultOrderBy = 'position';
+        $this->_defaultOrderWay = 'ASC';
+        $this->_orderBy = 'position';
+        $this->_orderWay = 'ASC';
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
         $m = Module::getInstanceByName('everblock');
@@ -100,8 +105,13 @@ class AdminEverBlockFaqController extends ModuleAdminController
             ],
             'position' => [
                 'title' => $this->l('Position'),
-                'align' => 'left',
+                'align' => 'center',
                 'width' => 'auto',
+                'class' => 'fixed-width-sm center',
+                'search' => false,
+                'orderby' => false,
+                'position' => 'position',
+                'filter_key' => 'a!position',
             ],
             'active' => [
                 'title' => $this->l('Status'),
@@ -228,6 +238,45 @@ class AdminEverBlockFaqController extends ModuleAdminController
         }
 
         return $cleanContent;
+    }
+
+    public function ajaxProcessUpdatePositions()
+    {
+        if (isset($this->tabAccess['edit']) && !$this->tabAccess['edit']) {
+            $this->ajaxDie(Tools::jsonEncode([
+                'hasError' => true,
+                'errors' => [$this->l('You do not have permission to update positions.')],
+            ]));
+        }
+
+        $positions = Tools::getValue($this->table);
+        if (!is_array($positions) || empty($positions)) {
+            $this->ajaxDie(Tools::jsonEncode([
+                'hasError' => true,
+                'errors' => [$this->l('No positions received.')],
+            ]));
+        }
+
+        $orderedIds = [];
+        foreach ($positions as $identifier) {
+            $parts = explode('_', (string) $identifier);
+            $id = (int) end($parts);
+            if ($id > 0) {
+                $orderedIds[] = $id;
+            }
+        }
+
+        if (empty($orderedIds) || !EverblockFaq::updatePositions($orderedIds, (int) $this->context->shop->id)) {
+            $this->ajaxDie(Tools::jsonEncode([
+                'hasError' => true,
+                'errors' => [$this->l('Unable to update FAQ positions.')],
+            ]));
+        }
+
+        $this->ajaxDie(Tools::jsonEncode([
+            'success' => true,
+            'message' => $this->l('Positions updated successfully.'),
+        ]));
     }
 
     public function renderForm()
