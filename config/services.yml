@@ -69,3 +69,28 @@ services:
             - '@prestashop.core.grid.filter.form_factory'
             - '@prestashop.core.hook.dispatcher'
 
+    everblock.form.provider.choices:
+        class: Everblock\PrestaShopBundle\Form\Admin\EverBlock\Provider\EverBlockFormChoicesProvider
+        public: true
+        arguments:
+            - '@prestashop.adapter.legacy.context'
+
+    everblock.form.data_provider.ever_block:
+        class: Everblock\PrestaShopBundle\Form\Admin\EverBlock\DataProvider\EverBlockFormDataProvider
+        public: true
+        arguments:
+            - '@prestashop.adapter.legacy.context'
+            - '@everblock.form.provider.choices'
+
+    everblock.form.command_handler.upsert_ever_block:
+        class: Everblock\PrestaShopBundle\Form\Admin\EverBlock\Command\Handler\UpsertEverBlockHandler
+        public: true
+
+    everblock.form.handler.ever_block:
+        class: Everblock\PrestaShopBundle\Form\Admin\EverBlock\Handler\EverBlockFormHandler
+        public: true
+        arguments:
+            - '@form.factory'
+            - '@everblock.form.data_provider.ever_block'
+            - '@everblock.form.command_handler.upsert_ever_block'
+
