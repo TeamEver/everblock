@@ -22,7 +22,6 @@ if (!defined('_PS_VERSION_')) {
 }
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
-use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 class AdminEverBlockController extends ModuleAdminController
 {
@@ -400,10 +399,96 @@ class AdminEverBlockController extends ModuleAdminController
             (int) Tools::getValue($this->identifier)
         );
         $fields_form = [];
+        $hooks_list = $this->getHooks(false, true);
+        $categories_list = Category::getCategories(
+            false,
+            true,
+            false
+        );
+        foreach ($categories_list as &$cat) {
+            $cat['name'] = $cat['id_category'] . ' - ' . $cat['name'];
+        }
+        $manufacturersList = Manufacturer::getLiteManufacturersList(
+            (int) $this->context->language->id
+        );
+        $suppliersList = Supplier::getLiteSuppliersList(
+            (int) $this->context->language->id
+        );
+        $cmsCategoriesList = CMSCategory::getSimpleCategories(
+            (int) $this->context->language->id
+        );
+        // IDs are set depending on context values
+        $devices = [
+            [
+                'id_device' => 0,
+                'name' => $this->l('All devices')
+            ],
+            [
+                'id_device' => 4,
+                'name' => $this->l('Only mobile devices')
+            ],
+            [
+                'id_device' => 2,
+                'name' => $this->l('Only tablet devices')
+            ],
+            [
+                'id_device' => 1,
+                'name' => $this->l('Only desktop devices')
+            ]
+        ];
+        $bootstrapSizes = [
+            [
+                'id_bootstrap' => 0,
+                'size' => $this->l('None')
+            ],
+            [
+                'id_bootstrap' => 1,
+                'size' => $this->l('100%')
+            ],
+            [
+                'id_bootstrap' => 2,
+                'size' => $this->l('1/2')
+            ],
+            [
+                'id_bootstrap' => 4,
+                'size' => $this->l('1/3')
+            ],
+            [
+                'id_bootstrap' => 3,
+                'size' => $this->l('1/4')
+            ],
+            [
+                'id_bootstrap' => 6,
+                'size' => $this->l('1/6')
+            ],
+        ];
         $everblock_obj = $this->loadObject(true);
-        $dataProvider = $this->getEverBlockFormDataProvider();
-        $legacyChoices = $dataProvider->getLegacyChoices();
-        $docInputs = $dataProvider->getDocumentationInputs();
+        $everblock_obj->categories = json_decode($everblock_obj->categories);
+
+        $docTemplates = [
+            'general' => 'general.tpl',
+            'targeting' => 'targeting.tpl',
+            'display' => 'display.tpl',
+            'modal' => 'modal.tpl',
+            'schedule' => 'schedule.tpl',
+        ];
+
+        $docInputs = [];
+
+        foreach ($docTemplates as $tab => $template) {
+            $docPath = _PS_MODULE_DIR_ . 'everblock/views/templates/admin/block/docs/' . $template;
+
+            if (!Tools::file_exists_cache($docPath)) {
+                continue;
+            }
+
+            $docInputs[] = [
+                'type' => 'html',
+                'name' => 'documentation_' . $tab,
+                'tab' => $tab,
+                'html_content' => $this->context->smarty->fetch($docPath),
+            ];
+        }
 
         // Building the Add/Edit form
         $fields_form[] = [
@@ -467,7 +552,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'class' => 'chosen',
                         'required' => true,
                         'options' => [
-                            'query' => $legacyChoices['hooks'],
+                            'query' => $hooks_list,
                             'id' => 'id_hook',
                             'name' => 'evername',
                         ],
@@ -514,7 +599,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'device',
                         'required' => false,
                         'options' => [
-                            'query' => $legacyChoices['devices'],
+                            'query' => $devices,
                             'id' => 'id_device',
                             'name' => 'name',
                         ],
@@ -524,7 +609,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'type' => 'group',
                         'label' => $this->l('Group access'),
                         'name' => 'groupBox',
-                        'values' => $legacyChoices['groups'],
+                        'values' => Group::getGroups($this->context->language->id),
                         'desc' => $this->l('Block will be shown to these groups'),
                         'hint' => $this->l('Please select at least one customer group'),
                         'required' => false,
@@ -606,7 +691,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'categories[]',
                         'required' => false,
                         'options' => [
-                            'query' => $legacyChoices['categories'],
+                            'query' => $categories_list,
                             'id' => 'id_category',
                             'name' => 'name',
                         ],
@@ -644,7 +729,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'manufacturers[]',
                         'required' => false,
                         'options' => [
-                            'query' => $legacyChoices['manufacturers'],
+                            'query' => $manufacturersList,
                             'id' => 'id',
                             'name' => 'name',
                         ],
@@ -682,7 +767,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'suppliers[]',
                         'required' => false,
                         'options' => [
-                            'query' => $legacyChoices['suppliers'],
+                            'query' => $suppliersList,
                             'id' => 'id',
                             'name' => 'name',
                         ],
@@ -720,7 +805,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'name' => 'cms_categories[]',
                         'required' => false,
                         'options' => [
-                            'query' => $legacyChoices['cms_categories'],
+                            'query' => $cmsCategoriesList,
                             'id' => 'id_cms_category',
                             'name' => 'name',
                         ],
@@ -831,7 +916,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'class' => 'chosen',
                         'required' => false,
                         'options' => [
-                            'query' => $legacyChoices['bootstrap'],
+                            'query' => $bootstrapSizes,
                             'id' => 'id_bootstrap',
                             'name' => 'size',
                         ],
@@ -930,7 +1015,7 @@ class AdminEverBlockController extends ModuleAdminController
         $helper->token = Tools::getValue('token');
         $helper->submit_action = 'save';
         $helper->tpl_vars = [
-            'fields_value' => $this->getConfigFormValues($everblock_obj),
+            'fields_value' => $this->getConfigFormValues($obj),
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => (int) Context::getContext()->language->id,
         ];
@@ -971,9 +1056,223 @@ class AdminEverBlockController extends ModuleAdminController
 
     protected function getConfigFormValues($obj)
     {
-        $dataProvider = $this->getEverBlockFormDataProvider();
-
-        return $dataProvider->getLegacyFormValues($obj, $_POST);
+        $groups = Group::getGroups($this->context->language->id);
+        $formValues = [];
+        if (Validate::isLoadedObject($obj)) {
+            // dump($obj);
+            // die();
+            $groupsIds = (array)json_decode($obj->groups);
+            foreach ($groups as $group) {
+                $formValues[] = [
+                    'groupBox_' . $group['id_group'] => Tools::getValue('groupBox_' . $group['id_group'], (in_array($group['id_group'], $groupsIds)))
+                ];
+            }
+            $formValues[] = [
+                $this->identifier => (!empty(Tools::getValue($this->identifier)))
+                ? Tools::getValue($this->identifier)
+                : $obj->id,
+                'id_hook' => (!empty(Tools::getValue('id_hook')))
+                ? Tools::getValue('id_hook')
+                : $obj->id_hook,
+                'name' => (!empty(Tools::getValue('name')))
+                ? Tools::getValue('name')
+                : $obj->name,
+                'content' => (!empty(Tools::getValue('content')))
+                ? Tools::getValue('content')
+                : $obj->content,
+                'custom_code' => (!empty(Tools::getValue('custom_code')))
+                ? Tools::getValue('custom_code')
+                : $obj->custom_code,                
+                'categories[]' => (!empty(Tools::getValue('categories')))
+                ? Tools::getValue('categories')
+                : json_decode($obj->categories),
+                'manufacturers[]' => (!empty(Tools::getValue('manufacturers')))
+                ? Tools::getValue('manufacturers')
+                : json_decode($obj->manufacturers),
+                'suppliers[]' => (!empty(Tools::getValue('suppliers')))
+                ? Tools::getValue('suppliers')
+                : json_decode($obj->suppliers),
+                'cms_categories[]' => (!empty(Tools::getValue('cms_categories')))
+                ? Tools::getValue('cms_categories')
+                : json_decode($obj->cms_categories),
+                'only_home' => (!empty(Tools::getValue('only_home')))
+                ? Tools::getValue('only_home')
+                : $obj->only_home,
+                'only_category' => (!empty(Tools::getValue('only_category')))
+                ? Tools::getValue('only_category')
+                : $obj->only_category,
+                'only_manufacturer' => (!empty(Tools::getValue('only_manufacturer')))
+                ? Tools::getValue('only_manufacturer')
+                : $obj->only_manufacturer,
+                'only_supplier' => (!empty(Tools::getValue('only_supplier')))
+                ? Tools::getValue('only_supplier')
+                : $obj->only_supplier,
+                'only_cms_category' => (!empty(Tools::getValue('only_cms_category')))
+                ? Tools::getValue('only_cms_category')
+                : $obj->only_cms_category,
+                'only_category_product' => (!empty(Tools::getValue('only_category_product')))
+                ? Tools::getValue('only_category_product')
+                : $obj->only_category_product,
+                'obfuscate_link' => (!empty(Tools::getValue('obfuscate_link')))
+                ? Tools::getValue('obfuscate_link')
+                : $obj->obfuscate_link,
+                'add_container' => (Tools::getValue('add_container') !== '')
+                ? Tools::getValue('add_container')
+                : $obj->add_container,
+                'lazyload' => (!empty(Tools::getValue('lazyload')))
+                ? Tools::getValue('lazyload')
+                : $obj->lazyload,                
+                'position' => (!empty(Tools::getValue('position')))
+                ? Tools::getValue('position')
+                : $obj->position,
+                'background' => (!empty(Tools::getValue('background')))
+                ? Tools::getValue('background')
+                : $obj->background,
+                'css_class' => (!empty(Tools::getValue('css_class')))
+                ? Tools::getValue('css_class')
+                : $obj->css_class,
+                'data_attribute' => (!empty(Tools::getValue('data_attribute')))
+                ? Tools::getValue('data_attribute')
+                : $obj->data_attribute,
+                'bootstrap_class' => (!empty(Tools::getValue('bootstrap_class')))
+                ? Tools::getValue('bootstrap_class')
+                : $obj->bootstrap_class,
+                'device' => (!empty(Tools::getValue('device')))
+                ? Tools::getValue('device')
+                : $obj->device,
+                'delay' => (!empty(Tools::getValue('delay')))
+                ? Tools::getValue('delay')
+                : $obj->delay,
+                'timeout' => (!empty(Tools::getValue('timeout')))
+                ? Tools::getValue('timeout')
+                : $obj->timeout,
+                'modal' => (!empty(Tools::getValue('modal')))
+                ? Tools::getValue('modal')
+                : $obj->modal,
+                'date_start' => (!empty(Tools::getValue('date_start')))
+                ? Tools::getValue('date_start')
+                : $obj->date_start,
+                'date_end' => (!empty(Tools::getValue('date_end')))
+                ? Tools::getValue('date_end')
+                : $obj->date_end,
+                'id_shop' => (!empty(Tools::getValue('id_shop')))
+                ? Tools::getValue('id_shop')
+                : $obj->id_shop,
+                'active' => (!empty(Tools::getValue('active')))
+                ? Tools::getValue('active')
+                : $obj->active,
+            ];
+        } else {
+            $categories = [];
+            $content = [];
+            $custom_code = [];
+            foreach (Language::getLanguages(false) as $language) {
+                $content[$language['id_lang']] = '';
+                $custom_code[$language['id_lang']] = '';
+            }
+            foreach ($groups as $group) {
+                $formValues[] = [
+                    'groupBox_' . $group['id_group'] => Tools::getValue('groupBox_' . $group['id_group'], true)
+                ];
+            }
+            $formValues[] = [
+                $this->identifier => (!empty(Tools::getValue($this->identifier)))
+                ? Tools::getValue($this->identifier)
+                : '',
+                'id_hook' => (!empty(Tools::getValue('id_hook')))
+                ? Tools::getValue('id_hook')
+                : '',
+                'name' => (!empty(Tools::getValue('name')))
+                ? Tools::getValue('name')
+                : '',
+                'content' => (!empty(Tools::getValue('content')))
+                ? Tools::getValue('content')
+                : $content,
+                'custom_code' => (!empty(Tools::getValue('custom_code')))
+                ? Tools::getValue('custom_code')
+                : $custom_code,
+                'categories[]' => (!empty(Tools::getValue('categories')))
+                ? Tools::getValue('categories')
+                :'',
+                'manufacturers[]' => (!empty(Tools::getValue('manufacturers')))
+                ? Tools::getValue('manufacturers')
+                :'',
+                'suppliers[]' => (!empty(Tools::getValue('suppliers')))
+                ? Tools::getValue('suppliers')
+                :'',
+                'cms_categories[]' => (!empty(Tools::getValue('cms_categories')))
+                ? Tools::getValue('cms_categories')
+                :'',
+                'only_home' => (!empty(Tools::getValue('only_home')))
+                ? Tools::getValue('only_home')
+                : '',
+                'only_category' => (!empty(Tools::getValue('only_category')))
+                ? Tools::getValue('only_category')
+                : '',
+                'only_category_product' => (!empty(Tools::getValue('only_category_product')))
+                ? Tools::getValue('only_category_product')
+                : '',
+                'only_manufacturer' => (!empty(Tools::getValue('only_manufacturer')))
+                ? Tools::getValue('only_manufacturer')
+                : '',
+                'only_supplier' => (!empty(Tools::getValue('only_supplier')))
+                ? Tools::getValue('only_supplier')
+                : '',
+                'only_cms_category' => (!empty(Tools::getValue('only_cms_category')))
+                ? Tools::getValue('only_cms_category')
+                : '',
+                'obfuscate_link' => (!empty(Tools::getValue('obfuscate_link')))
+                ? Tools::getValue('obfuscate_link')
+                : '',
+                'add_container' => (Tools::getValue('add_container') !== '')
+                ? Tools::getValue('add_container')
+                : '1',
+                'lazyload' => (!empty(Tools::getValue('lazyload')))
+                ? Tools::getValue('lazyload')
+                : '',
+                'position' => (!empty(Tools::getValue('position')))
+                ? Tools::getValue('position')
+                : '',
+                'background' => (!empty(Tools::getValue('background')))
+                ? Tools::getValue('background')
+                : '',
+                'css_class' => (!empty(Tools::getValue('css_class')))
+                ? Tools::getValue('css_class')
+                : '',
+                'data_attribute' => (!empty(Tools::getValue('data_attribute')))
+                ? Tools::getValue('data_attribute')
+                : '',
+                'bootstrap_class' => (!empty(Tools::getValue('bootstrap_class')))
+                ? Tools::getValue('bootstrap_class')
+                : '',
+                'device' => (!empty(Tools::getValue('device')))
+                ? Tools::getValue('device')
+                : '',
+                'delay' => (!empty(Tools::getValue('delay')))
+                ? Tools::getValue('delay')
+                : '',
+                'timeout' => (!empty(Tools::getValue('timeout')))
+                ? Tools::getValue('timeout')
+                : '',
+                'modal' => (!empty(Tools::getValue('modal')))
+                ? Tools::getValue('modal')
+                : '',
+                'date_start' => (!empty(Tools::getValue('date_start')))
+                ? Tools::getValue('date_start')
+                : '',
+                'date_end' => (!empty(Tools::getValue('date_end')))
+                ? Tools::getValue('date_end')
+                : '',
+                'id_shop' => (!empty(Tools::getValue('id_shop')))
+                ? Tools::getValue('id_shop')
+                : '',
+                'active' => (!empty(Tools::getValue('active')))
+                ? Tools::getValue('active')
+                : '',
+            ];
+        }
+        $values = call_user_func_array('array_merge', $formValues);
+        return $values;
     }
 
     public function postProcess()
@@ -1003,21 +1302,207 @@ class AdminEverBlockController extends ModuleAdminController
             }
         }
         if (Tools::isSubmit('save') || Tools::isSubmit('stay')) {
-            $handler = $this->getEverBlockFormHandler();
-            $result = $handler->handle($_POST);
-
-            if (!$result->isSuccessful()) {
-                $this->errors = array_merge($this->errors, $result->getErrors());
+            $everblock_obj = new $this->className(
+                (int) Tools::getValue($this->identifier)
+            );
+            if (!Tools::getValue('name')
+                || !Validate::isGenericName(Tools::getValue('name'))
+            ) {
+                $this->errors[] = $this->l('Name is not valid or missing');
+            }
+            if (Tools::getValue('id_hook')
+                && !Validate::isUnsignedInt(Tools::getValue('id_hook'))
+            ) {
+                $this->errors[] = $this->l('Hook is not valid');
+            }
+            if (Tools::getValue('only_home')
+                && !Validate::isBool(Tools::getValue('only_home'))
+            ) {
+                $this->errors[] = $this->l('Only home is not valid');
+            }
+            if (Tools::getValue('only_category')
+                && !Validate::isBool(Tools::getValue('only_category'))
+            ) {
+                $this->errors[] = $this->l('Only category is not valid');
+            }
+            if (Tools::getValue('only_manufacturer')
+                && !Validate::isBool(Tools::getValue('only_manufacturer'))
+            ) {
+                $this->errors[] = $this->l('Only manufacturer is not valid');
+            }
+            if (Tools::getValue('only_supplier')
+                && !Validate::isBool(Tools::getValue('only_supplier'))
+            ) {
+                $this->errors[] = $this->l('Only supplier is not valid');
+            }
+            if (Tools::getValue('only_category_product')
+                && !Validate::isBool(Tools::getValue('only_category_product'))
+            ) {
+                $this->errors[] = $this->l('Only product page with specific categories is not valid');
+            }
+            if (Tools::getValue('obfuscate_link')
+                && !Validate::isBool(Tools::getValue('obfuscate_link'))
+            ) {
+                $this->errors[] = $this->l('Obfuscate links is not valid');
+            }
+            if (Tools::getValue('add_container')
+                && !Validate::isBool(Tools::getValue('add_container'))
+            ) {
+                $this->errors[] = $this->l('Add div with class container is not valid');
+            }
+            if (Tools::getValue('only_home')
+                && Tools::getValue('only_category')
+            ) {
+                $this->errors[] = $this->l('"Only category" and "Only home" ae both selected');
+            }
+            if (Tools::getValue('only_home')
+                && Tools::getValue('only_category_product')
+            ) {
+                $this->errors[] = $this->l('"Only product categories" and "Only home" ae both selected');
+            }
+            if (Tools::getValue('only_category')
+                && Tools::getValue('categories')
+                && !Validate::isArrayWithIds(Tools::getValue('categories'))
+            ) {
+                $this->errors[] = $this->l('Categories are not valid');
+            }
+            if (Tools::getValue('position')
+                && !Validate::isUnsignedInt(Tools::getValue('position'))
+            ) {
+                $this->errors[] = $this->l('Position is not valid');
+            }
+            if (Tools::getValue('background')
+                && !Validate::isColor(Tools::getValue('background'))
+            ) {
+                $this->errors[] = $this->l('Background color is not valid');
+            }
+            if (Tools::getValue('css_class')
+                && !Validate::isString(Tools::getValue('css_class'))
+            ) {
+                $this->errors[] = $this->l('Custom class name is not valid');
+            }
+            if (Tools::getValue('data_attribute')
+                && !Validate::isString(Tools::getValue('data_attribute'))
+            ) {
+                $this->errors[] = $this->l('Data attributes value is not valid');
+            }
+            if (Tools::getValue('bootstrap_class')
+                && !Validate::isString(Tools::getValue('bootstrap_class'))
+            ) {
+                $this->errors[] = $this->l('Size name is not valid');
+            }
+            if (Tools::getValue('delay')
+                && !Validate::isUnsignedInt(Tools::getValue('delay'))
+            ) {
+                $this->errors[] = $this->l('Modal delay is not valid');
+            }
+            if (Tools::getValue('timeout')
+                && !Validate::isUnsignedInt(Tools::getValue('timeout'))
+            ) {
+                $this->errors[] = $this->l('Modal timeout is not valid');
+            }
+            if (Tools::getValue('modal')
+                && !Validate::isBool(Tools::getValue('modal'))
+            ) {
+                $this->errors[] = $this->l('Modal is not valid');
+            }
+            if (Tools::getValue('active')
+                && !Validate::isBool(Tools::getValue('active'))
+            ) {
+                $this->errors[] = $this->l('Active is not valid');
+            }
+            if (Tools::getValue('device')
+                && !Validate::isUnsignedInt(Tools::getValue('device'))
+            ) {
+                $this->errors[] = $this->l('Device is not valid');
+            }
+            $everblock_obj = new $this->className(
+                (int) Tools::getValue($this->identifier)
+            );
+            $everblock_obj->name = pSQL(Tools::getValue('name'));
+            $everblock_obj->id_shop = (int) $this->context->shop->id;
+            $everblock_obj->id_hook = (int) Tools::getValue('id_hook');
+            $everblock_obj->only_home = (bool) Tools::getValue('only_home');
+            $everblock_obj->only_category = (bool) Tools::getValue('only_category');
+            $everblock_obj->only_category_product = (bool) Tools::getValue('only_category_product');
+            $everblock_obj->only_manufacturer = (bool) Tools::getValue('only_manufacturer');
+            $everblock_obj->only_supplier = (bool) Tools::getValue('only_supplier');
+            $everblock_obj->only_cms_category = (bool) Tools::getValue('only_cms_category');
+            $everblock_obj->obfuscate_link = (bool) Tools::getValue('obfuscate_link');
+            $everblock_obj->add_container = (bool) Tools::getValue('add_container');
+            $everblock_obj->lazyload = (bool) Tools::getValue('lazyload');
+            $everblock_obj->categories = json_encode(
+                Tools::getValue('categories')
+            );
+            $everblock_obj->manufacturers = json_encode(
+                Tools::getValue('manufacturers')
+            );
+            $everblock_obj->suppliers = json_encode(
+                Tools::getValue('suppliers')
+            );
+            $everblock_obj->cms_categories = json_encode(
+                Tools::getValue('cms_categories')
+            );
+            $everblock_obj->position = (int) Tools::getValue('position');
+            $everblock_obj->background =  pSQL(Tools::getValue('background'));
+            $everblock_obj->css_class =  pSQL(Tools::getValue('css_class'));
+            $everblock_obj->data_attribute =  pSQL(Tools::getValue('data_attribute'));
+            $everblock_obj->bootstrap_class =  pSQL(Tools::getValue('bootstrap_class'));
+            $everblock_obj->device = (int) Tools::getValue('device');
+            if (!Tools::getValue('groupBox')
+                || !Validate::isArrayWithIds(Tools::getValue('groupBox'))
+            ) {
+                $groups = Group::getGroups(
+                    (int)$this->context->language->id,
+                    (int)$this->context->shop->id
+                );
+                $groupCondition = [];
+                foreach ($groups as $group) {
+                    $groupCondition[] = (int) $group['id_group'];
+                }
+            }
+            if (isset($groupCondition)) {
+                $everblock_obj->groups = json_encode($groupCondition);
             } else {
-                $blockId = (int) $result->getBlockId();
-                if (Tools::isSubmit('stay')) {
-                    Tools::redirectAdmin(
-                        self::$currentIndex
-                        . '&updateeverblock=&' . $this->identifier . '=' . $blockId
-                        . '&token=' . $this->token
+                $everblock_obj->groups = json_encode(Tools::getValue('groupBox'));
+            }
+            $hook_name = Hook::getNameById((int) Tools::getValue('id_hook'));
+            $everblock_obj->delay = (int) Tools::getValue('delay');
+            $everblock_obj->timeout = (int) Tools::getValue('timeout');
+            $everblock_obj->modal = (int) Tools::getValue('modal');
+            $everblock_obj->date_start = pSQL(Tools::getValue('date_start'));
+            $everblock_obj->date_end = pSQL(Tools::getValue('date_end'));
+            $everblock_obj->active = Tools::getValue('active');
+            $everblock = Module::getInstanceByName('everblock');
+            foreach (Language::getLanguages(false) as $language) {
+                $contentKey = 'content_' . $language['id_lang'];
+                $originalContent = Tools::getValue($contentKey);
+                $convertedContent = EverblockTools::convertImagesToWebP($originalContent);
+                $everblock_obj->content[$language['id_lang']] = $convertedContent;
+                $everblock_obj->custom_code[$language['id_lang']] = Tools::getValue('custom_code_' . $language['id_lang']);
+            }
+            if (!count($this->errors)) {
+                try {
+                    $everblock_obj->save();
+                    $everblock->registerHook(
+                        $hook_name
                     );
-                } else {
-                    Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
+                    if ((bool) Configuration::get('EVERPSCSS_CACHE') === true) {
+                        Tools::clearAllCache();
+                    }
+                    if ((bool) Tools::isSubmit('stay') === true) {
+                        Tools::redirectAdmin(
+                            self::$currentIndex
+                            . '&updateeverblock=&' . $this->identifier . '='
+                            . (int) $everblock_obj->id
+                            . '&token='
+                            . $this->token
+                        );
+                    } else {
+                        Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
+                    }
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update save block : ' . $e->getMessage());
                 }
             }
         }
@@ -1113,21 +1598,6 @@ class AdminEverBlockController extends ModuleAdminController
             'action' => $this->l('Export SQL'),
         ]);
         return $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'everblock/views/templates/admin/list_action_export.tpl');
-    }
-
-    private function getEverBlockFormDataProvider()
-    {
-        return $this->getSymfonyContainer()->get('everblock.form.data_provider.ever_block');
-    }
-
-    private function getEverBlockFormHandler()
-    {
-        return $this->getSymfonyContainer()->get('everblock.form.handler.ever_block');
-    }
-
-    private function getSymfonyContainer()
-    {
-        return SymfonyContainer::getInstance();
     }
 
 
