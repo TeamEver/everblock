@@ -711,6 +711,7 @@ class Everblock extends Module
         $this->registerHook('actionCustomerLogoutBefore');
         $this->registerHook('displayAdminProductsExtra');
         $this->registerHook('displayAdminProductsMainStepLeftColumnBottom');
+        $this->registerHook('actionAdminProductsControllerSaveBefore');
         $this->registerHook('actionObjectProductAddAfter');
         $this->registerHook('displayReassurance');
         $this->registerHook('actionObjectProductUpdateAfter');
@@ -3262,11 +3263,15 @@ class Everblock extends Module
         }
 
         $productId = (int) $params['id_product'];
+        $shopId = (int) $this->context->shop->id;
         $tabsNumber = max((int) Configuration::get('EVERPS_TAB_NB'), 1);
         $flagsNumber = max((int) Configuration::get('EVERPS_FLAG_NB'), 1);
-        
-        $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
-        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
+
+        $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $shopId);
+        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $shopId);
+        $availableFaqs = EverblockFaq::getFaqsWithTranslationsForShop($shopId);
+        $selectedFaqIds = EverblockFaqProduct::getFaqIdsByProduct($productId, $shopId);
+        $selectedFaqIds = array_values(array_unique(array_map('intval', $selectedFaqIds)));
 
         $tabsData = [];
         $flagsData = [];
@@ -3311,6 +3316,8 @@ class Everblock extends Module
             'ever_product_id' => $productId,
             'tabsRange' => range(1, $tabsNumber),
             'flagsRange' => range(1, $flagsNumber),
+            'everblock_faqs' => $availableFaqs,
+            'everblock_selected_faq_ids' => $selectedFaqIds,
         ]);
 
         return $this->display(__FILE__, 'views/templates/admin/productTab.tpl');
@@ -3398,6 +3405,60 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
     }
 
+    private function getSubmittedFaqIds(): array
+    {
+        $submittedFaqIds = Tools::getValue('everblock_faq_ids', []);
+
+        if (!is_array($submittedFaqIds)) {
+            $submittedFaqIds = [$submittedFaqIds];
+        }
+
+        $submittedFaqIds = array_map('intval', $submittedFaqIds);
+        $submittedFaqIds = array_filter($submittedFaqIds, static function ($faqId) {
+            return $faqId > 0;
+        });
+
+        return array_values(array_unique($submittedFaqIds));
+    }
+
+    public function hookActionAdminProductsControllerSaveBefore($params)
+    {
+        if (php_sapi_name() == 'cli') {
+            return;
+        }
+
+        $context = Context::getContext();
+        $controllerTypes = ['admin', 'moduleadmin'];
+
+        if (!in_array($context->controller->controller_type, $controllerTypes)) {
+            return;
+        }
+
+        if (!Tools::getValue('everblock_faq_form_submitted')) {
+            return;
+        }
+
+        $controller = $context->controller;
+
+        if (!isset($controller->errors) || !is_array($controller->errors)) {
+            $controller->errors = [];
+        }
+
+        $submittedFaqIds = $this->getSubmittedFaqIds();
+
+        if (empty($submittedFaqIds)) {
+            $controller->errors[] = $this->l('Please select at least one FAQ tag for this product.');
+            return;
+        }
+
+        $shopId = (int) $context->shop->id;
+        $validFaqIds = EverblockFaq::filterFaqIdsByShop($submittedFaqIds, $shopId);
+
+        if (count($validFaqIds) !== count($submittedFaqIds)) {
+            $controller->errors[] = $this->l('The selected FAQ entries are not available for the current shop.');
+        }
+    }
+
     public function hookActionObjectProductUpdateAfter($params)
     {
         if (php_sapi_name() == 'cli') {
@@ -3409,6 +3470,37 @@ class Everblock extends Module
             return;
         }
         try {
+            $productId = (int) $params['object']->id;
+            $shopId = (int) $context->shop->id;
+
+            if (Tools::getValue('everblock_faq_form_submitted')) {
+                $submittedFaqIds = $this->getSubmittedFaqIds();
+                $validFaqIds = EverblockFaq::filterFaqIdsByShop($submittedFaqIds, $shopId);
+                $existingFaqIds = EverblockFaqProduct::getFaqIdsByProduct($productId, $shopId);
+                $existingFaqIds = array_values(array_unique(array_map('intval', $existingFaqIds)));
+
+                $faqAssociationsChanged = false;
+
+                $faqIdsToRemove = array_diff($existingFaqIds, $validFaqIds);
+                foreach ($faqIdsToRemove as $faqIdToRemove) {
+                    if (EverblockFaqProduct::removeAssociation($productId, $shopId, (int) $faqIdToRemove)) {
+                        $faqAssociationsChanged = true;
+                    }
+                }
+
+                $faqIdsToAdd = array_diff($validFaqIds, $existingFaqIds);
+                foreach ($faqIdsToAdd as $faqIdToAdd) {
+                    if (EverblockFaqProduct::addAssociation($productId, $shopId, (int) $faqIdToAdd)) {
+                        $faqAssociationsChanged = true;
+                    }
+                }
+
+                if ($faqAssociationsChanged) {
+                    EverblockCache::cacheDropByPattern('EverblockFaq_getAllFaq_' . $shopId . '_');
+                    EverblockCache::cacheDropByPattern('EverblockFaq_getFaqByTagName_' . $shopId . '_');
+                }
+            }
+
             // Traitement des tabs
             $tabsNumber = (int) Configuration::get('EVERPS_TAB_NB');
             if ($tabsNumber < 1) {
@@ -3418,8 +3510,8 @@ class Everblock extends Module
             $tabsRange = range(1, $tabsNumber);
             foreach ($tabsRange as $tab) {
                 $everpstabs = EverblockTabsClass::getByIdProductIdTab(
-                    (int) $params['object']->id,
-                    (int) $context->shop->id,
+                    $productId,
+                    $shopId,
                     (int) $tab
                 );
                 foreach (Language::getLanguages(true) as $language) {
@@ -3448,8 +3540,8 @@ class Everblock extends Module
                     }
                 }
                 $everpstabs->id_tab = (int) $tab;
-                $everpstabs->id_product = (int) $params['object']->id;
-                $everpstabs->id_shop = (int) $context->shop->id;
+                $everpstabs->id_product = $productId;
+                $everpstabs->id_shop = $shopId;
                 $everpstabs->save();
             }
 
@@ -3462,8 +3554,8 @@ class Everblock extends Module
             $flagsRange = range(1, $flagsNumber);
             foreach ($flagsRange as $flag) {
                 $everpsflags = EverblockFlagsClass::getByIdProductIdFlag(
-                    (int) $params['object']->id,
-                    (int) $context->shop->id,
+                    $productId,
+                    $shopId,
                     (int) $flag
                 );
                 foreach (Language::getLanguages(true) as $language) {
@@ -3492,15 +3584,15 @@ class Everblock extends Module
                     }
             }
             $everpsflags->id_flag = (int) $flag;
-            $everpsflags->id_product = (int) $params['object']->id;
-            $everpsflags->id_shop = (int) $context->shop->id;
+            $everpsflags->id_product = $productId;
+            $everpsflags->id_shop = $shopId;
             $everpsflags->save();
         }
 
             // Modal management
             $modal = EverblockModal::getByProductId(
-                (int) $params['object']->id,
-                (int) $context->shop->id
+                $productId,
+                $shopId
             );
             foreach (Language::getLanguages(true) as $language) {
                 $content = Tools::getValue('everblock_modal_content_' . $language['id_lang']);
@@ -3538,8 +3630,8 @@ class Everblock extends Module
                     $modal->file = 'everblockmodal/' . $name;
                 }
             }
-            $modal->id_product = (int) $params['object']->id;
-            $modal->id_shop = (int) $context->shop->id;
+            $modal->id_product = $productId;
+            $modal->id_shop = $shopId;
             $modal->save();
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
@@ -3564,8 +3656,17 @@ class Everblock extends Module
         if (!in_array(Context::getContext()->controller->controller_type, $controllerTypes)) {
             return;
         }
+        $productId = (int) $params['object']->id;
+        $associatedShopIds = EverblockFaqProduct::getShopIdsByProduct($productId);
+        if (!empty($associatedShopIds)) {
+            EverblockFaqProduct::deleteByProduct($productId);
+            foreach ($associatedShopIds as $associatedShopId) {
+                EverblockCache::cacheDropByPattern('EverblockFaq_getAllFaq_' . (int) $associatedShopId . '_');
+                EverblockCache::cacheDropByPattern('EverblockFaq_getFaqByTagName_' . (int) $associatedShopId . '_');
+            }
+        }
         $everpstabs = EverblockTabsClass::getByIdProductInAdmin(
-            (int) $params['object']->id,
+            $productId,
             (int) $this->context->shop->id
         );
         foreach ($everpstabs as $everpstab) {
@@ -3574,7 +3675,7 @@ class Everblock extends Module
             }
         }
         $everpsflags = EverblockFlagsClass::getByIdProductInAdmin(
-            (int) $params['object']->id,
+            $productId,
             (int) $this->context->shop->id
         );
         foreach ($everpsflags as $everpsflag) {

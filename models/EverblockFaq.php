@@ -154,6 +154,87 @@ class EverblockFaq extends ObjectModel
         return EverblockCache::cacheRetrieve($cache_id);
     }
 
+    public static function getFaqsWithTranslationsForShop(int $shopId): array
+    {
+        if ($shopId <= 0) {
+            return [];
+        }
+
+        $query = new DbQuery();
+        $query->select('f.' . self::$definition['primary'] . ', f.tag_name, f.active, f.position, fl.id_lang, fl.title');
+        $query->from(self::$definition['table'], 'f');
+        $query->leftJoin(
+            self::$definition['table'] . '_lang',
+            'fl',
+            'f.' . self::$definition['primary'] . ' = fl.' . self::$definition['primary']
+        );
+        $query->where('f.id_shop = ' . (int) $shopId);
+        $query->orderBy('f.tag_name ASC, f.position ASC, f.' . self::$definition['primary'] . ' ASC');
+
+        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
+
+        if (empty($rows)) {
+            return [];
+        }
+
+        $faqs = [];
+
+        foreach ($rows as $row) {
+            $faqId = (int) $row[self::$definition['primary']];
+
+            if (!isset($faqs[$faqId])) {
+                $faqs[$faqId] = [
+                    'id_everblock_faq' => $faqId,
+                    'tag_name' => (string) $row['tag_name'],
+                    'active' => (int) $row['active'],
+                    'titles' => [],
+                ];
+            }
+
+            if (isset($row['id_lang'])) {
+                $faqs[$faqId]['titles'][(int) $row['id_lang']] = (string) $row['title'];
+            }
+        }
+
+        return array_values($faqs);
+    }
+
+    public static function filterFaqIdsByShop(array $faqIds, int $shopId): array
+    {
+        if ($shopId <= 0) {
+            return [];
+        }
+
+        $faqIds = array_map('intval', $faqIds);
+        $faqIds = array_values(array_unique(array_filter($faqIds, static function ($faqId) {
+            return $faqId > 0;
+        })));
+
+        if (empty($faqIds)) {
+            return [];
+        }
+
+        $query = new DbQuery();
+        $query->select(self::$definition['primary']);
+        $query->from(self::$definition['table']);
+        $query->where('id_shop = ' . (int) $shopId);
+        $query->where(self::$definition['primary'] . ' IN (' . implode(',', $faqIds) . ')');
+
+        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
+
+        if (empty($rows)) {
+            return [];
+        }
+
+        $validIds = array_map(static function ($row) {
+            return (int) $row[self::$definition['primary']];
+        }, $rows);
+
+        sort($validIds);
+
+        return $validIds;
+    }
+
     public static function updatePositions(array $orderedIds, int $shopId): bool
     {
         if (empty($orderedIds)) {
