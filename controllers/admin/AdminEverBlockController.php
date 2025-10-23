@@ -101,10 +101,12 @@ class AdminEverBlockController extends ModuleAdminController
             ],
             'position' => [
                 'title' => $this->l('Position'),
-                'align' => 'left',
+                'align' => 'center',
                 'width' => 'auto',
-                'search' => true,
-                'orderby' => true,
+                'class' => 'fixed-width-sm center',
+                'search' => false,
+                'orderby' => false,
+                'position' => 'position',
                 'filter_key' => 'a!position',
             ],
             'only_home' => [
@@ -1598,6 +1600,83 @@ class AdminEverBlockController extends ModuleAdminController
             'action' => $this->l('Export SQL'),
         ]);
         return $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'everblock/views/templates/admin/list_action_export.tpl');
+    }
+
+
+    public function ajaxProcessUpdatePositions()
+    {
+        if (isset($this->tabAccess['edit']) && !$this->tabAccess['edit']) {
+            $this->ajaxDie(Tools::jsonEncode([
+                'hasError' => true,
+                'errors' => [$this->l('You do not have permission to update positions.')],
+            ]));
+        }
+
+        $positions = Tools::getValue($this->table);
+        if (!is_array($positions) || empty($positions)) {
+            $this->ajaxDie(Tools::jsonEncode([
+                'hasError' => true,
+                'errors' => [$this->l('No positions received.')],
+            ]));
+        }
+
+        $orderedIds = [];
+        foreach ($positions as $identifier) {
+            $parts = explode('_', (string) $identifier);
+            $id = (int) end($parts);
+            if ($id > 0) {
+                $orderedIds[] = $id;
+            }
+        }
+
+        if (empty($orderedIds)) {
+            $this->ajaxDie(Tools::jsonEncode([
+                'hasError' => true,
+                'errors' => [$this->l('Unable to parse the new positions.')],
+            ]));
+        }
+
+        $idShop = (int) $this->context->shop->id;
+        $idList = implode(',', array_map('intval', array_unique($orderedIds)));
+        $query = 'SELECT id_everblock, id_hook FROM `' . _DB_PREFIX_ . 'everblock`'
+            . ' WHERE id_shop = ' . (int) $idShop . ' AND id_everblock IN (' . $idList . ')';
+        $rows = Db::getInstance()->executeS($query);
+
+        if (empty($rows)) {
+            $this->ajaxDie(Tools::jsonEncode([
+                'hasError' => true,
+                'errors' => [$this->l('Unable to load blocks for reordering.')],
+            ]));
+        }
+
+        $hooksByBlock = [];
+        foreach ($rows as $row) {
+            $hooksByBlock[(int) $row['id_everblock']] = (int) $row['id_hook'];
+        }
+
+        $positionsByHook = [];
+        foreach ($orderedIds as $id) {
+            if (!isset($hooksByBlock[$id])) {
+                continue;
+            }
+            $idHook = $hooksByBlock[$id];
+            if (!isset($positionsByHook[$idHook])) {
+                $positionsByHook[$idHook] = [];
+            }
+            $positionsByHook[$idHook][] = $id;
+        }
+
+        if (empty($positionsByHook) || !EverBlockClass::updatePositionsByHook($positionsByHook, $idShop)) {
+            $this->ajaxDie(Tools::jsonEncode([
+                'hasError' => true,
+                'errors' => [$this->l('Unable to update block positions.')],
+            ]));
+        }
+
+        $this->ajaxDie(Tools::jsonEncode([
+            'success' => true,
+            'message' => $this->l('Positions updated successfully.'),
+        ]));
     }
 
 

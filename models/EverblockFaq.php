@@ -151,4 +151,54 @@ class EverblockFaq extends ObjectModel
         }
         return EverblockCache::cacheRetrieve($cache_id);
     }
+
+    public static function updatePositions(array $orderedIds, int $shopId): bool
+    {
+        if (empty($orderedIds)) {
+            return true;
+        }
+
+        $db = Db::getInstance();
+        $position = 0;
+        $seen = [];
+
+        foreach ($orderedIds as $id) {
+            $id = (int) $id;
+            if ($id <= 0 || isset($seen[$id])) {
+                continue;
+            }
+
+            $seen[$id] = true;
+
+            $updated = $db->update(
+                'everblock_faq',
+                ['position' => (int) $position],
+                'id_everblock_faq = ' . (int) $id . ' AND id_shop = ' . (int) $shopId
+            );
+
+            if (!$updated) {
+                return false;
+            }
+
+            ++$position;
+        }
+
+        static::clearPositionsCache((int) $shopId);
+
+        return true;
+    }
+
+    protected static function clearPositionsCache(int $shopId): void
+    {
+        $languages = Language::getLanguages(false);
+
+        foreach ($languages as $language) {
+            $idLang = (int) $language['id_lang'];
+            EverblockCache::cacheDrop('EverblockFaq_getAllFaq_' . (int) $shopId . '_' . $idLang);
+            EverblockCache::cacheDropByPattern('EverblockFaq_getFaqByTagName_' . (int) $shopId . '_' . $idLang . '_');
+        }
+
+        EverblockCache::cacheDropByPattern('EverblockFaq_getAllFaq_' . (int) $shopId . '_');
+        EverblockCache::cacheDropByPattern('EverblockFaq_getFaqByTagName_' . (int) $shopId . '_');
+    }
 }
