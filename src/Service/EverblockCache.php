@@ -24,6 +24,7 @@ use Cache;
 use Configuration;
 use Context;
 use Exception;
+use Language;
 use PrestaShopLogger;
 use Tools;
 
@@ -33,6 +34,7 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockCache
 {
+    public const FAQ_PRODUCT_CACHE_PREFIX = 'EverblockFaq_product_';
     protected const TTL = 86400; // 24 hours
     protected static function useNativeCache(): bool
     {
@@ -125,7 +127,11 @@ class EverblockCache
     public static function cacheDrop(string $cacheKey)
     {
         if (static::useNativeCache()) {
-            Cache::clean($cacheKey);
+            if (method_exists(Cache::class, 'delete')) {
+                Cache::delete($cacheKey);
+            } else {
+                Cache::clean($cacheKey);
+            }
             return;
         }
 
@@ -176,6 +182,33 @@ class EverblockCache
                     unlink($file);
                 }
             }
+        }
+    }
+
+    public static function buildFaqProductCacheKey(int $shopId, int $langId, int $productId): string
+    {
+        return self::FAQ_PRODUCT_CACHE_PREFIX
+            . (int) $shopId . '_'
+            . (int) $langId . '_'
+            . (int) $productId;
+    }
+
+    public static function clearFaqProductCache(int $shopId, int $productId, ?int $langId = null): void
+    {
+        if ($shopId <= 0 || $productId <= 0) {
+            return;
+        }
+
+        if ($langId !== null) {
+            static::cacheDrop(static::buildFaqProductCacheKey($shopId, $langId, $productId));
+            return;
+        }
+
+        $languages = Language::getLanguages(false);
+
+        foreach ($languages as $language) {
+            $idLang = (int) $language['id_lang'];
+            static::cacheDrop(static::buildFaqProductCacheKey($shopId, $idLang, $productId));
         }
     }
 }

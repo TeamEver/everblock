@@ -1002,7 +1002,19 @@ class EverblockTools extends ObjectModel
 
             $faqs = EverblockFaq::getFaqByTagName($context->shop->id, $context->language->id, $tagName);
 
-            $context->smarty->assign('everFaqs', $faqs);
+            $slug = Tools::str2url($tagName);
+            if ($slug === '') {
+                $slug = substr(md5($tagName), 0, 8);
+            }
+
+            $unique = uniqid($slug . '-', false);
+            $containerId = 'everblockFaq-' . $unique;
+
+            $context->smarty->assign([
+                'everFaqs' => $faqs,
+                'faqContainerId' => $containerId,
+                'faqAccordionId' => $containerId . '-accordion',
+            ]);
 
             return $context->smarty->fetch($templatePath);
 

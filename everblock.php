@@ -27,6 +27,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTabsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaqProduct.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
@@ -67,7 +68,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '8.0.4';
+        $this->version = '8.0.5';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -3676,7 +3677,7 @@ class Everblock extends Module
     public function hookDisplayProductExtraContent($params)
     {
         $context = Context::getContext();
-        $tab = [];
+        $extraContents = [];
         $product = new Product(
             (int) $params['product']->id,
             false,
@@ -3694,7 +3695,7 @@ class Everblock extends Module
                 $title = $everpstab->title;
                 $content = $everpstab->content;
                 if (!empty($title) || !empty($content)) {
-                    $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
+                    $extraContents[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
                         ->setTitle($title)
                         ->setContent($content);
                 }
@@ -3710,14 +3711,77 @@ class Everblock extends Module
             (int) $context->language->id
         ];
         if (!empty($title) && !empty($content)) {
-            $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
+            $extraContents[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
                 ->setTitle($title)
                 ->setContent($content);
         }
-        if (count($tab) > 0) {
-            return $tab;
+
+        $faqGroups = EverblockFaq::getActiveFaqsByProductGroupedByTag(
+            (int) $product->id,
+            (int) $context->shop->id,
+            (int) $context->language->id
+        );
+
+        if (!empty($faqGroups)) {
+            foreach ($faqGroups as $tag => $faqs) {
+                if (empty($faqs)) {
+                    continue;
+                }
+
+                $accordionId = $this->buildFaqAccordionId((int) $product->id, (string) $tag);
+                $containerId = $this->buildFaqContainerId((int) $product->id, (string) $tag);
+
+                $this->context->smarty->assign([
+                    'everFaqs' => $faqs,
+                    'faqAccordionId' => $accordionId,
+                    'faqContainerId' => $containerId,
+                ]);
+
+                $faqContent = $this->context->smarty->fetch(
+                    _PS_MODULE_DIR_ . 'everblock/views/templates/hook/faq.tpl'
+                );
+
+                $extraContents[] = (new ProductExtraContent())
+                    ->setTitle($this->formatFaqGroupTitle((string) $tag))
+                    ->setContent($faqContent);
+            }
         }
+
+        if (!empty($extraContents)) {
+            return $extraContents;
+        }
+
         return false;
+    }
+
+    protected function formatFaqGroupTitle(string $tag): string
+    {
+        $normalizedTag = trim($tag);
+
+        if ($normalizedTag === '') {
+            return $this->l('FAQ');
+        }
+
+        $readableTag = preg_replace('/[_-]+/', ' ', $normalizedTag);
+        $readableTag = Tools::ucfirst($readableTag);
+
+        return sprintf($this->l('FAQ - %s'), $readableTag);
+    }
+
+    protected function buildFaqContainerId(int $productId, string $tag): string
+    {
+        $slug = Tools::str2url($tag);
+
+        if ($slug === '') {
+            $slug = substr(md5($productId . $tag), 0, 8);
+        }
+
+        return 'everblockFaq-' . (int) $productId . '-' . $slug;
+    }
+
+    protected function buildFaqAccordionId(int $productId, string $tag): string
+    {
+        return $this->buildFaqContainerId($productId, $tag) . '-accordion';
     }
 
     public function hookDisplayAdminCustomers($params)
