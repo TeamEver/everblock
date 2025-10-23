@@ -44,6 +44,7 @@ use ImageManager;
 use ImageType;
 use Language;
 use Link;
+use Manufacturer;
 use Media;
 use Module;
 use NewsletterProSubscription;
