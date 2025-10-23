@@ -173,6 +173,8 @@ return [
     'views/templates/admin/header.tpl',
     'views/templates/admin/index.php',
     'views/templates/admin/list_action_export.tpl',
+    'views/templates/admin/faq/tag_filter.tpl',
+    'views/templates/admin/faq/index.php',
     'views/templates/admin/productTab.tpl',
     'views/templates/admin/productModal.tpl',
     'views/templates/admin/upgrade.tpl',

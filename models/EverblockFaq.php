@@ -235,56 +235,111 @@ class EverblockFaq extends ObjectModel
         return $validIds;
     }
 
-    public static function updatePositions(array $orderedIds, int $shopId): bool
+    public static function updatePositions(array $orderedIds, int $shopId, string $tagName): bool
     {
+        $tagName = trim((string) $tagName);
+
+        if ($shopId <= 0 || $tagName === '') {
+            return false;
+        }
+
         if (empty($orderedIds)) {
             return true;
         }
 
+        $orderedIds = static::filterFaqIdsByShop($orderedIds, $shopId);
+
+        if (empty($orderedIds)) {
+            return false;
+        }
+
         $db = Db::getInstance();
-        $position = 0;
-        $seen = [];
+        $sanitizedTag = pSQL($tagName);
+
+        $existingIdsQuery = new DbQuery();
+        $existingIdsQuery->select(self::$definition['primary']);
+        $existingIdsQuery->from(self::$definition['table']);
+        $existingIdsQuery->where('id_shop = ' . (int) $shopId);
+        $existingIdsQuery->where('tag_name = "' . $sanitizedTag . '"');
+        $existingIdsQuery->orderBy('position ASC, ' . self::$definition['primary'] . ' ASC');
+
+        $existingRows = $db->executeS($existingIdsQuery);
+
+        if (empty($existingRows)) {
+            return false;
+        }
+
+        $existingIds = array_map(static function ($row) {
+            return (int) $row[self::$definition['primary']];
+        }, $existingRows);
+
+        $existingLookup = array_flip($existingIds);
+
+        $filteredOrderedIds = [];
 
         foreach ($orderedIds as $id) {
-            $id = (int) $id;
-            if ($id <= 0 || isset($seen[$id])) {
-                continue;
+            if (isset($existingLookup[$id])) {
+                $filteredOrderedIds[] = (int) $id;
             }
+        }
 
-            $seen[$id] = true;
+        if (!empty($filteredOrderedIds)) {
+            $filteredOrderedIds = array_values(array_unique($filteredOrderedIds));
+        }
 
+        if (empty($filteredOrderedIds)) {
+            return false;
+        }
+
+        $finalOrder = array_merge(
+            $filteredOrderedIds,
+            array_values(array_diff($existingIds, $filteredOrderedIds))
+        );
+
+        $position = 0;
+
+        foreach ($finalOrder as $faqId) {
             $updated = $db->update(
-                'everblock_faq',
+                self::$definition['table'],
                 ['position' => (int) $position],
-                'id_everblock_faq = ' . (int) $id . ' AND id_shop = ' . (int) $shopId
+                'id_everblock_faq = ' . (int) $faqId
+                . ' AND id_shop = ' . (int) $shopId
+                . ' AND tag_name = "' . $sanitizedTag . '"'
             );
 
             if (!$updated) {
                 return false;
             }
 
-            EverblockFaqProduct::clearCacheForFaq((int) $id);
+            EverblockFaqProduct::clearCacheForFaq((int) $faqId);
             ++$position;
         }
 
-        static::clearPositionsCache((int) $shopId);
+        static::clearTagCache((int) $shopId, $tagName);
 
         return true;
     }
 
-    protected static function clearPositionsCache(int $shopId): void
+    protected static function clearTagCache(int $shopId, string $tagName): void
     {
+        $tagName = trim((string) $tagName);
+
+        if ($shopId <= 0 || $tagName === '') {
+            return;
+        }
+
         $languages = Language::getLanguages(false);
 
         foreach ($languages as $language) {
             $idLang = (int) $language['id_lang'];
-            EverblockCache::cacheDrop('EverblockFaq_getAllFaq_' . (int) $shopId . '_' . $idLang);
-            EverblockCache::cacheDropByPattern('EverblockFaq_getFaqByTagName_' . (int) $shopId . '_' . $idLang . '_');
+            EverblockCache::cacheDrop(
+                'EverblockFaq_getFaqByTagName_' . (int) $shopId . '_' . $idLang . '_' . $tagName
+            );
         }
 
-        EverblockCache::cacheDropByPattern('EverblockFaq_getAllFaq_' . (int) $shopId . '_');
-        EverblockCache::cacheDropByPattern('EverblockFaq_getFaqByTagName_' . (int) $shopId . '_');
-        EverblockFaqProduct::clearCacheForShop((int) $shopId);
+        EverblockCache::cacheDropByPattern(
+            'EverblockShortcode_getFaqByTagName_' . (int) $shopId . '_' . $tagName
+        );
     }
 
     public static function getActiveFaqsByProductGroupedByTag(int $productId, int $shopId, int $langId): array
