@@ -19,6 +19,8 @@
  */
 use Everblock\Tools\Service\EverblockCache;
 
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaqProduct.php';
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -95,7 +97,7 @@ class EverblockFaq extends ObjectModel
 
     public static function getAllFaq(int $shopId, int $langId): array
     {
-        $cache_id = 'EverblockFaq_getAllFaq_'
+        $cache_id = 'EverblockFaq_getAllFaq_' 
         . (int) $shopId
         . '_'
         . (int) $langId;
@@ -103,7 +105,7 @@ class EverblockFaq extends ObjectModel
             $sql = new DbQuery();
             $sql->select('*');
             $sql->from(self::definition['table']);
-            $sql->where('id_shop = ' . (int) $idShop);
+            $sql->where('id_shop = ' . (int) $shopId);
             $sql->where('active = 1');
             $sql->orderBy('position ASC');
             $faqs = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -180,6 +182,7 @@ class EverblockFaq extends ObjectModel
                 return false;
             }
 
+            EverblockFaqProduct::clearCacheForFaq((int) $id);
             ++$position;
         }
 
@@ -200,5 +203,114 @@ class EverblockFaq extends ObjectModel
 
         EverblockCache::cacheDropByPattern('EverblockFaq_getAllFaq_' . (int) $shopId . '_');
         EverblockCache::cacheDropByPattern('EverblockFaq_getFaqByTagName_' . (int) $shopId . '_');
+        EverblockFaqProduct::clearCacheForShop((int) $shopId);
+    }
+
+    public static function getActiveFaqsByProductGroupedByTag(int $productId, int $shopId, int $langId): array
+    {
+        if ($productId <= 0 || $shopId <= 0 || $langId <= 0) {
+            return [];
+        }
+
+        $cacheId = EverblockCache::buildFaqProductCacheKey((int) $shopId, (int) $langId, (int) $productId);
+
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $query = new DbQuery();
+            $query->select('f.' . self::$definition['primary']);
+            $query->from(self::$definition['table'], 'f');
+            $query->innerJoin(
+                'everblock_faq_product',
+                'fp',
+                'fp.id_everblock_faq = f.' . self::$definition['primary']
+            );
+            $query->where('fp.id_product = ' . (int) $productId);
+            $query->where('fp.id_shop = ' . (int) $shopId);
+            $query->where('f.id_shop = ' . (int) $shopId);
+            $query->where('f.active = 1');
+            $query->orderBy('f.tag_name ASC, f.position ASC, f.' . self::$definition['primary'] . ' ASC');
+
+            $faqIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
+
+            $groupedFaqs = [];
+
+            foreach ($faqIds as $faqRow) {
+                $faqId = (int) $faqRow[self::$definition['primary']];
+
+                if ($faqId <= 0) {
+                    continue;
+                }
+
+                $faq = new self($faqId, (int) $langId, (int) $shopId);
+
+                if (!(int) $faq->active) {
+                    continue;
+                }
+
+                $tag = (string) $faq->tag_name;
+
+                if (!isset($groupedFaqs[$tag])) {
+                    $groupedFaqs[$tag] = [];
+                }
+
+                $groupedFaqs[$tag][] = $faq;
+            }
+
+            EverblockCache::cacheStore($cacheId, $groupedFaqs);
+        }
+
+        $cachedFaqs = EverblockCache::cacheRetrieve($cacheId);
+
+        if (!is_array($cachedFaqs)) {
+            return [];
+        }
+
+        return $cachedFaqs;
+    }
+
+    public function add($autoDate = true, $nullValues = false)
+    {
+        $result = parent::add($autoDate, $nullValues);
+
+        if ($result) {
+            EverblockFaqProduct::clearCacheForFaq((int) $this->id);
+        }
+
+        return $result;
+    }
+
+    public function update($nullValues = false)
+    {
+        $result = parent::update($nullValues);
+
+        if ($result) {
+            EverblockFaqProduct::clearCacheForFaq((int) $this->id);
+        }
+
+        return $result;
+    }
+
+    public function delete()
+    {
+        $faqId = (int) $this->id;
+
+        if (!parent::delete()) {
+            return false;
+        }
+
+        $associationsDeleted = EverblockFaqProduct::deleteByFaq($faqId);
+        EverblockFaqProduct::clearCacheForFaq($faqId);
+
+        return (bool) $associationsDeleted;
+    }
+
+    public function toggleStatus()
+    {
+        $result = parent::toggleStatus();
+
+        if ($result) {
+            EverblockFaqProduct::clearCacheForFaq((int) $this->id);
+        }
+
+        return $result;
     }
 }

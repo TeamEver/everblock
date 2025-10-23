@@ -17,10 +17,12 @@
 *}
 
 {if isset($everFaqs) && $everFaqs}
-  <div class="container" id="everblockFaq">
+  {assign var=containerId value=$faqContainerId|default:'everblockFaq'}
+  {assign var=accordionId value=$faqAccordionId|default:($containerId|cat:'-accordion')}
+  <div class="container" id="{$containerId|escape:'htmlall':'UTF-8'}">
     <div class="row">
       <div class="col-12">
-        <div class="accordion faq-accordion" id="faqAccordion">
+        <div class="accordion faq-accordion" id="{$accordionId|escape:'htmlall':'UTF-8'}">
           {foreach from=$everFaqs item=faq name=faqloop}
             <div class="accordion-item card faq-item">
               <h2 class="accordion-header card-header p-0" id="headingEverFaq{$faq->id_everblock_faq}">
@@ -34,7 +36,7 @@
                 </button>
               </h2>
               <div id="collapse{$faq->id_everblock_faq}" class="accordion-collapse collapse {if $smarty.foreach.faqloop.first}show{/if}"
-                   aria-labelledby="headingEverFaq{$faq->id_everblock_faq}" data-parent="#faqAccordion" data-bs-parent="#faqAccordion">
+                   aria-labelledby="headingEverFaq{$faq->id_everblock_faq}" data-parent="#{$accordionId|escape:'htmlall':'UTF-8'}" data-bs-parent="#{$accordionId|escape:'htmlall':'UTF-8'}">
                 <div class="accordion-body card-body faq-answer">
                   <div class="faq-answer__content">{$faq->content nofilter}</div>
                 </div>
