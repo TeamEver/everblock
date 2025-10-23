@@ -73,6 +73,7 @@ return [
     'src/Checkout/EverblockCheckoutStep.php',
     'models/EverblockClass.php',
     'models/EverblockFaq.php',
+    'models/EverblockFaqProduct.php',
     'models/EverblockFlagsClass.php',
     'models/EverblockModal.php',
     'src/Service/EverblockPrettyBlocks.php',
