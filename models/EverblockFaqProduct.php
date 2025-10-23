@@ -200,6 +200,56 @@ class EverblockFaqProduct extends ObjectModel
         }, $rows);
     }
 
+    public static function getShopIdsByProduct(int $productId): array
+    {
+        if ($productId <= 0) {
+            return [];
+        }
+
+        $sql = new DbQuery();
+        $sql->select('DISTINCT id_shop');
+        $sql->from(self::$definition['table']);
+        $sql->where('id_product = ' . (int) $productId);
+
+        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+
+        if (empty($rows)) {
+            return [];
+        }
+
+        return array_map(static function ($row) {
+            return (int) $row['id_shop'];
+        }, $rows);
+    }
+
+    public static function deleteByProduct(int $productId, ?int $shopId = null): bool
+    {
+        if ($productId <= 0) {
+            return true;
+        }
+
+        if ($shopId !== null && $shopId > 0) {
+            $handledShops = [(int) $shopId];
+            $where = 'id_product = ' . (int) $productId . ' AND id_shop = ' . (int) $shopId;
+        } else {
+            $handledShops = static::getShopIdsByProduct($productId);
+            $where = 'id_product = ' . (int) $productId;
+        }
+
+        $deleted = Db::getInstance()->delete(
+            self::$definition['table'],
+            $where
+        );
+
+        if ($deleted && !empty($handledShops)) {
+            foreach ($handledShops as $handledShopId) {
+                static::clearCacheForProduct((int) $productId, (int) $handledShopId);
+            }
+        }
+
+        return (bool) $deleted;
+    }
+
     public static function getProductAssociationsByFaq(int $faqId): array
     {
         if ($faqId <= 0) {

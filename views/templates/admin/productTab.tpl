@@ -60,5 +60,49 @@
             </div>
         </div>
         {/foreach}
+
+        <div class="container border rounded p-3 mb-3">
+            <input type="hidden" name="everblock_faq_form_submitted" value="1">
+            <div class="row">
+                <div class="col-lg-12 col-xl-12">
+                    <h3 class="h4">{l s='FAQ associations' mod='everblock'}</h3>
+                    <p class="help-block">{l s='Select the FAQ tags to link to this product. At least one tag is required.' mod='everblock'}</p>
+                    {if $everblock_faqs|@count}
+                        <ul class="list-unstyled">
+                            {foreach from=$everblock_faqs item=faq}
+                                <li class="mb-2">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="everblock_faq_ids[]" value="{$faq.id_everblock_faq|escape:'htmlall':'UTF-8'}"{if in_array($faq.id_everblock_faq, $everblock_selected_faq_ids)} checked="checked"{/if}>
+                                            <strong>{$faq.tag_name|escape:'htmlall':'UTF-8'}</strong>
+                                            {if !$faq.active}
+                                                <span class="label label-warning">{l s='Inactive' mod='everblock'}</span>
+                                            {/if}
+                                        </label>
+                                    </div>
+                                    <div class="faq-translations text-muted small">
+                                        {foreach from=$ever_languages item=language}
+                                            <span class="label label-default">{$language.iso_code|escape:'htmlall':'UTF-8'}</span>
+                                            <span class="faq-title">
+                                                {if isset($faq.titles[$language.id_lang]) && $faq.titles[$language.id_lang] !== ''}
+                                                    {$faq.titles[$language.id_lang]|escape:'htmlall':'UTF-8'}
+                                                {else}
+                                                    <em>{l s='No title' mod='everblock'}</em>
+                                                {/if}
+                                            </span>
+                                            {if not $language@last}
+                                                <span class="text-muted"> | </span>
+                                            {/if}
+                                        {/foreach}
+                                    </div>
+                                </li>
+                            {/foreach}
+                        </ul>
+                    {else}
+                        <div class="alert alert-info">{l s='No FAQ entries are available for the current shop.' mod='everblock'}</div>
+                    {/if}
+                </div>
+            </div>
+        </div>
     </fieldset>
 </div>
