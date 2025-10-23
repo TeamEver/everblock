@@ -60,162 +60,23 @@
 }
 
 /* FAQ styles */
-#everblockFaq {
-    margin: 3rem auto;
-}
-
-.faq-accordion {
-    display: flex;
-    flex-direction: column;
-}
-
-.faq-item {
-    border: none;
-    border-radius: 1.25rem;
-    background: #ffffff;
-    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    margin-bottom: 1.5rem;
-}
-
-.faq-item:last-child {
-    margin-bottom: 0;
-}
-
-.faq-item:hover,
-.faq-item:focus-within {
-    transform: translateY(-4px);
-    box-shadow: 0 28px 60px rgba(15, 23, 42, 0.12);
-}
-
-@supports (gap: 1rem) {
-    .faq-accordion {
-        gap: 1.5rem;
-    }
-
-    .faq-item {
-        margin-bottom: 0;
-    }
-}
-
 .faq-accordion .card-header,
 .faq-accordion .accordion-header {
-    background-color: transparent;
-    border: none;
+    background-color: #f7f7f7;
 }
-
+.faq-question i {
+    transition: transform 0.3s ease;
+}
 .faq-accordion .accordion-button {
-    background: linear-gradient(135deg, rgba(13, 110, 253, 0.08) 0%, rgba(13, 110, 253, 0) 100%);
+    background: none;
     box-shadow: none;
-    font-weight: 600;
-    font-size: 1.05rem;
-    padding: 1.5rem 1.75rem;
-    border-radius: 1.25rem;
-    transition: color 0.3s ease, background 0.3s ease;
 }
-
-.faq-accordion .accordion-button.collapsed {
-    background: #ffffff;
-}
-
-.faq-accordion .accordion-button:focus {
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-
-.faq-question__wrapper {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    text-align: left;
-}
-
-.faq-question__badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 0.85rem;
-    background: linear-gradient(135deg, #0d6efd 0%, #6a11cb 100%);
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 1rem;
-    letter-spacing: 0.02em;
-}
-
-.faq-question__text {
-    flex: 1;
-    color: #1f2933;
-}
-
-.faq-question__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    border: 1px solid rgba(13, 110, 253, 0.35);
-    color: #0d6efd;
-    background: rgba(13, 110, 253, 0.08);
-    transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-.faq-question__icon::before {
-    content: "";
-    display: inline-block;
-    width: 0.5rem;
-    height: 0.5rem;
-    border: solid currentColor;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-
-.faq-accordion .accordion-button:not(.collapsed) {
-    color: #0d6efd;
-    background: linear-gradient(135deg, rgba(13, 110, 253, 0.12) 0%, rgba(13, 110, 253, 0.03) 100%);
-}
-
-.faq-accordion .accordion-button:not(.collapsed) .faq-question__icon {
+.faq-question[aria-expanded="true"] i {
     transform: rotate(180deg);
-    background: #0d6efd;
-    color: #ffffff;
-    border-color: transparent;
 }
-
 .faq-answer,
 .faq-accordion .accordion-body {
-    padding: 0 1.75rem 1.75rem;
-    color: #4a5568;
-    line-height: 1.7;
-}
-
-.faq-answer {
-    border-top: 1px solid #eef2f7;
-}
-
-.faq-answer__content > *:last-child {
-    margin-bottom: 0;
-}
-
-.faq-answer__content p {
-    margin-bottom: 1rem;
-}
-
-@media (max-width: 575.98px) {
-    #everblockFaq {
-        margin: 2rem auto;
-    }
-
-    .faq-accordion .accordion-button {
-        padding: 1.25rem;
-    }
-
-    .faq-question__badge {
-        width: 2.25rem;
-        height: 2.25rem;
-        font-size: 0.9rem;
-    }
+    padding: 15px;
 }
 
 /* Pricing table styles */
@@ -408,9 +269,15 @@
 }
 
 .everblock-config__layout {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 2.25rem;
+}
+
+@media (min-width: 992px) {
+    .everblock-config__layout {
+        grid-template-columns: minmax(0, 2.25fr) minmax(260px, 1fr);
+        align-items: start;
+    }
 }
 
 .everblock-config__card {
@@ -534,6 +401,129 @@
     margin-top: 0.5rem;
 }
 
+.everblock-sidecard {
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 22px 55px rgba(15, 23, 42, 0.16);
+    padding: 1.9rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.everblock-sidecard__title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1f2552;
+}
+
+.everblock-sidecard__subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #4b5563;
+}
+
+.everblock-sidecard__actions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.everblock-sidecard__link {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    text-decoration: none;
+    background: #f5f6ff;
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    color: #111827;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.everblock-sidecard__link strong {
+    font-size: 1rem;
+    font-weight: 700;
+    display: block;
+}
+
+.everblock-sidecard__link small {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: #5b6075;
+    font-weight: 500;
+}
+
+.everblock-sidecard__link:hover {
+    border-color: #4337ff;
+    box-shadow: 0 18px 34px rgba(67, 55, 255, 0.22);
+    transform: translateY(-2px);
+    color: #111827;
+}
+
+.everblock-sidecard__icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4337ff 0%, #8f5bff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    box-shadow: 0 12px 20px rgba(67, 55, 255, 0.35);
+}
+
+.everblock-sidecard__badges {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.everblock-sidecard__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 1.1rem;
+    border-radius: 999px;
+    background: #eef0ff;
+    color: #3a3a68;
+    font-weight: 600;
+}
+
+.everblock-sidecard__cta {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.9rem 1.5rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ff7a59 0%, #ff4f8b 100%);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.everblock-sidecard__cta:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 18px 38px rgba(255, 79, 139, 0.35);
+}
 
 details.everblock-doc-accordion {
     background: #ffffff;

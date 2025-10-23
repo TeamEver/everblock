@@ -58,11 +58,6 @@ class AdminEverBlockFaqController extends ModuleAdminController
         $this->context = Context::getContext();
         $this->identifier = 'id_everblock_faq';
         $this->name = 'AdminEverFaq';
-        $this->position_identifier = 'id_everblock_faq';
-        $this->_defaultOrderBy = 'position';
-        $this->_defaultOrderWay = 'ASC';
-        $this->_orderBy = 'position';
-        $this->_orderWay = 'ASC';
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
         $m = Module::getInstanceByName('everblock');
@@ -105,13 +100,8 @@ class AdminEverBlockFaqController extends ModuleAdminController
             ],
             'position' => [
                 'title' => $this->l('Position'),
-                'align' => 'center',
+                'align' => 'left',
                 'width' => 'auto',
-                'class' => 'fixed-width-sm center',
-                'search' => false,
-                'orderby' => false,
-                'position' => 'position',
-                'filter_key' => 'a!position',
             ],
             'active' => [
                 'title' => $this->l('Status'),
@@ -142,7 +132,6 @@ class AdminEverBlockFaqController extends ModuleAdminController
         parent::setMedia($isNewTheme);
 
         $this->addCSS(_PS_MODULE_DIR_ . 'everblock/views/css/ever.css');
-        $this->addJS(_PS_MODULE_DIR_ . 'everblock/views/js/admin.js');
     }
 
     public function l($string, $class = null, $addslashes = false, $htmlentities = true)
@@ -195,7 +184,6 @@ class AdminEverBlockFaqController extends ModuleAdminController
             $this->confirmations[] = $this->l('Cache has been cleared');
         }
         $lists = parent::renderList();
-        $lists = $this->prepareFaqListMarkup($lists);
 
         $moduleInstance = Module::getInstanceByName('everblock');
         $displayUpgrade = $moduleInstance->checkLatestEverModuleVersion();
@@ -231,148 +219,6 @@ class AdminEverBlockFaqController extends ModuleAdminController
         return $content;
     }
 
-    protected function prepareFaqListMarkup($listHtml)
-    {
-        if (!is_string($listHtml) || empty($this->_list) || !is_array($this->_list)) {
-            return $listHtml;
-        }
-
-        $rowMetadata = [];
-        $tags = [];
-
-        foreach ($this->_list as $row) {
-            if (!isset($row[$this->identifier])) {
-                continue;
-            }
-
-            $faqId = (int) $row[$this->identifier];
-
-            if ($faqId <= 0) {
-                continue;
-            }
-
-            $tagName = isset($row['tag_name']) ? (string) $row['tag_name'] : '';
-            $position = isset($row['position']) ? (int) $row['position'] : 0;
-
-            $rowMetadata[$faqId] = [
-                'tag' => $tagName,
-                'position' => $position,
-            ];
-
-            if ($tagName !== '' && !in_array($tagName, $tags, true)) {
-                $tags[] = $tagName;
-            }
-        }
-
-        if (!empty($rowMetadata)) {
-            $listHtml = $this->injectFaqRowAttributes($listHtml, $rowMetadata);
-            $listHtml = $this->markFaqTable($listHtml);
-        }
-
-        if (!empty($tags)) {
-            sort($tags, SORT_STRING | SORT_FLAG_CASE);
-            $filterHtml = $this->renderFaqTagFilter($tags);
-
-            if ($filterHtml !== '') {
-                $listHtml = $filterHtml . $listHtml;
-            }
-        }
-
-        return $listHtml;
-    }
-
-    protected function renderFaqTagFilter(array $tags): string
-    {
-        if (empty($tags)) {
-            return '';
-        }
-
-        $template = $this->context->smarty->createTemplate(
-            _PS_MODULE_DIR_ . 'everblock/views/templates/admin/faq/tag_filter.tpl'
-        );
-
-        $template->assign([
-            'faq_tags' => $tags,
-            'filter_all_label' => $this->l('All tags'),
-            'filter_label' => $this->l('Filter by tag'),
-        ]);
-
-        return (string) $template->fetch();
-    }
-
-    protected function markFaqTable(string $listHtml): string
-    {
-        $pattern = '#<table[^>]*id="table-' . preg_quote($this->table, '#') . '"[^>]*>#i';
-
-        return (string) preg_replace_callback($pattern, function ($matches) {
-            if (false !== strpos($matches[0], 'data-everblock-faq-table')) {
-                return $matches[0];
-            }
-
-            $closingPosition = strrpos($matches[0], '>');
-
-            if (false === $closingPosition) {
-                return $matches[0];
-            }
-
-            $before = substr($matches[0], 0, $closingPosition);
-            $after = substr($matches[0], $closingPosition);
-
-            return $before . ' data-everblock-faq-table="1"' . $after;
-        }, $listHtml, 1);
-    }
-
-    protected function injectFaqRowAttributes(string $listHtml, array $rowMetadata): string
-    {
-        if (empty($rowMetadata)) {
-            return $listHtml;
-        }
-
-        $pattern = '#<tr([^>]*)id="tr_' . preg_quote($this->table, '#') . '_(\d+)"([^>]*)>#i';
-
-        return (string) preg_replace_callback($pattern, function ($matches) use ($rowMetadata) {
-            $faqId = (int) $matches[2];
-
-            if (!isset($rowMetadata[$faqId])) {
-                return $matches[0];
-            }
-
-            $tagName = htmlspecialchars($rowMetadata[$faqId]['tag'], ENT_QUOTES, 'UTF-8');
-            $position = (int) $rowMetadata[$faqId]['position'];
-
-            $rowMarkup = $matches[0];
-            $closingPosition = strrpos($rowMarkup, '>');
-
-            if (false === $closingPosition) {
-                return $rowMarkup;
-            }
-
-            $before = substr($rowMarkup, 0, $closingPosition);
-            $after = substr($rowMarkup, $closingPosition);
-
-            if (false === strpos($before, 'class=')) {
-                $before = str_replace('<tr', '<tr class="js-everblock-faq-row"', $before);
-            } elseif (false === strpos($before, 'js-everblock-faq-row')) {
-                $before = preg_replace(
-                    '#class="([^"]*)"#',
-                    'class="$1 js-everblock-faq-row"',
-                    $before,
-                    1
-                );
-            }
-
-            if (false === strpos($before, 'data-tag=')) {
-                $before .= ' data-tag="' . $tagName . '"';
-            }
-
-            if (false === strpos($before, 'data-position=')) {
-                $before .= ' data-position="' . (int) $position . '"';
-            }
-
-            return $before . $after;
-        }, $listHtml);
-    }
-
     public function renderContentWithoutHtml($value, $row)
     {
         $cleanContent = trim(strip_tags($value));
@@ -382,58 +228,6 @@ class AdminEverBlockFaqController extends ModuleAdminController
         }
 
         return $cleanContent;
-    }
-
-    public function ajaxProcessUpdatePositions()
-    {
-        if (isset($this->tabAccess['edit']) && !$this->tabAccess['edit']) {
-            $this->ajaxDie(Tools::jsonEncode([
-                'hasError' => true,
-                'errors' => [$this->l('You do not have permission to update positions.')],
-            ]));
-        }
-
-        $positions = Tools::getValue($this->table);
-        if (!is_array($positions) || empty($positions)) {
-            $this->ajaxDie(Tools::jsonEncode([
-                'hasError' => true,
-                'errors' => [$this->l('No positions received.')],
-            ]));
-        }
-
-        $tagName = (string) Tools::getValue('tag_name', '');
-        $tagName = trim($tagName);
-
-        if ($tagName === '') {
-            $this->ajaxDie(Tools::jsonEncode([
-                'hasError' => true,
-                'errors' => [$this->l('Missing FAQ tag for reordering.')],
-            ]));
-        }
-
-        $orderedIds = [];
-        foreach ($positions as $identifier) {
-            $parts = explode('_', (string) $identifier);
-            $id = (int) end($parts);
-            if ($id > 0) {
-                $orderedIds[] = $id;
-            }
-        }
-
-        if (empty($orderedIds)
-            || !EverblockFaq::updatePositions($orderedIds, (int) $this->context->shop->id, $tagName)
-        ) {
-            $this->ajaxDie(Tools::jsonEncode([
-                'hasError' => true,
-                'errors' => [$this->l('Unable to update FAQ positions for the selected tag.')],
-            ]));
-        }
-
-        $this->ajaxDie(Tools::jsonEncode([
-            'success' => true,
-            'tag' => $tagName,
-            'message' => $this->l('Positions updated successfully for the selected tag.'),
-        ]));
     }
 
     public function renderForm()

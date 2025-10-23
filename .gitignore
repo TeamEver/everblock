@@ -5,7 +5,6 @@ views/css/custom1.css
 views/js/custom-compressed1.js
 views/js/custom1.js
 upgrade/*.php
-!upgrade/upgrade-*.php
 views/js/store-locator-1.js
 *.sql
 views/backup/css/custom-compressed1.css

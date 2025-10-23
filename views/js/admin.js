@@ -19,7 +19,6 @@
 $(document).ready(function() {
   const cssTextarea = document.getElementById('EVERPSCSS');
   const jsTextarea = document.getElementById('EVERPSJS');
-  let currentFaqTag = null;
 
   if (cssTextarea) {
     CodeMirror.fromTextArea(cssTextarea, {
@@ -106,119 +105,5 @@ $(document).ready(function() {
     setTimeout(function() {
       $pulse.remove();
     }, 600);
-  });
-
-  const $faqTable = $('[data-everblock-faq-table]');
-
-  function isFaqPositionRequest(settings) {
-    return (
-      settings &&
-      typeof settings.data === 'string' &&
-      settings.data.indexOf('controller=AdminEverBlockFaq') !== -1 &&
-      settings.data.indexOf('action=updatePositions') !== -1
-    );
-  }
-
-  function updateFaqRowPositions() {
-    if (!$faqTable.length) {
-      return;
-    }
-
-    const tagCounters = {};
-
-    $faqTable.find('tr.js-everblock-faq-row:visible').each(function() {
-      const $row = $(this);
-      const rowTag = ($row.data('tag') || '').toString();
-
-      if (!Object.prototype.hasOwnProperty.call(tagCounters, rowTag)) {
-        tagCounters[rowTag] = 0;
-      }
-
-      $row.attr('data-position', tagCounters[rowTag]);
-      tagCounters[rowTag] += 1;
-    });
-  }
-
-  function setCurrentFaqTagFromRow($row) {
-    if (!$row || !$row.length) {
-      return;
-    }
-
-    const tag = ($row.data('tag') || '').toString();
-
-    if (tag) {
-      currentFaqTag = tag;
-    }
-  }
-
-  if ($faqTable.length) {
-    const $faqFilter = $('.js-everblock-faq-filter');
-
-    if ($faqFilter.length) {
-      $faqFilter.on('change', function() {
-        const selectedTag = $(this).val();
-        const $rows = $faqTable.find('tr.js-everblock-faq-row');
-
-        if (!selectedTag) {
-          $rows.show();
-          updateFaqRowPositions();
-          return;
-        }
-
-        $rows.each(function() {
-          const $row = $(this);
-          const rowTag = ($row.data('tag') || '').toString();
-
-          if (rowTag === selectedTag) {
-            $row.show();
-          } else {
-            $row.hide();
-          }
-        });
-
-        updateFaqRowPositions();
-      });
-    }
-
-    $faqTable.on('mousedown touchstart', '.dragHandle', function() {
-      const $row = $(this).closest('tr');
-      setCurrentFaqTagFromRow($row);
-    });
-
-    updateFaqRowPositions();
-  }
-
-  $(document).ajaxSend(function(event, jqXHR, settings) {
-    if (!isFaqPositionRequest(settings)) {
-      return;
-    }
-
-    if (!currentFaqTag) {
-      const idMatch = settings.data.match(/everblock_faq%5B%5D=(\d+)/);
-
-      if (idMatch && idMatch[1]) {
-        const $row = $('#tr_everblock_faq_' + idMatch[1]);
-        setCurrentFaqTagFromRow($row);
-      }
-    }
-
-    if (currentFaqTag && settings.data.indexOf('tag_name=') === -1) {
-      settings.data += '&tag_name=' + encodeURIComponent(currentFaqTag);
-    }
-  });
-
-  $(document).ajaxSuccess(function(event, jqXHR, settings) {
-    if (!isFaqPositionRequest(settings)) {
-      return;
-    }
-
-    currentFaqTag = null;
-    updateFaqRowPositions();
-  });
-
-  $(document).ajaxError(function(event, jqXHR, settings) {
-    if (isFaqPositionRequest(settings)) {
-      currentFaqTag = null;
-    }
   });
 });
