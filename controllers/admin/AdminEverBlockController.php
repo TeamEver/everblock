@@ -57,11 +57,16 @@ class AdminEverBlockController extends ModuleAdminController
         $this->name = 'AdminEverBlockController';
         $this->position_identifier = 'id_everblock';
         $this->allow_export = true;
+        if (!Tools::getIsset('module_name')) {
+            $_GET['module_name'] = 'everblock';
+            $_REQUEST['module_name'] = 'everblock';
+        }
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
         $m = Module::getInstanceByName('everblock');
         $this->context->smarty->assign([
             $m->name . '_version' => $m->version,
+            'module_name' => $m->displayName,
             'module_link' => $module_link,
             'everblock_dir' => _MODULE_DIR_ . '/everblock/',
             'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
