@@ -2199,6 +2199,11 @@ class Everblock extends Module
         return $stats;
     }
 
+    public function getAdminModuleStatistics(): array
+    {
+        return $this->getModuleStatistics();
+    }
+
     protected function countTableRecords(string $table, string $whereClause = ''): int
     {
         if (!$this->moduleTableExists($table)) {
