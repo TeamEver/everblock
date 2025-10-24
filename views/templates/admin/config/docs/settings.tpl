@@ -45,9 +45,11 @@
         <p>{l s='Ever Block is and will remain free. You can support ongoing development by using the donation button available below the form.' mod='everblock'}</p>
 
         <p class="mt-3">
-            <a href="{$donation_link|escape:'htmlall':'UTF-8'}" class="btn btn-warning" target="_blank">
-                <i class="icon-money"></i> {l s='Make a donation' mod='everblock'}
-            </a>
+            {if isset($donation_link) && $donation_link}
+                <a href="{$donation_link|escape:'htmlall':'UTF-8'}" class="btn btn-warning" target="_blank">
+                    <i class="icon-money"></i> {l s='Make a donation' mod='everblock'}
+                </a>
+            {/if}
         </p>
     </div>
 </div>
