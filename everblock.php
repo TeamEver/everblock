@@ -1088,6 +1088,12 @@ class Everblock extends Module
             $docTemplates['prettyblock'] = 'prettyblock.tpl';
         }
 
+        if (null === $this->context->smarty->getTemplateVars('donation_link')) {
+            $this->context->smarty->assign([
+                'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
+            ]);
+        }
+
         foreach ($docTemplates as $tab => $template) {
             $docPath = $this->local_path . 'views/templates/admin/config/docs/' . $template;
 
