@@ -5583,6 +5583,9 @@ class EverblockTools extends ObjectModel
         if ($url) {
             $sourcePath = self::urlToFilePath($url);
             $filename = $field['value']['filename'] ?? basename($sourcePath);
+            $extension = strtolower($field['value']['extension'] ?? pathinfo($filename, PATHINFO_EXTENSION));
+            $mimeType = strtolower($field['value']['mime'] ?? '');
+            $isSvg = in_array($extension, ['svg', 'svg+xml', 'svgz'], true) || strpos($mimeType, 'image/svg') === 0;
             if (file_exists($sourcePath)) {
                 if (!is_dir($destinationDir)) {
                     @mkdir($destinationDir, 0755, true);
@@ -5591,8 +5594,23 @@ class EverblockTools extends ObjectModel
                 if ($sourcePath !== $destinationPath) {
                     @rename($sourcePath, $destinationPath);
                 }
-                $field['value']['url'] = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/cms/prettyblocks/' . $filename;
+                $publicUrl = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/cms/prettyblocks/' . $filename;
+                $field['value']['url'] = $publicUrl;
                 $field['value']['filename'] = $filename;
+
+                if ($isSvg) {
+                    $field['value']['extension'] = 'svg';
+                } else {
+                    $webpUrl = self::convertToWebP($publicUrl);
+                    if ($webpUrl) {
+                        $field['value']['url'] = $webpUrl;
+                        $webpPath = parse_url($webpUrl, PHP_URL_PATH);
+                        $field['value']['filename'] = $webpPath ? basename($webpPath) : basename($webpUrl);
+                        $field['value']['extension'] = 'webp';
+                    } elseif (!isset($field['value']['extension'])) {
+                        $field['value']['extension'] = $extension ?: pathinfo($filename, PATHINFO_EXTENSION);
+                    }
+                }
             }
         }
         $field['path'] = '$/img/cms/prettyblocks/';
