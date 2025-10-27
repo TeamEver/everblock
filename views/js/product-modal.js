@@ -16,62 +16,205 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-(function() {
+(function () {
   'use strict';
 
   function initEverblockModalUploader() {
-    var fileInput = document.getElementById('everblock_modal_file');
-    var payloadInput = document.getElementById('everblock_modal_file_payload');
-    var nameInput = document.getElementById('everblock_modal_file_name');
-
-    if (!fileInput || !payloadInput || !nameInput) {
+    var container = document.querySelector('.everblock-modal-panel[data-everblock-modal]');
+    if (!container) {
       return;
     }
 
-    var resetPayload = function() {
-      payloadInput.value = '';
-      nameInput.value = '';
-    };
+    var ajaxUrl = container.getAttribute('data-ever-ajax-url');
+    var productId = container.getAttribute('data-ever-product-id');
+    var noFileText = container.getAttribute('data-ever-no-file-text') || '';
+    var defaultErrorMessage = container.getAttribute('data-ever-error-text') || '';
 
-    fileInput.addEventListener('change', function() {
+    if (!ajaxUrl || !productId) {
+      return;
+    }
+
+    var fileInput = container.querySelector('#everblock_modal_file');
+    var deleteCheckbox = container.querySelector('input[name="everblock_modal_file_delete"]');
+    var payloadInput = container.querySelector('#everblock_modal_file_payload');
+    var nameInput = container.querySelector('#everblock_modal_file_name');
+    var feedback = container.querySelector('.everblock-modal-feedback');
+    var fileWrapper = container.querySelector('.everblock-modal-file-wrapper');
+    var deleteWrapper = container.querySelector('.everblock-modal-delete-wrapper');
+    var isProcessing = false;
+
+    if (!fileInput) {
+      return;
+    }
+
+    function resetPayload() {
+      if (payloadInput) {
+        payloadInput.value = '';
+      }
+      if (nameInput) {
+        nameInput.value = '';
+      }
+    }
+
+    function setProcessing(state) {
+      isProcessing = state;
+      fileInput.disabled = state;
+      if (deleteCheckbox) {
+        deleteCheckbox.disabled = state;
+      }
+    }
+
+    function showFeedback(type, message) {
+      if (!feedback) {
+        return;
+      }
+
+      feedback.classList.remove('alert-success', 'alert-danger', 'd-none');
+
+      if (!message) {
+        feedback.classList.add('d-none');
+        feedback.textContent = '';
+        return;
+      }
+
+      feedback.textContent = message;
+
+      if (type === 'success') {
+        feedback.classList.add('alert-success');
+        feedback.classList.remove('alert-danger');
+      } else {
+        feedback.classList.add('alert-danger');
+        feedback.classList.remove('alert-success');
+      }
+    }
+
+    function updateFileDisplay(url, name) {
+      if (!fileWrapper) {
+        return;
+      }
+
+      var current = fileWrapper.querySelector('.everblock-modal-current-file');
+      if (!current) {
+        current = document.createElement('p');
+        current.className = 'everblock-modal-current-file';
+        fileWrapper.appendChild(current);
+      }
+
+      current.innerHTML = '';
+
+      if (url) {
+        current.classList.remove('text-muted');
+        var link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.className = 'everblock-modal-file-link';
+        link.textContent = name || url;
+        current.appendChild(link);
+      } else {
+        current.classList.add('text-muted');
+        current.textContent = noFileText;
+      }
+    }
+
+    function toggleDeleteWrapper(visible) {
+      if (!deleteWrapper) {
+        return;
+      }
+
+      deleteWrapper.style.display = visible ? '' : 'none';
+
+      if (deleteCheckbox) {
+        deleteCheckbox.checked = false;
+      }
+    }
+
+    function buildFormData() {
+      var formData = new FormData();
+      formData.append('ajax', '1');
+      formData.append('action', 'EverblockProductModalFile');
+      formData.append('configure', 'everblock');
+      formData.append('id_product', productId);
+      return formData;
+    }
+
+    function handleResponse(data, context) {
+      setProcessing(false);
+
+      var success = !!(data && data.success);
+      var message = data && data.message ? data.message : (defaultErrorMessage || '');
+
+      showFeedback(success ? 'success' : 'error', message);
+
+      if (success) {
+        var hasFile = data.file_url ? data.file_url.length > 0 : false;
+        updateFileDisplay(hasFile ? data.file_url : '', data.file_name || '');
+        toggleDeleteWrapper(hasFile);
+        resetPayload();
+      } else if (context === 'delete' && deleteCheckbox) {
+        deleteCheckbox.checked = false;
+      }
+    }
+
+    function sendRequest(formData, context) {
+      if (isProcessing) {
+        return;
+      }
+
+      setProcessing(true);
+      showFeedback(null, '');
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', ajaxUrl, true);
+      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) {
+          return;
+        }
+
+        var data = null;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            data = JSON.parse(xhr.responseText);
+          } catch (error) {
+            data = null;
+          }
+        }
+
+        handleResponse(data, context);
+      };
+
+      xhr.onerror = function () {
+        handleResponse(null, context);
+      };
+
+      xhr.send(formData);
+    }
+
+    fileInput.addEventListener('change', function () {
       if (!fileInput.files || fileInput.files.length === 0) {
         resetPayload();
         return;
       }
 
-      var file = fileInput.files[0];
-      var reader = new FileReader();
+      var formData = buildFormData();
+      formData.append('everblock_modal_file', fileInput.files[0]);
 
-      reader.onload = function(event) {
-        var result = event && event.target ? event.target.result : null;
+      resetPayload();
+      sendRequest(formData, 'upload');
+      fileInput.value = '';
+    });
 
-        if (typeof result !== 'string') {
-          resetPayload();
+    if (deleteCheckbox) {
+      deleteCheckbox.addEventListener('change', function () {
+        if (!deleteCheckbox.checked) {
           return;
         }
 
-        var commaIndex = result.indexOf(',');
-        var base64Content = commaIndex !== -1 ? result.substring(commaIndex + 1) : result;
-
-        payloadInput.value = base64Content;
-        nameInput.value = file.name || '';
-      };
-
-      reader.onerror = function() {
-        resetPayload();
-      };
-
-      reader.readAsDataURL(file);
-    });
-
-    var deleteCheckbox = document.querySelector('input[name="everblock_modal_file_delete"]');
-
-    if (deleteCheckbox) {
-      deleteCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-          fileInput.value = '';
-          resetPayload();
-        }
+        var formData = buildFormData();
+        formData.append('delete', '1');
+        sendRequest(formData, 'delete');
       });
     }
   }

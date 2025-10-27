@@ -779,6 +779,9 @@ class Everblock extends Module
 
     public function getContent()
     {
+        if ($this->isProductModalAjaxRequest()) {
+            $this->ajaxProcessProductModalFile();
+        }
         $this->createUpgradeFile();
         $this->secureModuleFolder();
         EverblockTools::checkAndFixDatabase();
@@ -985,6 +988,126 @@ class Everblock extends Module
         );
 
         return $output;
+    }
+
+    protected function isProductModalAjaxRequest()
+    {
+        return Tools::getIsset('ajax')
+            && Tools::getValue('ajax')
+            && Tools::getValue('action') === 'EverblockProductModalFile'
+            && Tools::getValue('configure') === $this->name;
+    }
+
+    protected function ajaxProcessProductModalFile()
+    {
+        $this->context->controller->ajax = true;
+        header('Content-Type: application/json');
+
+        $response = [
+            'success' => false,
+            'message' => $this->l('An unexpected error occurred.'),
+            'file_url' => '',
+            'file_name' => '',
+        ];
+
+        try {
+            $productId = (int) Tools::getValue('id_product');
+            if ($productId <= 0) {
+                $response['message'] = $this->l('Missing product identifier.');
+                die(Tools::jsonEncode($response));
+            }
+
+            $shopId = (int) $this->context->shop->id;
+            $modal = EverblockModal::getByProductId($productId, $shopId);
+            if (!is_array($modal->content)) {
+                $modal->content = [];
+            }
+
+            if ((int) Tools::getValue('delete')) {
+                if (!empty($modal->file)) {
+                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+                    if (file_exists($oldFile)) {
+                        @unlink($oldFile);
+                    }
+                    $modal->file = '';
+                    if (!Validate::isLoadedObject($modal)) {
+                        $languages = Language::getLanguages(true);
+                        foreach ($languages as $language) {
+                            $modal->content[$language['id_lang']] = $modal->content[$language['id_lang']] ?? '';
+                        }
+                    }
+                    $modal->save();
+                }
+
+                $response['success'] = true;
+                $response['message'] = $this->l('Modal file removed successfully.');
+                die(Tools::jsonEncode($response));
+            }
+
+            if (!isset($_FILES['everblock_modal_file']) || !is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
+                $response['message'] = $this->l('No file received.');
+                die(Tools::jsonEncode($response));
+            }
+
+            $uploadedFile = $_FILES['everblock_modal_file'];
+            if (!empty($uploadedFile['error']) && $uploadedFile['error'] !== UPLOAD_ERR_OK) {
+                $response['message'] = $this->l('Unable to upload the file.');
+                die(Tools::jsonEncode($response));
+            }
+
+            $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0755, true);
+            }
+
+            if (!empty($modal->file)) {
+                $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+
+            $extension = pathinfo($uploadedFile['name'], PATHINFO_EXTENSION);
+            if ($extension) {
+                $extension = Tools::strtolower($extension);
+            }
+
+            $fileName = uniqid('everblock_modal_');
+            if (!empty($extension)) {
+                $fileName .= '.' . $extension;
+            }
+
+            if (!move_uploaded_file($uploadedFile['tmp_name'], $dir . $fileName)) {
+                $response['message'] = $this->l('Unable to move the uploaded file.');
+                die(Tools::jsonEncode($response));
+            }
+
+            if (!Validate::isLoadedObject($modal)) {
+                $languages = Language::getLanguages(true);
+                foreach ($languages as $language) {
+                    $modal->content[$language['id_lang']] = $modal->content[$language['id_lang']] ?? '';
+                }
+            }
+
+            $modal->file = 'everblockmodal/' . $fileName;
+            $modal->id_product = $productId;
+            $modal->id_shop = $shopId;
+            $modal->save();
+
+            $response['success'] = true;
+            $response['message'] = $this->l('Modal file uploaded successfully.');
+            $response['file_url'] = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
+            $response['file_name'] = basename($modal->file);
+        } catch (Exception $exception) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+            EverblockTools::setLog(
+                $this->name . date('y-m-d'),
+                $exception->getMessage()
+            );
+            $response['message'] = $this->l('An unexpected error occurred during upload.');
+        }
+
+        die(Tools::jsonEncode($response));
     }
 
     protected function renderForm()
@@ -3345,11 +3468,14 @@ class Everblock extends Module
             $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
             $fileName = basename($modal->file);
         }
+        $everAjaxUrl = Context::getContext()->link->getAdminLink('AdminModules', true, [], ['configure' => $this->name]);
         $this->smarty->assign([
             'modal' => $modal,
             'modal_file_url' => $fileUrl,
             'modal_file_name' => $fileName,
             'ever_languages' => Language::getLanguages(false),
+            'ever_ajax_url' => $everAjaxUrl,
+            'ever_product_id' => (int) $params['id_product'],
         ]);
         return $this->display(__FILE__, 'views/templates/admin/productModal.tpl');
     }
