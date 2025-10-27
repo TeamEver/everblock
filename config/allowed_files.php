@@ -151,6 +151,7 @@ return [
     'views/js/everblock-obfuscation.js',
     'views/js/everblock.js',
     'views/js/index.php',
+    'views/js/product-modal.js',
     'views/js/slick-min.js',
     'views/templates/admin/config/docs/cron.tpl',
     'views/templates/admin/config/docs/files.tpl',
