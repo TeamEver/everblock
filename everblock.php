@@ -3331,6 +3331,9 @@ class Everblock extends Module
         if (empty($params['id_product'])) {
             return;
         }
+        if (isset($this->context->controller) && method_exists($this->context->controller, 'addJs')) {
+            $this->context->controller->addJs($this->_path . 'views/js/product-modal.js');
+        }
         $modal = EverblockModal::getByProductId(
             (int) $params['id_product'],
             (int) $this->context->shop->id
@@ -3531,7 +3534,34 @@ class Everblock extends Module
                     $modal->file = '';
                 }
             }
-            if (isset($_FILES['everblock_modal_file']) && is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
+            $modalFilePayload = Tools::getValue('everblock_modal_file_payload');
+            $modalFileOriginalName = Tools::getValue('everblock_modal_file_name');
+            if (!empty($modalFilePayload) && !empty($modalFileOriginalName)) {
+                $decodedPayload = base64_decode(str_replace([' ', "\r", "\n"], '', $modalFilePayload), true);
+                if ($decodedPayload !== false) {
+                    $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
+                    if (!is_dir($dir)) {
+                        @mkdir($dir, 0755, true);
+                    }
+                    if (!empty($modal->file)) {
+                        $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+                        if (file_exists($oldFile)) {
+                            @unlink($oldFile);
+                        }
+                    }
+                    $extension = pathinfo($modalFileOriginalName, PATHINFO_EXTENSION);
+                    if ($extension) {
+                        $extension = Tools::strtolower($extension);
+                    }
+                    $name = uniqid('everblock_modal_');
+                    if (!empty($extension)) {
+                        $name .= '.' . $extension;
+                    }
+                    if (file_put_contents($dir . $name, $decodedPayload) !== false) {
+                        $modal->file = 'everblockmodal/' . $name;
+                    }
+                }
+            } elseif (isset($_FILES['everblock_modal_file']) && is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
                 $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
                 if (!is_dir($dir)) {
                     @mkdir($dir, 0755, true);
@@ -3543,7 +3573,7 @@ class Everblock extends Module
                     }
                 }
                 $ext = pathinfo($_FILES['everblock_modal_file']['name'], PATHINFO_EXTENSION);
-                $name = uniqid('everblock_modal_') . '.' . $ext;
+                $name = uniqid('everblock_modal_') . ($ext ? '.' . $ext : '');
                 if (move_uploaded_file($_FILES['everblock_modal_file']['tmp_name'], $dir . $name)) {
                     $modal->file = 'everblockmodal/' . $name;
                 }

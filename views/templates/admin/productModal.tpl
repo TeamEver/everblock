@@ -42,6 +42,8 @@
                 </div>
             {/if}
             <input type="file" name="everblock_modal_file" id="everblock_modal_file" class="form-control" />
+            <input type="hidden" name="everblock_modal_file_payload" id="everblock_modal_file_payload" value="" />
+            <input type="hidden" name="everblock_modal_file_name" id="everblock_modal_file_name" value="" />
         </div>
     </div>
 </div>
