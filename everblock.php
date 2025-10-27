@@ -2783,6 +2783,35 @@ class Everblock extends Module
     public function hookActionAdminControllerSetMedia()
     {
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
+
+        $isAdminProductPage = false;
+
+        if (isset($this->context->controller)) {
+            if (property_exists($this->context->controller, 'controller_name')
+                && $this->context->controller->controller_name === 'AdminProducts'
+            ) {
+                $isAdminProductPage = true;
+            }
+
+            if (!$isAdminProductPage
+                && method_exists($this->context->controller, 'getControllerName')
+                && $this->context->controller->getControllerName() === 'AdminProducts'
+            ) {
+                $isAdminProductPage = true;
+            }
+        }
+
+        if (!$isAdminProductPage) {
+            $controllerParam = Tools::getValue('controller');
+            if (!empty($controllerParam) && $controllerParam === 'AdminProducts') {
+                $isAdminProductPage = true;
+            }
+        }
+
+        if ($isAdminProductPage && method_exists($this->context->controller, 'addJs')) {
+            $this->context->controller->addJs($this->_path . 'views/js/product-modal.js');
+        }
+
         if (Tools::getValue('id_' . $this->name)
             || Tools::getIsset('add' . $this->name)
             || Tools::getValue('configure') == $this->name
@@ -3330,9 +3359,6 @@ class Everblock extends Module
     {
         if (empty($params['id_product'])) {
             return;
-        }
-        if (isset($this->context->controller) && method_exists($this->context->controller, 'addJs')) {
-            $this->context->controller->addJs($this->_path . 'views/js/product-modal.js');
         }
         $modal = EverblockModal::getByProductId(
             (int) $params['id_product'],
