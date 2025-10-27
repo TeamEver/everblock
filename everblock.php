@@ -1149,8 +1149,6 @@ class Everblock extends Module
                 die(json_encode($response));
             }
 
-            $targetDir = $this->ensureModalDirectory($productId);
-
             if (!empty($modal->file)) {
                 $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
                 if (file_exists($oldFile)) {
@@ -1158,6 +1156,8 @@ class Everblock extends Module
                     $this->cleanupModalDirectory(dirname($oldFile));
                 }
             }
+
+            $targetDir = $this->ensureModalDirectory($productId);
 
             $fileName = $this->sanitizeModalFileName($uploadedFile['name']);
             $destinationPath = $targetDir . $fileName;
