@@ -15,7 +15,7 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
 *}
-<div class="panel everblock-modal-panel" data-everblock-modal="1" data-ever-ajax-url="{$ever_ajax_url|escape:'htmlall':'UTF-8'}" data-ever-product-id="{$ever_product_id|intval}" data-ever-no-file-text="{l s='No file uploaded yet.' mod='everblock'|escape:'htmlall':'UTF-8'}" data-ever-error-text="{l s='An error occurred while updating the modal file.' mod='everblock'|escape:'htmlall':'UTF-8'}">
+<div class="panel everblock-modal-panel" data-everblock-modal="1" data-ever-ajax-url="{$ever_ajax_url|escape:'htmlall':'UTF-8'}" data-ever-product-id="{$ever_product_id|intval}" data-ever-no-file-text="{l s='No file uploaded yet.' mod='everblock'|escape:'htmlall':'UTF-8'}" data-ever-error-text="{l s='An error occurred while updating the modal file.' mod='everblock'|escape:'htmlall':'UTF-8'}" data-ever-preview-empty-text="{l s='Preview not available for this file.' mod='everblock'|escape:'htmlall':'UTF-8'}">
     <div class="panel-heading">
         {l s='Everblock modal content' mod='everblock'}
     </div>
@@ -46,6 +46,15 @@
                         {l s='Delete file' mod='everblock'}
                     </label>
                 </div>
+            </div>
+            <div class="everblock-modal-preview-container mt-3{if !$modal_file_url} d-none{/if}" data-ever-preview-empty-text="{l s='Preview not available for this file.' mod='everblock'|escape:'htmlall':'UTF-8'}">
+                <label class="form-label d-block">{l s='Preview' mod='everblock'}</label>
+                <div class="everblock-modal-preview-wrapper{if !$modal_file_url || !$modal_file_is_image} d-none{/if}">
+                    <img class="everblock-modal-preview-image img-thumbnail" alt="{$modal_file_name|escape:'htmlall':'UTF-8'}"{if $modal_file_url && $modal_file_is_image} src="{$modal_file_preview_url|escape:'htmlall':'UTF-8'}" loading="lazy"{/if} />
+                </div>
+                <p class="everblock-modal-preview-empty text-muted{if $modal_file_url && $modal_file_is_image} d-none{/if}">
+                    {l s='Preview not available for this file.' mod='everblock'}
+                </p>
             </div>
             <input type="file" name="everblock_modal_file" id="everblock_modal_file" class="form-control" />
             <input type="hidden" name="everblock_modal_file_payload" id="everblock_modal_file_payload" value="" />

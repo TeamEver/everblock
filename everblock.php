@@ -998,6 +998,95 @@ class Everblock extends Module
             && Tools::getValue('configure') === $this->name;
     }
 
+    protected function sanitizeModalFileName($originalName)
+    {
+        $originalName = basename((string) $originalName);
+        $extension = Tools::strtolower((string) pathinfo($originalName, PATHINFO_EXTENSION));
+        $baseName = (string) pathinfo($originalName, PATHINFO_FILENAME);
+
+        $baseName = Tools::replaceAccentedChars($baseName);
+        $baseName = preg_replace('/[^A-Za-z0-9\-\. _]+/', '_', $baseName);
+        $baseName = preg_replace('/_{2,}/', '_', (string) $baseName);
+        $baseName = trim((string) $baseName, ' ._-');
+
+        if ($baseName === '') {
+            $baseName = 'modal_file';
+        }
+
+        if ($extension !== '') {
+            return $baseName . '.' . $extension;
+        }
+
+        return $baseName;
+    }
+
+    protected function ensureModalDirectory($productId)
+    {
+        $baseDir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
+        if (!is_dir($baseDir) && !@mkdir($baseDir, 0755, true)) {
+            throw new Exception($this->l('Unable to create modal directory.'));
+        }
+
+        $productDir = $baseDir . (int) $productId . '/';
+        if (!is_dir($productDir) && !@mkdir($productDir, 0755, true)) {
+            throw new Exception($this->l('Unable to create product modal directory.'));
+        }
+
+        return $productDir;
+    }
+
+    protected function isPreviewableModalFile($path)
+    {
+        $extension = Tools::strtolower((string) pathinfo($path, PATHINFO_EXTENSION));
+        $previewableExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif'];
+
+        return $extension !== '' && in_array($extension, $previewableExtensions, true);
+    }
+
+    protected function buildTimestampedUrl($url, $timestamp)
+    {
+        if (!$url) {
+            return '';
+        }
+
+        $separator = (strpos($url, '?') === false) ? '?' : '&';
+
+        return $url . $separator . 't=' . (int) $timestamp;
+    }
+
+    protected function cleanupModalDirectory($path)
+    {
+        $path = rtrim((string) $path, '/');
+        $baseDir = rtrim(_PS_IMG_DIR_ . 'cms/everblockmodal', '/');
+
+        if ($path === '' || $path === $baseDir) {
+            return;
+        }
+
+        if (!is_dir($path)) {
+            return;
+        }
+
+        $handle = opendir($path);
+        if ($handle === false) {
+            return;
+        }
+
+        $isEmpty = true;
+        while (($entry = readdir($handle)) !== false) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $isEmpty = false;
+            break;
+        }
+        closedir($handle);
+
+        if ($isEmpty) {
+            @rmdir($path);
+        }
+    }
+
     protected function ajaxProcessProductModalFile()
     {
         $this->context->controller->ajax = true;
@@ -1008,6 +1097,10 @@ class Everblock extends Module
             'message' => $this->l('An unexpected error occurred.'),
             'file_url' => '',
             'file_name' => '',
+            'file_display_name' => '',
+            'file_preview_url' => '',
+            'file_timestamp' => null,
+            'is_image' => false,
         ];
 
         try {
@@ -1028,6 +1121,7 @@ class Everblock extends Module
                     $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
                     if (file_exists($oldFile)) {
                         @unlink($oldFile);
+                        $this->cleanupModalDirectory(dirname($oldFile));
                     }
                     $modal->file = '';
                     if (!Validate::isLoadedObject($modal)) {
@@ -1055,29 +1149,20 @@ class Everblock extends Module
                 die(json_encode($response));
             }
 
-            $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
-            if (!is_dir($dir)) {
-                @mkdir($dir, 0755, true);
-            }
+            $targetDir = $this->ensureModalDirectory($productId);
 
             if (!empty($modal->file)) {
                 $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
                 if (file_exists($oldFile)) {
                     @unlink($oldFile);
+                    $this->cleanupModalDirectory(dirname($oldFile));
                 }
             }
 
-            $extension = pathinfo($uploadedFile['name'], PATHINFO_EXTENSION);
-            if ($extension) {
-                $extension = Tools::strtolower($extension);
-            }
+            $fileName = $this->sanitizeModalFileName($uploadedFile['name']);
+            $destinationPath = $targetDir . $fileName;
 
-            $fileName = uniqid('everblock_modal_');
-            if (!empty($extension)) {
-                $fileName .= '.' . $extension;
-            }
-
-            if (!move_uploaded_file($uploadedFile['tmp_name'], $dir . $fileName)) {
+            if (!move_uploaded_file($uploadedFile['tmp_name'], $destinationPath)) {
                 $response['message'] = $this->l('Unable to move the uploaded file.');
                 die(json_encode($response));
             }
@@ -1089,7 +1174,7 @@ class Everblock extends Module
                 }
             }
 
-            $modal->file = 'everblockmodal/' . $fileName;
+            $modal->file = 'everblockmodal/' . (int) $productId . '/' . $fileName;
             $modal->id_product = $productId;
             $modal->id_shop = $shopId;
             $modal->save();
@@ -1098,6 +1183,18 @@ class Everblock extends Module
             $response['message'] = $this->l('Modal file uploaded successfully.');
             $response['file_url'] = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
             $response['file_name'] = basename($modal->file);
+            $response['file_display_name'] = preg_replace('/[\r\n]+/', '', basename($uploadedFile['name']));
+
+            $timestamp = @filemtime($destinationPath);
+            if (!$timestamp) {
+                $timestamp = time();
+            }
+
+            $response['file_timestamp'] = $timestamp;
+            $response['is_image'] = $this->isPreviewableModalFile($destinationPath);
+            if ($response['is_image']) {
+                $response['file_preview_url'] = $this->buildTimestampedUrl($response['file_url'], $timestamp);
+            }
         } catch (Exception $exception) {
             PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
             EverblockTools::setLog(
@@ -3464,15 +3561,32 @@ class Everblock extends Module
         );
         $fileUrl = '';
         $fileName = '';
+        $filePreviewUrl = '';
+        $fileTimestamp = null;
+        $fileIsImage = false;
         if (!empty($modal->file)) {
             $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
             $fileName = basename($modal->file);
+            $absolutePath = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+            if (file_exists($absolutePath)) {
+                $fileTimestamp = (int) @filemtime($absolutePath);
+                if (!$fileTimestamp) {
+                    $fileTimestamp = time();
+                }
+                $fileIsImage = $this->isPreviewableModalFile($absolutePath);
+                if ($fileIsImage) {
+                    $filePreviewUrl = $this->buildTimestampedUrl($fileUrl, $fileTimestamp);
+                }
+            }
         }
         $everAjaxUrl = Context::getContext()->link->getAdminLink('AdminModules', true, [], ['configure' => $this->name]);
         $this->smarty->assign([
             'modal' => $modal,
             'modal_file_url' => $fileUrl,
             'modal_file_name' => $fileName,
+            'modal_file_preview_url' => $filePreviewUrl,
+            'modal_file_timestamp' => $fileTimestamp,
+            'modal_file_is_image' => $fileIsImage,
             'ever_languages' => Language::getLanguages(false),
             'ever_ajax_url' => $everAjaxUrl,
             'ever_product_id' => (int) $params['id_product'],
@@ -3666,43 +3780,31 @@ class Everblock extends Module
             if (!empty($modalFilePayload) && !empty($modalFileOriginalName)) {
                 $decodedPayload = base64_decode(str_replace([' ', "\r", "\n"], '', $modalFilePayload), true);
                 if ($decodedPayload !== false) {
-                    $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
-                    if (!is_dir($dir)) {
-                        @mkdir($dir, 0755, true);
-                    }
+                    $targetDir = $this->ensureModalDirectory((int) $params['object']->id);
                     if (!empty($modal->file)) {
                         $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
                         if (file_exists($oldFile)) {
                             @unlink($oldFile);
+                            $this->cleanupModalDirectory(dirname($oldFile));
                         }
                     }
-                    $extension = pathinfo($modalFileOriginalName, PATHINFO_EXTENSION);
-                    if ($extension) {
-                        $extension = Tools::strtolower($extension);
-                    }
-                    $name = uniqid('everblock_modal_');
-                    if (!empty($extension)) {
-                        $name .= '.' . $extension;
-                    }
-                    if (file_put_contents($dir . $name, $decodedPayload) !== false) {
-                        $modal->file = 'everblockmodal/' . $name;
+                    $fileName = $this->sanitizeModalFileName($modalFileOriginalName);
+                    if (file_put_contents($targetDir . $fileName, $decodedPayload) !== false) {
+                        $modal->file = 'everblockmodal/' . (int) $params['object']->id . '/' . $fileName;
                     }
                 }
             } elseif (isset($_FILES['everblock_modal_file']) && is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
-                $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
-                if (!is_dir($dir)) {
-                    @mkdir($dir, 0755, true);
-                }
+                $targetDir = $this->ensureModalDirectory((int) $params['object']->id);
                 if (!empty($modal->file)) {
                     $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
                     if (file_exists($oldFile)) {
                         @unlink($oldFile);
+                        $this->cleanupModalDirectory(dirname($oldFile));
                     }
                 }
-                $ext = pathinfo($_FILES['everblock_modal_file']['name'], PATHINFO_EXTENSION);
-                $name = uniqid('everblock_modal_') . ($ext ? '.' . $ext : '');
-                if (move_uploaded_file($_FILES['everblock_modal_file']['tmp_name'], $dir . $name)) {
-                    $modal->file = 'everblockmodal/' . $name;
+                $fileName = $this->sanitizeModalFileName($_FILES['everblock_modal_file']['name']);
+                if (move_uploaded_file($_FILES['everblock_modal_file']['tmp_name'], $targetDir . $fileName)) {
+                    $modal->file = 'everblockmodal/' . (int) $params['object']->id . '/' . $fileName;
                 }
             }
             $modal->id_product = (int) $params['object']->id;
