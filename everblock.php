@@ -2783,32 +2783,7 @@ class Everblock extends Module
     public function hookActionAdminControllerSetMedia()
     {
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
-
-        $isAdminProductPage = false;
-
-        if (isset($this->context->controller)) {
-            if (property_exists($this->context->controller, 'controller_name')
-                && $this->context->controller->controller_name === 'AdminProducts'
-            ) {
-                $isAdminProductPage = true;
-            }
-
-            if (!$isAdminProductPage
-                && method_exists($this->context->controller, 'getControllerName')
-                && $this->context->controller->getControllerName() === 'AdminProducts'
-            ) {
-                $isAdminProductPage = true;
-            }
-        }
-
-        if (!$isAdminProductPage) {
-            $controllerParam = Tools::getValue('controller');
-            if (!empty($controllerParam) && $controllerParam === 'AdminProducts') {
-                $isAdminProductPage = true;
-            }
-        }
-
-        if ($isAdminProductPage && method_exists($this->context->controller, 'addJs')) {
+        if (Tools::getValue('controller') == 'AdminProducts') {
             $this->context->controller->addJs($this->_path . 'views/js/product-modal.js');
         }
 
