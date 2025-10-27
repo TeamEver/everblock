@@ -1014,7 +1014,7 @@ class Everblock extends Module
             $productId = (int) Tools::getValue('id_product');
             if ($productId <= 0) {
                 $response['message'] = $this->l('Missing product identifier.');
-                die(Tools::jsonEncode($response));
+                die(json_encode($response));
             }
 
             $shopId = (int) $this->context->shop->id;
@@ -1041,18 +1041,18 @@ class Everblock extends Module
 
                 $response['success'] = true;
                 $response['message'] = $this->l('Modal file removed successfully.');
-                die(Tools::jsonEncode($response));
+                die(json_encode($response));
             }
 
             if (!isset($_FILES['everblock_modal_file']) || !is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
                 $response['message'] = $this->l('No file received.');
-                die(Tools::jsonEncode($response));
+                die(json_encode($response));
             }
 
             $uploadedFile = $_FILES['everblock_modal_file'];
             if (!empty($uploadedFile['error']) && $uploadedFile['error'] !== UPLOAD_ERR_OK) {
                 $response['message'] = $this->l('Unable to upload the file.');
-                die(Tools::jsonEncode($response));
+                die(json_encode($response));
             }
 
             $dir = _PS_IMG_DIR_ . 'cms/everblockmodal/';
@@ -1079,7 +1079,7 @@ class Everblock extends Module
 
             if (!move_uploaded_file($uploadedFile['tmp_name'], $dir . $fileName)) {
                 $response['message'] = $this->l('Unable to move the uploaded file.');
-                die(Tools::jsonEncode($response));
+                die(json_encode($response));
             }
 
             if (!Validate::isLoadedObject($modal)) {
@@ -1107,7 +1107,7 @@ class Everblock extends Module
             $response['message'] = $this->l('An unexpected error occurred during upload.');
         }
 
-        die(Tools::jsonEncode($response));
+        die(json_encode($response));
     }
 
     protected function renderForm()
