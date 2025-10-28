@@ -38,13 +38,20 @@ class AdminEverBlockConfigurationController extends ModuleAdminController
     protected function redirectToConfiguration()
     {
         $moduleName = $this->module instanceof Module ? $this->module->name : 'everblock';
+        $params = [
+            'configure' => $moduleName,
+            'module_name' => $moduleName,
+        ];
+
+        if ($this->module instanceof Module && property_exists($this->module, 'tab') && $this->module->tab) {
+            $params['tab_module'] = $this->module->tab;
+        }
+
         $url = $this->context->link->getAdminLink(
             'AdminModules',
             true,
             [],
-            [
-                'configure' => $moduleName,
-            ]
+            $params
         );
 
         Tools::redirectAdmin($url);
