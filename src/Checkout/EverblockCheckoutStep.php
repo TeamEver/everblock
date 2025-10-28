@@ -20,46 +20,17 @@
 
 namespace Everblock\Tools\Checkout;
 
-if (!class_exists(\PrestaShop\PrestaShop\Core\Checkout\Step\AbstractCheckoutStep::class)) {
-    if (class_exists(\PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep::class)) {
-        class_alias(
-            \PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep::class,
-            \PrestaShop\PrestaShop\Core\Checkout\Step\AbstractCheckoutStep::class
-        );
-    } elseif (class_exists(\PrestaShop\PrestaShop\Adapter\Checkout\CheckoutProcess\AbstractCheckoutStep::class)) {
-        class_alias(
-            \PrestaShop\PrestaShop\Adapter\Checkout\CheckoutProcess\AbstractCheckoutStep::class,
-            \PrestaShop\PrestaShop\Core\Checkout\Step\AbstractCheckoutStep::class
-        );
-    }
-}
-
-if (!class_exists(\PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep::class)) {
-    if (class_exists(\PrestaShop\PrestaShop\Core\Checkout\Step\AbstractCheckoutStep::class)) {
-        class_alias(
-            \PrestaShop\PrestaShop\Core\Checkout\Step\AbstractCheckoutStep::class,
-            \PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep::class
-        );
-    } elseif (class_exists(\PrestaShop\PrestaShop\Adapter\Checkout\CheckoutProcess\AbstractCheckoutStep::class)) {
-        class_alias(
-            \PrestaShop\PrestaShop\Adapter\Checkout\CheckoutProcess\AbstractCheckoutStep::class,
-            \PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep::class
-        );
-    }
-}
-
 use Context;
 use Configuration;
 use Everblock;
 use Hook;
-use PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep;
 use Symfony\Component\Translation\TranslatorInterface;
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class EverblockCheckoutStep extends AbstractCheckoutStep
+class EverblockCheckoutStep extends \AbstractCheckoutStep
 {
     protected $module;
     protected $everdata;
@@ -103,7 +74,7 @@ class EverblockCheckoutStep extends AbstractCheckoutStep
      * Restoration des données persistées
      *
      * @param array $data
-     * @return $this|AbstractCheckoutStep
+     * @return $this|\AbstractCheckoutStep
      */
     public function restorePersistedData(array $data)
     {
