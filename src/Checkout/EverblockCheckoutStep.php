@@ -20,6 +20,20 @@
 
 namespace Everblock\Tools\Checkout;
 
+if (!class_exists(\PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep::class)) {
+    if (class_exists(\PrestaShop\PrestaShop\Core\Checkout\Step\AbstractCheckoutStep::class)) {
+        class_alias(
+            \PrestaShop\PrestaShop\Core\Checkout\Step\AbstractCheckoutStep::class,
+            \PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep::class
+        );
+    } elseif (class_exists(\PrestaShop\PrestaShop\Adapter\Checkout\CheckoutProcess\AbstractCheckoutStep::class)) {
+        class_alias(
+            \PrestaShop\PrestaShop\Adapter\Checkout\CheckoutProcess\AbstractCheckoutStep::class,
+            \PrestaShop\PrestaShop\Core\Checkout\AbstractCheckoutStep::class
+        );
+    }
+}
+
 use Context;
 use Configuration;
 use Everblock;
