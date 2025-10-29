@@ -3163,7 +3163,37 @@ $(document).ready(function(){
         requestStatus();
     });
 
+    initPrettyblockCategoryTabs();
     initPrettyblockToc();
+
+    function initPrettyblockCategoryTabs() {
+        var $blocks = $('.prettyblock-category-tabs');
+        if (!$blocks.length) {
+            return;
+        }
+
+        function refreshProducts($context) {
+            if (typeof prestashop !== 'undefined' && typeof prestashop.emit === 'function') {
+                prestashop.emit('updateProductList', {
+                    html: $context.find('.tab-pane.active')
+                });
+            }
+
+            setTimeout(function () {
+                $(window).trigger('resize');
+            }, 0);
+        }
+
+        $blocks.each(function () {
+            var $block = $(this);
+
+            $block.find('[data-bs-toggle="tab"], [data-toggle="tab"]').on('shown.bs.tab', function () {
+                refreshProducts($block);
+            });
+
+            refreshProducts($block);
+        });
+    }
 
     function initPrettyblockToc() {
         $('.pb-toc-summary').each(function(index){
