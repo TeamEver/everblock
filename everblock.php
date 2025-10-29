@@ -4979,7 +4979,7 @@ class Everblock extends Module
         $products = [];
         if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
             foreach ($params['block']['states'] as $key => $state) {
-                if (empty($state['id_category'])) {
+                if (empty($state['id_categories'])) {
                     continue;
                 }
                 $limit = isset($state['nb_products']) ? (int) $state['nb_products'] : 0;
@@ -4987,7 +4987,7 @@ class Everblock extends Module
                     $limit = (int) Configuration::get('PS_PRODUCTS_PER_PAGE');
                 }
                 $rawProducts = EverblockTools::getProductsByCategoryId(
-                    (int) $state['id_category'],
+                    (int) $state['id_categories']['id'],
                     $limit
                 );
                 $presented = EverblockTools::everPresentProducts(
