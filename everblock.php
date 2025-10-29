@@ -67,7 +67,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '8.0.4';
+        $this->version = '8.0.5';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
