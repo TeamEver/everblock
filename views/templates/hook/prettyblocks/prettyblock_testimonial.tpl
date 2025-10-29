@@ -35,7 +35,7 @@
         <div class="container">
             <div class="text-center row">
                 <div class="col-md-12">
-                    <span class="mb-2 h2">{$block.settings.name}</span>
+                    <span class="mb-2 h2">{$block.settings.name|default:''}</span>
                 </div>
             </div>
             <div class="row">
@@ -43,11 +43,11 @@
                 <div class="col-md-4">
                     <div class="testimonial">
                         <div class="testimonial-author text-center">
-                            <p class="author-name">{$state.name}</p>
+                            <p class="author-name">{$state.name|default:''}</p>
                             <picture>
-                              <source srcset="{$state.image.url}" type="image/webp">
-                              <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-                              <img src="{$state.image.url|replace:'.webp':'.jpg'}" alt="{$state.name}" title="{$state.name}" class="rounded-circle img img-fluid lazyload" loading="lazy" width="60">
+                              <source srcset="{$state.image.url|default:''}" type="image/webp">
+                              <source srcset="{$state.image.url|default:''|replace:'.webp':'.jpg'}" type="image/jpeg">
+                              <img src="{$state.image.url|default:''|replace:'.webp':'.jpg'}" alt="{$state.name|default:''}" title="{$state.name|default:''}" class="rounded-circle img img-fluid lazyload" loading="lazy" width="60">
                             </picture>
                         </div>
                         <div class="testimonial-content text-center">
