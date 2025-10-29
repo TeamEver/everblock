@@ -3314,7 +3314,7 @@ class EverblockTools extends ObjectModel
             foreach ($filenames as $filename) {
                 $safeFilename = basename($filename);
                 $filepath = _PS_IMG_DIR_ . 'cms/' . $safeFilename;
-                $webPath = _PS_BASE_URL_ . __PS_BASE_URI__ . 'img/cms/' . $safeFilename;
+                $webPath = Tools::getHttpHost(true) . PS_BASE_URI . 'img/cms/' . $safeFilename;
 
                 if (!file_exists($filepath)) {
                     continue;
