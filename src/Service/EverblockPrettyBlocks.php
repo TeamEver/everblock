@@ -2967,18 +2967,28 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
                         ],
-                    ], $module),
-                ],
-                'repeater' => [
-                    'name' => 'Deal',
-                    'nameFrom' => 'product',
-                    'groups' => static::appendSpacingFields([
-                        'product' => [
-                            'type' => 'selector',
-                            'label' => $module->l('Choose a product'),
-                            'collection' => 'Product',
-                            'selector' => '{id} - {name}',
-                            'default' => '',
+                        'sort_by' => [
+                            'type' => 'select',
+                            'label' => $module->l('Sort products by'),
+                            'choices' => [
+                                'price' => $module->l('Price'),
+                                'date_add' => $module->l('Date added'),
+                            ],
+                            'default' => 'price',
+                        ],
+                        'sort_direction' => [
+                            'type' => 'select',
+                            'label' => $module->l('Sort direction'),
+                            'choices' => [
+                                'ASC' => $module->l('Ascending'),
+                                'DESC' => $module->l('Descending'),
+                            ],
+                            'default' => 'ASC',
+                        ],
+                        'product_limit' => [
+                            'type' => 'text',
+                            'label' => $module->l('Number of products to display'),
+                            'default' => 8,
                         ],
                     ], $module),
                 ],

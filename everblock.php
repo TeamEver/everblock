@@ -5161,55 +5161,133 @@ class Everblock extends Module
         return ['products' => $products];
     }
 
+    private function getProductPromotionEndDate(int $idProduct, int $idCustomer, array $groupIds): ?string
+    {
+        $groupIds = array_map('intval', $groupIds);
+
+        if (empty($groupIds)) {
+            $groupIds = [(int) Configuration::get('PS_UNIDENTIFIED_GROUP')];
+        }
+
+        $groupList = implode(',', $groupIds);
+
+        $endDate = Db::getInstance()->getValue(
+            'SELECT MIN(cr.date_to) FROM ' . _DB_PREFIX_ . 'cart_rule cr '
+            . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule_group crprg ON cr.id_cart_rule = crprg.id_cart_rule '
+            . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule crpr ON crprg.id_product_rule_group = crpr.id_product_rule_group '
+            . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule_value crprv ON crpr.id_product_rule = crprv.id_product_rule '
+            . 'LEFT JOIN ' . _DB_PREFIX_ . 'cart_rule_group crg ON cr.id_cart_rule = crg.id_cart_rule '
+            . 'WHERE cr.active = 1 AND cr.date_to > NOW() AND crprv.id_item = ' . (int) $idProduct
+            . ' AND (cr.id_customer = 0 OR cr.id_customer = ' . (int) $idCustomer . ')'
+            . ' AND (crg.id_group IS NULL OR crg.id_group IN (' . $groupList . '))'
+        );
+
+        if (!$endDate) {
+            $endDate = Db::getInstance()->getValue(
+                'SELECT MIN(`to`) FROM ' . _DB_PREFIX_ . 'specific_price '
+                . 'WHERE id_product = ' . (int) $idProduct . ' AND `to` > NOW()'
+                . ' AND (id_customer = 0 OR id_customer = ' . (int) $idCustomer . ')'
+                . ' AND (id_group = 0 OR id_group IN (' . $groupList . '))'
+            );
+        }
+
+        return $endDate ?: null;
+    }
+
     public function hookBeforeRenderingEverblockFlashDeals($params)
     {
+        $settings = [];
+
+        if (!empty($params['block']['settings']) && is_array($params['block']['settings'])) {
+            $settings = $params['block']['settings'];
+        }
+
+        $sortBy = isset($settings['sort_by']) ? (string) $settings['sort_by'] : 'price';
+        $allowedSorts = ['price', 'date_add'];
+        if (!in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'price';
+        }
+
+        $sortDirection = isset($settings['sort_direction']) ? strtoupper((string) $settings['sort_direction']) : 'ASC';
+        if (!in_array($sortDirection, ['ASC', 'DESC'], true)) {
+            $sortDirection = 'ASC';
+        }
+
+        $limit = isset($settings['product_limit']) ? (int) $settings['product_limit'] : 8;
+        if ($limit <= 0) {
+            $limit = 8;
+        }
+
+        $requestedProductCount = max($limit * 2, $limit + 5);
+        $requestedProductCount = min($requestedProductCount, 50);
+
+        $promotionalProducts = Product::getPricesDrop(
+            (int) $this->context->language->id,
+            0,
+            $requestedProductCount,
+            $sortBy,
+            $sortDirection,
+            false,
+            false,
+            null,
+            true,
+            $this->context
+        );
+
+        if (empty($promotionalProducts) || !is_array($promotionalProducts)) {
+            return false;
+        }
+
+        $idCustomer = (int) $this->context->customer->id;
+        $groupIds = Customer::getGroupsStatic($idCustomer);
+        if (empty($groupIds)) {
+            $groupIds = [(int) Configuration::get('PS_UNIDENTIFIED_GROUP')];
+        }
+
+        $productIds = [];
+        $endDates = [];
+
+        foreach ($promotionalProducts as $productData) {
+            $idProduct = (int) ($productData['id_product'] ?? 0);
+
+            if ($idProduct <= 0 || isset($endDates[$idProduct])) {
+                continue;
+            }
+
+            $endDate = $this->getProductPromotionEndDate($idProduct, $idCustomer, $groupIds);
+
+            if (null === $endDate) {
+                continue;
+            }
+
+            $productIds[] = $idProduct;
+            $endDates[$idProduct] = $endDate;
+
+            if (count($productIds) >= $limit) {
+                break;
+            }
+        }
+
+        if (empty($productIds)) {
+            return false;
+        }
+
+        $presentedProducts = EverblockTools::everPresentProducts($productIds, $this->context);
+
+        if (empty($presentedProducts)) {
+            return false;
+        }
+
         $deals = [];
-        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
-            $idCustomer = (int) $this->context->customer->id;
-            $groupIds = Customer::getGroupsStatic($idCustomer);
-            if (empty($groupIds)) {
-                $groupIds = [(int) Configuration::get('PS_UNIDENTIFIED_GROUP')];
+        foreach ($presentedProducts as $product) {
+            $idProduct = (int) ($product['id_product'] ?? 0);
+
+            if ($idProduct <= 0 || empty($endDates[$idProduct])) {
+                continue;
             }
-            $groupIds = array_map('intval', $groupIds);
-            $groupList = implode(',', $groupIds);
-            foreach ($params['block']['states'] as $key => $state) {
-                if (empty($state['product']['id'])) {
-                    continue;
-                }
-                $idProduct = (int) $state['product']['id'];
-                if ($idProduct <= 0) {
-                    continue;
-                }
-                $endDate = Db::getInstance()->getValue(
-                    'SELECT MIN(cr.date_to) FROM ' . _DB_PREFIX_ . 'cart_rule cr '
-                    . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule_group crprg ON cr.id_cart_rule = crprg.id_cart_rule '
-                    . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule crpr ON crprg.id_product_rule_group = crpr.id_product_rule_group '
-                    . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule_value crprv ON crpr.id_product_rule = crprv.id_product_rule '
-                    . 'LEFT JOIN ' . _DB_PREFIX_ . 'cart_rule_group crg ON cr.id_cart_rule = crg.id_cart_rule '
-                    . 'WHERE cr.active = 1 AND cr.date_to > NOW() AND crprv.id_item = ' . $idProduct
-                    . ' AND (cr.id_customer = 0 OR cr.id_customer = ' . $idCustomer . ')'
-                    . ' AND (crg.id_group IS NULL OR crg.id_group IN (' . $groupList . '))'
-                );
-                if (!$endDate) {
-                    $endDate = Db::getInstance()->getValue(
-                        'SELECT MIN(`to`) FROM ' . _DB_PREFIX_ . 'specific_price '
-                        . 'WHERE id_product = ' . $idProduct . ' AND `to` > NOW()'
-                        . ' AND (id_customer = 0 OR id_customer = ' . $idCustomer . ')'
-                        . ' AND (id_group = 0 OR id_group IN (' . $groupList . '))'
-                    );
-                }
-                if (!$endDate) {
-                    continue;
-                }
-                $presented = EverblockTools::everPresentProducts([
-                    $idProduct,
-                ], $this->context);
-                if (!empty($presented)) {
-                    $product = reset($presented);
-                    $product['end_date'] = $endDate;
-                    $deals[$key] = $product;
-                }
-            }
+
+            $product['end_date'] = $endDates[$idProduct];
+            $deals[] = $product;
         }
 
         if (empty($deals)) {
