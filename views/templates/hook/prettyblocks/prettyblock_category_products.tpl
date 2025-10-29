@@ -35,7 +35,13 @@
             </div>
           {/if}
           {if isset($block.extra.products[$key]) && $block.extra.products[$key]}
-            {include file="module:everblock/views/templates/hook/ever_presented_products.tpl" everPresentProducts=$block.extra.products[$key] carousel=$state.slider shortcodeClass='category-products'}
+            {include file="module:everblock/views/templates/hook/ever_presented_products.tpl"
+              everPresentProducts=$block.extra.products[$key]
+              carousel=$state.slider
+              shortcodeClass='category-products'
+              carouselDesktopItems=$state.products_per_slide_desktop
+              carouselTabletItems=$state.products_per_slide_tablet
+              carouselMobileItems=$state.products_per_slide_mobile}
           {/if}
         </div>
       {/foreach}
