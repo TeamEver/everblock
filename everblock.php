@@ -5196,79 +5196,18 @@ class Everblock extends Module
 
     private function getPricesDropProducts(int $requestedProductCount, string $sortBy, string $sortDirection): array
     {
-        $baseArguments = [
+        $products = Product::getPricesDrop(
             (int) $this->context->language->id,
             0,
             $requestedProductCount,
+            false,
             $sortBy,
             $sortDirection,
             false,
             false,
-            null,
-        ];
-
-        try {
-            $method = new \ReflectionMethod(Product::class, 'getPricesDrop');
-            $parameters = $method->getParameters();
-
-            $expectsContextAsNinthParameter = false;
-
-            if (isset($parameters[8]) && $parameters[8]->hasType()) {
-                $type = $parameters[8]->getType();
-                if ($type instanceof \ReflectionNamedType && 'Context' === $type->getName()) {
-                    $expectsContextAsNinthParameter = true;
-                }
-            }
-
-            if ($expectsContextAsNinthParameter) {
-                $arguments = array_merge($baseArguments, [$this->context]);
-                if (isset($parameters[9])) {
-                    $arguments[] = false;
-                }
-            } else {
-                $arguments = array_merge($baseArguments, [true, $this->context]);
-                if (isset($parameters[10])) {
-                    $arguments[] = false;
-                }
-            }
-
-            $products = $method->invokeArgs(null, $arguments);
-
-            return is_array($products) ? $products : [];
-        } catch (\ReflectionException $exception) {
-            // Fallback to calling the method directly if reflection is unavailable.
-        }
-
-        try {
-            $products = Product::getPricesDrop(
-                (int) $this->context->language->id,
-                0,
-                $requestedProductCount,
-                $sortBy,
-                $sortDirection,
-                false,
-                false,
-                null,
-                $this->context
-            );
-
-            return is_array($products) ? $products : [];
-        } catch (\Throwable $exception) {
-            $products = Product::getPricesDrop(
-                (int) $this->context->language->id,
-                0,
-                $requestedProductCount,
-                $sortBy,
-                $sortDirection,
-                false,
-                false,
-                null,
-                true,
-                $this->context
-            );
-
-            return is_array($products) ? $products : [];
-        }
+            $this->context
+        );
+        return is_array($products) ? $products : [];
     }
 
     public function hookBeforeRenderingEverblockFlashDeals($params)
