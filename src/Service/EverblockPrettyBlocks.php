@@ -537,6 +537,18 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Display reassurances side by side'),
                             'default' => false,
                         ],
+                        'columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Number of columns per row'),
+                            'choices' => [
+                                '1' => $module->l('1 column'),
+                                '2' => $module->l('2 columns'),
+                                '3' => $module->l('3 columns'),
+                                '4' => $module->l('4 columns'),
+                                '6' => $module->l('6 columns'),
+                            ],
+                            'default' => '3',
+                        ],
                     ],
                 ],
                 'repeater' => [
