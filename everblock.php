@@ -5223,7 +5223,11 @@ class Everblock extends Module
             return false;
         }
 
-        return ['products' => $presentedProducts];
+        if (count($presentedProducts) > $limit) {
+            $presentedProducts = array_slice($presentedProducts, 0, $limit);
+        }
+
+        return ['deals' => $presentedProducts];
     }
 
     public function hookBeforeRenderingEverblockGuidedSelector($params)
