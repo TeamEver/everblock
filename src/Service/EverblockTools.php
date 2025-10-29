@@ -3303,31 +3303,50 @@ class EverblockTools extends ObjectModel
 
     public static function getEverImgShortcode(string $txt, Context $context, Everblock $module): string
     {
-        preg_match_all('/\[everimg\s+name="([^"]+)"(?:\s+class="([^"]*)")?(?:\s+carousel=(true|false))?\]/', $txt, $matches, PREG_SET_ORDER);
-
+        // 🔹 Regex robuste : compatible avec carousel=true ou carousel="true"
+        preg_match_all(
+            '/\[everimg\s+name="([^"]*?)"\s*(?:class="([^"]*)")?(?:\s+carousel=(?:"(true|false)"|(true|false)))?\]/i',
+            $txt,
+            $matches,
+            PREG_SET_ORDER
+        );
         foreach ($matches as $match) {
+            // Match structure :
+            // 1 => filenames, 2 => class, 3|4 => carousel value
             $filenames = array_map('trim', explode(',', $match[1]));
-            $class = isset($match[2]) ? trim($match[2]) : 'img-fluid';
-            $carousel = isset($match[3]) && $match[3] === 'true';
+            $class = isset($match[2]) && $match[2] !== '' ? trim($match[2]) : 'img-fluid';
+            $carousel = (isset($match[3]) && $match[3] === 'true') || (isset($match[4]) && $match[4] === 'true');
 
             $images = [];
+
             foreach ($filenames as $filename) {
                 $safeFilename = basename($filename);
                 $filepath = _PS_IMG_DIR_ . 'cms/' . $safeFilename;
-                $webPath = Tools::getHttpHost(true) . PS_BASE_URI . 'img/cms/' . $safeFilename;
 
-                if (!file_exists($filepath)) {
+                if (!is_file($filepath)) {
                     continue;
                 }
 
-                [$width, $height] = getimagesize($filepath);
+                $size = @getimagesize($filepath);
+                if ($size === false || count($size) < 2) {
+                    continue;
+                }
+
+                [$width, $height] = $size;
                 $alt = htmlspecialchars(pathinfo($safeFilename, PATHINFO_FILENAME), ENT_QUOTES);
                 $classAttr = htmlspecialchars($class, ENT_QUOTES);
 
+                // 🔹 Construction du chemin public (compatible CLI)
+                $domain = method_exists('Tools', 'getShopDomainSsl')
+                    ? Tools::getShopDomainSsl(true)
+                    : Tools::getHttpHost(true);
+                $baseUri = defined('PS_BASE_URI') ? PS_BASE_URI : '/';
+                $webPath = rtrim($domain, '/') . $baseUri . 'img/cms/' . $safeFilename;
+
                 $images[] = [
                     'src' => htmlspecialchars($webPath, ENT_QUOTES),
-                    'width' => $width,
-                    'height' => $height,
+                    'width' => (int) $width,
+                    'height' => (int) $height,
                     'alt' => $alt,
                     'class' => $classAttr,
                 ];
@@ -3335,14 +3354,21 @@ class EverblockTools extends ObjectModel
 
             $replacement = '';
             if (!empty($images)) {
-                if ($carousel && count($images) > 1) {
+                // 🔹 Mode carousel Bootstrap
+                if ($carousel && count($images) > 1 && isset($context->smarty, $module)) {
                     $context->smarty->assign([
                         'images' => $images,
                         'carousel_id' => 'everImgCarousel-' . uniqid(),
                     ]);
-                    $templatePath = static::getTemplatePath('hook/ever_img_carousel.tpl', $module);
-                    $replacement = $context->smarty->fetch($templatePath);
-                } else {
+
+                    $templatePath = _PS_MODULE_DIR_ . $module->name . '/views/templates/hook/ever_img_carousel.tpl';
+
+                    if (is_file($templatePath)) {
+                        $replacement = $context->smarty->fetch($templatePath);
+                    }
+                }
+                // 🔹 Mode simple (une ou plusieurs images statiques)
+                else {
                     $html = [];
                     foreach ($images as $img) {
                         $imgTag = sprintf(
@@ -3355,10 +3381,13 @@ class EverblockTools extends ObjectModel
                         );
                         $html[] = count($images) > 1 ? '<div class="col">' . $imgTag . '</div>' : $imgTag;
                     }
-                    $replacement = count($images) > 1 ? '<div class="row">' . implode('', $html) . '</div>' : $html[0];
+                    $replacement = count($images) > 1
+                        ? '<div class="row">' . implode('', $html) . '</div>'
+                        : $html[0];
                 }
             }
 
+            // 🔹 Remplacement dans le texte
             $txt = str_replace($match[0], $replacement, $txt);
         }
 
