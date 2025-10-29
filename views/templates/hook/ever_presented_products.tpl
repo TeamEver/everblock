@@ -25,9 +25,9 @@
   <section class="ever-featured-products featured-products clearfix mx-5 d-none d-md-block{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     {if isset($carousel) && $carousel}
       {assign var="carouselId" value="ever-presented-carousel-"|cat:mt_rand(1000,999999)}
-      <div id="{$carouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true">
+      {assign var="numProductsPerSlide" value=4}
+      <div id="{$carouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true" data-ever-infinite-carousel="1">
         <div class="carousel-inner products">
-          {assign var="numProductsPerSlide" value=4}
           {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
           {foreach from=$everPresentProducts item=product name=products}
             {if $product@index % $numProductsPerSlide == 0}

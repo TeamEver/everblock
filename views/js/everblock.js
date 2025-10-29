@@ -237,6 +237,48 @@ $(document).ready(function(){
             $carousel.addClass('prettyblocks-carousel-initialised');
         });
     }
+    $('[data-ever-infinite-carousel="1"]').each(function(){
+        var $carousel = $(this);
+        var $inner = $carousel.find('.carousel-inner');
+        if (!$inner.length || $inner.children('.carousel-item').length <= 1) {
+            return;
+        }
+        var refreshInstanceItems = function() {
+            if (typeof bootstrap !== 'undefined' && typeof bootstrap.Carousel !== 'undefined') {
+                var instance = bootstrap.Carousel.getInstance($carousel[0]);
+                if (instance) {
+                    instance._items = [].slice.call($inner.children('.carousel-item'));
+                    instance._activeElement = $inner.children('.carousel-item.active')[0] || null;
+                }
+            } else if (typeof $carousel.data === 'function') {
+                var legacyInstance = $carousel.data('bs.carousel') || $carousel.data('carousel');
+                if (legacyInstance) {
+                    legacyInstance._items = [].slice.call($inner.children('.carousel-item'));
+                    legacyInstance._activeElement = $inner.children('.carousel-item.active')[0] || null;
+                }
+            }
+        };
+        $carousel.on('slide.bs.carousel', function(event){
+            $carousel.data('everInfiniteDirection', event.direction);
+        });
+        $carousel.on('slid.bs.carousel', function(){
+            var direction = $carousel.data('everInfiniteDirection');
+            if (!direction) {
+                return;
+            }
+            var $items = $inner.children('.carousel-item');
+            if (direction === 'left') {
+                $inner.append($items.first());
+            } else if (direction === 'right') {
+                $inner.prepend($items.last());
+            }
+            $items = $inner.children('.carousel-item');
+            $items.removeClass('active');
+            $items.first().addClass('active');
+            refreshInstanceItems();
+            $carousel.removeData('everInfiniteDirection');
+        });
+    });
     $('.ever_instagram img').on('click', function() {
         // Mettre à jour le src de l'image dans la modal
         var imageSrc = $(this).attr('src');
