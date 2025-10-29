@@ -43,12 +43,6 @@
   {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-lg-"|cat:$desktopColumnWidth}
   {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-xl-"|cat:$desktopColumnWidth}
 
-  {if $mobileItems == 1}
-    {assign var='mobileFlexPercent' value=85}
-  {else}
-    {math equation="100 / x" x=$mobileItems assign='mobileFlexPercent'}
-  {/if}
-
   <section class="ever-featured-products featured-products clearfix mx-5 d-none d-md-block{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     {if isset($carousel) && $carousel}
       {assign var="carouselId" value="ever-presented-carousel-"|cat:mt_rand(1000,999999)}
@@ -93,14 +87,35 @@
   </section>
   {if isset($carousel) && $carousel}
   <section class="ever-featured-products featured-products mx-2 d-block d-md-none">
-    <div id="everFeaturedCarouselMobile" class="overflow-auto" style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
-      <div class="d-flex flex-nowrap">
-        {foreach $everPresentProducts item=product name=productLoop}
-          <div class="me-3" style="flex: 0 0 {$mobileFlexPercent|string_format:'%.2f'}%; max-width: {$mobileFlexPercent|string_format:'%.2f'}%; scroll-snap-align: start;">
-            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="w-100"}
-          </div>
+    {assign var="mobileCarouselId" value="ever-presented-carousel-mobile-"|cat:mt_rand(1000,999999)}
+    {assign var="mobileNumProductsPerSlide" value=$mobileItems}
+    <div id="{$mobileCarouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true" data-ever-mobile-carousel="1">
+      <div class="carousel-inner products">
+        {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
+        {foreach from=$everPresentProducts item=product name=mobileProducts}
+          {if $product@index % $mobileNumProductsPerSlide == 0}
+            <div class="carousel-item{if $product@first} active{/if}">
+              <div class="row">
+          {/if}
+          {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+          {if ($product@index + 1) % $mobileNumProductsPerSlide == 0 || $product@last}
+              </div>
+            </div>
+          {/if}
         {/foreach}
+        {hook h='displayAfterProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
       </div>
+
+      <!-- Controls -->
+      <button class="carousel-control-prev" type="button" data-bs-target="#{$mobileCarouselId}" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+      </button>
+
+      <button class="carousel-control-next" type="button" data-bs-target="#{$mobileCarouselId}" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+      </button>
     </div>
   </section>
   {/if}
