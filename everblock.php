@@ -5177,41 +5177,6 @@ class Everblock extends Module
         return is_array($products) ? $products : [];
     }
 
-    private function resolvePriceDropEndDate(array $productData): ?string
-    {
-        $candidates = [];
-
-        if (!empty($productData['specific_prices']) && is_array($productData['specific_prices'])) {
-            $specificPrice = $productData['specific_prices'];
-
-            foreach (['to', 'reduction_to'] as $specificKey) {
-                if (!empty($specificPrice[$specificKey]) && is_string($specificPrice[$specificKey])) {
-                    $candidates[] = $specificPrice[$specificKey];
-                }
-            }
-        }
-
-        foreach (['reduction_to', 'discount_to', 'to'] as $key) {
-            if (!empty($productData[$key]) && is_string($productData[$key])) {
-                $candidates[] = $productData[$key];
-            }
-        }
-
-        foreach ($candidates as $candidate) {
-            $candidate = trim($candidate);
-
-            if ($candidate === '' || $candidate === '0000-00-00 00:00:00') {
-                continue;
-            }
-
-            if (false !== strtotime($candidate)) {
-                return $candidate;
-            }
-        }
-
-        return null;
-    }
-
     public function hookBeforeRenderingEverblockFlashDeals($params)
     {
         $settings = [];
@@ -5245,57 +5210,20 @@ class Everblock extends Module
             return false;
         }
 
-        $productEndDates = [];
-        $productIds = [];
-
-        foreach ($promotionalProducts as $productData) {
-            $idProduct = (int) ($productData['id_product'] ?? 0);
-
-            if ($idProduct <= 0 || isset($productEndDates[$idProduct])) {
-                continue;
-            }
-
-            $endDate = $this->resolvePriceDropEndDate($productData);
-
-            if (null === $endDate) {
-                continue;
-            }
-
-            $productEndDates[$idProduct] = $endDate;
-            $productIds[] = $idProduct;
-
-            if (count($productIds) >= $limit) {
-                break;
-            }
-        }
-
+        // 🔹 Extraction des IDs produits
+        $productIds = array_column($promotionalProducts, 'id_product');
         if (empty($productIds)) {
             return false;
         }
 
+        // 🔹 Présentation via Everblock
         $presentedProducts = EverblockTools::everPresentProducts($productIds, $this->context);
 
         if (empty($presentedProducts)) {
             return false;
         }
 
-        $deals = [];
-        foreach ($presentedProducts as $product) {
-            $idProduct = (int) ($product['id_product'] ?? 0);
-
-            if ($idProduct <= 0 || !isset($productEndDates[$idProduct])) {
-                continue;
-            }
-
-            $product['end_date'] = $productEndDates[$idProduct];
-            $deals[] = $product;
-        }
-
-        if (empty($deals)) {
-            return false;
-        }
-
-        return ['deals' => $deals];
+        return ['products' => $presentedProducts];
     }
 
     public function hookBeforeRenderingEverblockGuidedSelector($params)
