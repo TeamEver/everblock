@@ -58,8 +58,7 @@
           {$block.settings.custom_text nofilter}
         </p>
 
-        <a href="{$product.url}" class="btn fw-bold rounded-pill px-4 py-2"
-           style="background-color: #C6F219; color: #000; border: none;">
+        <a href="{$product.url}" class="btn btn-warning text-dark border-0 fw-bold rounded-pill px-4 py-2">
           {l s='See the product' mod='everblock'}
         </a>
       </div>
