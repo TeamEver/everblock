@@ -5161,39 +5161,6 @@ class Everblock extends Module
         return ['products' => $products];
     }
 
-    private function getProductPromotionEndDate(int $idProduct, int $idCustomer, array $groupIds): ?string
-    {
-        $groupIds = array_map('intval', $groupIds);
-
-        if (empty($groupIds)) {
-            $groupIds = [(int) Configuration::get('PS_UNIDENTIFIED_GROUP')];
-        }
-
-        $groupList = implode(',', $groupIds);
-
-        $endDate = Db::getInstance()->getValue(
-            'SELECT MIN(cr.date_to) FROM ' . _DB_PREFIX_ . 'cart_rule cr '
-            . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule_group crprg ON cr.id_cart_rule = crprg.id_cart_rule '
-            . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule crpr ON crprg.id_product_rule_group = crpr.id_product_rule_group '
-            . 'INNER JOIN ' . _DB_PREFIX_ . 'cart_rule_product_rule_value crprv ON crpr.id_product_rule = crprv.id_product_rule '
-            . 'LEFT JOIN ' . _DB_PREFIX_ . 'cart_rule_group crg ON cr.id_cart_rule = crg.id_cart_rule '
-            . 'WHERE cr.active = 1 AND cr.date_to > NOW() AND crprv.id_item = ' . (int) $idProduct
-            . ' AND (cr.id_customer = 0 OR cr.id_customer = ' . (int) $idCustomer . ')'
-            . ' AND (crg.id_group IS NULL OR crg.id_group IN (' . $groupList . '))'
-        );
-
-        if (!$endDate) {
-            $endDate = Db::getInstance()->getValue(
-                'SELECT MIN(`to`) FROM ' . _DB_PREFIX_ . 'specific_price '
-                . 'WHERE id_product = ' . (int) $idProduct . ' AND `to` > NOW()'
-                . ' AND (id_customer = 0 OR id_customer = ' . (int) $idCustomer . ')'
-                . ' AND (id_group = 0 OR id_group IN (' . $groupList . '))'
-            );
-        }
-
-        return $endDate ?: null;
-    }
-
     private function getPricesDropProducts(int $requestedProductCount, string $sortBy, string $sortDirection): array
     {
         $products = Product::getPricesDrop(
@@ -5208,6 +5175,41 @@ class Everblock extends Module
             $this->context
         );
         return is_array($products) ? $products : [];
+    }
+
+    private function resolvePriceDropEndDate(array $productData): ?string
+    {
+        $candidates = [];
+
+        if (!empty($productData['specific_prices']) && is_array($productData['specific_prices'])) {
+            $specificPrice = $productData['specific_prices'];
+
+            foreach (['to', 'reduction_to'] as $specificKey) {
+                if (!empty($specificPrice[$specificKey]) && is_string($specificPrice[$specificKey])) {
+                    $candidates[] = $specificPrice[$specificKey];
+                }
+            }
+        }
+
+        foreach (['reduction_to', 'discount_to', 'to'] as $key) {
+            if (!empty($productData[$key]) && is_string($productData[$key])) {
+                $candidates[] = $productData[$key];
+            }
+        }
+
+        foreach ($candidates as $candidate) {
+            $candidate = trim($candidate);
+
+            if ($candidate === '' || $candidate === '0000-00-00 00:00:00') {
+                continue;
+            }
+
+            if (false !== strtotime($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     public function hookBeforeRenderingEverblockFlashDeals($params)
@@ -5243,30 +5245,24 @@ class Everblock extends Module
             return false;
         }
 
-        $idCustomer = (int) $this->context->customer->id;
-        $groupIds = Customer::getGroupsStatic($idCustomer);
-        if (empty($groupIds)) {
-            $groupIds = [(int) Configuration::get('PS_UNIDENTIFIED_GROUP')];
-        }
-
+        $productEndDates = [];
         $productIds = [];
-        $endDates = [];
 
         foreach ($promotionalProducts as $productData) {
             $idProduct = (int) ($productData['id_product'] ?? 0);
 
-            if ($idProduct <= 0 || isset($endDates[$idProduct])) {
+            if ($idProduct <= 0 || isset($productEndDates[$idProduct])) {
                 continue;
             }
 
-            $endDate = $this->getProductPromotionEndDate($idProduct, $idCustomer, $groupIds);
+            $endDate = $this->resolvePriceDropEndDate($productData);
 
             if (null === $endDate) {
                 continue;
             }
 
+            $productEndDates[$idProduct] = $endDate;
             $productIds[] = $idProduct;
-            $endDates[$idProduct] = $endDate;
 
             if (count($productIds) >= $limit) {
                 break;
@@ -5287,11 +5283,11 @@ class Everblock extends Module
         foreach ($presentedProducts as $product) {
             $idProduct = (int) ($product['id_product'] ?? 0);
 
-            if ($idProduct <= 0 || empty($endDates[$idProduct])) {
+            if ($idProduct <= 0 || !isset($productEndDates[$idProduct])) {
                 continue;
             }
 
-            $product['end_date'] = $endDates[$idProduct];
+            $product['end_date'] = $productEndDates[$idProduct];
             $deals[] = $product;
         }
 
