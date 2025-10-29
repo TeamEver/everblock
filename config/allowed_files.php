@@ -35,6 +35,7 @@ return [
     'controllers/admin/AdminEverBlockFaqController.php',
     'controllers/admin/AdminEverBlockHookController.php',
     'controllers/admin/AdminEverBlockShortcodeController.php',
+    'controllers/admin/AdminEverBlockConfigurationController.php',
     'controllers/admin/index.php',
     'controllers/front/advent.php',
     'controllers/front/contact.php',
