@@ -30,9 +30,18 @@
           {if $state.price}<div class="pricing-price">{$state.price|escape:'htmlall'}</div>{/if}
           {if $state.features}
             <ul class="pricing-features">
-              {foreach from=$state.features|preg_split:"/\\r\\n|\\r|\\n/" item=feature}
-                {if $feature}<li>{$feature|escape:'htmlall'}</li>{/if}
-              {/foreach}
+              {if $state.features|is_array}
+                {foreach from=$state.features item=feature}
+                  {if $feature|is_array}
+                    {assign var='feature_text' value=$feature.text|default:$feature.value|default:''}
+                    {if $feature_text}<li>{$feature_text|escape:'htmlall'}</li>{/if}
+                  {elseif $feature}<li>{$feature|escape:'htmlall'}</li>{/if}
+                {/foreach}
+              {else}
+                {foreach from=$state.features|preg_split:"/\\r\\n|\\r|\\n/" item=feature}
+                  {if $feature}<li>{$feature|escape:'htmlall'}</li>{/if}
+                {/foreach}
+              {/if}
             </ul>
           {/if}
           {if $state.cta_url && $state.cta_label}
