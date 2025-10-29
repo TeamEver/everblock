@@ -26,7 +26,13 @@
   {/if}
     <div class="mt-2{if $block.settings.default.container} container{/if}"  style="{$prettyblock_spacing_style}{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
       {if isset($block.extra.products) && $block.extra.products}
-        {include file="module:everblock/views/templates/hook/ever_presented_products.tpl" everPresentProducts=$block.extra.products carousel=$block.settings.slider shortcodeClass='product_selector'}
+        {include file="module:everblock/views/templates/hook/ever_presented_products.tpl"
+          everPresentProducts=$block.extra.products
+          carousel=$block.settings.slider
+          shortcodeClass='product_selector'
+          carouselDesktopItems=$block.settings.products_per_slide_desktop
+          carouselTabletItems=$block.settings.products_per_slide_tablet
+          carouselMobileItems=$block.settings.products_per_slide_mobile}
       {/if}
     </div>
   {if $block.settings.default.force_full_width || $block.settings.default.container}

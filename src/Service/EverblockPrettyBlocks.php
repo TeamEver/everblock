@@ -2832,6 +2832,21 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
                         ],
+                        'products_per_slide_desktop' => [
+                            'type' => 'text',
+                            'label' => $module->l('Products per slide on desktop'),
+                            'default' => 4,
+                        ],
+                        'products_per_slide_tablet' => [
+                            'type' => 'text',
+                            'label' => $module->l('Products per slide on tablet'),
+                            'default' => 2,
+                        ],
+                        'products_per_slide_mobile' => [
+                            'type' => 'text',
+                            'label' => $module->l('Products per slide on mobile'),
+                            'default' => 1,
+                        ],
                     ], $module),
                 ],
                 'repeater' => [
@@ -3035,6 +3050,21 @@ class EverblockPrettyBlocks
                             'type' => 'checkbox',
                             'label' => $module->l('Enable slider'),
                             'default' => 0,
+                        ],
+                        'products_per_slide_desktop' => [
+                            'type' => 'text',
+                            'label' => $module->l('Products per slide on desktop'),
+                            'default' => '4',
+                        ],
+                        'products_per_slide_tablet' => [
+                            'type' => 'text',
+                            'label' => $module->l('Products per slide on tablet'),
+                            'default' => '2',
+                        ],
+                        'products_per_slide_mobile' => [
+                            'type' => 'text',
+                            'label' => $module->l('Products per slide on mobile'),
+                            'default' => '1',
                         ],
                         'background_color' => [
                             'tab' => 'design',

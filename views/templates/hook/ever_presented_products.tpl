@@ -22,10 +22,37 @@
   {/if}
   {assign var='carouselCounter' value=$carouselCounter+1}
 
+  {assign var='mobileItems' value=$carouselMobileItems|default:1|intval}
+  {if $mobileItems < 1}
+    {assign var='mobileItems' value=1}
+  {/if}
+  {assign var='tabletItems' value=$carouselTabletItems|default:2|intval}
+  {if $tabletItems < 1}
+    {assign var='tabletItems' value=1}
+  {/if}
+  {assign var='desktopItems' value=$carouselDesktopItems|default:4|intval}
+  {if $desktopItems < 1}
+    {assign var='desktopItems' value=1}
+  {/if}
+
+  {math equation="ceil(12 / x)" x=$mobileItems assign='mobileColumnWidth'}
+  {math equation="ceil(12 / x)" x=$tabletItems assign='tabletColumnWidth'}
+  {math equation="ceil(12 / x)" x=$desktopItems assign='desktopColumnWidth'}
+  {assign var='productColumnClasses' value="col-"|cat:$mobileColumnWidth}
+  {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-sm-"|cat:$tabletColumnWidth}
+  {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-lg-"|cat:$desktopColumnWidth}
+  {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-xl-"|cat:$desktopColumnWidth}
+
+  {if $mobileItems == 1}
+    {assign var='mobileFlexPercent' value=85}
+  {else}
+    {math equation="100 / x" x=$mobileItems assign='mobileFlexPercent'}
+  {/if}
+
   <section class="ever-featured-products featured-products clearfix mx-5 d-none d-md-block{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     {if isset($carousel) && $carousel}
       {assign var="carouselId" value="ever-presented-carousel-"|cat:mt_rand(1000,999999)}
-      {assign var="numProductsPerSlide" value=4}
+      {assign var="numProductsPerSlide" value=$desktopItems}
       <div id="{$carouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true" data-ever-infinite-carousel="1">
         <div class="carousel-inner products">
           {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
@@ -34,7 +61,7 @@
               <div class="carousel-item{if $product@first} active{/if}">
                 <div class="row">
             {/if}
-            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-12 col-sm-6 col-lg-4 col-xl-3"}
+            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
             {if ($product@index + 1) % $numProductsPerSlide == 0 || $product@last}
                 </div>
               </div>
@@ -58,7 +85,7 @@
       <div class="products row">
         {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
         {foreach $everPresentProducts item=product}
-          {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="col-12 col-sm-6 col-lg-4 col-xl-3"}
+          {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
         {/foreach}
         {hook h='displayAfterProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
       </div>
@@ -69,7 +96,7 @@
     <div id="everFeaturedCarouselMobile" class="overflow-auto" style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
       <div class="d-flex flex-nowrap">
         {foreach $everPresentProducts item=product name=productLoop}
-          <div class="me-3" style="flex: 0 0 85%; scroll-snap-align: start;">
+          <div class="me-3" style="flex: 0 0 {$mobileFlexPercent|string_format:'%.2f'}%; max-width: {$mobileFlexPercent|string_format:'%.2f'}%; scroll-snap-align: start;">
             {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses="w-100"}
           </div>
         {/foreach}
