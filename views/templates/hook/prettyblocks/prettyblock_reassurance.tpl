@@ -24,8 +24,17 @@
     <div class="row">
   {/if}
 
-  {if isset($block.states) && $block.states}
-    {foreach from=$block.states item=state key=key}
+{assign var='reassuranceColumns' value=$block.settings.default.columns|default:0|intval}
+{assign var='reassuranceColumnClass' value=''}
+{if $reassuranceColumns > 0}
+  {math assign="reassuranceColumnWidth" equation="12 / x" x=$reassuranceColumns format="%.0f"}
+  {assign var='reassuranceColumnClass' value="col-12 col-md-"|cat:$reassuranceColumnWidth|cat:' '}
+{elseif $block.settings.default.display_inline}
+  {assign var='reassuranceColumnClass' value='col '}
+{/if}
+
+{if isset($block.states) && $block.states}
+  {foreach from=$block.states item=state key=key}
       {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
       {* Génère l'URL de l'icône depuis le nom brut *}
       {assign var="icon_url" value=false}
@@ -41,7 +50,7 @@
         {/if}
       {/if}
 
-      <div id="block-{$block.id_prettyblocks}-{$key}" class="{if $block.settings.default.display_inline}col {/if}text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="{$prettyblock_state_spacing_style}
+      <div id="block-{$block.id_prettyblocks}-{$key}" class="{$reassuranceColumnClass}text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="{$prettyblock_state_spacing_style}
         {if $state.background_color}background-color:{$state.background_color};{/if}
         {if $state.text_color}color:{$state.text_color};{/if}
       ">
