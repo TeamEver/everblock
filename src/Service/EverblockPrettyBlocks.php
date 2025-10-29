@@ -3163,6 +3163,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Enable zoom animation'),
                             'default' => 0,
                         ],
+                        'marker_color' => [
+                            'type' => 'color',
+                            'label' => $module->l('Marker color'),
+                            'default' => '#f25b76',
+                        ],
                     ], $module),
                 ],
             ];

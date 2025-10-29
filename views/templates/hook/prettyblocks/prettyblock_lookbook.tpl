@@ -52,7 +52,28 @@
           {if isset($block.states) && $block.states}
             {foreach from=$block.states item=state}
               {if isset($state.product.id) && $state.product.id}
-                <button type="button" class="lookbook-marker position-absolute{if $state.animation_enabled|default:false} lookbook-marker--animated{/if}" style="top:{$state.top|default:'0%'|escape:'htmlall'};left:{$state.left|default:'0%'|escape:'htmlall'};transform:translate(-50%,-50%);" data-product-id="{$state.product.id}">
+                {assign var='marker_color' value=$state.marker_color|default:''}
+                {assign var='marker_color_clean' value=$marker_color|replace:'#':''}
+                {assign var='marker_color_rgb' value=''}
+                {if $marker_color_clean && $marker_color_clean|strlen == 6}
+                  {assign var='marker_color_r' value=$marker_color_clean|substr:0:2|@hexdec}
+                  {assign var='marker_color_g' value=$marker_color_clean|substr:2:2|@hexdec}
+                  {assign var='marker_color_b' value=$marker_color_clean|substr:4:2|@hexdec}
+                  {assign var='marker_color_rgb' value="`$marker_color_r`, `$marker_color_g`, `$marker_color_b`"}
+                {/if}
+                {capture name='lookbook_marker_style'}
+                  top:{$state.top|default:'0%'|escape:'htmlall'};
+                  left:{$state.left|default:'0%'|escape:'htmlall'};
+                  transform:translate(-50%,-50%);
+                  {if $marker_color}
+                    --lookbook-marker-color:{$marker_color|escape:'htmlall':'UTF-8'};
+                  {/if}
+                  {if $marker_color_rgb}
+                    --lookbook-marker-color-rgb:{$marker_color_rgb|escape:'htmlall':'UTF-8'};
+                  {/if}
+                {/capture}
+                {assign var='lookbook_marker_style' value=$smarty.capture.lookbook_marker_style|replace:"\n":''|replace:"  ":' '|trim}
+                <button type="button" class="lookbook-marker position-absolute{if $state.animation_enabled|default:false} lookbook-marker--animated{/if}" style="{$lookbook_marker_style}" data-product-id="{$state.product.id}">
                   <span class="visually-hidden">{l s='View product' mod='everblock'}</span>
                 </button>
               {/if}

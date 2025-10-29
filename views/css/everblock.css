@@ -24,7 +24,10 @@
     cursor: pointer;
 }
 /* Lookbook product markers */
+
 .lookbook-marker {
+    --lookbook-marker-color: #f25b76;
+    --lookbook-marker-color-rgb: 242, 91, 118;
     position: relative;
     width: 2.75rem;
     height: 2.75rem;
@@ -34,10 +37,10 @@
     align-items: center;
     justify-content: center;
     background-color: #fff;
-    border: 3px solid #f25b76;
-    box-shadow: 0 12px 24px rgba(242, 91, 118, 0.25);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-    color: #f25b76;
+    border: 3px solid var(--lookbook-marker-color);
+    box-shadow: 0 12px 24px rgba(var(--lookbook-marker-color-rgb), 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    color: var(--lookbook-marker-color);
     overflow: visible;
     z-index: 1;
 }
@@ -46,14 +49,14 @@
 .lookbook-marker:hover,
 .lookbook-marker:active {
     transform: scale(1.05);
-    box-shadow: 0 16px 32px rgba(242, 91, 118, 0.35);
-    background-color: #f25b76;
-    border-color: #f25b76;
+    box-shadow: 0 16px 32px rgba(var(--lookbook-marker-color-rgb), 0.35);
+    background-color: var(--lookbook-marker-color);
+    border-color: var(--lookbook-marker-color);
     color: #fff;
 }
 
 .lookbook-marker:focus-visible {
-    outline: 3px solid rgba(242, 91, 118, 0.35);
+    outline: 3px solid rgba(var(--lookbook-marker-color-rgb), 0.35);
     outline-offset: 2px;
 }
 
@@ -72,7 +75,7 @@
     border-radius: 50%;
     transform: translate(-50%, -50%) scale(1);
     opacity: 0.55;
-    background: rgba(242, 91, 118, 0.22);
+    background: rgba(var(--lookbook-marker-color-rgb), 0.22);
     pointer-events: none;
     z-index: -1;
 }
@@ -90,12 +93,12 @@
     0%,
     100% {
         transform: scale(1);
-        box-shadow: 0 12px 24px rgba(242, 91, 118, 0.25);
+        box-shadow: 0 12px 24px rgba(var(--lookbook-marker-color-rgb), 0.25);
     }
 
     45% {
         transform: scale(1.16);
-        box-shadow: 0 22px 44px rgba(242, 91, 118, 0.45);
+        box-shadow: 0 22px 44px rgba(var(--lookbook-marker-color-rgb), 0.45);
     }
 }
 
