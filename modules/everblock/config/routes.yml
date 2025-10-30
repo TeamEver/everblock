@@ -1,0 +1,4 @@
+everblock_admin:
+    resource: "../src/Controller/Admin/"
+    type: attribute
+    prefix: "/admin/everblocks"

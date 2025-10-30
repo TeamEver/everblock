@@ -11,14 +11,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route(path: '/admin/everblocks', name: 'everblock_admin_')]
+#[Route(path: '', name: 'everblock_admin_')]
 class EverblockController extends AbstractController
 {
     public function __construct(private EverblockManager $manager)
     {
     }
 
-    #[Route(path: '', name: 'index', methods: ['GET'])]
+    #[Route(path: '', name: 'index', methods: ['GET'], defaults: [
+        '_legacy_controller' => 'AdminEverblock',
+        '_legacy_link' => 'AdminEverblock',
+    ])]
     public function index(Request $request): JsonResponse
     {
         $shopId = (int) $request->query->get('shop', 1);
