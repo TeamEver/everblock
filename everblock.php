@@ -4990,10 +4990,10 @@ class Everblock extends Module
             $block->date_end = $line['date_end'];
         }
         if (isset($line['content']) && Validate::isAnything($line['content'])) {
-            $block->content[(int) $line['id_lang']] = $line['content'];
+            $block->setContent((int) $line['id_lang'], $line['content']);
         }
         if (isset($line['custom_code']) && Validate::isAnything($line['custom_code'])) {
-            $block->custom_code[(int) $line['id_lang']] = $line['custom_code'];
+            $block->setCustomCode((int) $line['id_lang'], $line['custom_code']);
         }
 
         try {
@@ -5020,7 +5020,12 @@ class Everblock extends Module
                 (int) $this->context->shop->id
             );
 
-            $state['content'] = Validate::isLoadedObject($everblock) ? $everblock->content : '';
+            if (method_exists($everblock, 'toArray')) {
+                $data = $everblock->toArray((int) $this->context->language->id);
+                $state['content'] = $data['content'] ?? '';
+            } else {
+                $state['content'] = '';
+            }
         }
         unset($state);
 

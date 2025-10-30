@@ -119,17 +119,17 @@ class ImportFileCommand extends Command
         }
         $create = false;
         if (isset($line['id_everblock']) && Validate::isUnsignedInt($line['id_everblock']) && (int)$line['id_everblock'] > 0) {
-            $block = new \Everblock(
+            $block = new \EverBlockClass(
                 (int) $line['id_everblock'],
                 (int) $line['id_lang'],
                 (int) $line['id_shop']
             );
             if (!Validate::isLoadedObject($block)) {
-                $block = new \Everblock();
+                $block = new \EverBlockClass();
                 $create = true;
             }
         } else {
-            $block = new \Everblock();
+            $block = new \EverBlockClass();
             $create = true;
         }
         if ($create) {
@@ -193,17 +193,16 @@ class ImportFileCommand extends Command
                 '<error>content column is not valid : ' . $line['content'] . '</error>'
                 );
             } else {
-                $block->content = $line['content'];
+                $block->setContent((int) $line['id_lang'], $line['content']);
             }
         }
         if (isset($line['custom_code'])) {
-            // huh ?
             if (!Validate::isAnything($line['custom_code'])) {
                 $output->writeln(
                 '<error>custom_code column is not valid : ' . $line['custom_code'] . '</error>'
                 );
             } else {
-                $block->custom_code = $line['custom_code'];
+                $block->setCustomCode((int) $line['id_lang'], $line['custom_code']);
             }
         }
         if (isset($line['only_category'])) {
