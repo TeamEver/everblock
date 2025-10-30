@@ -51,6 +51,7 @@ use Module;
 use NewsletterProSubscription;
 use ObjectModel;
 use Manufacturer;
+use Tab;
 use PrestaShop\Module\PrestashopCheckout\Order\PaymentStepCheckoutOrderBuilder;
 use PrestaShop\PrestaShop\Adapter\Configuration as ConfigurationAdapter;
 use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
