@@ -25,6 +25,7 @@ if (!defined('_PS_VERSION_')) {
 }
 
 use Everblock\Tools\Service\ImportFile;
+use Everblock\Tools\Service\LogService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
@@ -40,11 +41,16 @@ class ImportFileCommand extends Command
     public const FAILURE = 1;
     public const INVALID = 2;
     public const ABORTED = 3;
-    
+
     protected $filename;
+    /** @var LogService */
+    private $logService;
+
+    private const LOG_PREFIX = 'log-everblock-import';
 
     public function __construct(KernelInterface $kernel)
     {
+        $this->logService = new LogService();
         parent::__construct();
     }
 
@@ -53,7 +59,7 @@ class ImportFileCommand extends Command
         $this->setName('everblock:tools:import');
         $this->setDescription('Import HTML blocks from xlsx file');
         $this->filename = _PS_MODULE_DIR_ . 'everblock/input/everblock.xlsx';
-        $this->logFile = _PS_ROOT_DIR_ . '/var/logs/log-everblock-import-' . date('Y-m-d') . '.log';
+        $this->logFile = $this->logService->getDailyLogPath(self::LOG_PREFIX);
         $help = sprintf(
             'File must be set on ' . _PS_MODULE_DIR_ . 'everblock/input/everblock.xlsx'
         );
@@ -439,11 +445,6 @@ class ImportFileCommand extends Command
         . '-------------------------'
         . PHP_EOL;
 
-        //Save string to log, use FILE_APPEND to append.
-        file_put_contents(
-            $this->logFile,
-            $log,
-            FILE_APPEND
-        );
+        $this->logService->appendToDailyLog(self::LOG_PREFIX, $log);
     }
 }
