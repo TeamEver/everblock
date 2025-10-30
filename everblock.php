@@ -217,6 +217,7 @@ class Everblock extends Module
             && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'));
 
         if ($installed) {
+            $this->ensureAdminEverblockRoute();
             $this->importLegacyTranslations();
         }
 
@@ -468,6 +469,40 @@ class Everblock extends Module
             $tab->name[(int) $lang['id_lang']] = $tabName;
         }
         return $tab->add();
+    }
+
+    private function ensureAdminEverblockRoute(): void
+    {
+        if (!class_exists(Tab::class)) {
+            return;
+        }
+
+        if (!property_exists(Tab::class, 'route_name')) {
+            return;
+        }
+
+        $tabId = (int) Tab::getIdFromClassName('AdminEverBlock');
+
+        if ($tabId <= 0) {
+            return;
+        }
+
+        $tab = new Tab($tabId);
+        $needsUpdate = false;
+
+        if (!isset($tab->route_name) || $tab->route_name !== 'everblock_admin_index') {
+            $tab->route_name = 'everblock_admin_index';
+            $needsUpdate = true;
+        }
+
+        if (!isset($tab->module) || $tab->module !== $this->name) {
+            $tab->module = $this->name;
+            $needsUpdate = true;
+        }
+
+        if ($needsUpdate) {
+            $tab->save();
+        }
     }
 
     protected function uninstallModuleTab($tabClass)
