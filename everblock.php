@@ -1268,10 +1268,10 @@ class Everblock extends Module
 
         if ($isPrettyBlocksEnabled) {
             $tabs['prettyblock'] = $this->l('Prettyblock');
-        }
 
-        if ($hasStores) {
-            $tabs['holiday'] = $this->l('Holiday opening hours by store');
+            if ($hasStores) {
+                $tabs['holiday'] = $this->l('Holiday opening hours by store');
+            }
         }
 
         $tabs['cron'] = $this->l('Tâches crons');
@@ -1298,14 +1298,14 @@ class Everblock extends Module
             'flags' => 'flags.tpl',
         ];
 
-        if ($hasStores) {
-            $docTemplates['holiday'] = 'holiday.tpl';
-        }
-
         $docTemplates['cron'] = 'cron.tpl';
 
         if ($isPrettyBlocksEnabled) {
             $docTemplates['prettyblock'] = 'prettyblock.tpl';
+
+            if ($hasStores) {
+                $docTemplates['holiday'] = 'holiday.tpl';
+            }
         }
 
         if (null === $this->context->smarty->getTemplateVars('donation_link')) {
@@ -2171,7 +2171,7 @@ class Everblock extends Module
         ];
 
         $holidayInputs = [];
-        if ($hasStores) {
+        if ($hasStores && $isPrettyBlocksEnabled) {
             $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
             foreach ($stores as $store) {
                 foreach ($holidays as $date) {
