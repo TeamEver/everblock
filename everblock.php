@@ -462,6 +462,10 @@ class Everblock extends Module
         $tab->id_parent = (int) Tab::getIdFromClassName($parent);
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
         $tab->module = $this->name;
+
+        if ($tabClass === 'AdminEverBlock' && property_exists($tab, 'route_name')) {
+            $tab->route_name = 'everblock_admin_index';
+        }
         if ($tabClass == 'AdminEverBlockParent') {
             $tab->icon = 'icon-team-ever';
         }
