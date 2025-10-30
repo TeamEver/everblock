@@ -3,12 +3,12 @@ services:
         autowire: true
         autoconfigure: true
 
-    Doctrine\ORM\EntityManagerInterface:
-        factory: ['Everblock\\Tools\\Service\\DoctrineEntityManagerFactory', 'createForLegacyContext']
+    'Doctrine\ORM\EntityManagerInterface':
+        factory: ['Everblock\Tools\Service\DoctrineEntityManagerFactory', 'createForLegacyContext']
 
     Everblock\Tools\Service\EverblockManager:
         arguments:
-            - '@Doctrine\\ORM\\EntityManagerInterface'
+            - '@Doctrine\ORM\EntityManagerInterface'
 
     Everblock\Tools\Controller\Admin\EverblockController:
         public: true
