@@ -2,9 +2,11 @@
 
 namespace Everblock\Tools\Service;
 
+use Doctrine\Common\EventManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMSetup;
+use Everblock\Tools\Doctrine\TablePrefixMetadataSubscriber;
 
 class DoctrineEntityManagerFactory
 {
@@ -29,6 +31,14 @@ class DoctrineEntityManagerFactory
             static fn ($value): bool => null !== $value && $value !== ''
         );
 
-        return EntityManager::create($connectionParams, $config);
+        $eventManager = new EventManager();
+
+        $tablePrefix = defined('_DB_PREFIX_') ? (string) _DB_PREFIX_ : '';
+
+        if ('' !== $tablePrefix) {
+            $eventManager->addEventSubscriber(new TablePrefixMetadataSubscriber($tablePrefix));
+        }
+
+        return EntityManager::create($connectionParams, $config, $eventManager);
     }
 }
