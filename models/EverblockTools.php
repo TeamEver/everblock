@@ -4363,6 +4363,7 @@ class EverblockTools extends ObjectModel
     public static function checkAndFixDatabase()
     {
         $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
+        static::checkAdminTabsUrls();
         $tableNames = [
             _DB_PREFIX_ . 'everblock',
             _DB_PREFIX_ . 'everblock_lang',
@@ -4880,6 +4881,59 @@ class EverblockTools extends ObjectModel
         $db = Db::getInstance();
         $result = $db->executeS('SHOW TABLES LIKE "' . $tableName . '"');
         return !empty($result);
+    }
+
+    protected static function ifColumnExists(string $tableName, string $columnName): bool
+    {
+        $db = Db::getInstance();
+
+        $result = $db->executeS(
+            'SHOW COLUMNS FROM `' . pSQL($tableName) . '` LIKE \'' . pSQL($columnName) . '\''
+        );
+
+        return !empty($result);
+    }
+
+    protected static function checkAdminTabsUrls(): void
+    {
+        if (!static::ifTableExists(_DB_PREFIX_ . 'tab')) {
+            return;
+        }
+
+        if (!static::ifColumnExists(_DB_PREFIX_ . 'tab', 'route_name')) {
+            return;
+        }
+
+        $tabClassName = 'AdminEverBlock';
+        $tabId = (int) Tab::getIdFromClassName($tabClassName);
+
+        if ($tabId <= 0) {
+            return;
+        }
+
+        $db = Db::getInstance();
+        $currentValues = $db->getRow(
+            'SELECT `route_name`, `module` FROM `' . _DB_PREFIX_ . 'tab` WHERE `id_tab` = ' . (int) $tabId
+        );
+
+        if (!$currentValues) {
+            return;
+        }
+
+        $updates = [];
+        $expectedRoute = 'everblock_admin_index';
+
+        if ($currentValues['route_name'] !== $expectedRoute) {
+            $updates['route_name'] = pSQL($expectedRoute);
+        }
+
+        if ($currentValues['module'] !== 'everblock') {
+            $updates['module'] = 'everblock';
+        }
+
+        if (!empty($updates)) {
+            $db->update('tab', $updates, 'id_tab = ' . (int) $tabId);
+        }
     }
 
     /**
