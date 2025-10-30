@@ -3,18 +3,6 @@ services:
         autowire: true
         autoconfigure: true
 
-    'Doctrine\ORM\EntityManagerInterface':
-        factory: ['Everblock\Tools\Service\DoctrineEntityManagerFactory', 'createForLegacyContext']
-
-    Everblock\Tools\Service\EverblockManager:
-        arguments:
-            - '@Doctrine\ORM\EntityManagerInterface'
-
-    Everblock\Tools\Controller\Admin\EverblockController:
-        public: true
-        tags:
-            - { name: 'controller.service_arguments' }
-
     everblock.tools.import:
         class: Everblock\Tools\Command\ImportFileCommand
         public: true

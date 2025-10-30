@@ -107,17 +107,16 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
             die($response);
         }
-        $manager = EverblockTools::getDoctrineManager();
-        $block = $manager->getBlock(
+        $block = new EverBlockClass(
             $blockId,
-            (int) $this->context->language->id,
-            (int) $this->context->shop->id
+            $this->context->language->id,
+            $this->context->shop->id
+
         );
-        if (!$block instanceof \EverBlockClass) {
+        if (!Validate::isLoadedObject($block)) {
             die();
         }
-        $blockData = $block->toArray((int) $this->context->language->id);
-        $modalDelay = (int) $blockData['delay'];
+        $modalDelay = (int) $block->delay;
         $showModal = false;
         $cookieName = $this->module->encrypt(
             $this->module->name
@@ -135,21 +134,21 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
         }
         if ($showModal) {
             // Hooks not allowed here
-            if (strpos((string) $blockData['content'], '{hook h=') !== false) {
+            if (strpos($block->content, '{hook h=') !== false) {
                 $pattern = '/\{hook h=[^}]*\}/';
-                $blockData['content'] = preg_replace($pattern, '', (string) $blockData['content']);
+                $block->content = preg_replace($pattern, '', $block->content);
             }
             // Store locator not allowed here
-            if (strpos((string) $blockData['content'], '[storelocator]') !== false) {
-                $blockData['content'] = str_replace('[storelocator]', '', (string) $blockData['content']);
+            if (strpos($block->content, '[storelocator]') !== false) {
+                $block->content = str_replace('[storelocator]', '', $block->content);
             }
-            $blockData['content'] = EverblockTools::renderShortcodes(
-                (string) $blockData['content'],
+            $block->content = EverBlockTools::renderShortcodes(
+                $block->content,
                 $this->context,
                 $this->module
             );
             $this->context->smarty->assign([
-                'everblock_modal' => (object) $blockData,
+                'everblock_modal' => $block,
             ]);
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
             die($response);

@@ -292,46 +292,6 @@
     margin-bottom: 0;
 }
 
-.everblock-config__card--logs details {
-    margin-bottom: 1rem;
-}
-
-.everblock-log-list details:last-child {
-    margin-bottom: 0;
-}
-
-.everblock-log__summary {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-weight: 600;
-    cursor: pointer;
-    gap: 0.75rem;
-}
-
-.everblock-log__meta {
-    color: #6c757d;
-    font-weight: 400;
-    font-size: 0.875rem;
-}
-
-.everblock-log__content {
-    margin-top: 0.75rem;
-    padding: 1rem;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    max-height: 320px;
-    overflow: auto;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.everblock-config__empty-state {
-    margin: 0;
-    color: #6c757d;
-}
-
 #module_form .nav-tabs {
     background: #f3f4ff;
     border-radius: 18px;

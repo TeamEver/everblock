@@ -77,34 +77,6 @@
                     {$everblock_form nofilter}
                 </div>
             {/if}
-
-            {if isset($everblock_logs)}
-                <div class="everblock-config__card everblock-config__card--logs">
-                    <h3 class="everblock-config__card-title">{l s='Module logs' mod='everblock'}</h3>
-                    {if $everblock_log_directory}
-                        <p class="everblock-config__card-description">
-                            {l s='Logs are stored in %s.' mod='everblock' sprintf=[$everblock_log_directory]}
-                        </p>
-                    {/if}
-                    {if $everblock_logs|@count}
-                        <div class="everblock-log-list">
-                            {foreach $everblock_logs as $log}
-                                <details class="everblock-log">
-                                    <summary class="everblock-log__summary">
-                                        <span class="everblock-log__name">{$log.filename|escape:'htmlall':'UTF-8'}</span>
-                                        <span class="everblock-log__meta">
-                                            {$log.modified_at_formatted|escape:'htmlall':'UTF-8'} · {$log.size|escape:'htmlall':'UTF-8'}
-                                        </span>
-                                    </summary>
-                                    <pre class="everblock-log__content">{$log.content|escape:'htmlall':'UTF-8'}</pre>
-                                </details>
-                            {/foreach}
-                        </div>
-                    {else}
-                        <p class="everblock-config__empty-state">{l s='No log files are available yet.' mod='everblock'}</p>
-                    {/if}
-                </div>
-            {/if}
         </div>
     </div>
 </div>

@@ -25,7 +25,6 @@ if (!defined('_PS_VERSION_')) {
 }
 
 use Everblock\Tools\Service\ImportFile;
-use Everblock\Tools\Service\LogService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,16 +40,11 @@ class ImportFileCommand extends Command
     public const FAILURE = 1;
     public const INVALID = 2;
     public const ABORTED = 3;
-
+    
     protected $filename;
-    /** @var LogService */
-    private $logService;
-
-    private const LOG_PREFIX = 'log-everblock-import';
 
     public function __construct(KernelInterface $kernel)
     {
-        $this->logService = new LogService();
         parent::__construct();
     }
 
@@ -59,7 +53,7 @@ class ImportFileCommand extends Command
         $this->setName('everblock:tools:import');
         $this->setDescription('Import HTML blocks from xlsx file');
         $this->filename = _PS_MODULE_DIR_ . 'everblock/input/everblock.xlsx';
-        $this->logFile = $this->logService->getDailyLogPath(self::LOG_PREFIX);
+        $this->logFile = _PS_ROOT_DIR_ . '/var/logs/log-everblock-import-' . date('Y-m-d') . '.log';
         $help = sprintf(
             'File must be set on ' . _PS_MODULE_DIR_ . 'everblock/input/everblock.xlsx'
         );
@@ -119,17 +113,17 @@ class ImportFileCommand extends Command
         }
         $create = false;
         if (isset($line['id_everblock']) && Validate::isUnsignedInt($line['id_everblock']) && (int)$line['id_everblock'] > 0) {
-            $block = new \EverBlockClass(
+            $block = new \Everblock(
                 (int) $line['id_everblock'],
                 (int) $line['id_lang'],
                 (int) $line['id_shop']
             );
             if (!Validate::isLoadedObject($block)) {
-                $block = new \EverBlockClass();
+                $block = new \Everblock();
                 $create = true;
             }
         } else {
-            $block = new \EverBlockClass();
+            $block = new \Everblock();
             $create = true;
         }
         if ($create) {
@@ -193,16 +187,17 @@ class ImportFileCommand extends Command
                 '<error>content column is not valid : ' . $line['content'] . '</error>'
                 );
             } else {
-                $block->setContent((int) $line['id_lang'], $line['content']);
+                $block->content = $line['content'];
             }
         }
         if (isset($line['custom_code'])) {
+            // huh ?
             if (!Validate::isAnything($line['custom_code'])) {
                 $output->writeln(
                 '<error>custom_code column is not valid : ' . $line['custom_code'] . '</error>'
                 );
             } else {
-                $block->setCustomCode((int) $line['id_lang'], $line['custom_code']);
+                $block->custom_code = $line['custom_code'];
             }
         }
         if (isset($line['only_category'])) {
@@ -444,6 +439,11 @@ class ImportFileCommand extends Command
         . '-------------------------'
         . PHP_EOL;
 
-        $this->logService->appendToDailyLog(self::LOG_PREFIX, $log);
+        //Save string to log, use FILE_APPEND to append.
+        file_put_contents(
+            $this->logFile,
+            $log,
+            FILE_APPEND
+        );
     }
 }

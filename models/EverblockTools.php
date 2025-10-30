@@ -18,7 +18,6 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 use Everblock\Tools\Service\EverblockCache;
-use Everblock\Tools\Service\LogService;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -4363,7 +4362,6 @@ class EverblockTools extends ObjectModel
     public static function checkAndFixDatabase()
     {
         $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
-        static::checkAdminTabsUrls();
         $tableNames = [
             _DB_PREFIX_ . 'everblock',
             _DB_PREFIX_ . 'everblock_lang',
@@ -4883,59 +4881,6 @@ class EverblockTools extends ObjectModel
         return !empty($result);
     }
 
-    protected static function ifColumnExists(string $tableName, string $columnName): bool
-    {
-        $db = Db::getInstance();
-
-        $result = $db->executeS(
-            'SHOW COLUMNS FROM `' . pSQL($tableName) . '` LIKE \'' . pSQL($columnName) . '\''
-        );
-
-        return !empty($result);
-    }
-
-    protected static function checkAdminTabsUrls(): void
-    {
-        if (!static::ifTableExists(_DB_PREFIX_ . 'tab')) {
-            return;
-        }
-
-        if (!static::ifColumnExists(_DB_PREFIX_ . 'tab', 'route_name')) {
-            return;
-        }
-
-        $tabClassName = 'AdminEverBlock';
-        $tabId = (int) Tab::getIdFromClassName($tabClassName);
-
-        if ($tabId <= 0) {
-            return;
-        }
-
-        $db = Db::getInstance();
-        $currentValues = $db->getRow(
-            'SELECT `route_name`, `module` FROM `' . _DB_PREFIX_ . 'tab` WHERE `id_tab` = ' . (int) $tabId
-        );
-
-        if (!$currentValues) {
-            return;
-        }
-
-        $updates = [];
-        $expectedRoute = 'everblock_admin_index';
-
-        if ($currentValues['route_name'] !== $expectedRoute) {
-            $updates['route_name'] = pSQL($expectedRoute);
-        }
-
-        if ($currentValues['module'] !== 'everblock') {
-            $updates['module'] = 'everblock';
-        }
-
-        if (!empty($updates)) {
-            $db->update('tab', $updates, 'id_tab = ' . (int) $tabId);
-        }
-    }
-
     /**
      * Teste si le fichier SQL de sauvegarde existe et restaure les tables et données si possible.
      * @return bool
@@ -5126,28 +5071,32 @@ class EverblockTools extends ObjectModel
 
     public static function setLog(string $logKey, string $logValue)
     {
-        $logService = new LogService();
+        $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
         $logValue = trim($logValue);
-
         if ($logValue === '') {
-            $logService->deleteLog($logKey . '.log');
+            if (file_exists($logFilePath)) {
+                unlink($logFilePath);
+            }
             return;
         }
-
-        $logService->writeLog($logKey . '.log', $logValue);
+        file_put_contents($logFilePath, $logValue);
     }
 
     public static function getLog(string $logKey)
     {
-        $logService = new LogService();
-
-        return $logService->readLog($logKey . '.log');
+        $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
+        if (file_exists($logFilePath)) {
+            return Tools::file_get_contents($logFilePath);
+        }
+        return '';
     }
 
     public static function dropLog(string $logKey)
     {
-        $logService = new LogService();
-        $logService->deleteLog($logKey . '.log');
+        $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
+        if (file_exists($logFilePath)) {
+            unlink($logFilePath);
+        }
     }
 
     public static function purgeNativePrestashopLogsTable()

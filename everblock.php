@@ -22,6 +22,7 @@ if (!defined('_PS_VERSION_')) {
 }
 
 require_once('vendor/autoload.php');
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTabsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
@@ -34,7 +35,6 @@ use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ImportFile;
-use Everblock\Tools\Service\LogService;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
@@ -62,8 +62,6 @@ class Everblock extends Module
     private $bypassedControllers = [
         'hookDisplayInvoiceLegalFreeText',
     ];
-    /** @var LogService */
-    private $logService;
 
     public function __construct()
     {
@@ -81,7 +79,6 @@ class Everblock extends Module
             'min' => '1.7',
             'max' => _PS_VERSION_,
         ];
-        $this->logService = new LogService();
     }
 
     public function __call($method, $args)
@@ -217,7 +214,6 @@ class Everblock extends Module
             && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'));
 
         if ($installed) {
-            $this->ensureAdminEverblockRoute();
             $this->importLegacyTranslations();
         }
 
@@ -462,10 +458,6 @@ class Everblock extends Module
         $tab->id_parent = (int) Tab::getIdFromClassName($parent);
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
         $tab->module = $this->name;
-
-        if ($tabClass === 'AdminEverBlock' && property_exists($tab, 'route_name')) {
-            $tab->route_name = 'everblock_admin_index';
-        }
         if ($tabClass == 'AdminEverBlockParent') {
             $tab->icon = 'icon-team-ever';
         }
@@ -473,40 +465,6 @@ class Everblock extends Module
             $tab->name[(int) $lang['id_lang']] = $tabName;
         }
         return $tab->add();
-    }
-
-    private function ensureAdminEverblockRoute(): void
-    {
-        if (!class_exists(Tab::class)) {
-            return;
-        }
-
-        if (!property_exists(Tab::class, 'route_name')) {
-            return;
-        }
-
-        $tabId = (int) Tab::getIdFromClassName('AdminEverBlock');
-
-        if ($tabId <= 0) {
-            return;
-        }
-
-        $tab = new Tab($tabId);
-        $needsUpdate = false;
-
-        if (!isset($tab->route_name) || $tab->route_name !== 'everblock_admin_index') {
-            $tab->route_name = 'everblock_admin_index';
-            $needsUpdate = true;
-        }
-
-        if (!isset($tab->module) || $tab->module !== $this->name) {
-            $tab->module = $this->name;
-            $needsUpdate = true;
-        }
-
-        if ($needsUpdate) {
-            $tab->save();
-        }
     }
 
     protected function uninstallModuleTab($tabClass)
@@ -1002,11 +960,6 @@ class Everblock extends Module
         $displayUpgrade = $this->checkLatestEverModuleVersion();
         $notifications = $this->html;
         $this->html = '';
-        $logEntries = $this->getLogEntriesForView();
-        $logDirectory = '';
-        if ($this->logService instanceof LogService) {
-            $logDirectory = $this->logService->getLogDirectory();
-        }
         $this->context->smarty->assign([
             'module_name' => $this->displayName,
             $this->name . '_version' => $this->version,
@@ -1023,8 +976,6 @@ class Everblock extends Module
             'display_upgrade' => $displayUpgrade,
             'everblock_stats' => $this->getModuleStatistics(),
             'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($this),
-            'everblock_logs' => $logEntries,
-            'everblock_log_directory' => $logDirectory,
         ]);
         $output = $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'
@@ -1037,49 +988,6 @@ class Everblock extends Module
         );
 
         return $output;
-    }
-
-    protected function getLogEntriesForView(): array
-    {
-        if (!($this->logService instanceof LogService)) {
-            $this->logService = new LogService();
-        }
-
-        $logs = $this->logService->listLogs();
-        $languageId = isset($this->context->language->id) ? (int) $this->context->language->id : null;
-        $entries = [];
-
-        foreach ($logs as $log) {
-            $timestamp = (int) $log['modified_at'];
-            $formattedDate = date('Y-m-d H:i:s', $timestamp);
-            if ($languageId) {
-                $formattedDate = Tools::displayDate($formattedDate, $languageId, true);
-            }
-
-            $entries[] = [
-                'filename' => $log['filename'],
-                'size' => $this->formatLogSize((int) $log['size']),
-                'modified_at' => $timestamp,
-                'modified_at_formatted' => $formattedDate,
-                'content' => $log['content'],
-            ];
-        }
-
-        return $entries;
-    }
-
-    protected function formatLogSize(int $bytes): string
-    {
-        if ($bytes <= 0) {
-            return '0 B';
-        }
-
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $pow = (int) floor(log($bytes, 1024));
-        $pow = min($pow, count($units) - 1);
-        $value = $bytes / pow(1024, $pow);
-
-        return round($value, $pow === 0 ? 0 : 2) . ' ' . $units[$pow];
     }
 
     protected function isProductModalAjaxRequest()
@@ -5028,10 +4936,10 @@ class Everblock extends Module
             $block->date_end = $line['date_end'];
         }
         if (isset($line['content']) && Validate::isAnything($line['content'])) {
-            $block->setContent((int) $line['id_lang'], $line['content']);
+            $block->content[(int) $line['id_lang']] = $line['content'];
         }
         if (isset($line['custom_code']) && Validate::isAnything($line['custom_code'])) {
-            $block->setCustomCode((int) $line['id_lang'], $line['custom_code']);
+            $block->custom_code[(int) $line['id_lang']] = $line['custom_code'];
         }
 
         try {
@@ -5058,12 +4966,7 @@ class Everblock extends Module
                 (int) $this->context->shop->id
             );
 
-            if (method_exists($everblock, 'toArray')) {
-                $data = $everblock->toArray((int) $this->context->language->id);
-                $state['content'] = $data['content'] ?? '';
-            } else {
-                $state['content'] = '';
-            }
+            $state['content'] = Validate::isLoadedObject($everblock) ? $everblock->content : '';
         }
         unset($state);
 
