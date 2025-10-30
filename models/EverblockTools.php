@@ -18,6 +18,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Service\LogService;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -5071,32 +5072,28 @@ class EverblockTools extends ObjectModel
 
     public static function setLog(string $logKey, string $logValue)
     {
-        $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
+        $logService = new LogService();
         $logValue = trim($logValue);
+
         if ($logValue === '') {
-            if (file_exists($logFilePath)) {
-                unlink($logFilePath);
-            }
+            $logService->deleteLog($logKey . '.log');
             return;
         }
-        file_put_contents($logFilePath, $logValue);
+
+        $logService->writeLog($logKey . '.log', $logValue);
     }
 
     public static function getLog(string $logKey)
     {
-        $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
-        if (file_exists($logFilePath)) {
-            return Tools::file_get_contents($logFilePath);
-        }
-        return '';
+        $logService = new LogService();
+
+        return $logService->readLog($logKey . '.log');
     }
 
     public static function dropLog(string $logKey)
     {
-        $logFilePath = _PS_ROOT_DIR_ . '/var/logs/' . $logKey . '.log';
-        if (file_exists($logFilePath)) {
-            unlink($logFilePath);
-        }
+        $logService = new LogService();
+        $logService->deleteLog($logKey . '.log');
     }
 
     public static function purgeNativePrestashopLogsTable()

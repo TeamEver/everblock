@@ -34,6 +34,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use Everblock\Tools\Service\LogService;
 use Hook;
 use Validate;
 
@@ -43,8 +44,13 @@ class ExportFileCommand extends Command
     public const FAILURE = 1;
     public const INVALID = 2;
     public const ABORTED = 3;
-    
+
     protected $filename;
+
+    /** @var LogService */
+    private $logService;
+
+    private const LOG_PREFIX = 'log-everblock-export';
 
     private $allowedActions = [
         'getrandomcomment',
@@ -53,6 +59,7 @@ class ExportFileCommand extends Command
 
     public function __construct(KernelInterface $kernel)
     {
+        $this->logService = new LogService();
         parent::__construct();
     }
 
@@ -65,7 +72,7 @@ class ExportFileCommand extends Command
         $this->addArgument('lang id', InputArgument::OPTIONAL, 'Language ID');
         $help = sprintf("Allowed actions: %s\n", implode(' / ', $this->allowedActions));
         $this->setHelp($help);
-        $this->logFile = _PS_ROOT_DIR_ . '/var/logs/log-everblock-export-' . date('Y-m-d') . '.log';
+        $this->logFile = $this->logService->getDailyLogPath(self::LOG_PREFIX);
         $this->module = \Module::getInstanceByName('everblock');
         $this->filename = _PS_MODULE_DIR_ . 'everblock/output/everblock.xlsx';
     }
@@ -308,12 +315,7 @@ class ExportFileCommand extends Command
                 date('j.n.Y') . PHP_EOL .
                 '-------------------------' . PHP_EOL;
 
-        //Save string to log, use FILE_APPEND to append.
-        file_put_contents(
-            $this->logFile,
-            $log,
-            FILE_APPEND
-        );
+        $this->logService->appendToDailyLog(self::LOG_PREFIX, $log);
     }
 
     /**

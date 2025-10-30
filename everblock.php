@@ -35,6 +35,7 @@ use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ImportFile;
+use Everblock\Tools\Service\LogService;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
@@ -62,6 +63,8 @@ class Everblock extends Module
     private $bypassedControllers = [
         'hookDisplayInvoiceLegalFreeText',
     ];
+    /** @var LogService */
+    private $logService;
 
     public function __construct()
     {
@@ -79,6 +82,7 @@ class Everblock extends Module
             'min' => '1.7',
             'max' => _PS_VERSION_,
         ];
+        $this->logService = new LogService();
     }
 
     public function __call($method, $args)
@@ -960,6 +964,11 @@ class Everblock extends Module
         $displayUpgrade = $this->checkLatestEverModuleVersion();
         $notifications = $this->html;
         $this->html = '';
+        $logEntries = $this->getLogEntriesForView();
+        $logDirectory = '';
+        if ($this->logService instanceof LogService) {
+            $logDirectory = $this->logService->getLogDirectory();
+        }
         $this->context->smarty->assign([
             'module_name' => $this->displayName,
             $this->name . '_version' => $this->version,
@@ -976,6 +985,8 @@ class Everblock extends Module
             'display_upgrade' => $displayUpgrade,
             'everblock_stats' => $this->getModuleStatistics(),
             'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($this),
+            'everblock_logs' => $logEntries,
+            'everblock_log_directory' => $logDirectory,
         ]);
         $output = $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'
@@ -988,6 +999,49 @@ class Everblock extends Module
         );
 
         return $output;
+    }
+
+    protected function getLogEntriesForView(): array
+    {
+        if (!($this->logService instanceof LogService)) {
+            $this->logService = new LogService();
+        }
+
+        $logs = $this->logService->listLogs();
+        $languageId = isset($this->context->language->id) ? (int) $this->context->language->id : null;
+        $entries = [];
+
+        foreach ($logs as $log) {
+            $timestamp = (int) $log['modified_at'];
+            $formattedDate = date('Y-m-d H:i:s', $timestamp);
+            if ($languageId) {
+                $formattedDate = Tools::displayDate($formattedDate, $languageId, true);
+            }
+
+            $entries[] = [
+                'filename' => $log['filename'],
+                'size' => $this->formatLogSize((int) $log['size']),
+                'modified_at' => $timestamp,
+                'modified_at_formatted' => $formattedDate,
+                'content' => $log['content'],
+            ];
+        }
+
+        return $entries;
+    }
+
+    protected function formatLogSize(int $bytes): string
+    {
+        if ($bytes <= 0) {
+            return '0 B';
+        }
+
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $pow = (int) floor(log($bytes, 1024));
+        $pow = min($pow, count($units) - 1);
+        $value = $bytes / pow(1024, $pow);
+
+        return round($value, $pow === 0 ? 0 : 2) . ' ' . $units[$pow];
     }
 
     protected function isProductModalAjaxRequest()
