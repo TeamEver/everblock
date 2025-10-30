@@ -22,7 +22,6 @@ if (!defined('_PS_VERSION_')) {
 }
 
 require_once('vendor/autoload.php');
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTabsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
