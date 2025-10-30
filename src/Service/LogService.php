@@ -31,14 +31,25 @@ if (!defined('_PS_VERSION_')) {
 
 class LogService
 {
-    private const LOG_DIRECTORY = '/var/logs/everblock';
+    private const DEFAULT_RELATIVE_DIRECTORY = 'var/logs/everblock';
     private const MAX_LOG_AGE_DAYS = 7;
+
+    /**
+     * @var string
+     */
+    private $logDirectory;
+
+    public function __construct(?string $logDirectory = null)
+    {
+        $baseDirectory = $logDirectory ?: $this->resolveDefaultDirectory();
+        $this->logDirectory = rtrim($baseDirectory, DIRECTORY_SEPARATOR);
+    }
 
     public function getLogDirectory(): string
     {
         $this->ensureDirectory();
 
-        return self::LOG_DIRECTORY;
+        return $this->logDirectory;
     }
 
     public function getDailyLogPath(string $prefix): string
@@ -89,14 +100,14 @@ class LogService
     {
         $this->purgeOldLogs();
 
-        if (!is_dir(self::LOG_DIRECTORY)) {
+        if (!is_dir($this->logDirectory)) {
             return [];
         }
 
         $logs = [];
 
         try {
-            $iterator = new FilesystemIterator(self::LOG_DIRECTORY, FilesystemIterator::SKIP_DOTS);
+            $iterator = new FilesystemIterator($this->logDirectory, FilesystemIterator::SKIP_DOTS);
         } catch (RuntimeException $e) {
             return [];
         }
@@ -133,14 +144,14 @@ class LogService
     {
         $this->ensureDirectory();
 
-        if (!is_dir(self::LOG_DIRECTORY)) {
+        if (!is_dir($this->logDirectory)) {
             return;
         }
 
         $threshold = (new DateTimeImmutable('-' . self::MAX_LOG_AGE_DAYS . ' days'))->getTimestamp();
 
         try {
-            $iterator = new FilesystemIterator(self::LOG_DIRECTORY, FilesystemIterator::SKIP_DOTS);
+            $iterator = new FilesystemIterator($this->logDirectory, FilesystemIterator::SKIP_DOTS);
         } catch (RuntimeException $e) {
             return;
         }
@@ -173,15 +184,24 @@ class LogService
 
         $sanitized = basename($sanitized);
 
-        return rtrim(self::LOG_DIRECTORY, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $sanitized;
+        return $this->logDirectory . DIRECTORY_SEPARATOR . $sanitized;
     }
 
     private function ensureDirectory(): void
     {
-        if (is_dir(self::LOG_DIRECTORY)) {
+        if (is_dir($this->logDirectory)) {
             return;
         }
 
-        @mkdir(self::LOG_DIRECTORY, 0775, true);
+        @mkdir($this->logDirectory, 0775, true);
+    }
+
+    private function resolveDefaultDirectory(): string
+    {
+        if (defined('_PS_ROOT_DIR_')) {
+            return rtrim(_PS_ROOT_DIR_, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . self::DEFAULT_RELATIVE_DIRECTORY;
+        }
+
+        return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . self::DEFAULT_RELATIVE_DIRECTORY;
     }
 }
