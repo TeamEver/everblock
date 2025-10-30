@@ -408,27 +408,12 @@ class ExecuteAction extends Command
                 $output->writeln('<warning>Invalid language ID(s)</warning>');
                 return self::ABORTED;
             }
-            $sql = new DbQuery();
-            $sql->select('id_everblock');
-            $sql->from('everblock');
-            $sql->where('id_shop = ' . (int) $shop->id);
-            $blocks = Db::getInstance()->executeS($sql);
-            foreach ($blocks as $blk) {
-                $block = new EverBlockClass((int) $blk['id_everblock']);
-                if (isset($block->content[$idLangFrom])) {
-                    $block->content[(int) $idLangTo] = $block->content[$idLangFrom];
-                }
-                if (isset($block->custom_code[$idLangFrom])) {
-                    $block->custom_code[(int) $idLangTo] = $block->custom_code[$idLangFrom];
-                }
-                try {
-                    $block->save();
-                    $output->writeln('<comment>Duplicated block ' . $block->id . ' from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</comment>');
-                } catch (Exception $e) {
-                    $output->writeln('<warning>' . $e->getMessage() . '</warning>');
-                }
-            }
-            $output->writeln('<success>All blocks duplicated from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</success>');
+
+            $manager = EverblockTools::getDoctrineManager();
+            $duplicated = $manager->duplicateLanguage((int) $idLangFrom, (int) $idLangTo, (int) $shop->id);
+
+            $output->writeln('<success>Duplicated ' . $duplicated . ' blocks from lang ' . (int) $idLangFrom . ' to ' . (int) $idLangTo . '</success>');
+
             return self::SUCCESS;
         }
         if ($action === 'removehn') {

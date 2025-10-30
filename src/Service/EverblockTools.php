@@ -34,7 +34,9 @@ use Db;
 use DbQuery;
 use DirectoryIterator;
 use Everblock;
-use EverblockClass;
+use Everblock\Tools\Service\DoctrineEntityManagerFactory;
+use Everblock\Tools\Service\EverblockManager as DoctrineEverblockManager;
+use Everblock\Tools\Service\EverblockMigrationTool;
 use EverblockFaq;
 use EverblockShortcode;
 use Gender;
@@ -75,6 +77,30 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockTools extends ObjectModel
 {
+    private static ?DoctrineEverblockManager $doctrineManager = null;
+
+    private static ?EverblockMigrationTool $migrationTool = null;
+
+    public static function getDoctrineManager(): DoctrineEverblockManager
+    {
+        if (null === self::$doctrineManager) {
+            self::$doctrineManager = new DoctrineEverblockManager(
+                DoctrineEntityManagerFactory::createForLegacyContext()
+            );
+        }
+
+        return self::$doctrineManager;
+    }
+
+    public static function getMigrationTool(): EverblockMigrationTool
+    {
+        if (null === self::$migrationTool) {
+            self::$migrationTool = new EverblockMigrationTool();
+        }
+
+        return self::$migrationTool;
+    }
+
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
         Hook::exec('displayBeforeRenderingShortcodes', ['html' => &$txt]);
