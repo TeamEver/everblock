@@ -4110,7 +4110,9 @@ class Everblock extends Module
         . '-device-'
         . (int) $context->getDevice()
         . $position;
-        if (!EverblockCache::isCacheStored(str_replace('|', '-', $cacheId))) {
+        $isPreview = isset($args[0]['everblock_preview']) && (bool) $args[0]['everblock_preview'];
+
+        if ($isPreview || !EverblockCache::isCacheStored(str_replace('|', '-', $cacheId))) {
             if (isset($context->customer->id) && $context->customer->id) {
                 $id_entity = (int) $context->customer->id;
             } else {
@@ -4293,10 +4295,12 @@ class Everblock extends Module
                 'args' => $args,
             ]);
             $tpl = $this->display(__FILE__, $this->name . '.tpl');
-            $cached = EverblockCache::cacheStore(
-                str_replace('|', '-', $cacheId),
-                $tpl
-            );
+            if (!$isPreview) {
+                EverblockCache::cacheStore(
+                    str_replace('|', '-', $cacheId),
+                    $tpl
+                );
+            }
             return $tpl;
         }
         return EverblockCache::cacheRetrieve(
