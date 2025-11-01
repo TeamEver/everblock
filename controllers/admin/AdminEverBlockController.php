@@ -423,6 +423,7 @@ class AdminEverBlockController extends ModuleAdminController
         $cmsCategoriesList = CMSCategory::getSimpleCategories(
             (int) $this->context->language->id
         );
+        $groups = Group::getGroups($this->context->language->id);
         // IDs are set depending on context values
         $devices = [
             [
@@ -615,7 +616,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'type' => 'group',
                         'label' => $this->l('Group access'),
                         'name' => 'groupBox',
-                        'values' => Group::getGroups($this->context->language->id),
+                        'values' => $groups,
                         'desc' => $this->l('Block will be shown to these groups'),
                         'hint' => $this->l('Please select at least one customer group'),
                         'required' => false,
@@ -1041,10 +1042,38 @@ class AdminEverBlockController extends ModuleAdminController
             }
         }
 
+        $previewAvailable = Validate::isLoadedObject($obj) && (int) $obj->id > 0;
+        $previewContexts = $this->buildPreviewContexts(
+            $obj,
+            [
+                'categories' => $categories_list,
+                'manufacturers' => $manufacturersList,
+                'suppliers' => $suppliersList,
+                'cms_categories' => $cmsCategoriesList,
+                'groups' => $groups,
+            ]
+        );
+        $previewUrl = '';
+
+        if ($previewAvailable) {
+            $previewUrl = $this->context->link->getModuleLink(
+                'everblock',
+                'preview',
+                [
+                    'token' => Tools::getAdminTokenLite('AdminEverBlockController'),
+                    'id_everblock' => (int) $obj->id,
+                ],
+                true
+            );
+        }
+
         $this->context->smarty->assign([
             'everblock_notifications' => $notifications,
             'everblock_form' => $helper->generateForm($fields_form),
             'display_upgrade' => $displayUpgrade,
+            'everblock_preview_contexts' => $previewContexts,
+            'everblock_preview_url' => $previewUrl,
+            'everblock_preview_available' => $previewAvailable,
         ]);
 
         $content = $this->context->smarty->fetch(
@@ -1058,6 +1087,343 @@ class AdminEverBlockController extends ModuleAdminController
         );
 
         return $content;
+    }
+
+    protected function buildPreviewContexts($block, array $lists): array
+    {
+        $languages = [];
+        foreach (Language::getLanguages(true) as $language) {
+            $languages[] = [
+                'id' => (int) $language['id_lang'],
+                'iso_code' => isset($language['iso_code']) ? (string) $language['iso_code'] : '',
+                'label' => isset($language['name']) ? (string) $language['name'] : (string) $language['id_lang'],
+            ];
+        }
+
+        $shops = [];
+        $shopRows = Shop::getShops(true);
+        if (is_array($shopRows)) {
+            foreach ($shopRows as $shop) {
+                $shops[] = [
+                    'id' => isset($shop['id_shop']) ? (int) $shop['id_shop'] : 0,
+                    'label' => isset($shop['name']) ? (string) $shop['name'] : '',
+                ];
+            }
+        }
+
+        $shopId = isset($block->id_shop) && (int) $block->id_shop > 0
+            ? (int) $block->id_shop
+            : (int) $this->context->shop->id;
+
+        $categories = $this->formatPreviewOptions(
+            isset($lists['categories']) ? (array) $lists['categories'] : [],
+            'id_category',
+            'name'
+        );
+        $manufacturers = $this->formatPreviewOptions(
+            isset($lists['manufacturers']) ? (array) $lists['manufacturers'] : [],
+            'id',
+            'name'
+        );
+        $suppliers = $this->formatPreviewOptions(
+            isset($lists['suppliers']) ? (array) $lists['suppliers'] : [],
+            'id',
+            'name'
+        );
+        $cmsCategories = $this->formatPreviewOptions(
+            isset($lists['cms_categories']) ? (array) $lists['cms_categories'] : [],
+            'id_cms_category',
+            'name'
+        );
+        $groupOptions = $this->formatPreviewOptions(
+            isset($lists['groups']) ? (array) $lists['groups'] : [],
+            'id_group',
+            'name'
+        );
+
+        $selectedCategories = $this->normalizeIdList(isset($block->categories) ? $block->categories : []);
+        $selectedManufacturers = $this->normalizeIdList(isset($block->manufacturers) ? $block->manufacturers : []);
+        $selectedSuppliers = $this->normalizeIdList(isset($block->suppliers) ? $block->suppliers : []);
+        $selectedCmsCategories = $this->normalizeIdList(isset($block->cms_categories) ? $block->cms_categories : []);
+        $selectedGroups = $this->normalizeIdList(isset($block->groups) ? $block->groups : []);
+
+        $defaultCategoryId = $this->resolveDefaultIdentifier($selectedCategories, $categories);
+        $defaultManufacturerId = $this->resolveDefaultIdentifier($selectedManufacturers, $manufacturers);
+        $defaultSupplierId = $this->resolveDefaultIdentifier($selectedSuppliers, $suppliers);
+        $defaultCmsCategoryId = $this->resolveDefaultIdentifier($selectedCmsCategories, $cmsCategories);
+        $defaultProductId = $this->resolveDefaultProductId($selectedCategories, $shopId);
+
+        $groupRestrictions = [];
+        if (!empty($selectedGroups)) {
+            foreach ($groupOptions as $group) {
+                if (in_array((int) $group['id'], $selectedGroups, true)) {
+                    $groupRestrictions[] = $group;
+                }
+            }
+        }
+
+        $contextDefinitions = [
+            'index' => [
+                'key' => 'index',
+                'controller' => 'index',
+                'page_name' => 'index',
+                'label' => $this->l('Homepage'),
+                'fields' => [],
+            ],
+            'category' => [
+                'key' => 'category',
+                'controller' => 'category',
+                'page_name' => 'category',
+                'label' => $this->l('Category page'),
+                'fields' => [
+                    [
+                        'name' => 'id_category',
+                        'type' => 'select',
+                        'label' => $this->l('Category'),
+                        'options' => $categories,
+                        'value' => $defaultCategoryId,
+                    ],
+                ],
+            ],
+            'product' => [
+                'key' => 'product',
+                'controller' => 'product',
+                'page_name' => 'product',
+                'label' => $this->l('Product page'),
+                'fields' => [
+                    [
+                        'name' => 'id_product',
+                        'type' => 'number',
+                        'label' => $this->l('Product ID'),
+                        'value' => $defaultProductId,
+                        'placeholder' => '0',
+                        'help' => $defaultProductId ? '' : $this->l('No product was found for the selected categories. Please enter a product ID manually.'),
+                        'min' => 0,
+                    ],
+                ],
+            ],
+            'manufacturer' => [
+                'key' => 'manufacturer',
+                'controller' => 'manufacturer',
+                'page_name' => 'manufacturer',
+                'label' => $this->l('Manufacturer page'),
+                'fields' => [
+                    [
+                        'name' => 'id_manufacturer',
+                        'type' => 'select',
+                        'label' => $this->l('Manufacturer'),
+                        'options' => $manufacturers,
+                        'value' => $defaultManufacturerId,
+                    ],
+                ],
+            ],
+            'supplier' => [
+                'key' => 'supplier',
+                'controller' => 'supplier',
+                'page_name' => 'supplier',
+                'label' => $this->l('Supplier page'),
+                'fields' => [
+                    [
+                        'name' => 'id_supplier',
+                        'type' => 'select',
+                        'label' => $this->l('Supplier'),
+                        'options' => $suppliers,
+                        'value' => $defaultSupplierId,
+                    ],
+                ],
+            ],
+            'cms_category' => [
+                'key' => 'cms_category',
+                'controller' => 'cms',
+                'page_name' => 'cms_category',
+                'label' => $this->l('CMS category page'),
+                'fields' => [
+                    [
+                        'name' => 'id_cms_category',
+                        'type' => 'select',
+                        'label' => $this->l('CMS category'),
+                        'options' => $cmsCategories,
+                        'value' => $defaultCmsCategoryId,
+                    ],
+                ],
+            ],
+        ];
+
+        $enabledKeys = [];
+        if (Validate::isLoadedObject($block)) {
+            if (!empty($block->only_home)) {
+                $enabledKeys = ['index'];
+            } elseif (!empty($block->only_category_product)) {
+                $enabledKeys = ['product'];
+            } elseif (!empty($block->only_category)) {
+                $enabledKeys = ['category'];
+            } elseif (!empty($block->only_manufacturer)) {
+                $enabledKeys = ['manufacturer'];
+            } elseif (!empty($block->only_supplier)) {
+                $enabledKeys = ['supplier'];
+            } elseif (!empty($block->only_cms_category)) {
+                $enabledKeys = ['cms_category'];
+            }
+        }
+
+        if (empty($enabledKeys)) {
+            $enabledKeys[] = 'index';
+
+            if (!empty($categories)) {
+                $enabledKeys[] = 'category';
+            }
+            if (!empty($selectedCategories)) {
+                $enabledKeys[] = 'product';
+            }
+            if (!empty($manufacturers)) {
+                $enabledKeys[] = 'manufacturer';
+            }
+            if (!empty($suppliers)) {
+                $enabledKeys[] = 'supplier';
+            }
+            if (!empty($cmsCategories)) {
+                $enabledKeys[] = 'cms_category';
+            }
+        }
+
+        $enabledKeys = array_values(array_unique(array_filter($enabledKeys)));
+        $controllers = [];
+        foreach ($enabledKeys as $key) {
+            if (!isset($contextDefinitions[$key])) {
+                continue;
+            }
+
+            $definition = $contextDefinitions[$key];
+
+            if (!empty($definition['fields'])) {
+                $allOptionsMissing = true;
+                foreach ($definition['fields'] as &$field) {
+                    if ($field['type'] === 'select') {
+                        $options = isset($field['options']) ? (array) $field['options'] : [];
+                        if (!empty($options)) {
+                            $allOptionsMissing = false;
+                        }
+                    } else {
+                        $allOptionsMissing = false;
+                    }
+                }
+                unset($field);
+
+                if ($allOptionsMissing) {
+                    continue;
+                }
+            }
+
+            $controllers[] = $definition;
+        }
+
+        $defaultContext = isset($enabledKeys[0]) ? (string) $enabledKeys[0] : 'index';
+
+        return [
+            'id_everblock' => Validate::isLoadedObject($block) ? (int) $block->id : 0,
+            'languages' => $languages,
+            'shops' => $shops,
+            'controllers' => $controllers,
+            'defaults' => [
+                'context' => $defaultContext,
+                'id_lang' => (int) $this->context->language->id,
+                'id_shop' => $shopId,
+                'id_currency' => isset($this->context->currency->id) ? (int) $this->context->currency->id : null,
+                'position' => isset($block->position) ? (int) $block->position : null,
+            ],
+            'groups' => $groupRestrictions,
+        ];
+    }
+
+    protected function formatPreviewOptions(array $items, string $idKey, string $labelKey): array
+    {
+        $options = [];
+
+        foreach ($items as $item) {
+            if (is_object($item)) {
+                $item = (array) $item;
+            }
+
+            if (!is_array($item) || !isset($item[$idKey])) {
+                continue;
+            }
+
+            $options[] = [
+                'id' => (int) $item[$idKey],
+                'label' => isset($item[$labelKey]) ? (string) $item[$labelKey] : (string) $item[$idKey],
+            ];
+        }
+
+        return $options;
+    }
+
+    protected function normalizeIdList($value): array
+    {
+        if (is_array($value)) {
+            return array_map('intval', array_filter($value));
+        }
+
+        if (is_object($value)) {
+            $value = (array) $value;
+            return array_map('intval', array_filter($value));
+        }
+
+        if (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                return array_map('intval', array_filter($decoded));
+            }
+        }
+
+        return [];
+    }
+
+    protected function resolveDefaultIdentifier(array $selectedIds, array $options): ?int
+    {
+        $selectedIds = array_map('intval', array_filter($selectedIds));
+
+        foreach ($selectedIds as $selected) {
+            foreach ($options as $option) {
+                if ((int) $option['id'] === (int) $selected) {
+                    return (int) $selected;
+                }
+            }
+        }
+
+        if (!empty($options)) {
+            return (int) $options[0]['id'];
+        }
+
+        return null;
+    }
+
+    protected function resolveDefaultProductId(array $categoryIds, int $shopId): ?int
+    {
+        $categoryIds = array_map('intval', array_filter($categoryIds));
+
+        if (empty($categoryIds)) {
+            return null;
+        }
+
+        foreach ($categoryIds as $categoryId) {
+            $query = new DbQuery();
+            $query->select('p.id_product');
+            $query->from('product', 'p');
+            $query->innerJoin('product_shop', 'ps', 'p.id_product = ps.id_product');
+            $query->innerJoin('category_product', 'cp', 'cp.id_product = p.id_product');
+            $query->where('ps.id_shop = ' . (int) $shopId);
+            $query->where('cp.id_category = ' . (int) $categoryId);
+            $query->where('ps.active = 1');
+            $query->orderBy('ps.date_upd DESC');
+            $query->limit(1);
+
+            $productId = (int) Db::getInstance()->getValue($query);
+            if ($productId > 0) {
+                return $productId;
+            }
+        }
+
+        return null;
     }
 
     protected function getConfigFormValues($obj)
