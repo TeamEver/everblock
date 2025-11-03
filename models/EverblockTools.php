@@ -5296,16 +5296,14 @@ class EverblockTools extends ObjectModel
         if ($limit < 1) {
             $limit = 3;
         }
-        $requestUrl = rtrim($apiUrl, '/') . '?per_page=' . $limit . '&_embed';
-        $user = Configuration::get('EVERWP_API_USER');
-        $pwd = Configuration::get('EVERWP_API_PWD');
-        $contextOptions = [];
-        if ($user && $pwd) {
-            $contextOptions['http'] = [
-                'header' => 'Authorization: Basic ' . base64_encode($user . ':' . $pwd),
-            ];
-        }
-        $response = Tools::file_get_contents($requestUrl, false, empty($contextOptions) ? null : stream_context_create($contextOptions));
+        $requestUrl = rtrim($apiUrl, '/');
+        $queryParams = [
+            'per_page' => $limit,
+            '_embed' => 1,
+        ];
+        $separator = (strpos($requestUrl, '?') === false) ? '?' : '&';
+        $requestUrl .= $separator . http_build_query($queryParams, '', '&', PHP_QUERY_RFC3986);
+        $response = Tools::file_get_contents($requestUrl);
         $posts = json_decode($response, true);
         if (!$posts || !is_array($posts)) {
             return false;
@@ -5319,6 +5317,8 @@ class EverblockTools extends ObjectModel
             $imgUrl = '';
             if (isset($post['_embedded']['wp:featuredmedia'][0]['source_url'])) {
                 $imgUrl = $post['_embedded']['wp:featuredmedia'][0]['source_url'];
+            } elseif (isset($post['yoast_head_json']['og_image'][0]['url'])) {
+                $imgUrl = $post['yoast_head_json']['og_image'][0]['url'];
             }
             $imgTag = '';
             if ($imgUrl) {
