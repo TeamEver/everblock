@@ -169,6 +169,7 @@ return [
     'views/templates/admin/block/docs/modal.tpl',
     'views/templates/admin/block/docs/schedule.tpl',
     'views/templates/admin/block/docs/targeting.tpl',
+    'views/templates/admin/block/preview-modal.tpl',
     'views/templates/admin/configure.tpl',
     'views/templates/admin/customerConnect.tpl',
     'views/templates/admin/footer.tpl',
