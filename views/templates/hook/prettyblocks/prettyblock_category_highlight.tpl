@@ -38,11 +38,29 @@
         {else}
           <a href="{$category_link}" title="{$state.name}" class="d-block h-100 w-100 text-decoration-none text-white"{if $state.target_blank} target="_blank"{/if}>
         {/if}
-          {if $state.image.url}
+          {assign var='desktop_image_url' value=$state.desktop_image.url|default:''}
+          {assign var='mobile_image_url' value=$state.mobile_image.url|default:''}
+          {assign var='fallback_image_url' value=$state.image.url|default:''}
+          {if not $desktop_image_url && $fallback_image_url}
+            {assign var='desktop_image_url' value=$fallback_image_url}
+          {/if}
+          {if not $mobile_image_url && $fallback_image_url}
+            {assign var='mobile_image_url' value=$fallback_image_url}
+          {/if}
+          {if not $fallback_image_url}
+            {assign var='fallback_image_url' value=$desktop_image_url|default:$mobile_image_url}
+          {/if}
+          {if $fallback_image_url}
             <picture>
-              <source srcset="{$state.image.url}" type="image/webp">
-              <source srcset="{$state.image.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-              <img src="{$state.image.url|replace:'.webp':'.jpg'}"
+              {if $mobile_image_url}
+                <source srcset="{$mobile_image_url}" media="(max-width: 767px)" type="image/webp">
+                <source srcset="{$mobile_image_url|replace:'.webp':'.jpg'}" media="(max-width: 767px)" type="image/jpeg">
+              {/if}
+              {if $desktop_image_url}
+                <source srcset="{$desktop_image_url}" media="(min-width: 768px)" type="image/webp">
+                <source srcset="{$desktop_image_url|replace:'.webp':'.jpg'}" media="(min-width: 768px)" type="image/jpeg">
+              {/if}
+              <img src="{$fallback_image_url|replace:'.webp':'.jpg'}"
                    alt="{$state.name|escape:'htmlall'}"
                    title="{$state.name|escape:'htmlall'}"
                    class="img-fluid w-100 h-100 object-fit-cover"
