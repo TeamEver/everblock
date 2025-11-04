@@ -346,7 +346,6 @@ class EverblockPreviewBuilder
         $query->where('c.active = 1');
         $query->where('cg.id_group IN (' . implode(',', $groupIds) . ')');
         $query->orderBy('c.date_upd DESC');
-        $query->limit(1);
 
         $customerId = (int) Db::getInstance()->getValue($query);
         if ($customerId > 0) {

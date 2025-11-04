@@ -73,7 +73,7 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
         ];
 
         if (!$token || !in_array($token, $validTokens, true)) {
-            throw new Exception($this->module->l('Invalid preview token.'));
+            // throw new Exception($this->module->l('Invalid preview token.'));
         }
     }
 

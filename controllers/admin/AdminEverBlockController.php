@@ -1066,7 +1066,6 @@ class AdminEverBlockController extends ModuleAdminController
                 true
             );
         }
-
         $this->context->smarty->assign([
             'everblock_notifications' => $notifications,
             'everblock_form' => $helper->generateForm($fields_form),
@@ -1162,6 +1161,7 @@ class AdminEverBlockController extends ModuleAdminController
             }
         }
 
+        // Définition des contextes disponibles
         $contextDefinitions = [
             'index' => [
                 'key' => 'index',
@@ -1197,7 +1197,7 @@ class AdminEverBlockController extends ModuleAdminController
                         'label' => $this->l('Product ID'),
                         'value' => $defaultProductId,
                         'placeholder' => '0',
-                        'help' => $defaultProductId ? '' : $this->l('No product was found for the selected categories. Please enter a product ID manually.'),
+                        'help' => $defaultProductId ? '' : $this->l('No product found in selected categories. Enter an ID manually.'),
                         'min' => 0,
                     ],
                 ],
@@ -1249,75 +1249,56 @@ class AdminEverBlockController extends ModuleAdminController
             ],
         ];
 
-        $enabledKeys = [];
+        // 🌟 Nouvelle logique : toujours permettre la preview, mais contextualisée
+        $enabledKeys = ['index', 'category', 'product', 'manufacturer', 'supplier', 'cms_category'];
+
         if (Validate::isLoadedObject($block)) {
+            $specificKeys = [];
+
             if (!empty($block->only_home)) {
-                $enabledKeys = ['index'];
-            } elseif (!empty($block->only_category_product)) {
-                $enabledKeys = ['product'];
-            } elseif (!empty($block->only_category)) {
-                $enabledKeys = ['category'];
-            } elseif (!empty($block->only_manufacturer)) {
-                $enabledKeys = ['manufacturer'];
-            } elseif (!empty($block->only_supplier)) {
-                $enabledKeys = ['supplier'];
-            } elseif (!empty($block->only_cms_category)) {
-                $enabledKeys = ['cms_category'];
+                $specificKeys[] = 'index';
+            }
+            if (!empty($block->only_category)) {
+                $specificKeys[] = 'category';
+            }
+            if (!empty($block->only_category_product)) {
+                $specificKeys[] = 'product';
+            }
+            if (!empty($block->only_manufacturer)) {
+                $specificKeys[] = 'manufacturer';
+            }
+            if (!empty($block->only_supplier)) {
+                $specificKeys[] = 'supplier';
+            }
+            if (!empty($block->only_cms_category)) {
+                $specificKeys[] = 'cms_category';
+            }
+
+            // Si le bloc a des restrictions explicites, on garde uniquement celles-là
+            if (!empty($specificKeys)) {
+                $enabledKeys = $specificKeys;
             }
         }
 
-        if (empty($enabledKeys)) {
-            $enabledKeys[] = 'index';
-
-            if (!empty($categories)) {
-                $enabledKeys[] = 'category';
-            }
-            if (!empty($selectedCategories)) {
-                $enabledKeys[] = 'product';
-            }
-            if (!empty($manufacturers)) {
-                $enabledKeys[] = 'manufacturer';
-            }
-            if (!empty($suppliers)) {
-                $enabledKeys[] = 'supplier';
-            }
-            if (!empty($cmsCategories)) {
-                $enabledKeys[] = 'cms_category';
-            }
-        }
-
-        $enabledKeys = array_values(array_unique(array_filter($enabledKeys)));
         $controllers = [];
         foreach ($enabledKeys as $key) {
-            if (!isset($contextDefinitions[$key])) {
-                continue;
+            if (isset($contextDefinitions[$key])) {
+                $controllers[] = $contextDefinitions[$key];
             }
-
-            $definition = $contextDefinitions[$key];
-
-            if (!empty($definition['fields'])) {
-                $allOptionsMissing = true;
-                foreach ($definition['fields'] as &$field) {
-                    if ($field['type'] === 'select') {
-                        $options = isset($field['options']) ? (array) $field['options'] : [];
-                        if (!empty($options)) {
-                            $allOptionsMissing = false;
-                        }
-                    } else {
-                        $allOptionsMissing = false;
-                    }
-                }
-                unset($field);
-
-                if ($allOptionsMissing) {
-                    continue;
-                }
-            }
-
-            $controllers[] = $definition;
         }
 
-        $defaultContext = isset($enabledKeys[0]) ? (string) $enabledKeys[0] : 'index';
+        // Si aucun contexte particulier, on montre une page où le hook est présent
+        if (empty($controllers)) {
+            $controllers[] = [
+                'key' => 'index',
+                'controller' => 'index',
+                'page_name' => 'index',
+                'label' => $this->l('Generic page (hook displayable)'),
+                'fields' => [],
+            ];
+        }
+
+        $defaultContext = $controllers[0]['key'] ?? 'index';
 
         return [
             'id_everblock' => Validate::isLoadedObject($block) ? (int) $block->id : 0,

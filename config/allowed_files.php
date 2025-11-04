@@ -49,6 +49,7 @@ return [
     'controllers/front/slotmachine.php',
     'controllers/front/videoproducts.php',
     'controllers/front/wheel.php',
+    'controllers/front/preview.php',
     'controllers/index.php',
     'everblock.php',
     'index.php',
