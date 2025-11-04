@@ -120,11 +120,5 @@
                 </div>
             </div>
         {/if}
-
-        <div class="mt-4">
-            <a class="btn btn-secondary" href="{$everblock_preview_return_url|escape:'htmlall':'UTF-8'}">
-                {l s='Back to the administration' mod='everblock'}
-            </a>
-        </div>
     </section>
 {/block}
