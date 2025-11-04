@@ -108,23 +108,38 @@ $(document).ready(function() {
   });
 
 
-  const $modal = $('#everblock-preview-modal');
-  const $iframe = $('#everblock-preview-iframe');
-
-  // Récupération de l'URL de preview générée côté PHP
-  const previewUrl = $modal.data('previewUrl') || window.everblockPreviewUrl;
-
   $(document).on('click', '[data-everblock-preview-open]', function (e) {
     e.preventDefault();
 
-    if (!previewUrl) {
-      console.warn('Everblock preview URL missing.');
+    const $btn = $(this);
+    const url = $btn.data('everblockPreviewUrl');
+    const $modal = $('#everblock-preview-modal');
+    const $iframe = $modal.find('iframe');
+
+    if (!url) {
+      console.warn('Aucune URL de preview trouvée.');
+      return;
+    }
+    if (!$modal.length) {
+      console.warn('La modale de preview Everblock est introuvable dans le DOM.');
       return;
     }
 
-    // Charger directement la page du front controller
-    $iframe.attr('src', previewUrl);
-    $modal.modal('show');
-  });
+    // reset l’iframe avant d’afficher la modale
+    $iframe.attr('src', 'about:blank');
 
+    // afficher la modale
+    $modal.modal('show');
+
+    // spinner optionnel
+    const $spinner = $('<div class="everblock-preview-spinner d-flex align-items-center justify-content-center w-100 h-100 position-absolute top-0 start-0 bg-white" style="z-index:2;"><i class="icon-spinner icon-spin" style="font-size:2rem;"></i></div>');
+    $modal.find('.modal-body').append($spinner);
+    $spinner.fadeIn(150);
+
+    // charger le contenu dans l’iframe
+    $iframe.off('load.everblock').on('load.everblock', function () {
+      $spinner.fadeOut(150, function () { $(this).remove(); });
+    });
+    $iframe.attr('src', url);
+  });
 });

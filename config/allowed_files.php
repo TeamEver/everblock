@@ -184,6 +184,7 @@ return [
     'views/templates/front/index.php',
     'views/templates/front/modal.tpl',
     'views/templates/front/success.tpl',
+    'views/templates/front/preview.tpl',
     'views/templates/hook/cart.tpl',
     'views/templates/hook/contact.tpl',
     'views/templates/hook/contact_field.tpl',
