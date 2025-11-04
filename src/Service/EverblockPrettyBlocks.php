@@ -948,6 +948,20 @@ class EverblockPrettyBlocks
                                 'url' => '',
                             ],
                         ],
+                        'desktop_image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Desktop image (optional)'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'mobile_image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Mobile image (optional)'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
                         'image_width' => [
                             'type' => 'text',
                             'label' => 'Image width (e.g., 100px or 50%)',
