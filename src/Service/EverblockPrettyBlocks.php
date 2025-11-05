@@ -635,7 +635,7 @@ class EverblockPrettyBlocks
                         'title' => [
                             'type' => 'editor',
                             'label' => $module->l('Right column title'),
-                            'default' => 'Le n°1 dans la protection et la santé du sportif',
+                            'default' => '',
                         ],
                         'description' => [
                             'type' => 'editor',
@@ -1328,12 +1328,12 @@ class EverblockPrettyBlocks
                         'text_highlight_1' => [
                             'type' => 'editor',
                             'label' => $module->l('Highlight text 1'),
-                            'default' => 'protection',
+                            'default' => '',
                         ],
                         'text_highlight_2' => [
                             'type' => 'editor',
                             'label' => $module->l('Highlight text 2'),
-                            'default' => 'santé',
+                            'default' => '',
                         ],
                         'css_class' => [
                             'type' => 'text',
