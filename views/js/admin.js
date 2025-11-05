@@ -106,40 +106,28 @@ $(document).ready(function() {
       $pulse.remove();
     }, 600);
   });
-
-
   $(document).on('click', '[data-everblock-preview-open]', function (e) {
     e.preventDefault();
 
     const $btn = $(this);
-    const url = $btn.data('everblockPreviewUrl');
+    const previewUrl = $btn.data('everblockPreviewUrl');
     const $modal = $('#everblock-preview-modal');
-    const $iframe = $modal.find('iframe');
+    const $iframe = $('#everblock-preview-iframe');
 
-    if (!url) {
-      console.warn('Aucune URL de preview trouvée.');
-      return;
-    }
-    if (!$modal.length) {
-      console.warn('La modale de preview Everblock est introuvable dans le DOM.');
-      return;
-    }
+    if (!previewUrl || !$modal.length || !$iframe.length) return;
 
-    // reset l’iframe avant d’afficher la modale
+    // Retire le focus du bouton pour éviter le warning ARIA
+    $btn.blur();
+
+    // Reset iframe
     $iframe.attr('src', 'about:blank');
 
-    // afficher la modale
+    // Ouvre la modale
     $modal.modal('show');
 
-    // spinner optionnel
-    const $spinner = $('<div class="everblock-preview-spinner d-flex align-items-center justify-content-center w-100 h-100 position-absolute top-0 start-0 bg-white" style="z-index:2;"><i class="icon-spinner icon-spin" style="font-size:2rem;"></i></div>');
-    $modal.find('.modal-body').append($spinner);
-    $spinner.fadeIn(150);
-
-    // charger le contenu dans l’iframe
-    $iframe.off('load.everblock').on('load.everblock', function () {
-      $spinner.fadeOut(150, function () { $(this).remove(); });
-    });
-    $iframe.attr('src', url);
+    // Charge la preview après l'ouverture complète (transition Bootstrap)
+    setTimeout(() => {
+      $iframe.attr('src', previewUrl);
+    }, 400);
   });
 });

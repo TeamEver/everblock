@@ -82,6 +82,7 @@ return [
     'models/EverblockShortcode.php',
     'models/EverblockTabsClass.php',
     'src/Service/EverblockTools.php',
+    'src/Service/EverblockPreviewBuilder.php',
     'models/index.php',
     'output/index.php',
     'sql/index.php',
