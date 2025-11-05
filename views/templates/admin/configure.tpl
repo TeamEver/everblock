@@ -75,19 +75,6 @@
             {if isset($everblock_form)}
                 <div class="everblock-config__card everblock-config__card--form">
                     {$everblock_form nofilter}
-
-                    {if isset($everblock_preview_available) && $everblock_preview_available}
-                        <div class="everblock-config__card-actions">
-                            <button type="button" class="btn btn-default everblock-preview-button" data-everblock-preview-open>
-                                <i class="icon-eye"></i>
-                                {l s='Preview' mod='everblock'}
-                            </button>
-                        </div>
-                    {elseif isset($everblock_preview_available)}
-                        <div class="alert alert-info everblock-preview__notice" role="alert">
-                            {l s='Save the block first to access the preview.' mod='everblock'}
-                        </div>
-                    {/if}
                 </div>
             {/if}
         </div>

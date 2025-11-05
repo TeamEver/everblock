@@ -462,3 +462,14 @@ details[open] > .everblock-doc-accordion__summary::after {
     }
 }
 
+#everblock-preview-modal .everblock-preview-full {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  margin: 0;
+}
+#everblock-preview-modal .modal-content {
+  height: 100vh;
+  border: none;
+  border-radius: 0;
+}

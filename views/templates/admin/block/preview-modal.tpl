@@ -40,7 +40,7 @@
 {assign var='preview_text_empty' value={l s='Select a context to load the preview.' mod='everblock'}}
 
 <div class="modal fade" id="everblock-preview-modal" tabindex="-1" role="dialog" aria-labelledby="everblockPreviewModalLabel">
-  <div class="modal-dialog modal-xl" role="document">
+  <div class="modal-dialog modal-xl everblock-preview-full" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title" id="everblockPreviewModalLabel">
@@ -60,3 +60,4 @@
     </div>
   </div>
 </div>
+
