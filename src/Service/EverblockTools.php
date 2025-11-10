@@ -1079,20 +1079,23 @@ class EverblockTools extends ObjectModel
         }
 
         $generatedDir = _PS_MODULE_DIR_ . 'everblock/views/templates/hook/generated_wp_posts/';
-        $generatedHtml = '';
-        $storedFile = Configuration::get('EVERWP_POSTS_TEMPLATE_FILE');
+        $storedPosts = [];
+        $storedFile = Configuration::get('EVERWP_POSTS_DATA_FILE');
         if ($storedFile) {
             $storedPath = $generatedDir . $storedFile;
             if (is_file($storedPath) && is_readable($storedPath)) {
                 $storedContent = Tools::file_get_contents($storedPath);
                 if ($storedContent !== false) {
-                    $generatedHtml = $storedContent;
+                    $decoded = json_decode($storedContent, true);
+                    if (is_array($decoded)) {
+                        $storedPosts = $decoded;
+                    }
                 }
             }
         }
 
         $context->smarty->assign([
-            'everblock_wp_posts_html' => $generatedHtml,
+            'everblock_wp_posts' => $storedPosts,
         ]);
 
         foreach ($matches as $match) {
@@ -5406,52 +5409,59 @@ class EverblockTools extends ObjectModel
             }
         }
 
-        $html = '<div class="row row-cols-1 row-cols-md-3 g-4">';
+        $apiBaseUrl = self::getWordpressApiBase($apiUrl);
+        $preparedPosts = [];
         foreach ($posts as $post) {
+            $postId = (int) ($post['id'] ?? 0);
             $title = strip_tags($post['title']['rendered'] ?? '');
             $link = $post['link'] ?? '#';
             $excerpt = strip_tags($post['excerpt']['rendered'] ?? '');
-            $imgUrl = '';
-            if (isset($post['_embedded']['wp:featuredmedia'][0]['source_url'])) {
-                $imgUrl = $post['_embedded']['wp:featuredmedia'][0]['source_url'];
-            } elseif (isset($post['yoast_head_json']['og_image'][0]['url'])) {
-                $imgUrl = $post['yoast_head_json']['og_image'][0]['url'];
-            }
-            $imgTag = '';
-            if ($imgUrl) {
-                $localPath = self::downloadImage($imgUrl);
-                if ($localPath) {
-                    $webpUrl = self::convertToWebP($localPath);
-                    $originalUrl = self::filePathToUrl($localPath);
-                    $size = file_exists($localPath) ? getimagesize($localPath) : [0,0];
-                    $width = $size[0] ?? '';
-                    $height = $size[1] ?? '';
-                    if ($webpUrl) {
-                        $imgTag = '<a href="' . htmlspecialchars($link, ENT_QUOTES) . '" class="obfme" target="_blank" title="' . htmlspecialchars($title, ENT_QUOTES) . '"><picture><source srcset="' . htmlspecialchars($webpUrl, ENT_QUOTES) . '" type="image/webp"><source srcset="' . htmlspecialchars($originalUrl, ENT_QUOTES) . '" type="image/jpeg"><img src="' . htmlspecialchars($originalUrl, ENT_QUOTES) . '" width="' . $width . '" height="' . $height . '" loading="lazy" alt="' . htmlspecialchars($title, ENT_QUOTES) . '" class="card-img-top img-fluid"></picture></a>';
-                    }
+
+            $mediaData = self::resolveWordpressFeaturedMedia($post, $apiBaseUrl);
+            $featuredImageUrl = $mediaData['url'] ?? '';
+            $width = isset($mediaData['width']) ? (int) $mediaData['width'] : null;
+            $height = isset($mediaData['height']) ? (int) $mediaData['height'] : null;
+            $featuredImage = '';
+            $featuredWidth = $width;
+            $featuredHeight = $height;
+
+            if ($featuredImageUrl) {
+                $importedImage = self::importWordpressFeaturedImage($featuredImageUrl, $postId, $title, $width, $height);
+                if ($importedImage !== null) {
+                    $featuredImage = $importedImage['url'];
+                    $featuredWidth = $importedImage['width'];
+                    $featuredHeight = $importedImage['height'];
                 }
             }
-            $html .= '<div class="col"><div class="card h-100">' . $imgTag . '<div class="card-body"><h5 class="card-title">' . htmlspecialchars($title, ENT_QUOTES) . '</h5><p class="card-text">' . $excerpt . '</p></div></div></div>';
+
+            $preparedPosts[] = [
+                'id' => $postId,
+                'title' => $title,
+                'link' => $link,
+                'excerpt' => $excerpt,
+                'featured_image' => $featuredImage,
+                'featured_image_width' => $featuredWidth ?? 0,
+                'featured_image_height' => $featuredHeight ?? 0,
+            ];
         }
-        $html .= '</div>';
 
         $tmpFile = tempnam($generatedDir, 'wp_posts_');
         if ($tmpFile === false) {
             return false;
         }
 
-        $finalFile = $tmpFile . '.tpl';
+        $finalFile = $tmpFile . '.json';
         if (!@rename($tmpFile, $finalFile)) {
             @unlink($tmpFile);
             return false;
         }
 
-        if (file_put_contents($finalFile, $html) === false) {
+        if (file_put_contents($finalFile, json_encode($preparedPosts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) === false) {
             @unlink($finalFile);
             return false;
         }
 
-        $previousFile = Configuration::get('EVERWP_POSTS_TEMPLATE_FILE');
+        $previousFile = Configuration::get('EVERWP_POSTS_DATA_FILE');
         if ($previousFile) {
             $previousPath = $generatedDir . $previousFile;
             if (is_file($previousPath) && $previousPath !== $finalFile) {
@@ -5459,7 +5469,16 @@ class EverblockTools extends ObjectModel
             }
         }
 
-        Configuration::updateValue('EVERWP_POSTS_TEMPLATE_FILE', basename($finalFile));
+        Configuration::updateValue('EVERWP_POSTS_DATA_FILE', basename($finalFile));
+
+        $legacyFile = Configuration::get('EVERWP_POSTS_TEMPLATE_FILE');
+        if ($legacyFile) {
+            $legacyPath = $generatedDir . $legacyFile;
+            if (is_file($legacyPath)) {
+                @unlink($legacyPath);
+            }
+            Configuration::deleteByName('EVERWP_POSTS_TEMPLATE_FILE');
+        }
         return true;
     }
 
@@ -5738,6 +5757,167 @@ class EverblockTools extends ObjectModel
         $field['path'] = '$/img/cms/prettyblocks/';
 
         return $field;
+    }
+
+    private static function getWordpressApiBase(string $apiUrl): string
+    {
+        $apiUrl = trim($apiUrl);
+        if ($apiUrl === '') {
+            return '';
+        }
+
+        $requestUrl = rtrim($apiUrl, '/');
+        $mediaBase = preg_replace('#/posts(?:/|$)#', '', $requestUrl);
+        if (is_string($mediaBase) && $mediaBase !== $requestUrl) {
+            return $mediaBase;
+        }
+
+        $parsed = parse_url($requestUrl);
+        if (!$parsed || empty($parsed['scheme']) || empty($parsed['host'])) {
+            return $requestUrl;
+        }
+
+        $port = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+        $path = $parsed['path'] ?? '';
+        $basePath = rtrim(dirname($path), '/\\');
+        if ($basePath === '.' || $basePath === '/') {
+            $basePath = ''; // dirname('/') renvoie '/'
+        }
+
+        return $parsed['scheme'] . '://' . $parsed['host'] . $port . $basePath;
+    }
+
+    private static function resolveWordpressFeaturedMedia(array $post, string $apiBaseUrl): array
+    {
+        $mediaId = isset($post['featured_media']) ? (int) $post['featured_media'] : 0;
+        if ($mediaId > 0) {
+            $media = self::fetchWordpressMedia($apiBaseUrl, $mediaId);
+            if (is_array($media) && isset($media['source_url'])) {
+                return [
+                    'url' => $media['source_url'],
+                    'width' => $media['media_details']['width'] ?? null,
+                    'height' => $media['media_details']['height'] ?? null,
+                ];
+            }
+        }
+
+        if (isset($post['_embedded']['wp:featuredmedia'][0]['source_url'])) {
+            $embedded = $post['_embedded']['wp:featuredmedia'][0];
+            return [
+                'url' => $embedded['source_url'],
+                'width' => $embedded['media_details']['width'] ?? null,
+                'height' => $embedded['media_details']['height'] ?? null,
+            ];
+        }
+
+        if (isset($post['yoast_head_json']['og_image'][0]['url'])) {
+            $ogImage = $post['yoast_head_json']['og_image'][0];
+            return [
+                'url' => $ogImage['url'],
+                'width' => $ogImage['width'] ?? null,
+                'height' => $ogImage['height'] ?? null,
+            ];
+        }
+
+        return [];
+    }
+
+    private static function fetchWordpressMedia(string $apiBaseUrl, int $mediaId): ?array
+    {
+        if ($mediaId <= 0 || $apiBaseUrl === '') {
+            return null;
+        }
+
+        $endpoint = rtrim($apiBaseUrl, '/') . '/media/' . $mediaId;
+        $response = Tools::file_get_contents($endpoint);
+        if ($response === false) {
+            return null;
+        }
+
+        $decoded = json_decode($response, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded;
+    }
+
+    private static function importWordpressFeaturedImage(string $imageUrl, int $postId, string $title, ?int $width, ?int $height): ?array
+    {
+        $imageUrl = trim($imageUrl);
+        if ($imageUrl === '') {
+            return null;
+        }
+
+        if (!self::ensureCmsDirectoryExists()) {
+            return null;
+        }
+
+        $parsed = parse_url($imageUrl);
+        $path = $parsed['path'] ?? '';
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if ($extension === '') {
+            $extension = 'jpg';
+        }
+
+        $filenameBase = pathinfo($path, PATHINFO_FILENAME);
+        if (!$filenameBase) {
+            $filenameBase = Tools::link_rewrite($title) ?: 'image';
+        }
+        $filenameBase = self::sanitizeFileName($filenameBase);
+        if ($filenameBase === '') {
+            $filenameBase = 'image';
+        }
+
+        $postIdentifier = $postId > 0 ? $postId : time();
+        $fileName = sprintf('blog-%d-%s.%s', $postIdentifier, $filenameBase, $extension);
+        $destination = _PS_IMG_DIR_ . 'cms/' . $fileName;
+
+        try {
+            $downloadSuccess = Tools::copy($imageUrl, $destination);
+        } catch (Exception $e) {
+            $downloadSuccess = false;
+        }
+
+        if (!$downloadSuccess) {
+            return null;
+        }
+
+        $dimensions = @getimagesize($destination);
+        if (is_array($dimensions)) {
+            $width = (int) $dimensions[0];
+            $height = (int) $dimensions[1];
+        }
+
+        $width = $width ?: 600;
+        $height = $height ?: 338;
+
+        return [
+            'path' => $destination,
+            'url' => Tools::getHttpHost(true) . __PS_BASE_URI__ . 'img/cms/' . $fileName,
+            'width' => $width,
+            'height' => $height,
+            'filename' => $fileName,
+        ];
+    }
+
+    private static function ensureCmsDirectoryExists(): bool
+    {
+        $directory = _PS_IMG_DIR_ . 'cms/';
+        if (is_dir($directory)) {
+            return true;
+        }
+
+        return @mkdir($directory, 0755, true) || is_dir($directory);
+    }
+
+    private static function sanitizeFileName(string $fileName): string
+    {
+        $normalized = Tools::link_rewrite($fileName);
+        $normalized = preg_replace('/[^a-z0-9\-]+/i', '-', (string) $normalized);
+        $normalized = preg_replace('/-+/', '-', (string) $normalized);
+
+        return trim((string) $normalized, '-');
     }
 
     public static function convertToWebP($imagePath)
