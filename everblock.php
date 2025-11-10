@@ -1251,6 +1251,7 @@ class Everblock extends Module
             'settings' => $this->l('Réglages'),
             'stats' => $this->l('Statistiques'),
             'meta_tools' => $this->l('Meta Tools'),
+            'wordpress_tools' => $this->l('WordPress Tools'),
             'google_maps' => $this->l('Google Tools'),
             'migration' => $this->l('Migration des URL'),
             'tools' => $this->l('Outils'),
@@ -1287,6 +1288,7 @@ class Everblock extends Module
             'settings' => 'settings.tpl',
             'stats' => 'stats.tpl',
             'meta_tools' => 'meta_tools.tpl',
+            'wordpress_tools' => 'wordpress_tools.tpl',
             'google_maps' => 'google_maps.tpl',
             'migration' => 'migration.tpl',
             'tools' => 'tools.tpl',
@@ -1588,7 +1590,7 @@ class Everblock extends Module
         ];
 
         foreach ($wordpressInputs as $input) {
-            $input['tab'] = 'meta_tools';
+            $input['tab'] = 'wordpress_tools';
             $form['form']['input'][] = $input;
         }
 
@@ -1699,7 +1701,7 @@ class Everblock extends Module
         ];
 
         foreach ($googleReviewsInputs as $input) {
-            $input['tab'] = 'meta_tools';
+            $input['tab'] = 'google_maps';
             $form['form']['input'][] = $input;
         }
 
