@@ -1078,6 +1078,23 @@ class EverblockTools extends ObjectModel
             return $txt;
         }
 
+        $generatedDir = _PS_MODULE_DIR_ . 'everblock/views/templates/hook/generated_wp_posts/';
+        $generatedHtml = '';
+        $storedFile = Configuration::get('EVERWP_POSTS_TEMPLATE_FILE');
+        if ($storedFile) {
+            $storedPath = $generatedDir . $storedFile;
+            if (is_file($storedPath) && is_readable($storedPath)) {
+                $storedContent = Tools::file_get_contents($storedPath);
+                if ($storedContent !== false) {
+                    $generatedHtml = $storedContent;
+                }
+            }
+        }
+
+        $context->smarty->assign([
+            'everblock_wp_posts_html' => $generatedHtml,
+        ]);
+
         foreach ($matches as $match) {
             $renderedContent = $context->smarty->fetch($templatePath);
             $txt = str_replace($match[0], $renderedContent, $txt);
@@ -5382,7 +5399,13 @@ class EverblockTools extends ObjectModel
         if (!$posts || !is_array($posts)) {
             return false;
         }
-        $filePath = _PS_MODULE_DIR_ . 'everblock/views/templates/hook/generated_wp_posts.tpl';
+        $generatedDir = _PS_MODULE_DIR_ . 'everblock/views/templates/hook/generated_wp_posts/';
+        if (!is_dir($generatedDir)) {
+            if (!@mkdir($generatedDir, 0755, true) && !is_dir($generatedDir)) {
+                return false;
+            }
+        }
+
         $html = '<div class="row row-cols-1 row-cols-md-3 g-4">';
         foreach ($posts as $post) {
             $title = strip_tags($post['title']['rendered'] ?? '');
@@ -5411,7 +5434,32 @@ class EverblockTools extends ObjectModel
             $html .= '<div class="col"><div class="card h-100">' . $imgTag . '<div class="card-body"><h5 class="card-title">' . htmlspecialchars($title, ENT_QUOTES) . '</h5><p class="card-text">' . $excerpt . '</p></div></div></div>';
         }
         $html .= '</div>';
-        file_put_contents($filePath, $html);
+
+        $tmpFile = tempnam($generatedDir, 'wp_posts_');
+        if ($tmpFile === false) {
+            return false;
+        }
+
+        $finalFile = $tmpFile . '.tpl';
+        if (!@rename($tmpFile, $finalFile)) {
+            @unlink($tmpFile);
+            return false;
+        }
+
+        if (file_put_contents($finalFile, $html) === false) {
+            @unlink($finalFile);
+            return false;
+        }
+
+        $previousFile = Configuration::get('EVERWP_POSTS_TEMPLATE_FILE');
+        if ($previousFile) {
+            $previousPath = $generatedDir . $previousFile;
+            if (is_file($previousPath) && $previousPath !== $finalFile) {
+                @unlink($previousPath);
+            }
+        }
+
+        Configuration::updateValue('EVERWP_POSTS_TEMPLATE_FILE', basename($finalFile));
         return true;
     }
 
