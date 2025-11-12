@@ -2347,7 +2347,7 @@ class EverblockPrettyBlocks
                 'name' => $module->l('Category tabs'),
                 'description' => $module->l('Display products from categories inside tabs'),
                 'code' => 'everblock_category_tabs',
-                'tab' => 'general',
+                'tab' => 'general', 
                 'icon_path' => $defaultLogo,
                 'need_reload' => true,
                 'templates' => [
