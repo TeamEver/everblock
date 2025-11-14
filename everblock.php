@@ -3703,10 +3703,20 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'EverblockFaq_getProductsByFaq_';
         EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'EverblockFaq_getByIds_';
+        EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'fetchInstagramImages';
         EverblockCache::cacheDropByPattern($cachePattern);
+        $productIds = [];
         if (!empty($params['object']->id)) {
             EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, (int) $params['object']->id_shop);
+            $products = EverblockFaq::getProductsByFaq((int) $params['object']->id, (int) $params['object']->id_shop);
+            foreach ($products as $product) {
+                $productIds[] = (int) $product['id_product'];
+            }
+        }
+        if (!empty($productIds)) {
+            $this->clearProductFaqCache($productIds, (int) $params['object']->id_shop);
         }
     }
 
@@ -3722,8 +3732,18 @@ class Everblock extends Module
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'EverblockFaq_getProductsByFaq_';
         EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'EverblockFaq_getByIds_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        $productIds = [];
         if (!empty($params['object']->id)) {
             EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, (int) $params['object']->id_shop);
+            $products = EverblockFaq::getProductsByFaq((int) $params['object']->id, (int) $params['object']->id_shop);
+            foreach ($products as $product) {
+                $productIds[] = (int) $product['id_product'];
+            }
+        }
+        if (!empty($productIds)) {
+            $this->clearProductFaqCache($productIds, (int) $params['object']->id_shop);
         }
     }
 
@@ -3836,6 +3856,7 @@ class Everblock extends Module
             foreach ($faqIds as $position => $faqId) {
                 EverblockFaq::linkToProduct((int) $faqId, (int) $params['object']->id, (int) $context->shop->id, (int) $position);
             }
+            $this->clearProductFaqCache([(int) $params['object']->id], (int) $context->shop->id);
 
             // Modal management
             $modal = EverblockModal::getByProductId(
@@ -3939,6 +3960,7 @@ class Everblock extends Module
         }
 
         EverblockFaq::unlinkProductFaqs((int) $params['object']->id, (int) $this->context->shop->id);
+        $this->clearProductFaqCache([(int) $params['object']->id], (int) $this->context->shop->id);
     }
 
     public function hookActionProductFlagsModifier($params)
@@ -4031,6 +4053,52 @@ class Everblock extends Module
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
+    protected function getProductFaqTemplatePath(): string
+    {
+        return 'module:' . $this->name . '/views/templates/hook/faq.tpl';
+    }
+
+    protected function getProductFaqCacheId(int $productId, int $shopId, int $langId): string
+    {
+        return implode('|', [
+            $this->name,
+            'product_faq',
+            (int) $shopId,
+            (int) $langId,
+            (int) $productId,
+        ]);
+    }
+
+    protected function clearProductFaqCache(array $productIds = [], ?int $shopId = null): void
+    {
+        $template = $this->getProductFaqTemplatePath();
+
+        if (empty($productIds)) {
+            $this->_clearCache($template);
+            return;
+        }
+
+        if ($shopId === null) {
+            $shopId = (int) Context::getContext()->shop->id;
+        }
+
+        $languages = Language::getLanguages(false, $shopId);
+        if (empty($languages)) {
+            $languages = Language::getLanguages(false);
+        }
+
+        foreach ($productIds as $productId) {
+            $productId = (int) $productId;
+            if ($productId <= 0) {
+                continue;
+            }
+            foreach ($languages as $language) {
+                $cacheId = $this->getProductFaqCacheId($productId, (int) $shopId, (int) $language['id_lang']);
+                $this->_clearCache($template, $cacheId);
+            }
+        }
+    }
+
     public function hookDisplayProductExtraContent($params)
     {
         $context = Context::getContext();
@@ -4071,6 +4139,32 @@ class Everblock extends Module
             $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
                 ->setTitle($title)
                 ->setContent($content);
+        }
+
+        $faqIds = EverblockFaq::getFaqIdsByProduct((int) $product->id, (int) $context->shop->id);
+        if (!empty($faqIds)) {
+            $everFaqs = EverblockFaq::getByIds(
+                $faqIds,
+                (int) $context->language->id,
+                (int) $context->shop->id
+            );
+            if (!empty($everFaqs)) {
+                $template = $this->getProductFaqTemplatePath();
+                $cacheId = $this->getProductFaqCacheId(
+                    (int) $product->id,
+                    (int) $context->shop->id,
+                    (int) $context->language->id
+                );
+                if (!$this->isCached($template, $cacheId)) {
+                    $this->context->smarty->assign([
+                        'everFaqs' => $everFaqs,
+                    ]);
+                }
+                $faqContent = $this->fetch($template, $cacheId);
+                $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
+                    ->setTitle($this->l('FAQ'))
+                    ->setContent($faqContent);
+            }
         }
         if (count($tab) > 0) {
             return $tab;
