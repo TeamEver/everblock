@@ -25,6 +25,18 @@ Dev documentation show every native PrestaShop hook :
 [PrestaShop 1.7 hook list](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
 Please check ps_hook table on your database to see every available hook on your shop. Only display hooks are used with this module
 
+## FAQ ↔ product associations
+Ever Block ships a pivot table named `everblock_faq_product` that stores the FAQ → product relations (`id_everblock_faq`, `id_product`, `id_shop`, `position`). The installer and the 8.0.7 upgrade script automatically create it and keep it in sync across multishop setups.
+
+Use the static helpers exposed by `models/EverblockFaq.php` to manage those links from your own integrations:
+
+- `EverblockFaq::linkToProduct($faqId, $productId, $shopId = null, $position = null)` attaches a FAQ to a product (the position defaults to the next slot).
+- `EverblockFaq::unlinkProductFaqs($productId, $shopId = null, array $faqIds = null)` removes either all relations for a product or just the provided FAQ IDs.
+- `EverblockFaq::getFaqIdsByProduct($productId, $shopId = null)` returns the ordered FAQ identifiers assigned to a product in the current (or provided) shop.
+- `EverblockFaq::getProductsByFaq($faqId, $shopId = null)` lists the product IDs (and their positions) that consume a FAQ inside a shop.
+
+All helpers are multishop-aware, keep the multilingual cache up-to-date and trigger the same invalidation logic as the `actionObjectEverblockFaq*` hooks. You can safely call them from cron jobs, custom controllers or import scripts.
+
 ## Pretty Blocks compatibility
 This module is compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
 
