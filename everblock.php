@@ -976,6 +976,7 @@ class Everblock extends Module
             'display_upgrade' => $displayUpgrade,
             'everblock_stats' => $this->getModuleStatistics(),
             'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($this),
+            'everblock_show_hero' => true,
         ]);
         $output = $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'

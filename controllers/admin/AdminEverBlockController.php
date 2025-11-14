@@ -307,6 +307,7 @@ class AdminEverBlockController extends ModuleAdminController
             'everblock_notifications' => $notifications,
             'everblock_form' => $lists,
             'display_upgrade' => $displayUpgrade,
+            'everblock_show_hero' => false,
         ]);
 
         $content = $this->context->smarty->fetch(
@@ -1072,6 +1073,7 @@ class AdminEverBlockController extends ModuleAdminController
             'everblock_preview_contexts' => $previewContexts,
             'everblock_preview_url' => $previewUrl,
             'everblock_preview_available' => $previewAvailable,
+            'everblock_show_hero' => false,
         ]);
 
         $content = $this->context->smarty->fetch(
