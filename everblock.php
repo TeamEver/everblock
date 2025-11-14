@@ -778,6 +778,10 @@ class Everblock extends Module
         if ($this->isProductModalAjaxRequest()) {
             $this->ajaxProcessProductModalFile();
         }
+
+        if ($this->isFaqSearchAjaxRequest()) {
+            $this->ajaxProcessFaqSearch();
+        }
         $this->createUpgradeFile();
         $this->secureModuleFolder();
         EverblockTools::checkAndFixDatabase();
@@ -994,6 +998,14 @@ class Everblock extends Module
             && Tools::getValue('configure') === $this->name;
     }
 
+    protected function isFaqSearchAjaxRequest()
+    {
+        return Tools::getIsset('ajax')
+            && Tools::getValue('ajax')
+            && Tools::getValue('action') === 'EverblockSearchFaq'
+            && Tools::getValue('configure') === $this->name;
+    }
+
     protected function sanitizeModalFileName($originalName)
     {
         $originalName = basename((string) $originalName);
@@ -1014,6 +1026,60 @@ class Everblock extends Module
         }
 
         return $baseName;
+    }
+
+    protected function ajaxProcessFaqSearch()
+    {
+        $this->context->controller->ajax = true;
+        header('Content-Type: application/json');
+
+        $response = [
+            'results' => [],
+            'pagination' => [
+                'more' => false,
+            ],
+        ];
+
+        try {
+            $shopId = (int) $this->context->shop->id;
+            $langId = (int) $this->context->employee->id_lang;
+            if ($langId <= 0) {
+                $langId = (int) Configuration::get('PS_LANG_DEFAULT');
+            }
+            $query = Tools::getValue('q', '');
+            $page = (int) Tools::getValue('page', 1);
+            $limit = (int) Tools::getValue('limit', 20);
+            if ($limit <= 0 || $limit > 50) {
+                $limit = 20;
+            }
+            if ($page <= 0) {
+                $page = 1;
+            }
+
+            $searchResults = EverblockFaq::searchFaqOptions($shopId, $langId, (string) $query, $page, $limit);
+            $options = [];
+            foreach ($searchResults['results'] as $option) {
+                $label = $option['text'];
+                if (empty($option['active'])) {
+                    $label .= ' (' . $this->l('Inactive') . ')';
+                }
+                $options[] = [
+                    'id' => (int) $option['id'],
+                    'text' => $label,
+                    'active' => (bool) $option['active'],
+                    'tag_name' => $option['tag_name'],
+                    'title' => $option['title'],
+                ];
+            }
+
+            $response['results'] = $options;
+            $response['pagination']['more'] = !empty($searchResults['has_more']);
+        } catch (Exception $e) {
+            $response['error'] = $this->l('Unable to fetch FAQ entries.');
+            PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
+        }
+
+        die(Tools::jsonEncode($response));
     }
 
     protected function ensureModalDirectory($productId)
@@ -2983,6 +3049,7 @@ class Everblock extends Module
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
         if (Tools::getValue('controller') == 'AdminProducts') {
             $this->context->controller->addJs($this->_path . 'views/js/product-modal.js');
+            $this->context->controller->addJs($this->_path . 'views/js/product-faq.js');
         }
 
         if (Tools::getValue('id_' . $this->name)
@@ -3512,6 +3579,19 @@ class Everblock extends Module
 
         $everAjaxUrl = Context::getContext()->link->getAdminLink('AdminModules', true, [], ['configure' => $this->name, 'token' => Tools::getAdminTokenLite('AdminModules')]);
 
+        $selectedFaqIds = EverblockFaq::getFaqIdsByProduct($productId, $this->context->shop->id);
+        $langId = (int) $this->context->employee->id_lang;
+        if ($langId <= 0) {
+            $langId = (int) Configuration::get('PS_LANG_DEFAULT');
+        }
+        $selectedFaqOptions = EverblockFaq::getFaqOptionsByIds($selectedFaqIds, $this->context->shop->id, $langId);
+
+        $faqSelectorData = [
+            'selected_options' => $selectedFaqOptions,
+            'ajax_url' => $everAjaxUrl . '&ajax=1&action=EverblockSearchFaq',
+            'placeholder' => $this->l('Search and attach FAQs…'),
+        ];
+
         $this->smarty->assign([
             'tabsData' => $tabsData,
             'flagsData' => $flagsData,
@@ -3521,6 +3601,7 @@ class Everblock extends Module
             'ever_product_id' => $productId,
             'tabsRange' => range(1, $tabsNumber),
             'flagsRange' => range(1, $flagsNumber),
+            'everblock_faq_selector' => $faqSelectorData,
         ]);
 
         return $this->display(__FILE__, 'views/templates/admin/productTab.tpl');
@@ -3738,12 +3819,23 @@ class Everblock extends Module
                     } else {
                         $everpsflags->content[$language['id_lang']] = $flagContent;
                     }
+                }
+                $everpsflags->id_flag = (int) $flag;
+                $everpsflags->id_product = (int) $params['object']->id;
+                $everpsflags->id_shop = (int) $context->shop->id;
+                $everpsflags->save();
             }
-            $everpsflags->id_flag = (int) $flag;
-            $everpsflags->id_product = (int) $params['object']->id;
-            $everpsflags->id_shop = (int) $context->shop->id;
-            $everpsflags->save();
-        }
+
+            // Traitement des FAQs liées
+            $faqIds = Tools::getValue('everblock_faq_ids');
+            if (!is_array($faqIds)) {
+                $faqIds = [];
+            }
+            $faqIds = array_values(array_unique(array_filter(array_map('intval', $faqIds))));
+            EverblockFaq::unlinkProductFaqs((int) $params['object']->id, (int) $context->shop->id);
+            foreach ($faqIds as $position => $faqId) {
+                EverblockFaq::linkToProduct((int) $faqId, (int) $params['object']->id, (int) $context->shop->id, (int) $position);
+            }
 
             // Modal management
             $modal = EverblockModal::getByProductId(
@@ -3845,6 +3937,8 @@ class Everblock extends Module
                 $everpsflag->delete();
             }
         }
+
+        EverblockFaq::unlinkProductFaqs((int) $params['object']->id, (int) $this->context->shop->id);
     }
 
     public function hookActionProductFlagsModifier($params)
