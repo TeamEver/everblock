@@ -4463,6 +4463,7 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_shortcode_lang',
             _DB_PREFIX_ . 'everblock_faq',
             _DB_PREFIX_ . 'everblock_faq_lang',
+            _DB_PREFIX_ . 'everblock_faq_product',
             _DB_PREFIX_ . 'everblock_tabs',
             _DB_PREFIX_ . 'everblock_flags',
             _DB_PREFIX_ . 'everblock_modal',

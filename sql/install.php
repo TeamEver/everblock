@@ -102,6 +102,16 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_faq_lang` (
         PRIMARY KEY (`id_everblock_faq`, `id_lang`)
     ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
 
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_faq_product` (
+        `id_everblock_faq_product` int(10) unsigned NOT NULL auto_increment,
+        `id_everblock_faq` int(10) unsigned NOT NULL,
+        `id_product` int(10) unsigned NOT NULL,
+        `id_shop` int(10) unsigned NOT NULL,
+        `position` int(10) unsigned NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id_everblock_faq_product`),
+        UNIQUE KEY `everblock_faq_product_unique` (`id_everblock_faq`, `id_product`, `id_shop`)
+    ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
+
 /* Tabs */
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs` (
          `id_everblock_tabs` int(10) unsigned NOT NULL auto_increment,

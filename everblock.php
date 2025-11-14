@@ -67,7 +67,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '8.0.6';
+        $this->version = '8.0.7';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -3614,18 +3614,36 @@ class Everblock extends Module
     {
         $cachePattern = $this->name . '-id_hook-';
         EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverblockShortcode_getFaqByTagName_';
+        $cachePattern = 'EverblockFaq_getAllFaq_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'EverblockFaq_getFaqByTagName_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'EverblockFaq_getFaqIdsByProduct_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'EverblockFaq_getProductsByFaq_';
         EverblockCache::cacheDropByPattern($cachePattern);
         $cachePattern = 'fetchInstagramImages';
         EverblockCache::cacheDropByPattern($cachePattern);
+        if (!empty($params['object']->id)) {
+            EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, (int) $params['object']->id_shop);
+        }
     }
 
     public function hookActionObjectEverblockFaqUpdateAfter($params)
     {
         $cachePattern = $this->name . '-id_hook-';
         EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverblockShortcode_getFaqByTagName_';
+        $cachePattern = 'EverblockFaq_getAllFaq_';
         EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'EverblockFaq_getFaqByTagName_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'EverblockFaq_getFaqIdsByProduct_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        $cachePattern = 'EverblockFaq_getProductsByFaq_';
+        EverblockCache::cacheDropByPattern($cachePattern);
+        if (!empty($params['object']->id)) {
+            EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, (int) $params['object']->id_shop);
+        }
     }
 
     public function hookActionObjectProductUpdateAfter($params)
