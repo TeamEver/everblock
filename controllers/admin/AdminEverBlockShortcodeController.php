@@ -185,6 +185,7 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
             'everblock_notifications' => $notifications,
             'everblock_form' => $lists,
             'display_upgrade' => $displayUpgrade,
+            'everblock_show_hero' => false,
         ]);
 
         $content = $this->context->smarty->fetch(

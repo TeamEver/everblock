@@ -23,46 +23,48 @@
         </div>
     {/if}
 
-    <section class="everblock-config__hero">
-        <div class="everblock-config__hero-main">
-            <span class="everblock-config__badge">{l s='Module' mod='everblock'}</span>
-            <h2 class="everblock-config__hero-title">
-                {$module_name|escape:'htmlall':'UTF-8'}
-            </h2>
-            <p class="everblock-config__hero-description">
-                {l s='Fine-tune the behaviour, integrations and automation rules of Ever Block from a single, curated control centre.' mod='everblock'}
-            </p>
-            <div class="everblock-config__hero-meta">
-                <span class="everblock-chip">
-                    <i class="icon-tag"></i>
-                    {l s='Version' mod='everblock'} {$everblock_version|escape:'htmlall':'UTF-8'}
-                </span>
-                <span class="everblock-chip">
-                    <i class="icon-check"></i>
-                    {l s='Content managed (total)' mod='everblock'}: {$everblock_stats.blocks_total|intval}
-                </span>
+    {if !isset($everblock_show_hero) || $everblock_show_hero}
+        <section class="everblock-config__hero">
+            <div class="everblock-config__hero-main">
+                <span class="everblock-config__badge">{l s='Module' mod='everblock'}</span>
+                <h2 class="everblock-config__hero-title">
+                    {$module_name|escape:'htmlall':'UTF-8'}
+                </h2>
+                <p class="everblock-config__hero-description">
+                    {l s='Fine-tune the behaviour, integrations and automation rules of Ever Block from a single, curated control centre.' mod='everblock'}
+                </p>
+                <div class="everblock-config__hero-meta">
+                    <span class="everblock-chip">
+                        <i class="icon-tag"></i>
+                        {l s='Version' mod='everblock'} {$everblock_version|escape:'htmlall':'UTF-8'}
+                    </span>
+                    <span class="everblock-chip">
+                        <i class="icon-check"></i>
+                        {l s='Content managed (total)' mod='everblock'}: {$everblock_stats.blocks_total|intval}
+                    </span>
+                </div>
             </div>
-        </div>
 
-        <div class="everblock-config__hero-stats">
-            <div class="everblock-config__stat">
-                <div class="everblock-config__stat-value">{$everblock_stats.blocks_active|intval}</div>
-                <div class="everblock-config__stat-label">{l s='Active blocks' mod='everblock'}</div>
+            <div class="everblock-config__hero-stats">
+                <div class="everblock-config__stat">
+                    <div class="everblock-config__stat-value">{$everblock_stats.blocks_active|intval}</div>
+                    <div class="everblock-config__stat-label">{l s='Active blocks' mod='everblock'}</div>
+                </div>
+                <div class="everblock-config__stat">
+                    <div class="everblock-config__stat-value">{$everblock_stats.shortcodes|intval}</div>
+                    <div class="everblock-config__stat-label">{l s='Shortcodes' mod='everblock'}</div>
+                </div>
+                <div class="everblock-config__stat">
+                    <div class="everblock-config__stat-value">{$everblock_stats.flags|intval}</div>
+                    <div class="everblock-config__stat-label">{l s='Flags' mod='everblock'}</div>
+                </div>
+                <div class="everblock-config__stat">
+                    <div class="everblock-config__stat-value">{$everblock_stats.tabs|intval}</div>
+                    <div class="everblock-config__stat-label">{l s='Product tabs' mod='everblock'}</div>
+                </div>
             </div>
-            <div class="everblock-config__stat">
-                <div class="everblock-config__stat-value">{$everblock_stats.shortcodes|intval}</div>
-                <div class="everblock-config__stat-label">{l s='Shortcodes' mod='everblock'}</div>
-            </div>
-            <div class="everblock-config__stat">
-                <div class="everblock-config__stat-value">{$everblock_stats.flags|intval}</div>
-                <div class="everblock-config__stat-label">{l s='Flags' mod='everblock'}</div>
-            </div>
-            <div class="everblock-config__stat">
-                <div class="everblock-config__stat-value">{$everblock_stats.tabs|intval}</div>
-                <div class="everblock-config__stat-label">{l s='Product tabs' mod='everblock'}</div>
-            </div>
-        </div>
-    </section>
+        </section>
+    {/if}
 
     <div class="everblock-config__layout">
         <div class="everblock-config__main">
