@@ -190,6 +190,48 @@ class EverblockFaq extends ObjectModel
         return EverblockCache::cacheRetrieve($cache_id);
     }
 
+    public static function getByIds(array $faqIds, int $langId, ?int $shopId = null, bool $onlyActive = true): array
+    {
+        $faqIds = array_values(array_unique(array_filter(array_map('intval', $faqIds))));
+        if (empty($faqIds)) {
+            return [];
+        }
+
+        $shopId = static::resolveShopId($shopId);
+        $langId = (int) $langId;
+
+        $cacheId = 'EverblockFaq_getByIds_'
+            . (int) $shopId
+            . '_'
+            . (int) $langId
+            . '_' . ($onlyActive ? '1' : '0')
+            . '_' . implode('-', $faqIds);
+
+        if (EverblockCache::isCacheStored($cacheId)) {
+            return (array) EverblockCache::cacheRetrieve($cacheId);
+        }
+
+        $sql = new DbQuery();
+        $sql->select('f.id_everblock_faq');
+        $sql->from('everblock_faq', 'f');
+        $sql->where('f.id_shop = ' . (int) $shopId);
+        $sql->where('f.id_everblock_faq IN (' . implode(',', $faqIds) . ')');
+        if ($onlyActive) {
+            $sql->where('f.active = 1');
+        }
+        $sql->orderBy('FIELD(f.id_everblock_faq, ' . implode(',', $faqIds) . ')');
+
+        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        $faqs = [];
+        foreach ($rows as $row) {
+            $faqs[] = new self((int) $row['id_everblock_faq'], $langId, $shopId);
+        }
+
+        EverblockCache::cacheStore($cacheId, $faqs);
+
+        return $faqs;
+    }
+
     public static function getFaqIdsByProduct(int $productId, ?int $shopId = null): array
     {
         $shopId = static::resolveShopId($shopId);

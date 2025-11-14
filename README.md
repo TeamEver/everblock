@@ -34,8 +34,11 @@ Use the static helpers exposed by `models/EverblockFaq.php` to manage those link
 - `EverblockFaq::unlinkProductFaqs($productId, $shopId = null, array $faqIds = null)` removes either all relations for a product or just the provided FAQ IDs.
 - `EverblockFaq::getFaqIdsByProduct($productId, $shopId = null)` returns the ordered FAQ identifiers assigned to a product in the current (or provided) shop.
 - `EverblockFaq::getProductsByFaq($faqId, $shopId = null)` lists the product IDs (and their positions) that consume a FAQ inside a shop.
+- `EverblockFaq::getByIds(array $faqIds, $langId, $shopId = null)` fetches the hydrated FAQ objects for the provided identifiers while keeping the initial ordering intact.
 
 All helpers are multishop-aware, keep the multilingual cache up-to-date and trigger the same invalidation logic as the `actionObjectEverblockFaq*` hooks. You can safely call them from cron jobs, custom controllers or import scripts.
+
+Whenever a product owns at least one FAQ relation, Ever Block automatically injects an extra tab on the product page through `hookDisplayProductExtraContent`. The tab content reuses `views/templates/hook/faq.tpl`, so visitors get the same accordion UI and schema.org microdata as the `[everfaq]` shortcode. The template output is cached per product / shop / language and is flushed by the `actionObjectEverblockFaqUpdateAfter` and `actionObjectProductUpdateAfter` hooks whenever FAQs or their relations change.
 
 ## Pretty Blocks compatibility
 This module is compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
