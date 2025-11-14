@@ -79,6 +79,71 @@
     padding: 15px;
 }
 
+/* Admin - Product FAQ selector */
+#everblock .everblock-faq-selector-card {
+    background: #fdfdfd;
+    border-color: #e3e8ef;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+#everblock .everblock-faq-search-tip {
+    border: 1px dashed #94a3b8;
+    background: #f8fafc;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: 500;
+}
+
+#everblock .everblock-faq-selector-wrapper label {
+    color: #0f172a;
+}
+
+#everblock .everblock-faq-selected-counter {
+    font-size: .9rem;
+    padding: .5rem 1rem;
+}
+
+#everblock .everblock-faq-selector-wrapper select[multiple] {
+    min-height: 70px;
+    border-width: 2px;
+    border-color: #4f46e5;
+    border-radius: .75rem;
+    padding: .65rem;
+    box-shadow: 0 0 0 .1rem rgba(79, 70, 229, 0.15);
+}
+
+#everblock .everblock-faq-selector-wrapper .select2-container--default .select2-selection--multiple {
+    border: 2px solid #4f46e5;
+    border-radius: .75rem;
+    min-height: 56px;
+    padding: .35rem;
+    transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+#everblock .everblock-faq-selector-wrapper .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: rgba(79, 70, 229, 0.15);
+    border: none;
+    color: #312e81;
+    font-weight: 600;
+}
+
+#everblock .everblock-faq-selector-wrapper .select2-container--default .select2-selection--multiple .select2-search__field {
+    padding: .4rem;
+    font-size: 1rem;
+    color: #0f172a;
+}
+
+#everblock .everblock-faq-selector-wrapper .select2-container--default.select2-container--focus .select2-selection--multiple {
+    box-shadow: 0 0 0 .2rem rgba(79, 70, 229, 0.2);
+}
+
+#everblock .everblock-faq-selector-wrapper .select2-search--inline .select2-search__field::placeholder {
+    color: #4f46e5;
+    font-weight: 600;
+}
+
 /* Pricing table styles */
 .everblock-pricing-table .pricing-plan {
     border: 1px solid #dee2e6;
