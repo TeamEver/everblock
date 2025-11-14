@@ -356,6 +356,108 @@ class EverblockFaq extends ObjectModel
         return (bool) $result;
     }
 
+    protected static function buildAdminOptionFromRow(array $row): array
+    {
+        $id = (int) ($row['id_everblock_faq'] ?? 0);
+        $tagName = (string) ($row['tag_name'] ?? '');
+        $title = (string) ($row['title'] ?? '');
+        $active = (bool) ($row['active'] ?? false);
+
+        $parts = [];
+        if ($tagName !== '') {
+            $parts[] = $tagName;
+        }
+        if ($title !== '') {
+            $parts[] = $title;
+        }
+        if (empty($parts)) {
+            $parts[] = '#' . $id;
+        }
+
+        return [
+            'id' => $id,
+            'tag_name' => $tagName,
+            'title' => $title,
+            'active' => $active,
+            'text' => implode(' - ', $parts),
+        ];
+    }
+
+    public static function searchFaqOptions(int $shopId, int $langId, string $query = '', int $page = 1, int $limit = 20): array
+    {
+        $shopId = static::resolveShopId($shopId);
+        $langId = (int) $langId;
+        $page = max(1, (int) $page);
+        $limit = max(1, (int) $limit);
+        $offset = ($page - 1) * $limit;
+        $requestedLimit = $limit + 1;
+
+        $sql = new DbQuery();
+        $sql->select('f.id_everblock_faq, f.tag_name, f.active, fl.title');
+        $sql->from('everblock_faq', 'f');
+        $sql->leftJoin(
+            'everblock_faq_lang',
+            'fl',
+            'f.id_everblock_faq = fl.id_everblock_faq AND fl.id_lang = ' . (int) $langId
+        );
+        $sql->where('f.id_shop = ' . (int) $shopId);
+        $sql->orderBy('f.tag_name ASC, fl.title ASC, f.id_everblock_faq ASC');
+        $sql->limit($requestedLimit, $offset);
+
+        if ($query !== '') {
+            $safeQuery = pSQL($query);
+            $sql->where('(
+                f.tag_name LIKE \'%' . $safeQuery . '%\'
+                OR fl.title LIKE \'%' . $safeQuery . '%\'
+            )');
+        }
+
+        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        $hasMore = false;
+        if (count($rows) > $limit) {
+            $hasMore = true;
+            array_pop($rows);
+        }
+
+        $options = [];
+        foreach ($rows as $row) {
+            $options[] = static::buildAdminOptionFromRow($row);
+        }
+
+        return [
+            'results' => $options,
+            'has_more' => $hasMore,
+        ];
+    }
+
+    public static function getFaqOptionsByIds(array $faqIds, int $shopId, int $langId): array
+    {
+        $faqIds = array_values(array_unique(array_filter(array_map('intval', $faqIds))));
+        if (empty($faqIds)) {
+            return [];
+        }
+
+        $sql = new DbQuery();
+        $sql->select('f.id_everblock_faq, f.tag_name, f.active, fl.title');
+        $sql->from('everblock_faq', 'f');
+        $sql->leftJoin(
+            'everblock_faq_lang',
+            'fl',
+            'f.id_everblock_faq = fl.id_everblock_faq AND fl.id_lang = ' . (int) $langId
+        );
+        $sql->where('f.id_shop = ' . (int) static::resolveShopId($shopId));
+        $sql->where('f.id_everblock_faq IN (' . implode(',', $faqIds) . ')');
+        $sql->orderBy('FIELD(f.id_everblock_faq, ' . implode(',', $faqIds) . ')');
+
+        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        $options = [];
+        foreach ($rows as $row) {
+            $options[] = static::buildAdminOptionFromRow($row);
+        }
+
+        return $options;
+    }
+
     public static function invalidateRelationsForFaq(int $faqId, ?int $shopId = null): void
     {
         $shopId = static::resolveShopId($shopId);

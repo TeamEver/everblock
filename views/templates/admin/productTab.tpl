@@ -60,5 +60,32 @@
             </div>
         </div>
         {/foreach}
+
+        {if isset($everblock_faq_selector)}
+        <div class="container border rounded p-3 mb-3">
+            <div class="row">
+                <div class="col-lg-12 col-xl-12">
+                    <h4 class="h4 mb-3">{l s='FAQ associations' mod='everblock'}</h4>
+                    <p class="text-muted">{l s='Select the FAQ entries that should be displayed with this product. Use the search bar to quickly find them by tag or title.' mod='everblock'}</p>
+                    <select
+                        name="everblock_faq_ids[]"
+                        class="form-control js-everblock-faq-selector"
+                        multiple="multiple"
+                        data-ajax-url="{$everblock_faq_selector.ajax_url|escape:'htmlall':'UTF-8'}"
+                        data-placeholder="{$everblock_faq_selector.placeholder|escape:'htmlall':'UTF-8'}"
+                    >
+                        {if isset($everblock_faq_selector.selected_options)}
+                            {foreach from=$everblock_faq_selector.selected_options item=faqOption}
+                                <option value="{$faqOption.id|intval}" selected="selected" data-active="{if $faqOption.active}1{else}0{/if}">
+                                    {$faqOption.text|escape:'htmlall':'UTF-8'}{if !$faqOption.active} ({l s='Inactive' mod='everblock'}){/if}
+                                </option>
+                            {/foreach}
+                        {/if}
+                    </select>
+                    <p class="help-block mt-2">{l s='The order of the selected items will be used when displaying the FAQ on the product page.' mod='everblock'}</p>
+                </div>
+            </div>
+        </div>
+        {/if}
     </fieldset>
 </div>

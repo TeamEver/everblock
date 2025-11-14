@@ -115,6 +115,13 @@ class AdminEverBlockFaqController extends ModuleAdminController
                 'orderby' => false,
                 'class' => 'fixed-width-sm',
             ],
+            'linked_products' => [
+                'title' => $this->l('Linked products'),
+                'align' => 'center',
+                'orderby' => false,
+                'search' => false,
+                'callback' => 'renderLinkedProductsBadge',
+            ],
             'date_add' => [
                 'title' => $this->l('Date add'),
                 'align' => 'left',
@@ -173,6 +180,37 @@ class AdminEverBlockFaqController extends ModuleAdminController
             'icon' => 'process-icon-download',
         ];
         parent::initPageHeaderToolbar();
+    }
+
+    public function renderLinkedProductsBadge($value, $row)
+    {
+        $faqId = (int) ($row['id_everblock_faq'] ?? 0);
+        if ($faqId <= 0) {
+            return '-';
+        }
+
+        static $relationsCache = [];
+        if (!array_key_exists($faqId, $relationsCache)) {
+            $relationsCache[$faqId] = EverblockFaq::getProductsByFaq($faqId, (int) $this->context->shop->id);
+        }
+
+        $products = $relationsCache[$faqId];
+        $count = count($products);
+        if ($count === 0) {
+            return '<span class="badge badge-secondary">0</span>';
+        }
+
+        $ids = array_map(function ($product) {
+            return (int) $product['id_product'];
+        }, $products);
+
+        $title = sprintf(
+            $this->l('%d product(s): %s'),
+            $count,
+            implode(', ', $ids)
+        );
+
+        return '<span class="badge badge-info" title="' . Tools::safeOutput($title) . '">' . (int) $count . '</span>';
     }
 
     public function renderList()
