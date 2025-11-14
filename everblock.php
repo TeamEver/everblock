@@ -1079,7 +1079,7 @@ class Everblock extends Module
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
         }
 
-        die(Tools::jsonEncode($response));
+        die(json_encode($response));
     }
 
     protected function ensureModalDirectory($productId)
