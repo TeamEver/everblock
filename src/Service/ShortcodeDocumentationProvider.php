@@ -798,6 +798,17 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
+                        'code' => '[everfaq_product id_product="42"]',
+                        'description' => $translator->trans('Display FAQs linked to a specific product ID.', [], $domain),
+                        'parameters' => [
+                            [
+                                'name' => 'id_product',
+                                'description' => $translator->trans('Product identifier that owns the FAQ relations. Aliases: product_id, product, id.', [], $domain),
+                                'required' => true,
+                            ],
+                        ],
+                    ],
+                    [
                         'code' => '[alert type="success"]Content[/alert]',
                         'description' => $translator->trans('Bootstrap alert helper with optional contextual style.', [], $domain),
                         'parameters' => [

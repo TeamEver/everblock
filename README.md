@@ -218,6 +218,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 - `[video url="https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj"]`: Display a YouTube iframe of the video whose sharing URL is in the parameter. Required parameter: `url`.
 - `[everaddtocart ref="1234" text="Add me to cart"]`: Create an add to cart button for product reference 1234. Required parameter: `ref`. Optional parameter: `text`.
 - `[everfaq tag="faq1"]`: Show FAQs related to the `tag`. Required parameter: `tag`.
+- `[everfaq_product id_product="42"]`: Show FAQs associated with the product ID `42`. Required parameter: `id_product` (aliases: `product_id`, `product`, `id`).
 - `[productfeature id="2" nb="12" carousel="true"]`: Display products with feature ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
 - `[productfeaturevalue id="2" nb="12" carousel="true"]`: Display products with feature value ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
 - `[promo-products nb="10" carousel=true]`: Display products on sale. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
@@ -245,6 +246,7 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 | --- | --- | --- |
 | `[alert]...[/alert]` | — | type |
 | `[everfaq]` | tag | — |
+| `[everfaq_product]` | id_product | — |
 | `[product]` | id(s) | carousel |
 | `[product_image]` | id | image number |
 | `[productfeature]` | id | nb, limit, carousel, orderby, orderway |

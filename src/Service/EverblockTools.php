@@ -85,6 +85,7 @@ class EverblockTools extends ObjectModel
         $txt = static::getEverShortcodes($txt, $context);
         $shortcodeHandlers = [
             '[alert' => 'getAlertShortcode',
+            '[everfaq_product' => ['method' => 'getProductFaqShortcodes', 'args' => ['context', 'module']],
             '[everfaq' => ['method' => 'getFaqShortcodes', 'args' => ['context', 'module']],
             '[everinstagram]' => ['method' => 'getInstagramShortcodes', 'args' => ['context', 'module']],
             '[product' => ['method' => 'getProductShortcodes', 'args' => ['context', 'module']],
@@ -1007,6 +1008,45 @@ class EverblockTools extends ObjectModel
 
             return $context->smarty->fetch($templatePath);
 
+        }, $txt);
+
+        return $txt;
+    }
+
+    public static function getProductFaqShortcodes(string $txt, Context $context, Everblock $module): string
+    {
+        $templatePath = static::getTemplatePath('hook/faq.tpl', $module);
+        $pattern = '/\[everfaq_product(?:\s+([^\]]+))?\]/';
+
+        $txt = (string) preg_replace_callback($pattern, function ($matches) use ($context, $templatePath) {
+            $attrString = isset($matches[1]) ? trim($matches[1]) : '';
+            if ($attrString === '') {
+                return '';
+            }
+
+            $attrs = static::parseShortcodeAttrs($attrString);
+            $productId = (int) ($attrs['id_product']
+                ?? ($attrs['product_id']
+                ?? ($attrs['product']
+                ?? ($attrs['id'] ?? 0))));
+
+            if ($productId <= 0) {
+                return '';
+            }
+
+            $faqIds = EverblockFaq::getFaqIdsByProduct($productId, $context->shop->id);
+            if (empty($faqIds)) {
+                return '';
+            }
+
+            $faqs = EverblockFaq::getByIds($faqIds, $context->language->id, $context->shop->id, true);
+            if (empty($faqs)) {
+                return '';
+            }
+
+            $context->smarty->assign('everFaqs', $faqs);
+
+            return $context->smarty->fetch($templatePath);
         }, $txt);
 
         return $txt;
