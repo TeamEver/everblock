@@ -1136,6 +1136,7 @@ class EverblockTools extends ObjectModel
 
         $context->smarty->assign([
             'everblock_wp_posts' => $storedPosts,
+            'everblock_wp_blog_url' => Configuration::get('EVERWP_BLOG_URL') ?: '/blog',
         ]);
 
         foreach ($matches as $match) {

@@ -107,6 +107,7 @@ class Everblock extends Module
         Configuration::updateValue('EVERPS_TAB_NB', 5);
         Configuration::updateValue('EVERPS_FLAG_NB', 5);
         Configuration::updateValue('EVERWP_API_URL', '');
+        Configuration::updateValue('EVERWP_BLOG_URL', '/blog');
         Configuration::updateValue('EVERWP_POST_NBR', 3);
         Configuration::updateValue('EVER_SOLDOUT_COLOR', '#ff0000');
         Configuration::updateValue('EVER_SOLDOUT_TEXTCOLOR', '#ffffff');
@@ -230,6 +231,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERPSCSS_S_LLOREM_NUMBER');
         Configuration::deleteByName('EVERBLOCK_TINYMCE');
         Configuration::deleteByName('EVERWP_API_URL');
+        Configuration::deleteByName('EVERWP_BLOG_URL');
         Configuration::deleteByName('EVERWP_POST_NBR');
         Configuration::deleteByName('EVER_SOLDOUT_COLOR');
         Configuration::deleteByName('EVER_SOLDOUT_TEXTCOLOR');
@@ -1651,6 +1653,13 @@ class Everblock extends Module
             ],
             [
                 'type' => 'text',
+                'label' => $this->l('Blog URL'),
+                'desc' => $this->l('Destination URL for the "Visit our blog" button'),
+                'hint' => $this->l('Use an absolute URL or a relative path such as /blog'),
+                'name' => 'EVERWP_BLOG_URL',
+            ],
+            [
+                'type' => 'text',
                 'label' => $this->l('Number of blog posts to display'),
                 'name' => 'EVERWP_POST_NBR',
             ],
@@ -2401,6 +2410,7 @@ class Everblock extends Module
             'EVERINSTA_LINK' => Configuration::get('EVERINSTA_LINK'),
             'EVERINSTA_SHOW_CAPTION' => Configuration::get('EVERINSTA_SHOW_CAPTION'),
             'EVERWP_API_URL' => Configuration::get('EVERWP_API_URL'),
+            'EVERWP_BLOG_URL' => Configuration::get('EVERWP_BLOG_URL'),
             'EVERWP_POST_NBR' => Configuration::get('EVERWP_POST_NBR'),
             'EVERBLOCK_GOOGLE_API_KEY' => Configuration::get('EVERBLOCK_GOOGLE_API_KEY'),
             'EVERBLOCK_GOOGLE_PLACE_ID' => Configuration::get('EVERBLOCK_GOOGLE_PLACE_ID'),
@@ -2550,6 +2560,15 @@ class Everblock extends Module
             ) {
                 $this->postErrors[] = $this->l(
                     'Error : The field "Number of blog posts" is not valid'
+                );
+            }
+            $blogUrl = Tools::getValue('EVERWP_BLOG_URL');
+            if (!empty($blogUrl)
+                && !Validate::isUrl($blogUrl)
+                && (strpos($blogUrl, '/') !== 0)
+            ) {
+                $this->postErrors[] = $this->l(
+                    'Error : The field "Blog URL" must be a valid URL or start with /'
                 );
             }
             if (Tools::getValue('EVERPS_FEATURES_AS_FLAGS')
@@ -2757,6 +2776,14 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERWP_API_URL',
             Tools::getValue('EVERWP_API_URL')
+        );
+        $blogUrl = trim((string) Tools::getValue('EVERWP_BLOG_URL'));
+        if ($blogUrl === '') {
+            $blogUrl = '/blog';
+        }
+        Configuration::updateValue(
+            'EVERWP_BLOG_URL',
+            $blogUrl
         );
         Configuration::updateValue(
             'EVERWP_POST_NBR',
