@@ -28,11 +28,23 @@
             <div class="card-body d-flex flex-column justify-content-between text-start p-3">
               <div>
                 <div class="h5 fw-bold fs-6 mb-2 text-dark blog-title position-relative">
-                  {$post.title|escape:'htmlall':'UTF-8'}
+                  <a href="{$post.link|escape:'htmlall':'UTF-8'}"
+                     target="_blank"
+                     rel="noopener"
+                     title="{$post.title|escape:'htmlall':'UTF-8'}"
+                     class="text-dark text-decoration-none">
+                    {$post.title|escape:'htmlall':'UTF-8'}
+                  </a>
                 </div>
                 <div class="card-divider mb-2"></div>
                 <p class="card-text text-muted small mb-0 line-clamp-5">
-                  {$post.excerpt|strip_tags|truncate:100:'…'|escape:'htmlall':'UTF-8'}
+                  <a href="{$post.link|escape:'htmlall':'UTF-8'}"
+                     target="_blank"
+                     rel="noopener"
+                     title="{$post.title|escape:'htmlall':'UTF-8'}"
+                     class="text-muted text-decoration-none">
+                    {$post.excerpt|strip_tags|truncate:100:'…'|escape:'htmlall':'UTF-8'}
+                  </a>
                 </p>
               </div>
             </div>
