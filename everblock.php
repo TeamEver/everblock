@@ -5283,22 +5283,39 @@ class Everblock extends Module
     public function hookBeforeRenderingEverblockProductSelector($params)
     {
         $products = [];
-        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
-            foreach ($params['block']['states'] as $key => $state) {
-                if (empty($state['product'])) {
-                    continue;
-                }
-                $idProduct = $state['product']['id'];
-                if ($idProduct <= 0) {
-                    continue;
-                }
-                $presented = EverblockTools::everPresentProducts([
-                    $idProduct,
-                ], $this->context);
-                if (!empty($presented)) {
-                    $products[$key] = reset($presented);
-                }
+
+        if (empty($params['block']['states']) || !is_array($params['block']['states'])) {
+            return ['products' => $products];
+        }
+
+        foreach ($params['block']['states'] as $key => $state) {
+            if (empty($state['product']['id'])) {
+                continue;
             }
+
+            $idProduct = (int) $state['product']['id'];
+            if ($idProduct <= 0) {
+                continue;
+            }
+
+            /** CACHE KEY PAR ID PRODUIT **/
+            $cacheKey = 'everblock_product_' . $idProduct;
+
+            if (!Cache::isStored($cacheKey)) {
+
+                /** CE QUI ÉTAIT LENT : **/
+                $presented = EverblockTools::everPresentProducts(
+                    [$idProduct],
+                    $this->context
+                );
+
+                $product = !empty($presented) ? reset($presented) : null;
+
+                /** STOCKAGE EN CACHE **/
+                Cache::store($cacheKey, $product);
+            }
+
+            $products[$key] = Cache::retrieve($cacheKey);
         }
 
         return ['products' => $products];
