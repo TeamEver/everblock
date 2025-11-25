@@ -42,7 +42,7 @@
     </div>
 
     <div class="text-center mt-3">
-      <a href="/blog" class="btn btn-warning fw-bold text-uppercase px-4 py-2 rounded-pill">
+      <a href="{$everblock_wp_blog_url|escape:'htmlall':'UTF-8'}" class="btn btn-warning fw-bold text-uppercase px-4 py-2 rounded-pill">
         Visiter notre blog
       </a>
     </div>
