@@ -535,7 +535,7 @@ class EverblockPrettyBlocks
                         'display_inline' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Display reassurances side by side'),
-                            'default' => false,
+                            'default' => true,
                         ],
                         'columns' => [
                             'type' => 'select',
