@@ -21,10 +21,12 @@
 namespace Everblock\Tools\Service;
 
 use Configuration;
+use Context;
 use EverBlockClass;
 use Everblock\Tools\Service\EverblockCache;
 use EverblockShortcode;
 use Everblock\Tools\Service\EverblockTools;
+use Group;
 use Hook;
 use Module;
 use PrettyBlocksModel;
@@ -3897,7 +3899,7 @@ class EverblockPrettyBlocks
                     ], $module),
                 ],
             ];
-            $blocks = self::addDisplaySettings($blocks, $module);
+            $blocks = self::addDisplaySettings($blocks, $module, $context);
             $blocks = self::applyFileUploadPath($blocks);
             EverblockCache::cacheStore($cacheId, $blocks);
             return $blocks;
@@ -3905,7 +3907,7 @@ class EverblockPrettyBlocks
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
-    private static function addDisplaySettings(array $blocks, Module $module): array
+    private static function addDisplaySettings(array $blocks, Module $module, Context $context): array
     {
         foreach ($blocks as &$block) {
             if (!isset($block['config']) || !is_array($block['config'])) {
@@ -3914,10 +3916,6 @@ class EverblockPrettyBlocks
 
             if (!isset($block['config']['fields']) || !is_array($block['config']['fields'])) {
                 $block['config']['fields'] = [];
-            }
-
-            if (isset($block['config']['fields']['display_on'])) {
-                continue;
             }
 
             $displayField = [
@@ -3934,10 +3932,42 @@ class EverblockPrettyBlocks
                 ],
             ];
 
-            $block['config']['fields'] = array_merge($displayField, $block['config']['fields']);
+            $customerGroupField = self::getCustomerGroupField($context, $module);
+
+            if (!isset($block['config']['fields']['display_on'])) {
+                $block['config']['fields'] = array_merge($displayField, $block['config']['fields']);
+            }
+
+            if (!isset($block['config']['fields']['allowed_customer_groups'])) {
+                $block['config']['fields'] = array_merge($customerGroupField, $block['config']['fields']);
+            }
         }
 
         return $blocks;
+    }
+
+    private static function getCustomerGroupField(Context $context, Module $module): array
+    {
+        $groups = Group::getGroups((int) $context->language->id);
+
+        $choices = [];
+        $default = [];
+
+        foreach ($groups as $group) {
+            $groupId = (int) $group['id_group'];
+            $choices[$groupId] = $group['name'];
+            $default[] = $groupId;
+        }
+
+        return [
+            'allowed_customer_groups' => [
+                'type' => 'select',
+                'label' => $module->l('Allowed customer groups'),
+                'default' => $default,
+                'multiple' => true,
+                'choices' => $choices,
+            ],
+        ];
     }
 
     private static function applyFileUploadPath(array $blocks): array
