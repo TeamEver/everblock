@@ -3961,10 +3961,9 @@ class EverblockPrettyBlocks
 
         return [
             'allowed_customer_groups' => [
-                'type' => 'select',
+                'type' => 'multiselect',
                 'label' => $module->l('Allowed customer groups'),
                 'default' => $default,
-                'multiple' => true,
                 'choices' => $choices,
             ],
         ];
