@@ -4021,17 +4021,48 @@ class EverblockTools extends ObjectModel
                 }
 
                 function initAutocomplete() {
-                    var autocomplete = new google.maps.places.Autocomplete(document.getElementById("store_search"));
                     var geocoder = new google.maps.Geocoder();
                     var searchBtn = document.getElementById("store_search_btn");
                     var searchInput = document.getElementById("store_search");
+                    var autocomplete;
 
-                    autocomplete.addListener("place_changed", function () {
-                        var place = autocomplete.getPlace();
-                        if (place.geometry && place.geometry.location) {
-                            applySearch(place.geometry.location);
+                    if (!searchInput) {
+                        return;
+                    }
+
+                    function handlePlaceSelection(place) {
+                        if (!place) {
+                            return;
                         }
-                    });
+                        var location = place.geometry && place.geometry.location ? place.geometry.location : place.location;
+                        if (location) {
+                            applySearch(location);
+                        }
+                    }
+
+                    if (google.maps.places && google.maps.places.PlaceAutocompleteElement) {
+                        autocomplete = new google.maps.places.PlaceAutocompleteElement({
+                            inputElement: searchInput
+                        });
+
+                        if (autocomplete.addEventListener) {
+                            autocomplete.addEventListener("gmp-placeselect", function (event) {
+                                handlePlaceSelection(event.detail && event.detail.place);
+                            });
+                        }
+
+                        if (autocomplete.addListener && typeof autocomplete.getPlace === "function") {
+                            autocomplete.addListener("place_changed", function () {
+                                handlePlaceSelection(autocomplete.getPlace());
+                            });
+                        }
+                    } else if (google.maps.places && google.maps.places.Autocomplete) {
+                        autocomplete = new google.maps.places.Autocomplete(searchInput);
+
+                        autocomplete.addListener("place_changed", function () {
+                            handlePlaceSelection(autocomplete.getPlace());
+                        });
+                    }
 
                     function performSearch() {
                         var address = searchInput.value;
