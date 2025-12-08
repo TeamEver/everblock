@@ -3074,15 +3074,25 @@ class Everblock extends Module
 
     public function hookActionAdminControllerSetMedia()
     {
-        $this->context->controller->addCss($this->_path . 'views/css/ever.css');
-        if (Tools::getValue('controller') == 'AdminProducts') {
-            $this->context->controller->addJs($this->_path . 'views/js/product-modal.js');
-            $this->context->controller->addJs($this->_path . 'views/js/product-faq.js');
+        $controller = Tools::getValue('controller');
+        $isModuleConfiguration = Tools::getValue('configure') === $this->name;
+        $moduleControllers = [
+            'AdminEverBlockController',
+            'AdminEverBlockConfigurationController',
+            'AdminEverBlockFaqController',
+            'AdminEverBlockHookController',
+            'AdminEverBlockShortcodeController',
+        ];
+
+        if (!$isModuleConfiguration && !in_array($controller, $moduleControllers, true)) {
+            return;
         }
+
+        $this->context->controller->addCss($this->_path . 'views/css/ever.css');
 
         if (Tools::getValue('id_' . $this->name)
             || Tools::getIsset('add' . $this->name)
-            || Tools::getValue('configure') == $this->name
+            || $isModuleConfiguration
             || Tools::getValue('id_' . $this->name . '_faq')
             || Tools::getIsset('add' . $this->name . '_faq')
         ) {
@@ -3102,9 +3112,9 @@ class Everblock extends Module
                 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/mode/javascript/javascript.min.js',
                 'all'
             );
-                $this->context->controller->addJs($this->_path . 'views/js/admin.js');
+            $this->context->controller->addJs($this->_path . 'views/js/admin.js');
             if ((bool) Configuration::get('EVERBLOCK_TINYMCE') === true
-                && Tools::getValue('configure') != $this->name
+                && !$isModuleConfiguration
             ) {
                 $this->context->controller->addJs($this->_path . 'views/js/adminTinyMce.js');
             }
