@@ -351,6 +351,16 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
+                        'title_alignment' => [
+                            'type' => 'select',
+                            'label' => $module->l('Title alignment'),
+                            'choices' => [
+                                'left' => $module->l('Left'),
+                                'center' => $module->l('Center'),
+                                'right' => $module->l('Right'),
+                            ],
+                            'default' => 'left',
+                        ],
                         'text_color' => [
                             'type' => 'color',
                             'label' => $module->l('Text color'),
