@@ -37,7 +37,7 @@
       {if $block.settings.title || $block.settings.subtitle}
         <div class="prettyblock-faq-header mb-4">
           {if $block.settings.title}
-            <h2 class="h3 fw-bold mb-2">{$block.settings.title|escape:'htmlall':'UTF-8'}</h2>
+            <span class="h3 fw-bold mb-2">{$block.settings.title|escape:'htmlall':'UTF-8'}</span>
           {/if}
           {if $block.settings.subtitle}
             <p class="text-muted mb-0">{$block.settings.subtitle|escape:'htmlall':'UTF-8'}</p>
@@ -71,7 +71,7 @@
               </div>
               <div class="prettyblock-faq-content">
                 {if $state.question}
-                  <h3 class="prettyblock-faq-question h4 fw-semibold mb-3">{$state.question|escape:'htmlall':'UTF-8'}</h3>
+                  <span class="prettyblock-faq-question h4 fw-semibold mb-3">{$state.question|escape:'htmlall':'UTF-8'}</span>
                 {/if}
                 {if $state.answer}
                   <div class="prettyblock-faq-answer text-body-secondary mb-3">{$state.answer nofilter}</div>
