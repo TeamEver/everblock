@@ -18,7 +18,7 @@
 
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 
-{assign var='reassuranceColumns' value=$block.settings.items_per_row|default:$block.settings.default.items_per_row|default:$block.settings.columns|default:$block.settings.default.columns|default:0|intval}
+{assign var='reassuranceColumns' value=$block.settings.items_per_row|default:$block.settings.default.items_per_row|default:$block.settings.columns|default:$block.settings.default.columns|default:3|intval}
 {assign var='reassuranceColumnClass' value=''}
 {if $reassuranceColumns > 0}
   {math assign="reassuranceColumnWidth" equation="12 / x" x=$reassuranceColumns format="%.0f"}
