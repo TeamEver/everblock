@@ -20,11 +20,11 @@
 <div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0 mt-20px{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
   {if $block.settings.default.force_full_width}
     <div class="row g-10px">
-  {elseif $block.settings.default.container || $block.settings.default.display_inline}
+  {elseif $block.settings.default.container || $block.settings.default.display_inline || $reassuranceColumns > 0}
     <div class="row">
   {/if}
 
-{assign var='reassuranceColumns' value=$block.settings.default.columns|default:0|intval}
+{assign var='reassuranceColumns' value=$block.settings.default.items_per_row|default:$block.settings.default.columns|default:0|intval}
 {assign var='reassuranceColumnClass' value=''}
 {if $reassuranceColumns > 0}
   {math assign="reassuranceColumnWidth" equation="12 / x" x=$reassuranceColumns format="%.0f"}
@@ -79,7 +79,7 @@
     {/foreach}
   {/if}
 
-  {if $block.settings.default.force_full_width || $block.settings.default.container || $block.settings.default.display_inline}
+  {if $block.settings.default.force_full_width || $block.settings.default.container || $block.settings.default.display_inline || $reassuranceColumns > 0}
     </div>
   {/if}
 </div>
