@@ -29,7 +29,14 @@
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-        <{$block.settings.level|default:'h2'} id="{$block.id_prettyblocks}" class="everblock everblock-heading {$block.settings.css_class|escape:'htmlall':'UTF-8'}"{if isset($block.settings.text_color) && $block.settings.text_color} style="color:{$block.settings.text_color|escape:'htmlall':'UTF-8'};"{/if}>{$block.settings.title|escape:'htmlall':'UTF-8'}</{$block.settings.level|default:'h2'}>
+        {assign var='heading_styles' value=''}
+        {if isset($block.settings.text_color) && $block.settings.text_color}
+          {assign var='heading_styles' value="{$heading_styles}color:{$block.settings.text_color|escape:'htmlall':'UTF-8'};"}
+        {/if}
+        {if isset($block.settings.title_alignment) && $block.settings.title_alignment}
+          {assign var='heading_styles' value="{$heading_styles}text-align:{$block.settings.title_alignment|escape:'htmlall':'UTF-8'};"}
+        {/if}
+        <{$block.settings.level|default:'h2'} id="{$block.id_prettyblocks}" class="everblock everblock-heading {$block.settings.css_class|escape:'htmlall':'UTF-8'}"{if $heading_styles|trim} style="{$heading_styles}"{/if}>{$block.settings.title|escape:'htmlall':'UTF-8'}</{$block.settings.level|default:'h2'}>
     {if $block.settings.default.container}
         </div>
     {/if}
