@@ -112,6 +112,7 @@ class EverblockPrettyBlocks
             $contactTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_contact.tpl';
             $shoppingCartTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl';
             $accordeonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_accordeon.tpl';
+            $faqTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_faq.tpl';
             $textAndImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_text_and_image.tpl';
             $layoutTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_layout.tpl';
             $featuredCategoryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl';
@@ -479,6 +480,107 @@ class EverblockPrettyBlocks
                             'type' => 'color',
                             'default' => '#000000',
                             'label' => $module->l('Accordeon background color')
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('FAQ list'),
+                'description' => $module->l('Display a Prettyblock FAQ with badges and links'),
+                'code' => 'everblock_faq',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $faqTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Section title'),
+                            'default' => $module->l('Frequently asked questions'),
+                        ],
+                        'subtitle' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Section subtitle'),
+                            'default' => '',
+                        ],
+                        'cta_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA label'),
+                            'default' => $module->l('See all FAQs'),
+                        ],
+                        'cta_link' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA link'),
+                            'default' => '#',
+                        ],
+                        'badge_background' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'label' => $module->l('Default badge background'),
+                            'default' => '#f3f0ff',
+                        ],
+                        'badge_text_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'label' => $module->l('Default badge text color'),
+                            'default' => '#5b35c3',
+                        ],
+                        'background_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'label' => $module->l('Section background color'),
+                            'default' => '#f7f9fc',
+                        ],
+                    ], $module),
+                ],
+                'repeater' => [
+                    'name' => 'FAQ',
+                    'nameFrom' => 'question',
+                    'groups' => static::appendSpacingFields([
+                        'question' => [
+                            'type' => 'text',
+                            'label' => $module->l('Question'),
+                            'default' => $module->l('What do you want to know?'),
+                        ],
+                        'answer' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Answer'),
+                            'default' => $module->l('Share the most helpful information about this topic.'),
+                        ],
+                        'link_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Link label'),
+                            'default' => $module->l('Learn more'),
+                        ],
+                        'link_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Link URL'),
+                            'default' => '#',
+                        ],
+                        'badge_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Badge text'),
+                            'default' => '?',
+                        ],
+                        'badge_background' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'label' => $module->l('Badge background'),
+                            'default' => '',
+                        ],
+                        'badge_text_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'label' => $module->l('Badge text color'),
+                            'default' => '',
                         ],
                         'css_class' => [
                             'type' => 'text',
