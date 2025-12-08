@@ -15,14 +15,8 @@
  * @copyright 2019-2025 Team Ever
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-{include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0 mt-20px{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-  {if $block.settings.default.force_full_width}
-    <div class="row g-10px">
-  {elseif $block.settings.default.container || $block.settings.default.display_inline || $reassuranceColumns > 0}
-    <div class="row">
-  {/if}
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 
 {assign var='reassuranceColumns' value=$block.settings.default.items_per_row|default:$block.settings.default.columns|default:0|intval}
 {assign var='reassuranceColumnClass' value=''}
@@ -33,10 +27,33 @@
   {assign var='reassuranceColumnClass' value='col '}
 {/if}
 
-{if isset($block.states) && $block.states}
-  {foreach from=$block.states item=state key=key}
+{assign var='containerClass' value=''}
+{if $block.settings.default.force_full_width}
+  {assign var='containerClass' value='container-fluid px-0 mx-0 mt-20px'}
+{elseif $block.settings.default.container}
+  {assign var='containerClass' value='container'}
+{/if}
+{assign var='wrapperClasses' value=$containerClass|cat:' '|cat:$prettyblock_visibility_class|trim}
+
+{assign var='shouldRenderRow' value=$block.settings.default.force_full_width || $block.settings.default.container || $block.settings.default.display_inline || $reassuranceColumns > 0}
+{assign var='rowClass' value=''}
+{if $shouldRenderRow}
+  {if $block.settings.default.force_full_width}
+    {assign var='rowClass' value='row g-10px'}
+  {else}
+    {assign var='rowClass' value='row'}
+  {/if}
+{/if}
+
+<div id="block-{$block.id_prettyblocks}" class="{$wrapperClasses}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
+  {if $shouldRenderRow}
+    <div class="{$rowClass}">
+  {/if}
+
+  {if isset($block.states) && $block.states}
+    {foreach from=$block.states item=state key=key}
       {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
-      {* Génère l'URL de l'icône depuis le nom brut *}
+
       {assign var="icon_url" value=false}
       {if (is_array($state.image) || is_object($state.image)) && isset($state.image.url) && $state.image.url}
         {assign var="icon_url" value=$state.image.url}
@@ -50,22 +67,19 @@
         {/if}
       {/if}
 
-      <div id="block-{$block.id_prettyblocks}-{$key}" class="{$reassuranceColumnClass}text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="{$prettyblock_state_spacing_style}
-        {if $state.background_color}background-color:{$state.background_color};{/if}
-        {if $state.text_color}color:{$state.text_color};{/if}
-      ">
+      <div id="block-{$block.id_prettyblocks}-{$key}" class="{$reassuranceColumnClass}text-center{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="{$prettyblock_state_spacing_style}{if $state.background_color}background-color:{$state.background_color};{/if}{if $state.text_color}color:{$state.text_color};{/if}">
         {if $icon_url}
-            <div class="mb-2">
-              {if $icon_url|substr:-4 == '.svg'}
-                <img src="{$icon_url|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
-              {else}
-                <picture>
-                  <source srcset="{$icon_url|escape:'htmlall'}" type="image/webp">
-                  <source srcset="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" type="image/jpeg">
-                  <img src="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
-                </picture>
-              {/if}
-            </div>
+          <div class="mb-2">
+            {if $icon_url|substr:-4 == '.svg'}
+              <img src="{$icon_url|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
+            {else}
+              <picture>
+                <source srcset="{$icon_url|escape:'htmlall'}" type="image/webp">
+                <source srcset="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" type="image/jpeg">
+                <img src="{$icon_url|replace:'.webp':'.jpg'|escape:'htmlall'}" alt="{$state.title|escape:'htmlall'}" loading="lazy" class="img-fluid" width="45" height="45">
+              </picture>
+            {/if}
+          </div>
         {/if}
 
         {if $state.title}
@@ -79,7 +93,7 @@
     {/foreach}
   {/if}
 
-  {if $block.settings.default.force_full_width || $block.settings.default.container || $block.settings.default.display_inline || $reassuranceColumns > 0}
+  {if $shouldRenderRow}
     </div>
   {/if}
 </div>
