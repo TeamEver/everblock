@@ -29,12 +29,10 @@
     {if $block.settings.default.container}
         <div class="row">
     {/if}
-    {prettyblocks_zone zone_name="block-divider-{$block.id_prettyblocks}-before"}
 	<hr id="{$block.id_prettyblocks}" class="everblock everblock-divider">
     {if $block.settings.default.container}
         </div>
     {/if}
-    {prettyblocks_zone zone_name="block-divider-{$block.id_prettyblocks}-after"}
 </div>
   {if $block.settings.default.force_full_width || $block.settings.default.container}
     </div>
