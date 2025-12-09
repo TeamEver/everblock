@@ -67,6 +67,8 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
                     'rewrite' => $page->link_rewrite,
                 ]
             );
+
+            $page->cover_image_data = $page->getCoverImageData($this->context);
         }
 
         $structuredData = $this->buildItemListStructuredData($pages, $pageLinks);
