@@ -32,7 +32,7 @@
       {assign var="icon_url" value=false}
       {if (is_array($state.icon) || is_object($state.icon)) && isset($state.icon.url) && $state.icon.url}
         {assign var="icon_url" value=$state.icon.url}
-      {elseif isset($state.icon) && is_string($state.icon)}
+      {elseif isset($state.icon) && is_string($state.icon) && $state.icon|trim != ''}
         {if $state.icon|substr:-4 != '.svg'}
           {assign var="icon_url" value=$smarty.const._MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
         {else}
