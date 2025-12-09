@@ -11,11 +11,11 @@
         {foreach from=$everblock_pages item=page}
           <li class="everblock-page-item">
             <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" class="everblock-page-link">
-              <span class="h4">{$page->name[$everblock_lang_id]|default:''|escape:'htmlall':'UTF-8'}</span>
-              {if $page->short_description[$everblock_lang_id]}
-                <p class="everblock-page-excerpt">{$page->short_description[$everblock_lang_id]|strip_tags|truncate:180:'...':true}</p>
-              {elseif $page->meta_description[$everblock_lang_id]}
-                <p class="everblock-page-excerpt">{$page->meta_description[$everblock_lang_id]|truncate:180:'...':true}</p>
+              <span class="h4">{$page->name|default:''|escape:'htmlall':'UTF-8'}</span>
+              {if $page->short_description}
+                <p class="everblock-page-excerpt">{$page->short_description|strip_tags|truncate:180:'...':true}</p>
+              {elseif $page->meta_description}
+                <p class="everblock-page-excerpt">{$page->meta_description|truncate:180:'...':true}</p>
               {/if}
               <div class="everblock-page-meta">
                 {if $page->date_add}

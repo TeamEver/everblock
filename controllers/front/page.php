@@ -94,7 +94,6 @@ class EverblockPageModuleFrontController extends ModuleFrontController
             'everblock_page_image' => $page->cover_image
                 ? $this->context->link->getMediaLink(_PS_IMG_ . 'pages/' . $page->cover_image)
                 : '',
-            'everblock_lang_id' => (int) $this->context->language->id,
             'everblock_structured_data' => $this->buildItemListStructuredData($pages, $pageLinks),
             'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
             'everblock_prettyblocks_zone_name' => $isPrettyBlocksEnabled ? 'everblock_page_zone_' . (int) $page->id : '',
