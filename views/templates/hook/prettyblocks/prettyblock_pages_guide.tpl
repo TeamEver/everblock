@@ -30,7 +30,7 @@
   {/if}
   <div class="mt-2{if $block.settings.default.container} container{/if}">
     {if $block.settings.title}
-      <h2 class="mb-3">{$block.settings.title|escape:'htmlall':'UTF-8'}</h2>
+      <p class="mb-3 h2">{$block.settings.title|escape:'htmlall':'UTF-8'}</p>
     {/if}
     {if $block.settings.description}
       <div class="mb-4">{$block.settings.description nofilter}</div>
@@ -48,7 +48,7 @@
           <div class="col mb-4">
             <div id="block-{$block.id_prettyblocks}-{$key}" class="prettyblock-guide-card h-100{if $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="{$prettyblock_pages_guide_state_spacing_style}">
               {if $page_title}
-                <h3 class="h5">{$page_title|escape:'htmlall':'UTF-8'}</h3>
+                <p class="h5">{$page_title|escape:'htmlall':'UTF-8'}</p>
               {/if}
               {if $state.summary}
                 <div class="mb-3">{$state.summary nofilter}</div>
