@@ -5763,14 +5763,14 @@ class Everblock extends Module
                     'module' => $this->name,
                 ],
             ],
-            'module-everblock-faqs' => [
+            'module-everblock-faqs-tag' => [
                 'controller' => 'faqs',
-                'rule' => $faqBase . '/{tag}',
+                'rule' => $faqBase . '/tag/{tag}',
                 'keywords' => [
                     'tag' => [
                         'regexp' => '[_a-zA-Z0-9\pL-]*',
                         'param' => 'tag',
-                        'required' => false,
+                        'required' => true,
                     ],
                 ],
                 'params' => [
