@@ -195,6 +195,14 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             'meta_robots' => 'index,follow',
             'canonical' => $this->getCanonicalURL(),
         ]);
+
+        $page = $this->context->controller->getTemplateVarPage();
+        $page['meta']['title'] = $title;
+        $page['meta']['description'] = $description;
+        $page['meta']['robots'] = 'index,follow';
+        $page['canonical'] = $this->getCanonicalURL();
+
+        $this->context->smarty->assign('page', $page);
     }
 
     public function getCanonicalURL()
