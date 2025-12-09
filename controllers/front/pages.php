@@ -88,6 +88,11 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         ]);
 
         $this->setTemplate('module:everblock/views/templates/front/pages.tpl');
+
+        $this->setTemplateMeta(
+            $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
+            $this->trans('Découvrez nos guides pratiques pour ...', [], 'Modules.Everblock.Front')
+        );
     }
 
     public function getBreadcrumbLinks()
@@ -110,7 +115,9 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         for ($page = 1; $page <= $totalPages; ++$page) {
             $pages[] = [
                 'number' => $page,
-                'link' => $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $page]),
+                'link' => $page === 1
+                    ? $baseLink
+                    : $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $page]),
                 'active' => $page === $currentPage,
             ];
         }
@@ -123,7 +130,9 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             'has_previous' => $currentPage > 1,
             'has_next' => $currentPage < $totalPages,
             'previous_link' => $currentPage > 1
-                ? $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $currentPage - 1])
+                ? ($currentPage - 1 === 1
+                    ? $baseLink
+                    : $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $currentPage - 1]))
                 : $baseLink,
             'next_link' => $currentPage < $totalPages
                 ? $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $currentPage + 1])
@@ -172,5 +181,22 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         return (bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
             && (bool) Everblock\Tools\Service\EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+    }
+
+    protected function setTemplateMeta(string $title, string $description): void
+    {
+        $this->meta_title = $title;
+        $this->meta_description = $description;
+        $this->context->smarty->assign([
+            'meta_title' => $title,
+            'meta_description' => $description,
+            'meta_robots' => 'index,follow',
+            'canonical' => $this->getCanonicalURL(),
+        ]);
+    }
+
+    public function getCanonicalURL()
+    {
+        return $this->context->link->getModuleLink($this->module->name, 'pages');
     }
 }

@@ -61,7 +61,8 @@ class EverblockPageModuleFrontController extends ModuleFrontController
             ));
         }
 
-        $metaDescription = $page->meta_description;
+        $metaTitle = $page->meta_title ?: $page->title;
+        $metaDescription = $page->meta_description ?: ($page->short_description ?? '');
 
         $renderedContent = $page->content;
         $isPrettyBlocksEnabled = $this->isPrettyBlocksEnabled();
@@ -100,7 +101,7 @@ class EverblockPageModuleFrontController extends ModuleFrontController
 
         $this->setTemplate('module:everblock/views/templates/front/page.tpl');
 
-        $this->setTemplateMeta($page->title, $metaDescription);
+        $this->setTemplateMeta($metaTitle, $metaDescription);
     }
 
     public function getBreadcrumbLinks()
@@ -124,9 +125,30 @@ class EverblockPageModuleFrontController extends ModuleFrontController
 
     protected function setTemplateMeta(string $title, string $description): void
     {
-        $this->context->smarty->assign('meta_description', $description);
-        $this->context->smarty->assign('meta_title', $title);
-        $this->context->smarty->assign('meta_robots', 'index,follow');
+        $this->meta_title = $title;
+        $this->meta_description = $description;
+        $this->context->smarty->assign([
+            'meta_description' => $description,
+            'meta_title' => $title,
+            'meta_robots' => 'index,follow',
+            'canonical' => $this->getCanonicalURL(),
+        ]);
+    }
+
+    public function getCanonicalURL()
+    {
+        if ($this->everblockPage instanceof EverblockPage) {
+            return $this->context->link->getModuleLink(
+                $this->module->name,
+                'page',
+                [
+                    'id_everblock_page' => (int) $this->everblockPage->id,
+                    'rewrite' => $this->everblockPage->link_rewrite,
+                ]
+            );
+        }
+
+        return parent::getCanonicalURL();
     }
 
     protected function isPrettyBlocksEnabled(): bool
