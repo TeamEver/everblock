@@ -59,7 +59,7 @@
             {assign var='guide_summary' value=$guide_object->short_description|default:$guide_object->meta_description|default:''}
           {/if}
           <div class="col mb-4">
-            <div id="block-{$block.id_prettyblocks}-{$key}" class="prettyblock-guide-card h-100{if $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="{$prettyblock_guides_selection_state_spacing_style}">
+            <div id="block-{$block.id_prettyblocks}-{$key}" class="prettyblock-guide-card h-100 position-relative{if $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="{$prettyblock_guides_selection_state_spacing_style}">
               {if isset($cover_image_data.url) && $cover_image_data.url}
                 <div class="prettyblock-guide-image mb-3 position-relative overflow-hidden rounded" style="aspect-ratio: {$cover_image_data.width|intval}/{$cover_image_data.height|intval};">
                   <img src="{$cover_image_data.url|escape:'htmlall':'UTF-8'}"
@@ -76,6 +76,9 @@
               {/if}
               {if $guide_summary}
                 <div class="mb-3">{$guide_summary nofilter}</div>
+              {/if}
+              {if $guide_link}
+                <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="stretched-link"{if $state.target_blank} target="_blank" rel="noopener"{/if}></a>
               {/if}
               {if $guide_link && $state.cta_text}
                 <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="btn btn-primary"{if $state.target_blank} target="_blank" rel="noopener"{/if}>
