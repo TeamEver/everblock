@@ -5748,6 +5748,15 @@ class Everblock extends Module
                     'module' => $this->name,
                 ],
             ],
+            'module-everblock-faqs-list' => [
+                'controller' => 'faqs',
+                'rule' => $faqBase,
+                'keywords' => [],
+                'params' => [
+                    'fc' => 'module',
+                    'module' => $this->name,
+                ],
+            ],
             'module-everblock-faqs' => [
                 'controller' => 'faqs',
                 'rule' => $faqBase . '/{tag}',

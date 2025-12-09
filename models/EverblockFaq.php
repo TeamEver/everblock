@@ -202,6 +202,17 @@ class EverblockFaq extends ObjectModel
         return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
     }
 
+    public static function countAllActive(int $shopId): int
+    {
+        $sql = new DbQuery();
+        $sql->select('COUNT(*)');
+        $sql->from(self::$definition['table']);
+        $sql->where('id_shop = ' . (int) $shopId);
+        $sql->where('active = 1');
+
+        return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+    }
+
     public static function getFirstActiveTagName(?int $shopId = null): ?string
     {
         $shopId = self::resolveShopId($shopId);
@@ -247,6 +258,39 @@ class EverblockFaq extends ObjectModel
         $sql->where('tag_name = "' . pSQL($tagName) . '"');
         $sql->where('active = 1');
         $sql->orderBy('position ASC');
+        $sql->limit($limit, $offset);
+
+        $faqs = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        $return = [];
+        foreach ($faqs as $faq) {
+            $return[] = new self(
+                (int) $faq[self::$definition['primary']],
+                $langId,
+                $shopId
+            );
+        }
+
+        return $return;
+    }
+
+    public static function getAllActivePaginated(
+        int $shopId,
+        int $langId,
+        int $page,
+        int $limit
+    ): array {
+        $shopId = (int) $shopId;
+        $langId = (int) $langId;
+        $page = max(1, (int) $page);
+        $limit = max(1, (int) $limit);
+        $offset = ($page - 1) * $limit;
+
+        $sql = new DbQuery();
+        $sql->select('*');
+        $sql->from(self::$definition['table']);
+        $sql->where('id_shop = ' . $shopId);
+        $sql->where('active = 1');
+        $sql->orderBy('tag_name ASC, position ASC');
         $sql->limit($limit, $offset);
 
         $faqs = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
