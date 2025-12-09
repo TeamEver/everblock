@@ -218,6 +218,7 @@ class AdminEverBlockFaqController extends ModuleAdminController
         $this->addRowAction('edit');
         $this->addRowAction('delete');
         $this->addRowAction('duplicate');
+        $this->addRowAction('viewfront');
         $this->toolbar_title = $this->l('Registered FAQ');
         if (Tools::getValue('clearcache')) {
             Tools::clearAllCache();
@@ -498,5 +499,39 @@ class AdminEverBlockFaqController extends ModuleAdminController
         if (!$newObj->save()) {
             $this->errors[] = $this->l('An error has occurred: Can\'t duplicate the current object');
         }
+    }
+
+    public function displayViewfrontLink($token, $id, $name = null)
+    {
+        $faqId = (int) $id;
+        if ($faqId <= 0) {
+            return '';
+        }
+
+        $faq = new $this->className($faqId, (int) $this->context->language->id);
+        $tag = trim((string) $faq->tag_name);
+        if ($tag === '') {
+            return '';
+        }
+
+        $link = $this->context->link->getModuleLink(
+            $this->module->name,
+            'faqs',
+            ['tag' => $tag]
+        );
+
+        $title = sprintf(
+            $this->l('View "%s" group on front office'),
+            $tag
+        );
+
+        return sprintf(
+            '<a class="btn btn-default" href="%s" title="%s" target="_blank">'
+            . '<i class="icon-search"></i> %s'
+            . '</a>',
+            Tools::safeOutput($link),
+            Tools::safeOutput($title),
+            $this->l('View on front')
+        );
     }
 }
