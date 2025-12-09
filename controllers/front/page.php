@@ -26,6 +26,9 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
 
 class EverblockPageModuleFrontController extends ModuleFrontController
 {
+    /** @var EverblockPage|null */
+    protected $everblockPage;
+
     public function init()
     {
         parent::init();
@@ -66,16 +69,64 @@ class EverblockPageModuleFrontController extends ModuleFrontController
             $renderedContent = $this->context->smarty->fetch('string:' . $renderedContent);
         }
 
+        $pages = EverblockPage::getPages(
+            (int) $this->context->language->id,
+            (int) $this->context->shop->id,
+            true,
+            $customerGroups
+        );
+
+        $pageLinks = [];
+        foreach ($pages as $pageItem) {
+            $pageLinks[(int) $pageItem->id] = $this->context->link->getModuleLink(
+                $this->module->name,
+                'page',
+                [
+                    'id_everblock_page' => (int) $pageItem->id,
+                    'rewrite' => $pageItem->link_rewrite[(int) $this->context->language->id] ?? '',
+                ]
+            );
+        }
+
+        $this->everblockPage = $page;
+
         $this->context->smarty->assign([
             'everblock_page' => $page,
             'everblock_page_content' => $renderedContent,
             'everblock_page_image' => $page->cover_image ? _MODULE_DIR_ . 'everblock/views/img/pages/' . $page->cover_image : '',
             'everblock_lang_id' => (int) $this->context->language->id,
+            'everblock_structured_data' => $this->buildItemListStructuredData($pages, $pageLinks),
         ]);
 
         $this->setTemplate('module:everblock/views/templates/front/page.tpl');
 
         $this->setTemplateMeta($page->title[(int) $this->context->language->id] ?? '', $metaDescription);
+    }
+
+    public function getBreadcrumbLinks()
+    {
+        $breadcrumb = parent::getBreadcrumbLinks();
+
+        $breadcrumb['links'][] = [
+            'title' => $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
+            'url' => $this->context->link->getModuleLink($this->module->name, 'pages'),
+        ];
+
+        if ($this->everblockPage instanceof EverblockPage) {
+            $breadcrumb['links'][] = [
+                'title' => $this->everblockPage->name[(int) $this->context->language->id] ?? '',
+                'url' => $this->context->link->getModuleLink(
+                    $this->module->name,
+                    'page',
+                    [
+                        'id_everblock_page' => (int) $this->everblockPage->id,
+                        'rewrite' => $this->everblockPage->link_rewrite[(int) $this->context->language->id] ?? '',
+                    ]
+                ),
+            ];
+        }
+
+        return $breadcrumb;
     }
 
     protected function setTemplateMeta(string $title, string $description): void
@@ -90,5 +141,40 @@ class EverblockPageModuleFrontController extends ModuleFrontController
         return (bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
             && (bool) Everblock\Tools\Service\EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+    }
+
+    protected function buildItemListStructuredData(array $pages, array $pageLinks): array
+    {
+        if (empty($pages)) {
+            return [];
+        }
+
+        $elements = [];
+        $fallbackPosition = 1;
+        $langId = (int) $this->context->language->id;
+
+        foreach ($pages as $page) {
+            $position = isset($page->position) ? (int) $page->position : $fallbackPosition;
+            if ($position <= 0) {
+                $position = $fallbackPosition;
+            }
+
+            $elements[] = [
+                '@type' => 'ListItem',
+                'position' => $position,
+                'url' => $pageLinks[(int) $page->id] ?? '',
+                'name' => $page->name[$langId] ?? '',
+            ];
+
+            ++$fallbackPosition;
+        }
+
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'name' => $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
+            'description' => $this->trans('Découvrez nos guides pratiques pour ...', [], 'Modules.Everblock.Front'),
+            'itemListElement' => $elements,
+        ];
     }
 }

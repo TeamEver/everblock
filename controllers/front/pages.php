@@ -50,12 +50,62 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             );
         }
 
+        $structuredData = $this->buildItemListStructuredData($pages, $pageLinks);
+
         $this->context->smarty->assign([
             'everblock_pages' => $pages,
             'everblock_page_links' => $pageLinks,
             'everblock_lang_id' => (int) $this->context->language->id,
+            'everblock_structured_data' => $structuredData,
         ]);
 
         $this->setTemplate('module:everblock/views/templates/front/pages.tpl');
+    }
+
+    public function getBreadcrumbLinks()
+    {
+        $breadcrumb = parent::getBreadcrumbLinks();
+
+        $breadcrumb['links'][] = [
+            'title' => $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
+            'url' => $this->context->link->getModuleLink($this->module->name, 'pages'),
+        ];
+
+        return $breadcrumb;
+    }
+
+    protected function buildItemListStructuredData(array $pages, array $pageLinks): array
+    {
+        if (empty($pages)) {
+            return [];
+        }
+
+        $elements = [];
+        $fallbackPosition = 1;
+        $langId = (int) $this->context->language->id;
+
+        foreach ($pages as $page) {
+            $position = isset($page->position) ? (int) $page->position : $fallbackPosition;
+            if ($position <= 0) {
+                $position = $fallbackPosition;
+            }
+
+            $elements[] = [
+                '@type' => 'ListItem',
+                'position' => $position,
+                'url' => $pageLinks[(int) $page->id] ?? '',
+                'name' => $page->name[$langId] ?? '',
+            ];
+
+            ++$fallbackPosition;
+        }
+
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'name' => $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
+            'description' => $this->trans('Découvrez nos guides pratiques pour ...', [], 'Modules.Everblock.Front'),
+            'itemListElement' => $elements,
+        ];
     }
 }

@@ -39,6 +39,8 @@ class AdminEverBlockPageController extends ModuleAdminController
         $this->className = 'EverblockPage';
         $this->identifier = 'id_everblock_page';
         $this->context = Context::getContext();
+        $this->_defaultOrderBy = 'position';
+        $this->_orderWay = 'ASC';
 
         $this->_select = 'pl.name, pl.title';
         $this->_join = 'LEFT JOIN `' . _DB_PREFIX_ . 'everblock_page_lang` pl ON (pl.`id_everblock_page` = a.`id_everblock_page` AND pl.`id_lang` = ' . (int) $this->context->language->id . ')';
@@ -56,6 +58,11 @@ class AdminEverBlockPageController extends ModuleAdminController
             'title' => [
                 'title' => $this->l('Meta title'),
                 'align' => 'left',
+            ],
+            'position' => [
+                'title' => $this->l('Position'),
+                'align' => 'center',
+                'class' => 'fixed-width-sm',
             ],
             'id_shop' => [
                 'title' => $this->l('Shop'),
@@ -176,11 +183,26 @@ class AdminEverBlockPageController extends ModuleAdminController
                     'lang' => true,
                 ],
                 [
+                    'type' => 'textarea',
+                    'label' => $this->l('Short description'),
+                    'name' => 'short_description',
+                    'lang' => true,
+                    'autoload_rte' => true,
+                    'desc' => $this->l('Displayed on listing pages and as an optional intro on the page detail.'),
+                ],
+                [
                     'type' => 'text',
                     'label' => $this->l('Friendly URL'),
                     'name' => 'link_rewrite',
                     'lang' => true,
                     'hint' => $this->l('If empty, it will be generated from the page name'),
+                ],
+                [
+                    'type' => 'text',
+                    'label' => $this->l('Position'),
+                    'name' => 'position',
+                    'class' => 'fixed-width-sm',
+                    'desc' => $this->l('Lower numbers appear first in the listing. Left empty, the position will be set automatically.'),
                 ],
                 [
                     'type' => 'textarea',
@@ -224,12 +246,17 @@ class AdminEverBlockPageController extends ModuleAdminController
             $page->id_shop = (int) $this->context->shop->id;
             $page->active = (int) Tools::getValue('active');
             $page->groups = json_encode($this->getSelectedGroups());
+            $positionInput = Tools::getValue('position');
+            $page->position = ($positionInput === '' || $positionInput === null)
+                ? EverblockPage::getNextPosition((int) $this->context->shop->id)
+                : (int) $positionInput;
 
             foreach (Language::getLanguages(false) as $language) {
                 $langId = (int) $language['id_lang'];
                 $page->name[$langId] = Tools::getValue('name_' . $langId);
                 $page->title[$langId] = Tools::getValue('title_' . $langId);
                 $page->meta_description[$langId] = Tools::getValue('meta_description_' . $langId);
+                $page->short_description[$langId] = Tools::getValue('short_description_' . $langId, false);
                 $rewrite = Tools::getValue('link_rewrite_' . $langId);
                 if (!$rewrite) {
                     $rewrite = Tools::getValue('name_' . $langId);

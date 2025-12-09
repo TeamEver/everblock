@@ -112,6 +112,8 @@ return [
     'translations/it.php',
     'translations/nl.php',
     'upgrade/index.php',
+    'upgrade/upgrade-8.1.2.php',
+    'upgrade/upgrade-8.1.1.php',
     'upgrade/upgrade-8.0.7.php',
     'vendor/.htaccess',
     'vendor/autoload.php',

@@ -31,12 +31,14 @@ class EverblockPage extends ObjectModel
     public $groups;
     public $active;
     public $cover_image;
+    public $position;
     public $date_add;
     public $date_upd;
 
     public $name;
     public $title;
     public $meta_description;
+    public $short_description;
     public $link_rewrite;
     public $content;
 
@@ -70,6 +72,13 @@ class EverblockPage extends ObjectModel
                 'validate' => 'isFileName',
                 'required' => false,
             ],
+            'position' => [
+                'type' => self::TYPE_INT,
+                'lang' => false,
+                'validate' => 'isUnsignedInt',
+                'required' => false,
+                'default' => 0,
+            ],
             'date_add' => [
                 'type' => self::TYPE_DATE,
                 'lang' => false,
@@ -94,6 +103,12 @@ class EverblockPage extends ObjectModel
             ],
             'meta_description' => [
                 'type' => self::TYPE_STRING,
+                'lang' => true,
+                'validate' => 'isCleanHtml',
+                'required' => false,
+            ],
+            'short_description' => [
+                'type' => self::TYPE_HTML,
                 'lang' => true,
                 'validate' => 'isCleanHtml',
                 'required' => false,
@@ -140,6 +155,9 @@ class EverblockPage extends ObjectModel
     public function save($nullValues = false, $autoDate = true, $useCache = true)
     {
         $this->id_shop = static::resolveShopId((int) $this->id_shop);
+        if ($this->position === null) {
+            $this->position = static::getNextPosition($this->id_shop);
+        }
         $this->sanitizeLinkRewrite();
 
         return parent::save($nullValues, $autoDate, $useCache);
@@ -164,7 +182,7 @@ class EverblockPage extends ObjectModel
             $sql->where('p.active = 1');
         }
 
-        $sql->orderBy('p.date_add DESC');
+        $sql->orderBy('p.position ASC, p.date_add DESC');
 
         $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
         $pages = [];
@@ -210,6 +228,17 @@ class EverblockPage extends ObjectModel
         }
 
         return !empty(array_intersect($allowed, $customerGroups));
+    }
+
+    public static function getNextPosition(int $shopId): int
+    {
+        $shopId = static::resolveShopId($shopId);
+
+        $maxPosition = (int) Db::getInstance()->getValue(
+            'SELECT MAX(`position`) FROM `' . _DB_PREFIX_ . 'everblock_page` WHERE `id_shop` = ' . (int) $shopId
+        );
+
+        return $maxPosition + 1;
     }
 
     protected function sanitizeLinkRewrite(): void

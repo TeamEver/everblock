@@ -4779,6 +4779,7 @@ class EverblockTools extends ObjectModel
             'groups' => 'text DEFAULT NULL',
             'cover_image' => 'varchar(255) DEFAULT NULL',
             'active' => 'int(10) unsigned NOT NULL DEFAULT 1',
+            'position' => 'int(10) unsigned NOT NULL DEFAULT 0',
             'date_add' => 'DATETIME DEFAULT NULL',
             'date_upd' => 'DATETIME DEFAULT NULL',
         ];
@@ -4799,6 +4800,7 @@ class EverblockTools extends ObjectModel
             'name' => 'varchar(255) DEFAULT NULL',
             'title' => 'varchar(255) DEFAULT NULL',
             'meta_description' => 'text DEFAULT NULL',
+            'short_description' => 'text DEFAULT NULL',
             'link_rewrite' => 'varchar(255) DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
