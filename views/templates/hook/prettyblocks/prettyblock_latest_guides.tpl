@@ -47,7 +47,7 @@
               {if $guide->short_description || $guide->meta_description}
                 <div class="mb-3">{($guide->short_description|default:$guide->meta_description)|strip_tags|truncate:180:'...':true}</div>
               {/if}
-              {assign var='guide_link' value=Context::getContext()->link->getModuleLink('everblock', 'page', ['id_everblock_page' => $guide->id, 'rewrite' => $guide->link_rewrite[Context::getContext()->language->id] ?? ''])}
+              {assign var='guide_link' value=Context::getContext()->link->getModuleLink('everblock', 'page', ['id_everblock_page' => $guide->id, 'rewrite' => $guide->link_rewrite[Context::getContext()->language->id]|default:''])}
               <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="btn btn-primary">
                 {l s='Read guide' mod='everblock' d='Modules.Everblock.Front'}
               </a>
