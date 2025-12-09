@@ -160,6 +160,8 @@ class EverblockPrettyBlocks
             $mysteryBoxesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_mystery_boxes.tpl';
             $slotMachineTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_slot_machine.tpl';
             $pagesGuideTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pages_guide.tpl';
+            $guidesSelectionTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guides_selection.tpl';
+            $latestGuidesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_latest_guides.tpl';
             $slotMachineDefaultStartDate = date('Y-m-d 00:00:00');
             $slotMachineDefaultEndDate = date('Y-m-d 23:59:59', strtotime('+30 days'));
             $slotMachineDefaultWinningCombinations = json_encode(
@@ -3020,6 +3022,135 @@ class EverblockPrettyBlocks
                             'type' => 'textarea',
                             'label' => $module->l('Answers (one per line: "Answer label|Answer link")'),
                             'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Guide selection'),
+                'description' => $module->l('Display selected Everblock guides'),
+                'code' => 'everblock_guides_selection',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $guidesSelectionTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Block title'),
+                            'default' => '',
+                        ],
+                        'description' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Introduction'),
+                            'default' => '',
+                        ],
+                        'desktop_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on desktop'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '3',
+                        ],
+                        'tablet_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on tablet'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '2',
+                        ],
+                        'mobile_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on mobile'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '1',
+                        ],
+                    ], $module),
+                ],
+                'repeater' => [
+                    'name' => 'Guide',
+                    'nameFrom' => 'title',
+                    'groups' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom title (optional)'),
+                            'default' => '',
+                        ],
+                        'guide' => [
+                            'type' => 'selector',
+                            'label' => $module->l('Choose a guide'),
+                            'collection' => 'EverblockPage',
+                            'selector' => '{id} - {title}',
+                            'default' => '',
+                        ],
+                        'summary' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Summary'),
+                            'default' => '',
+                        ],
+                        'cta_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA label'),
+                            'default' => $module->l('Read guide'),
+                        ],
+                        'target_blank' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Open in a new tab'),
+                            'default' => 0,
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Latest guides'),
+                'description' => $module->l('Display the most recent Everblock guides'),
+                'code' => 'everblock_latest_guides',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $latestGuidesTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Block title'),
+                            'default' => '',
+                        ],
+                        'description' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Introduction'),
+                            'default' => '',
+                        ],
+                        'limit' => [
+                            'type' => 'text',
+                            'label' => $module->l('Number of guides to display'),
+                            'default' => 3,
+                        ],
+                        'desktop_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on desktop'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '3',
+                        ],
+                        'tablet_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on tablet'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '2',
+                        ],
+                        'mobile_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on mobile'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '1',
                         ],
                     ], $module),
                 ],
