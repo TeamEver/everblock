@@ -1362,7 +1362,6 @@ class Everblock extends Module
 
         $tabs = [
             'settings' => $this->l('Réglages'),
-            'stats' => $this->l('Statistiques'),
             'meta_tools' => $this->l('Meta Tools'),
             'wordpress_tools' => $this->l('WordPress Tools'),
             'google_maps' => $this->l('Google Tools'),
@@ -1400,7 +1399,6 @@ class Everblock extends Module
 
         $docTemplates = [
             'settings' => 'settings.tpl',
-            'stats' => 'stats.tpl',
             'meta_tools' => 'meta_tools.tpl',
             'wordpress_tools' => 'wordpress_tools.tpl',
             'google_maps' => 'google_maps.tpl',
