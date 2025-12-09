@@ -136,7 +136,7 @@ class AdminEverBlockPageController extends ModuleAdminController
 
         $coverImage = false;
         if ($obj->id && $obj->cover_image) {
-            $coverImage = _MODULE_DIR_ . 'everblock/views/img/pages/' . $obj->cover_image;
+            $coverImage = _PS_IMG_ . 'pages/' . $obj->cover_image;
         }
 
         $this->fields_form = [
@@ -310,9 +310,14 @@ class AdminEverBlockPageController extends ModuleAdminController
             return false;
         }
 
+        $destination = _PS_IMG_DIR_ . 'pages/';
+        if (!is_dir($destination)) {
+            @mkdir($destination, 0755, true);
+        }
+
         $uploader = new HelperUploader('cover_image');
         $uploader->setAcceptTypes(['jpg', 'jpeg', 'png', 'gif']);
-        $uploader->setSavePath(_PS_MODULE_DIR_ . 'everblock/views/img/pages/');
+        $uploader->setSavePath($destination);
         $uploader->setMaxSize((int) Configuration::get('PS_ATTACHMENT_MAXIMUM_SIZE') * 1024 * 1024);
         $files = $uploader->process($_FILES['cover_image']);
 
