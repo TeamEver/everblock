@@ -979,13 +979,18 @@ class Everblock extends Module
             $this->name,
             'pages'
         );
-        $faqFrontTag = EverblockFaq::getFirstActiveTagName((int) $this->context->shop->id);
+        $shopId = (int) $this->context->shop->id;
+        $faqFrontTag = EverblockFaq::getFirstActiveTagName($shopId);
         $faqFrontLink = $faqFrontTag ? $this->context->link->getModuleLink(
             $this->name,
             'faqs',
             [
                 'tag' => $faqFrontTag,
             ]
+        ) : null;
+        $faqAllFrontLink = EverblockFaq::countAllActive($shopId) > 0 ? $this->context->link->getModuleLink(
+            $this->name,
+            'faqs'
         ) : null;
         $cronLinks = [];
         $cronToken = $this->encrypt($this->name . '/evercron');
@@ -1023,6 +1028,7 @@ class Everblock extends Module
             'everblock_guide_front_link' => $guideFrontLink,
             'everblock_faq_front_link' => $faqFrontLink,
             'everblock_faq_front_tag' => $faqFrontTag,
+            'everblock_all_faqs_front_link' => $faqAllFrontLink,
         ]);
         $output = $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'
