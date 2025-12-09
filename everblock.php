@@ -5767,7 +5767,11 @@ class Everblock extends Module
                 'controller' => 'faqs',
                 'rule' => $faqBase . '/{tag}',
                 'keywords' => [
-                    'tag' => ['regexp' => '[_a-zA-Z0-9\pL-]+', 'param' => 'tag'],
+                    'tag' => [
+                        'regexp' => '[_a-zA-Z0-9\pL-]*',
+                        'param' => 'tag',
+                        'required' => false,
+                    ],
                 ],
                 'params' => [
                     'fc' => 'module',
