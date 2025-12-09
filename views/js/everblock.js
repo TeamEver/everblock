@@ -3315,6 +3315,29 @@ $(document).ready(function(){
         });
     }
 
+    var $everblockImageModal = $('#everblockImageModal');
+    if ($everblockImageModal.length) {
+        $(document).on('click', '.everblock-page__content img', function (event) {
+            var $clickedImage = $(this);
+            var imageSrc = $clickedImage.attr('src');
+            if (!imageSrc) {
+                return;
+            }
+            event.preventDefault();
+            var imageAlt = $clickedImage.attr('alt') || '';
+            var imageTitle = $clickedImage.attr('title') || imageAlt;
+            var $modalImage = $everblockImageModal.find('.everblock-image-modal__img');
+            $modalImage.attr('src', imageSrc).attr('alt', imageAlt);
+            var $caption = $everblockImageModal.find('.everblock-image-modal__caption');
+            if (imageTitle) {
+                $caption.text(imageTitle).removeClass('d-none');
+            } else {
+                $caption.addClass('d-none').text('');
+            }
+            $everblockImageModal.modal('show');
+        });
+    }
+
     // Exit intent modal
     var exitIntentShown = false;
     $(document).on('mouseout', function(e) {
