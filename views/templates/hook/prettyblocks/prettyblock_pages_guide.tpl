@@ -40,18 +40,21 @@
         {foreach from=$block.states item=state key=key}
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_pages_guide_state_spacing_style'}
           {assign var='page_id' value=$state.page.id|default:null}
-          {assign var='page_link' value='#'}
+          {assign var='page_link' value=''}
           {if $page_id}
             {assign var='page_link' value=Context::getContext()->link->getCMSLink($page_id)}
           {/if}
           {assign var='page_title' value=$state.title|default:$state.page.meta_title|default:''}
           <div class="col mb-4">
-            <div id="block-{$block.id_prettyblocks}-{$key}" class="prettyblock-guide-card h-100{if $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="{$prettyblock_pages_guide_state_spacing_style}">
+            <div id="block-{$block.id_prettyblocks}-{$key}" class="prettyblock-guide-card h-100 position-relative{if $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="{$prettyblock_pages_guide_state_spacing_style}">
               {if $page_title}
                 <p class="h5">{$page_title|escape:'htmlall':'UTF-8'}</p>
               {/if}
               {if $state.summary}
                 <div class="mb-3">{$state.summary nofilter}</div>
+              {/if}
+              {if $page_link}
+                <a href="{$page_link|escape:'htmlall':'UTF-8'}" class="stretched-link"{if $state.target_blank} target="_blank" rel="noopener"{/if}></a>
               {/if}
               {if $page_link && $state.cta_text}
                 <a href="{$page_link|escape:'htmlall':'UTF-8'}" class="btn btn-primary"{if $state.target_blank} target="_blank" rel="noopener"{/if}>
