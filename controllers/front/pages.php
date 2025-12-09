@@ -56,7 +56,6 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign([
             'everblock_pages' => $pages,
             'everblock_page_links' => $pageLinks,
-            'everblock_lang_id' => (int) $this->context->language->id,
             'everblock_structured_data' => $structuredData,
             'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
             'everblock_prettyblocks_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone' : '',

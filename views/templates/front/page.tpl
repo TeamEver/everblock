@@ -1,21 +1,21 @@
 {extends file='page.tpl'}
 
 {block name='page_title'}
-  {$everblock_page->title[$everblock_lang_id]|default:''}
+  {$everblock_page->title|default:''}
 {/block}
 
 {block name='page_content'}
   <article class="everblock-page" itemscope itemtype="https://schema.org/Article">
     <header class="everblock-page__header">
-      <h1 itemprop="headline">{$everblock_page->name[$everblock_lang_id]|default:''}</h1>
+      <h1 itemprop="headline">{$everblock_page->name|default:''}</h1>
       {if $everblock_page_image}
         <figure class="everblock-page__cover">
-            <img src="{$everblock_page_image}" alt="{$everblock_page->title[$everblock_lang_id]|default:''|escape:'htmlall':'UTF-8'}" loading="lazy" itemprop="image">
+            <img src="{$everblock_page_image}" alt="{$everblock_page->title|default:''|escape:'htmlall':'UTF-8'}" loading="lazy" itemprop="image">
         </figure>
       {/if}
-      {if $everblock_page->short_description[$everblock_lang_id]}
+      {if $everblock_page->short_description}
         <div class="everblock-page__intro rte" itemprop="description">
-          {$everblock_page->short_description[$everblock_lang_id] nofilter}
+          {$everblock_page->short_description nofilter}
         </div>
       {/if}
       {if $everblock_page->date_add}
