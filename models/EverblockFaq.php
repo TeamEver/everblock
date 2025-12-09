@@ -190,6 +190,53 @@ class EverblockFaq extends ObjectModel
         return EverblockCache::cacheRetrieve($cache_id);
     }
 
+    public static function countActiveByTagName(int $shopId, string $tagName): int
+    {
+        $sql = new DbQuery();
+        $sql->select('COUNT(*)');
+        $sql->from(self::$definition['table']);
+        $sql->where('id_shop = ' . (int) $shopId);
+        $sql->where('tag_name = "' . pSQL($tagName) . '"');
+        $sql->where('active = 1');
+
+        return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+    }
+
+    public static function getFaqByTagNamePaginated(
+        int $shopId,
+        int $langId,
+        string $tagName,
+        int $page,
+        int $limit
+    ): array {
+        $shopId = (int) $shopId;
+        $langId = (int) $langId;
+        $page = max(1, (int) $page);
+        $limit = max(1, (int) $limit);
+        $offset = ($page - 1) * $limit;
+
+        $sql = new DbQuery();
+        $sql->select('*');
+        $sql->from(self::$definition['table']);
+        $sql->where('id_shop = ' . $shopId);
+        $sql->where('tag_name = "' . pSQL($tagName) . '"');
+        $sql->where('active = 1');
+        $sql->orderBy('position ASC');
+        $sql->limit($limit, $offset);
+
+        $faqs = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        $return = [];
+        foreach ($faqs as $faq) {
+            $return[] = new self(
+                (int) $faq[self::$definition['primary']],
+                $langId,
+                $shopId
+            );
+        }
+
+        return $return;
+    }
+
     public static function getByIds(array $faqIds, int $langId, ?int $shopId = null, bool $onlyActive = true): array
     {
         $faqIds = array_values(array_unique(array_filter(array_map('intval', $faqIds))));

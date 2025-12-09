@@ -144,6 +144,8 @@ class Everblock extends Module
         Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL', '');
         Configuration::updateValue('EVERBLOCK_PAGES_BASE_URL', 'guide');
         Configuration::updateValue('EVERBLOCK_PAGES_PER_PAGE', 9);
+        Configuration::updateValue('EVERBLOCK_FAQ_BASE_URL', 'faq');
+        Configuration::updateValue('EVERBLOCK_FAQ_PER_PAGE', 10);
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -259,6 +261,8 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL');
         Configuration::deleteByName('EVERBLOCK_PAGES_BASE_URL');
         Configuration::deleteByName('EVERBLOCK_PAGES_PER_PAGE');
+        Configuration::deleteByName('EVERBLOCK_FAQ_BASE_URL');
+        Configuration::deleteByName('EVERBLOCK_FAQ_PER_PAGE');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
@@ -1657,6 +1661,19 @@ class Everblock extends Module
                 'desc' => $this->l('Number of guides to display on the listing page'),
                 'name' => 'EVERBLOCK_PAGES_PER_PAGE',
             ],
+            [
+                'type' => 'text',
+                'label' => $this->l('FAQ base URL'),
+                'desc' => $this->l('Base path used for the FAQ tag routes'),
+                'hint' => $this->l('Leave empty to keep the default "faq" value'),
+                'name' => 'EVERBLOCK_FAQ_BASE_URL',
+            ],
+            [
+                'type' => 'text',
+                'label' => $this->l('FAQ per page'),
+                'desc' => $this->l('Number of FAQs to display for each tag page'),
+                'name' => 'EVERBLOCK_FAQ_PER_PAGE',
+            ],
         ];
 
         foreach ($pagesInputs as $input) {
@@ -2482,6 +2499,8 @@ class Everblock extends Module
             'EVER_SOLDOUT_TEXTCOLOR' => Configuration::get('EVER_SOLDOUT_TEXTCOLOR'),
             'EVERBLOCK_PAGES_BASE_URL' => Configuration::get('EVERBLOCK_PAGES_BASE_URL') ?: 'guide',
             'EVERBLOCK_PAGES_PER_PAGE' => Configuration::get('EVERBLOCK_PAGES_PER_PAGE') ?: 9,
+            'EVERBLOCK_FAQ_BASE_URL' => Configuration::get('EVERBLOCK_FAQ_BASE_URL') ?: 'faq',
+            'EVERBLOCK_FAQ_PER_PAGE' => Configuration::get('EVERBLOCK_FAQ_PER_PAGE') ?: 10,
             'EVERPSCSS' => $custom_css,
             'EVERPSJS' => $custom_js,
             'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
@@ -2855,6 +2874,22 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_PAGES_PER_PAGE',
             $pagesPerPage
+        );
+        $faqBaseUrl = trim((string) Tools::getValue('EVERBLOCK_FAQ_BASE_URL'));
+        if ($faqBaseUrl === '') {
+            $faqBaseUrl = 'faq';
+        }
+        Configuration::updateValue(
+            'EVERBLOCK_FAQ_BASE_URL',
+            Tools::link_rewrite($faqBaseUrl)
+        );
+        $faqPerPage = (int) Tools::getValue('EVERBLOCK_FAQ_PER_PAGE');
+        if ($faqPerPage <= 0) {
+            $faqPerPage = 10;
+        }
+        Configuration::updateValue(
+            'EVERBLOCK_FAQ_PER_PAGE',
+            $faqPerPage
         );
         $googleReviewsLimit = (int) Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT');
         if ($googleReviewsLimit <= 0) {
@@ -5675,6 +5710,9 @@ class Everblock extends Module
         $base = Configuration::get('EVERBLOCK_PAGES_BASE_URL') ?: 'guide';
         $base = Tools::link_rewrite($base ? (string) $base : 'guide');
 
+        $faqBase = Configuration::get('EVERBLOCK_FAQ_BASE_URL') ?: 'faq';
+        $faqBase = Tools::link_rewrite($faqBase ? (string) $faqBase : 'faq');
+
         return [
             'module-everblock-pages' => [
                 'controller' => 'pages',
@@ -5691,6 +5729,17 @@ class Everblock extends Module
                 'keywords' => [
                     'id_everblock_page' => ['regexp' => '[0-9]+', 'param' => 'id_everblock_page'],
                     'rewrite' => ['regexp' => '[_a-zA-Z0-9\pL-]+', 'param' => 'rewrite'],
+                ],
+                'params' => [
+                    'fc' => 'module',
+                    'module' => $this->name,
+                ],
+            ],
+            'module-everblock-faqs' => [
+                'controller' => 'faqs',
+                'rule' => $faqBase . '/{tag}',
+                'keywords' => [
+                    'tag' => ['regexp' => '[_a-zA-Z0-9\pL-]+', 'param' => 'tag'],
                 ],
                 'params' => [
                     'fc' => 'module',
