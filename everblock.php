@@ -28,6 +28,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTabsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
+require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
 
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
@@ -141,6 +142,7 @@ class Everblock extends Module
         Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA', 1);
         Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL', $this->l('Read all reviews on Google'));
         Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL', '');
+        Configuration::updateValue('EVERBLOCK_PAGES_BASE_URL', 'guide');
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -204,13 +206,15 @@ class Everblock extends Module
             && $this->registerHook('displayHeader')
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->registerHook('actionRegisterBlock')
+            && $this->registerHook('moduleRoutes')
             && $this->registerHook('beforeRenderingEverblockSpecialEvent')
             && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
             && $this->installModuleTab('AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'))
             && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
             && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
             && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes'))
-            && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'));
+            && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'))
+            && $this->installModuleTab('AdminEverBlockPage', 'AdminEverBlockParent', $this->l('Pages'));
 
         if ($installed) {
             $this->importLegacyTranslations();
@@ -252,13 +256,15 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA');
         Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL');
         Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL');
+        Configuration::deleteByName('EVERBLOCK_PAGES_BASE_URL');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
             && $this->uninstallModuleTab('AdminEverBlock')
             && $this->uninstallModuleTab('AdminEverBlockHook')
             && $this->uninstallModuleTab('AdminEverBlockShortcode')
-            && $this->uninstallModuleTab('AdminEverBlockFaq'));
+            && $this->uninstallModuleTab('AdminEverBlockFaq')
+            && $this->uninstallModuleTab('AdminEverBlockPage'));
     }
 
     public function l($string, $specific = null, $idLang = null)
@@ -693,6 +699,18 @@ class Everblock extends Module
             }
             $tab->add();
         }
+        $id_tab = Tab::getIdFromClassName('AdminEverBlockPage');
+        if (!$id_tab) {
+            $tab = new Tab();
+            $tab->class_name = 'AdminEverBlockPage';
+            $tab->module = $this->name;
+            $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
+            $tab->position = Tab::getNewLastPosition($tab->id_parent);
+            foreach (Language::getLanguages(false) as $lang) {
+                $tab->name[(int) $lang['id_lang']] = $this->l('Pages');
+            }
+            $tab->add();
+        }
         $this->registerHook('displayContentWrapperTop');
         $this->registerHook('actionCmsPageFormBuilderModifier');
         $this->registerHook('actionObjectCmsUpdateAfter');
@@ -939,6 +957,10 @@ class Everblock extends Module
             'configure' => $this->name,
             'module_name' => $this->name,
         ]);
+        $pagesAdminLink = $this->context->link->getAdminLink('AdminEverBlockPage', true, [], [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ]);
         $hookAdminLink = $this->context->link->getAdminLink('AdminEverBlockHook', true, [], [
             'configure' => $this->name,
             'module_name' => $this->name,
@@ -968,6 +990,7 @@ class Everblock extends Module
             $this->name . '_dir' => $this->_path,
             'block_admin_link' => $blockAdminLink,
             'faq_admin_link' => $faqAdminLink,
+            'pages_admin_link' => $pagesAdminLink,
             'hook_admin_link' => $hookAdminLink,
             'shortcode_admin_link' => $shortcodeAdminLink,
             'cron_links' => $cronLinks,
@@ -1326,6 +1349,7 @@ class Everblock extends Module
             'tools' => $this->l('Outils'),
             'files' => $this->l('Gestionnaire de fichiers'),
             'flags' => $this->l('Flags'),
+            'pages' => $this->l('Pages'),
         ];
 
         $isPrettyBlocksEnabled = (bool) Module::isInstalled('prettyblocks') === true
@@ -1363,6 +1387,7 @@ class Everblock extends Module
             'tools' => 'tools.tpl',
             'files' => 'files.tpl',
             'flags' => 'flags.tpl',
+            'pages' => 'pages.tpl',
         ];
 
         $docTemplates['cron'] = 'cron.tpl';
@@ -1613,6 +1638,21 @@ class Everblock extends Module
 
         foreach ($settingsInputs as $input) {
             $input['tab'] = 'settings';
+            $form['form']['input'][] = $input;
+        }
+
+        $pagesInputs = [
+            [
+                'type' => 'text',
+                'label' => $this->l('Pages base URL'),
+                'desc' => $this->l('Base path used for the guide pages routes'),
+                'hint' => $this->l('Leave empty to keep the default "guide" value'),
+                'name' => 'EVERBLOCK_PAGES_BASE_URL',
+            ],
+        ];
+
+        foreach ($pagesInputs as $input) {
+            $input['tab'] = 'pages';
             $form['form']['input'][] = $input;
         }
 
@@ -2432,6 +2472,7 @@ class Everblock extends Module
             'EVERBLOCK_SOLDOUT_FLAG' => Configuration::get('EVERBLOCK_SOLDOUT_FLAG'),
             'EVER_SOLDOUT_COLOR' => Configuration::get('EVER_SOLDOUT_COLOR'),
             'EVER_SOLDOUT_TEXTCOLOR' => Configuration::get('EVER_SOLDOUT_TEXTCOLOR'),
+            'EVERBLOCK_PAGES_BASE_URL' => Configuration::get('EVERBLOCK_PAGES_BASE_URL') ?: 'guide',
             'EVERPSCSS' => $custom_css,
             'EVERPSJS' => $custom_js,
             'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
@@ -2473,6 +2514,7 @@ class Everblock extends Module
             'blocks_active' => $this->countTableRecords('everblock', 'id_shop = ' . $idShop . ' AND active = 1'),
             'shortcodes' => $this->countTableRecords('everblock_shortcode', 'id_shop = ' . $idShop),
             'faqs' => $this->countTableRecords('everblock_faq', 'id_shop = ' . $idShop),
+            'pages' => $this->countTableRecords('everblock_page', 'id_shop = ' . $idShop),
             'tabs' => $this->countTableRecords('everblock_tabs', 'id_shop = ' . $idShop),
             'flags' => $this->countTableRecords('everblock_flags', 'id_shop = ' . $idShop),
             'modals' => $this->countTableRecords('everblock_modal', 'id_shop = ' . $idShop),
@@ -2789,6 +2831,14 @@ class Everblock extends Module
             'EVERWP_POST_NBR',
             Tools::getValue('EVERWP_POST_NBR')
         );
+        $pagesBaseUrl = trim((string) Tools::getValue('EVERBLOCK_PAGES_BASE_URL'));
+        if ($pagesBaseUrl === '') {
+            $pagesBaseUrl = 'guide';
+        }
+        Configuration::updateValue(
+            'EVERBLOCK_PAGES_BASE_URL',
+            Tools::link_rewrite($pagesBaseUrl)
+        );
         $googleReviewsLimit = (int) Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT');
         if ($googleReviewsLimit <= 0) {
             $googleReviewsLimit = 5;
@@ -3082,6 +3132,7 @@ class Everblock extends Module
             'AdminEverBlockFaqController',
             'AdminEverBlockHookController',
             'AdminEverBlockShortcodeController',
+            'AdminEverBlockPageController',
         ];
 
         if (!$isModuleConfiguration && !in_array($controller, $moduleControllers, true)) {
@@ -5600,5 +5651,35 @@ class Everblock extends Module
         }
 
         return Tools::encrypt($data);
+    }
+
+    public function hookModuleRoutes($params)
+    {
+        $base = Configuration::get('EVERBLOCK_PAGES_BASE_URL') ?: 'guide';
+        $base = Tools::link_rewrite($base ? (string) $base : 'guide');
+
+        return [
+            'module-everblock-pages' => [
+                'controller' => 'pages',
+                'rule' => $base,
+                'keywords' => [],
+                'params' => [
+                    'fc' => 'module',
+                    'module' => $this->name,
+                ],
+            ],
+            'module-everblock-page' => [
+                'controller' => 'page',
+                'rule' => $base . '/{id_everblock_page}-{rewrite}',
+                'keywords' => [
+                    'id_everblock_page' => ['regexp' => '[0-9]+', 'param' => 'id_everblock_page'],
+                    'rewrite' => ['regexp' => '[_a-zA-Z0-9\pL-]+', 'param' => 'rewrite'],
+                ],
+                'params' => [
+                    'fc' => 'module',
+                    'module' => $this->name,
+                ],
+            ],
+        ];
     }
 }

@@ -172,6 +172,29 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_game_play` (
         PRIMARY KEY (`id_everblock_game_play`))
         ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
+// Pages
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_page` (
+        `id_everblock_page` int(10) unsigned NOT NULL auto_increment,
+        `id_shop` int(10) unsigned NOT NULL DEFAULT 1,
+        `groups` text DEFAULT NULL,
+        `cover_image` varchar(255) DEFAULT NULL,
+        `active` int(10) unsigned NOT NULL DEFAULT 1,
+        `date_add` DATETIME DEFAULT NULL,
+        `date_upd` DATETIME DEFAULT NULL,
+        PRIMARY KEY (`id_everblock_page`, `id_shop`)
+    ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_page_lang` (
+        `id_everblock_page` int(10) unsigned NOT NULL,
+        `id_lang` int(10) unsigned NOT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `title` varchar(255) DEFAULT NULL,
+        `meta_description` text DEFAULT NULL,
+        `link_rewrite` varchar(255) DEFAULT NULL,
+        `content` text DEFAULT NULL,
+        PRIMARY KEY (`id_everblock_page`, `id_lang`)
+    ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
 foreach ($sql as $s) {
     if (!Db::getInstance()->execute($s)) {
         return false;

@@ -4541,6 +4541,8 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_modal',
             _DB_PREFIX_ . 'everblock_modal_lang',
             _DB_PREFIX_ . 'everblock_game_play',
+            _DB_PREFIX_ . 'everblock_page',
+            _DB_PREFIX_ . 'everblock_page_lang',
         ];
         $tableExists = false;
         foreach ($tableNames as $tableName) {
@@ -4768,6 +4770,46 @@ class EverblockTools extends ObjectModel
                     $db->execute($query);
                 } catch (Exception $e) {
                     PrestaShopLogger::addLog('Unable to update Ever Block game play database');
+                }
+            }
+        }
+        // Ajoute les colonnes manquantes à la table everblock_page
+        $columnsToAdd = [
+            'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
+            'groups' => 'text DEFAULT NULL',
+            'cover_image' => 'varchar(255) DEFAULT NULL',
+            'active' => 'int(10) unsigned NOT NULL DEFAULT 1',
+            'date_add' => 'DATETIME DEFAULT NULL',
+            'date_upd' => 'DATETIME DEFAULT NULL',
+        ];
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_page` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_page` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block page database');
+                }
+            }
+        }
+        // Ajoute les colonnes manquantes à la table everblock_page_lang
+        $columnsToAdd = [
+            'id_lang' => 'int(10) unsigned NOT NULL',
+            'name' => 'varchar(255) DEFAULT NULL',
+            'title' => 'varchar(255) DEFAULT NULL',
+            'meta_description' => 'text DEFAULT NULL',
+            'link_rewrite' => 'varchar(255) DEFAULT NULL',
+            'content' => 'text DEFAULT NULL',
+        ];
+        foreach ($columnsToAdd as $columnName => $columnDefinition) {
+            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_page_lang` `' . pSQL($columnName) . '`');
+            if (!$columnExists) {
+                try {
+                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_page_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $db->execute($query);
+                } catch (Exception $e) {
+                    PrestaShopLogger::addLog('Unable to update Ever Block page lang database');
                 }
             }
         }
