@@ -85,7 +85,8 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             'everblock_page_links' => $pageLinks,
             'everblock_structured_data' => $structuredData,
             'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
-            'everblock_prettyblocks_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone' : '',
+            'everblock_prettyblocks_top_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone_top' : '',
+            'everblock_prettyblocks_bottom_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone_bottom' : '',
             'everblock_pagination' => $pagination,
         ]);
 

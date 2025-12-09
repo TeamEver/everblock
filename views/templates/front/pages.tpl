@@ -5,6 +5,10 @@
 {/block}
 
 {block name='page_content'}
+  {if $everblock_prettyblocks_enabled}
+    {prettyblocks_zone zone_name=$everblock_prettyblocks_top_zone_name}
+  {/if}
+
   <section class="everblock-pages-list">
     {if $everblock_pages|@count}
       <div class="row">
@@ -81,7 +85,7 @@
   </section>
 
   {if $everblock_prettyblocks_enabled}
-    {prettyblocks_zone zone_name=$everblock_prettyblocks_zone_name}
+    {prettyblocks_zone zone_name=$everblock_prettyblocks_bottom_zone_name}
   {/if}
 
   {if !empty($everblock_structured_data)}
