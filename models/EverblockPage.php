@@ -261,6 +261,47 @@ class EverblockPage extends ObjectModel
         return $count;
     }
 
+    /**
+     * Retrieve cover image data with width/height for layout stability.
+     */
+    public function getCoverImageData(Context $context): array
+    {
+        if (!$this->cover_image) {
+            return [
+                'url' => '',
+                'width' => 0,
+                'height' => 0,
+                'alt' => $this->title ?: $this->name ?: '',
+            ];
+        }
+
+        $imagePath = _PS_IMG_DIR_ . 'pages/' . $this->cover_image;
+        $imageUrl = $context->link->getMediaLink(_PS_IMG_ . 'pages/' . $this->cover_image);
+        $width = 0;
+        $height = 0;
+
+        if (is_file($imagePath)) {
+            $imageSize = @getimagesize($imagePath);
+
+            if ($imageSize) {
+                $width = (int) $imageSize[0];
+                $height = (int) $imageSize[1];
+            }
+        }
+
+        if ($width <= 0 || $height <= 0) {
+            $width = 1200;
+            $height = 675;
+        }
+
+        return [
+            'url' => $imageUrl,
+            'width' => $width,
+            'height' => $height,
+            'alt' => $this->title ?: $this->name ?: '',
+        ];
+    }
+
     public static function getById(int $pageId, int $langId, ?int $shopId = null): ?self
     {
         $shopId = static::resolveShopId($shopId);
