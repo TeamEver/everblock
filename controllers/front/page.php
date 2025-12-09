@@ -115,7 +115,7 @@ class EverblockPageModuleFrontController extends ModuleFrontController
 
         if ($this->ensureEverblockPage() instanceof EverblockPage) {
             $breadcrumb['links'][] = [
-                'title' => $this->everblockPage->name,
+                'title' => $this->everblockPage->title,
                 'url' => '',
             ];
         }

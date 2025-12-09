@@ -163,7 +163,7 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
                 '@type' => 'ListItem',
                 'position' => $position,
                 'url' => $pageLinks[(int) $page->id] ?? '',
-                'name' => $page->name,
+                'name' => $page->title,
             ];
 
             ++$fallbackPosition;
