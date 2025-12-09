@@ -70,7 +70,7 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
 
         $breadcrumb['links'][] = [
             'title' => $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
-            'url' => $this->context->link->getModuleLink($this->module->name, 'pages'),
+            'url' => '',
         ];
 
         return $breadcrumb;

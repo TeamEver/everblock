@@ -39,12 +39,11 @@ class EverblockPageModuleFrontController extends ModuleFrontController
     {
         parent::initContent();
 
-        $pageId = (int) Tools::getValue('id_everblock_page');
         $rewrite = Tools::getValue('rewrite');
         $customerGroups = EverblockPage::getCustomerGroups($this->context);
 
-        $page = EverblockPage::getById($pageId, (int) $this->context->language->id, (int) $this->context->shop->id);
-        if (!$page || !$page->active || !EverblockPage::isGroupAllowed($page, $customerGroups)) {
+        $page = $this->ensureEverblockPage($customerGroups);
+        if (!$page) {
             Tools::redirect('index.php?controller=404');
 
             return;
@@ -113,17 +112,10 @@ class EverblockPageModuleFrontController extends ModuleFrontController
             'url' => $this->context->link->getModuleLink($this->module->name, 'pages'),
         ];
 
-        if ($this->everblockPage instanceof EverblockPage) {
+        if ($this->ensureEverblockPage() instanceof EverblockPage) {
             $breadcrumb['links'][] = [
                 'title' => $this->everblockPage->name,
-                'url' => $this->context->link->getModuleLink(
-                    $this->module->name,
-                    'page',
-                    [
-                        'id_everblock_page' => (int) $this->everblockPage->id,
-                        'rewrite' => $this->everblockPage->link_rewrite,
-                    ]
-                ),
+                'url' => '',
             ];
         }
 
@@ -142,6 +134,35 @@ class EverblockPageModuleFrontController extends ModuleFrontController
         return (bool) Module::isInstalled('prettyblocks') === true
             && (bool) Module::isEnabled('prettyblocks') === true
             && (bool) Everblock\Tools\Service\EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+    }
+
+    protected function ensureEverblockPage(array $customerGroups = []): ?EverblockPage
+    {
+        if ($this->everblockPage instanceof EverblockPage) {
+            return $this->everblockPage;
+        }
+
+        $pageId = (int) Tools::getValue('id_everblock_page');
+        if ($pageId <= 0) {
+            return null;
+        }
+
+        $page = EverblockPage::getById($pageId, (int) $this->context->language->id, (int) $this->context->shop->id);
+        if (!$page) {
+            return null;
+        }
+
+        if (empty($customerGroups)) {
+            $customerGroups = EverblockPage::getCustomerGroups($this->context);
+        }
+
+        if (!$page->active || !EverblockPage::isGroupAllowed($page, $customerGroups)) {
+            return null;
+        }
+
+        $this->everblockPage = $page;
+
+        return $this->everblockPage;
     }
 
     protected function buildItemListStructuredData(array $pages, array $pageLinks): array
