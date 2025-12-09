@@ -50,5 +50,24 @@
     <script type="application/ld+json">
       {$everblock_structured_data|json_encode:$smarty.const.JSON_UNESCAPED_SLASHES|replace:'\/':'/' nofilter}
     </script>
+  {elseif !empty($everblock_faqs)}
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {foreach from=$everblock_faqs item=faq name=faqjson}
+            {
+              "@type": "Question",
+              "name": "{$faq->title|escape:'javascript'}",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "{strip_tags($faq->content)|escape:'javascript'}"
+              }
+            }{if !$smarty.foreach.faqjson.last},{/if}
+          {/foreach}
+        ]
+      }
+    </script>
   {/if}
 {/block}
