@@ -332,6 +332,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_mystery_boxes.tpl',
     'views/templates/hook/prettyblocks/prettyblock_podcasts.tpl',
     'views/templates/hook/prettyblocks/prettyblock_pricing_table.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_pages_guide.tpl',
     'views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl',
     'views/templates/hook/prettyblocks/prettyblock_product_selector.tpl',
     'views/templates/hook/prettyblocks/prettyblock_reassurance.tpl',

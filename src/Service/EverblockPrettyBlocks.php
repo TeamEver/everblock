@@ -159,6 +159,7 @@ class EverblockPrettyBlocks
             $wheelTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_wheel_of_fortune.tpl';
             $mysteryBoxesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_mystery_boxes.tpl';
             $slotMachineTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_slot_machine.tpl';
+            $pagesGuideTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pages_guide.tpl';
             $slotMachineDefaultStartDate = date('Y-m-d 00:00:00');
             $slotMachineDefaultEndDate = date('Y-m-d 23:59:59', strtotime('+30 days'));
             $slotMachineDefaultWinningCombinations = json_encode(
@@ -3018,6 +3019,87 @@ class EverblockPrettyBlocks
                         'answers' => [
                             'type' => 'textarea',
                             'label' => $module->l('Answers (one per line: "Answer label|Answer link")'),
+                            'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Guide pages'),
+                'description' => $module->l('Display a curated list of CMS pages'),
+                'code' => 'everblock_pages_guide',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $pagesGuideTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Block title'),
+                            'default' => $module->l('Our guides'),
+                        ],
+                        'description' => [
+                            'type' => 'editor',
+                            'label' => $module->l('Introduction'),
+                            'default' => '',
+                        ],
+                        'desktop_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on desktop'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '3',
+                        ],
+                        'tablet_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on tablet'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '2',
+                        ],
+                        'mobile_columns' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns on mobile'),
+                            'choices' => static::getColumnChoices($module),
+                            'default' => '1',
+                        ],
+                    ], $module),
+                ],
+                'repeater' => [
+                    'name' => 'Page',
+                    'nameFrom' => 'title',
+                    'groups' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Page title (optional)'),
+                            'default' => '',
+                        ],
+                        'page' => [
+                            'type' => 'selector',
+                            'label' => $module->l('Choose a CMS page'),
+                            'collection' => 'CmsPage',
+                            'selector' => '{id} - {meta_title}',
+                            'default' => '',
+                        ],
+                        'summary' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Summary'),
+                            'default' => '',
+                        ],
+                        'cta_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA label'),
+                            'default' => $module->l('Read more'),
+                        ],
+                        'target_blank' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Open in a new tab'),
+                            'default' => 0,
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
                     ], $module),
