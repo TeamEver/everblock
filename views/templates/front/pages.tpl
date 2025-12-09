@@ -39,19 +39,6 @@
                 {elseif $page->meta_description}
                   <p class="card-text text-muted">{$page->meta_description|truncate:180:'...':true}</p>
                 {/if}
-                <div class="d-flex flex-wrap align-items-center mt-auto small text-muted">
-                  {if $page->date_add}
-                    <span class="badge badge-light text-dark border mr-2 mb-2">
-                      <i class="material-icons align-middle mr-1">event</i>
-                      {$page->date_add|date_format:"%d %B %Y"}
-                    </span>
-                  {/if}
-                  {if $page->date_upd}
-                    <span class="badge badge-info mb-2">
-                      {l s='Updated on %s' sprintf=[$page->date_upd|date_format:"%d %B %Y"] mod='everblock' d='Modules.Everblock.Front'}
-                    </span>
-                  {/if}
-                </div>
               </div>
             </article>
           </div>
