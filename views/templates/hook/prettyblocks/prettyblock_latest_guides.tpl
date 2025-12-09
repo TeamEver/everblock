@@ -43,6 +43,18 @@
         {foreach from=$latest_guides item=guide}
           <div class="col mb-4">
             <div class="prettyblock-guide-card h-100">
+              {assign var='cover_image_data' value=$guide->getCoverImageData(Context::getContext())}
+              {if $cover_image_data.url}
+                <div class="prettyblock-guide-image mb-3 position-relative overflow-hidden rounded" style="aspect-ratio: {$cover_image_data.width|intval}/{$cover_image_data.height|intval};">
+                  <img src="{$cover_image_data.url|escape:'htmlall':'UTF-8'}"
+                       alt="{$cover_image_data.alt|default:$guide->title|default:$guide->name|escape:'htmlall':'UTF-8'}"
+                       class="w-100 h-100"
+                       style="object-fit: cover;"
+                       loading="lazy"
+                       width="{$cover_image_data.width|intval}"
+                       height="{$cover_image_data.height|intval}" />
+                </div>
+              {/if}
               <p class="h5 mb-2">{$guide->title|default:$guide->name|default:''|escape:'htmlall':'UTF-8'}</p>
               {if $guide->short_description || $guide->meta_description}
                 <div class="mb-3">{($guide->short_description|default:$guide->meta_description)|strip_tags|truncate:180:'...':true}</div>

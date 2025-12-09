@@ -41,12 +41,14 @@
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_guides_selection_state_spacing_style'}
           {assign var='guide_id' value=$state.guide.id|default:$state.guide|default:null}
           {assign var='guide_object' value=null}
+          {assign var='cover_image_data' value=[]}
           {if $guide_id}
             {assign var='guide_object' value=EverblockPage::getById((int) $guide_id, (int) Context::getContext()->language->id, (int) Context::getContext()->shop->id)}
           {/if}
           {assign var='guide_link' value=''}
           {if $guide_object instanceof EverblockPage}
             {assign var='guide_link' value=Context::getContext()->link->getModuleLink('everblock', 'page', ['id_everblock_page' => $guide_object->id, 'rewrite' => $guide_object->link_rewrite[Context::getContext()->language->id] ?? ''])}
+            {assign var='cover_image_data' value=$guide_object->getCoverImageData(Context::getContext())}
           {/if}
           {assign var='guide_title' value=$state.title|default:''}
           {if !$guide_title && $guide_object instanceof EverblockPage}
@@ -58,6 +60,17 @@
           {/if}
           <div class="col mb-4">
             <div id="block-{$block.id_prettyblocks}-{$key}" class="prettyblock-guide-card h-100{if $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" style="{$prettyblock_guides_selection_state_spacing_style}">
+              {if isset($cover_image_data.url) && $cover_image_data.url}
+                <div class="prettyblock-guide-image mb-3 position-relative overflow-hidden rounded" style="aspect-ratio: {$cover_image_data.width|intval}/{$cover_image_data.height|intval};">
+                  <img src="{$cover_image_data.url|escape:'htmlall':'UTF-8'}"
+                       alt="{$cover_image_data.alt|default:$guide_title|escape:'htmlall':'UTF-8'}"
+                       class="w-100 h-100"
+                       style="object-fit: cover;"
+                       loading="lazy"
+                       width="{$cover_image_data.width|intval}"
+                       height="{$cover_image_data.height|intval}" />
+                </div>
+              {/if}
               {if $guide_title}
                 <p class="h5 mb-2">{$guide_title|escape:'htmlall':'UTF-8'}</p>
               {/if}
