@@ -43,22 +43,24 @@
       {/foreach}
     </div>
   </div>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {foreach from=$everFaqs item=faq name=faqjson}
-      {
-        "@type": "Question",
-        "name": "{$faq->title|escape:'htmlall':'UTF-8'}",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "{strip_tags($faq->content)|escape:'htmlall':'UTF-8'}"
-        }
-      }{if !$smarty.foreach.faqjson.last},{/if}
-      {/foreach}
-    ]
-  }
-  </script>
+  {if empty($everblock_structured_data)}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {foreach from=$everFaqs item=faq name=faqjson}
+        {
+          "@type": "Question",
+          "name": "{$faq->title|escape:'htmlall':'UTF-8'}",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "{strip_tags($faq->content)|escape:'htmlall':'UTF-8'}"
+          }
+        }{if !$smarty.foreach.faqjson.last},{/if}
+        {/foreach}
+      ]
+    }
+    </script>
+  {/if}
 {/if}
