@@ -31,11 +31,30 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         parent::initContent();
 
         $customerGroups = EverblockPage::getCustomerGroups($this->context);
-        $pages = EverblockPage::getPages(
+        $itemsPerPage = (int) Configuration::get('EVERBLOCK_PAGES_PER_PAGE');
+        if ($itemsPerPage <= 0) {
+            $itemsPerPage = 9;
+        }
+
+        $currentPage = max(1, (int) Tools::getValue('page', 1));
+        $totalItems = EverblockPage::countPages(
             (int) $this->context->language->id,
             (int) $this->context->shop->id,
             true,
             $customerGroups
+        );
+        $totalPages = $totalItems > 0 ? (int) ceil($totalItems / $itemsPerPage) : 0;
+        if ($totalPages > 0 && $currentPage > $totalPages) {
+            $currentPage = $totalPages;
+        }
+
+        $pages = EverblockPage::getPages(
+            (int) $this->context->language->id,
+            (int) $this->context->shop->id,
+            true,
+            $customerGroups,
+            $currentPage,
+            $itemsPerPage
         );
 
         $pageLinks = [];
@@ -52,6 +71,12 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
 
         $structuredData = $this->buildItemListStructuredData($pages, $pageLinks);
         $isPrettyBlocksEnabled = $this->isPrettyBlocksEnabled();
+        $pagination = $this->buildPagination(
+            $currentPage,
+            $totalPages,
+            $itemsPerPage,
+            $totalItems
+        );
 
         $this->context->smarty->assign([
             'everblock_pages' => $pages,
@@ -59,6 +84,7 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             'everblock_structured_data' => $structuredData,
             'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
             'everblock_prettyblocks_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone' : '',
+            'everblock_pagination' => $pagination,
         ]);
 
         $this->setTemplate('module:everblock/views/templates/front/pages.tpl');
@@ -74,6 +100,36 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         ];
 
         return $breadcrumb;
+    }
+
+    protected function buildPagination(int $currentPage, int $totalPages, int $itemsPerPage, int $totalItems): array
+    {
+        $baseLink = $this->context->link->getModuleLink($this->module->name, 'pages');
+        $pages = [];
+
+        for ($page = 1; $page <= $totalPages; ++$page) {
+            $pages[] = [
+                'number' => $page,
+                'link' => $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $page]),
+                'active' => $page === $currentPage,
+            ];
+        }
+
+        return [
+            'current' => $currentPage,
+            'total_pages' => $totalPages,
+            'items_per_page' => $itemsPerPage,
+            'total_items' => $totalItems,
+            'has_previous' => $currentPage > 1,
+            'has_next' => $currentPage < $totalPages,
+            'previous_link' => $currentPage > 1
+                ? $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $currentPage - 1])
+                : $baseLink,
+            'next_link' => $currentPage < $totalPages
+                ? $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $currentPage + 1])
+                : $baseLink,
+            'pages' => $pages,
+        ];
     }
 
     protected function buildItemListStructuredData(array $pages, array $pageLinks): array

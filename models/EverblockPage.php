@@ -163,10 +163,25 @@ class EverblockPage extends ObjectModel
         return parent::save($nullValues, $autoDate, $useCache);
     }
 
-    public static function getPages(int $langId, ?int $shopId = null, bool $onlyActive = true, array $allowedGroups = []): array
+    public static function getPages(
+        int $langId,
+        ?int $shopId = null,
+        bool $onlyActive = true,
+        array $allowedGroups = [],
+        int $page = 1,
+        ?int $perPage = null
+    ): array
     {
         $shopId = static::resolveShopId($shopId);
-        $cacheId = 'EverblockPage_getPages_' . (int) $langId . '_' . (int) $shopId . '_' . (int) $onlyActive . '_' . md5(json_encode($allowedGroups));
+        $page = max(1, (int) $page);
+        $perPage = $perPage !== null ? (int) $perPage : null;
+        $cacheId = 'EverblockPage_getPages_'
+            . (int) $langId . '_'
+            . (int) $shopId . '_'
+            . (int) $onlyActive . '_'
+            . md5(json_encode($allowedGroups)) . '_'
+            . (int) $page . '_'
+            . (int) $perPage;
 
         if (EverblockCache::isCacheStored($cacheId)) {
             return EverblockCache::cacheRetrieve($cacheId);
@@ -184,6 +199,10 @@ class EverblockPage extends ObjectModel
 
         $sql->orderBy('p.position ASC, p.date_add DESC');
 
+        if ($perPage !== null && $perPage > 0) {
+            $sql->limit($perPage, ($page - 1) * $perPage);
+        }
+
         $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
         $pages = [];
         foreach ($rows as $row) {
@@ -197,6 +216,49 @@ class EverblockPage extends ObjectModel
         EverblockCache::cacheStore($cacheId, $pages);
 
         return $pages;
+    }
+
+    public static function countPages(int $langId, ?int $shopId = null, bool $onlyActive = true, array $allowedGroups = []): int
+    {
+        $shopId = static::resolveShopId($shopId);
+        $cacheId = 'EverblockPage_countPages_'
+            . (int) $langId . '_'
+            . (int) $shopId . '_'
+            . (int) $onlyActive . '_'
+            . md5(json_encode($allowedGroups));
+
+        if (EverblockCache::isCacheStored($cacheId)) {
+            return (int) EverblockCache::cacheRetrieve($cacheId);
+        }
+
+        $sql = new DbQuery();
+        $sql->select('p.id_everblock_page, p.groups');
+        $sql->from(self::$definition['table'], 'p');
+        $sql->innerJoin(
+            self::$definition['table'] . '_lang',
+            'pl',
+            'p.id_everblock_page = pl.id_everblock_page AND pl.id_lang = ' . (int) $langId
+        );
+        $sql->where('p.id_shop = ' . (int) $shopId);
+
+        if ($onlyActive) {
+            $sql->where('p.active = 1');
+        }
+
+        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        $count = 0;
+
+        foreach ($rows as $row) {
+            $page = new self((int) $row['id_everblock_page'], (int) $langId, (int) $shopId);
+            if (!static::isGroupAllowed($page, $allowedGroups)) {
+                continue;
+            }
+            ++$count;
+        }
+
+        EverblockCache::cacheStore($cacheId, $count);
+
+        return $count;
     }
 
     public static function getById(int $pageId, int $langId, ?int $shopId = null): ?self
