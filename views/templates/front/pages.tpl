@@ -7,32 +7,61 @@
 {block name='page_content'}
   <section class="everblock-pages-list">
     {if $everblock_pages|@count}
-      <ul class="everblock-pages">
+      <div class="row">
         {foreach from=$everblock_pages item=page}
-          <li class="everblock-page-item">
-            <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" class="everblock-page-link">
-              <span class="h4">{$page->title|default:''|escape:'htmlall':'UTF-8'}</span>
-              {if $page->short_description}
-                <p class="everblock-page-excerpt">{$page->short_description|strip_tags|truncate:180:'...':true}</p>
-              {elseif $page->meta_description}
-                <p class="everblock-page-excerpt">{$page->meta_description|truncate:180:'...':true}</p>
-              {/if}
-              <div class="everblock-page-meta">
-                {if $page->date_add}
-                  <time datetime="{$page->date_add|escape:'htmlall':'UTF-8'}" class="everblock-page-date">
-                    {$page->date_add|date_format:"%d %B %Y"}
-                  </time>
+          <div class="col-md-6 col-lg-4 mb-4">
+            <article class="card h-100 shadow-sm border-0">
+              <div class="card-body d-flex flex-column">
+                <h3 class="h5 card-title text-primary">
+                  <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" class="stretched-link text-decoration-none">
+                    {$page->title|default:''|escape:'htmlall':'UTF-8'}
+                  </a>
+                </h3>
+                {if $page->short_description}
+                  <p class="card-text text-muted">{$page->short_description|strip_tags|truncate:180:'...':true}</p>
+                {elseif $page->meta_description}
+                  <p class="card-text text-muted">{$page->meta_description|truncate:180:'...':true}</p>
                 {/if}
-                {if $page->date_upd}
-                  <span class="everblock-page-date-updated">
-                    {l s='Updated on %s' sprintf=[$page->date_upd|date_format:"%d %B %Y"] mod='everblock' d='Modules.Everblock.Front'}
-                  </span>
-                {/if}
+                <div class="d-flex flex-wrap align-items-center mt-auto small text-muted">
+                  {if $page->date_add}
+                    <span class="badge badge-light text-dark border mr-2 mb-2">
+                      <i class="material-icons align-middle mr-1">event</i>
+                      {$page->date_add|date_format:"%d %B %Y"}
+                    </span>
+                  {/if}
+                  {if $page->date_upd}
+                    <span class="badge badge-info mb-2">
+                      {l s='Updated on %s' sprintf=[$page->date_upd|date_format:"%d %B %Y"] mod='everblock' d='Modules.Everblock.Front'}
+                    </span>
+                  {/if}
+                </div>
               </div>
-            </a>
-          </li>
+            </article>
+          </div>
         {/foreach}
-      </ul>
+      </div>
+
+      {if isset($everblock_pagination.total_pages) && $everblock_pagination.total_pages > 1}
+        <nav class="mt-4" aria-label="{l s='Pagination' mod='everblock' d='Modules.Everblock.Front'}">
+          <ul class="pagination justify-content-center">
+            <li class="page-item{if !$everblock_pagination.has_previous} disabled{/if}">
+              <a class="page-link" href="{if $everblock_pagination.has_previous}{$everblock_pagination.previous_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Previous' mod='everblock' d='Modules.Everblock.Front'}">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            {foreach from=$everblock_pagination.pages item=paginationPage}
+              <li class="page-item{if $paginationPage.active} active{/if}">
+                <a class="page-link" href="{$paginationPage.link|escape:'htmlall':'UTF-8'}">{$paginationPage.number}</a>
+              </li>
+            {/foreach}
+            <li class="page-item{if !$everblock_pagination.has_next} disabled{/if}">
+              <a class="page-link" href="{if $everblock_pagination.has_next}{$everblock_pagination.next_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Next' mod='everblock' d='Modules.Everblock.Front'}">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      {/if}
     {else}
       <p class="alert alert-info">{l s='No page available yet.' mod='everblock' d='Modules.Everblock.Front'}</p>
     {/if}

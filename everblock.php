@@ -143,6 +143,7 @@ class Everblock extends Module
         Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL', $this->l('Read all reviews on Google'));
         Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL', '');
         Configuration::updateValue('EVERBLOCK_PAGES_BASE_URL', 'guide');
+        Configuration::updateValue('EVERBLOCK_PAGES_PER_PAGE', 9);
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -257,6 +258,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL');
         Configuration::deleteByName('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL');
         Configuration::deleteByName('EVERBLOCK_PAGES_BASE_URL');
+        Configuration::deleteByName('EVERBLOCK_PAGES_PER_PAGE');
         return (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
@@ -1649,6 +1651,12 @@ class Everblock extends Module
                 'hint' => $this->l('Leave empty to keep the default "guide" value'),
                 'name' => 'EVERBLOCK_PAGES_BASE_URL',
             ],
+            [
+                'type' => 'text',
+                'label' => $this->l('Items per page'),
+                'desc' => $this->l('Number of guides to display on the listing page'),
+                'name' => 'EVERBLOCK_PAGES_PER_PAGE',
+            ],
         ];
 
         foreach ($pagesInputs as $input) {
@@ -2473,6 +2481,7 @@ class Everblock extends Module
             'EVER_SOLDOUT_COLOR' => Configuration::get('EVER_SOLDOUT_COLOR'),
             'EVER_SOLDOUT_TEXTCOLOR' => Configuration::get('EVER_SOLDOUT_TEXTCOLOR'),
             'EVERBLOCK_PAGES_BASE_URL' => Configuration::get('EVERBLOCK_PAGES_BASE_URL') ?: 'guide',
+            'EVERBLOCK_PAGES_PER_PAGE' => Configuration::get('EVERBLOCK_PAGES_PER_PAGE') ?: 9,
             'EVERPSCSS' => $custom_css,
             'EVERPSJS' => $custom_js,
             'EVERPSCSS_LINKS' => Configuration::get('EVERPSCSS_LINKS'),
@@ -2838,6 +2847,14 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_PAGES_BASE_URL',
             Tools::link_rewrite($pagesBaseUrl)
+        );
+        $pagesPerPage = (int) Tools::getValue('EVERBLOCK_PAGES_PER_PAGE');
+        if ($pagesPerPage <= 0) {
+            $pagesPerPage = 9;
+        }
+        Configuration::updateValue(
+            'EVERBLOCK_PAGES_PER_PAGE',
+            $pagesPerPage
         );
         $googleReviewsLimit = (int) Tools::getValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT');
         if ($googleReviewsLimit <= 0) {
