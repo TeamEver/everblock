@@ -7,8 +7,13 @@
 {block name='page_content'}
   <section class="everblock-faqs-list">
     <header class="mb-4">
-      <h1 class="h2 mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'} - {$everblock_tag_name|escape:'htmlall':'UTF-8'}</h1>
-      <p class="text-muted mb-0">{l s='All frequently asked questions grouped by this tag.' mod='everblock' d='Modules.Everblock.Front'}</p>
+      {if $everblock_is_all_faqs_page}
+        <h1 class="h2 mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
+        <p class="text-muted mb-0">{l s='All frequently asked questions across every available group.' mod='everblock' d='Modules.Everblock.Front'}</p>
+      {else}
+        <h1 class="h2 mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'} - {$everblock_tag_name|escape:'htmlall':'UTF-8'}</h1>
+        <p class="text-muted mb-0">{l s='All frequently asked questions grouped by this tag.' mod='everblock' d='Modules.Everblock.Front'}</p>
+      {/if}
     </header>
 
     {if $everblock_faqs|@count}
@@ -37,7 +42,7 @@
         </nav>
       {/if}
     {else}
-      <p class="alert alert-info">{l s='No FAQ available for this tag.' mod='everblock' d='Modules.Everblock.Front'}</p>
+      <p class="alert alert-info">{l s='No FAQ available at the moment.' mod='everblock' d='Modules.Everblock.Front'}</p>
     {/if}
   </section>
 

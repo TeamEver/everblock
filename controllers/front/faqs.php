@@ -28,11 +28,14 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
 {
     /** @var string */
     protected $tagName = '';
+    /** @var bool */
+    protected $isAllFaqsPage = false;
 
     public function init()
     {
         parent::init();
         $this->tagName = (string) Tools::getValue('tag', '');
+        $this->isAllFaqsPage = trim($this->tagName) === '';
     }
 
     public function initContent()
@@ -40,9 +43,6 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
         parent::initContent();
 
         $tagName = trim($this->tagName);
-        if ($tagName === '') {
-            Tools::redirect($this->context->link->getPageLink('index'));
-        }
 
         $itemsPerPage = (int) Configuration::get('EVERBLOCK_FAQ_PER_PAGE');
         if ($itemsPerPage <= 0) {
@@ -53,23 +53,47 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
         $shopId = (int) $this->context->shop->id;
         $langId = (int) $this->context->language->id;
 
-        $totalItems = EverblockFaq::countActiveByTagName($shopId, $tagName);
-        $totalPages = $totalItems > 0 ? (int) ceil($totalItems / $itemsPerPage) : 0;
-        if ($totalPages > 0 && $currentPage > $totalPages) {
-            $currentPage = $totalPages;
+        if ($this->isAllFaqsPage) {
+            $totalItems = EverblockFaq::countAllActive($shopId);
+            $totalPages = $totalItems > 0 ? (int) ceil($totalItems / $itemsPerPage) : 0;
+            if ($totalPages > 0 && $currentPage > $totalPages) {
+                $currentPage = $totalPages;
+            }
+
+            $faqs = EverblockFaq::getAllActivePaginated(
+                $shopId,
+                $langId,
+                $currentPage,
+                $itemsPerPage
+            );
+        } else {
+            $totalItems = EverblockFaq::countActiveByTagName($shopId, $tagName);
+            $totalPages = $totalItems > 0 ? (int) ceil($totalItems / $itemsPerPage) : 0;
+            if ($totalPages > 0 && $currentPage > $totalPages) {
+                $currentPage = $totalPages;
+            }
+
+            $faqs = EverblockFaq::getFaqByTagNamePaginated(
+                $shopId,
+                $langId,
+                $tagName,
+                $currentPage,
+                $itemsPerPage
+            );
         }
 
-        $faqs = EverblockFaq::getFaqByTagNamePaginated(
-            $shopId,
-            $langId,
-            $tagName,
-            $currentPage,
-            $itemsPerPage
-        );
+        $faqsWithLinks = $this->attachTagLinks($faqs);
+
+        $title = $this->isAllFaqsPage
+            ? $this->trans('FAQ', [], 'Modules.Everblock.Front')
+            : $this->trans('FAQ', [], 'Modules.Everblock.Front') . ' - ' . $tagName;
+        $description = $this->isAllFaqsPage
+            ? $this->trans('All frequently asked questions, across every group.', [], 'Modules.Everblock.Front')
+            : $this->trans('Frequently asked questions grouped by tag.', [], 'Modules.Everblock.Front');
 
         $this->context->smarty->assign([
             'everblock_tag_name' => $tagName,
-            'everblock_faqs' => $faqs,
+            'everblock_faqs' => $faqsWithLinks,
             'everblock_pagination' => $this->buildPagination(
                 $currentPage,
                 $totalPages,
@@ -77,14 +101,12 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
                 $totalItems
             ),
             'everblock_structured_data' => $this->buildStructuredData($faqs),
+            'everblock_is_all_faqs_page' => $this->isAllFaqsPage,
         ]);
 
         $this->setTemplate('module:everblock/views/templates/front/faqs.tpl');
 
-        $this->setTemplateMeta(
-            $this->trans('FAQ', [], 'Modules.Everblock.Front') . ' - ' . $tagName,
-            $this->trans('Frequently asked questions grouped by tag.', [], 'Modules.Everblock.Front')
-        );
+        $this->setTemplateMeta($title, $description);
     }
 
     public function getBreadcrumbLinks()
@@ -93,7 +115,7 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
 
         $breadcrumb['links'][] = [
             'title' => $this->trans('FAQ', [], 'Modules.Everblock.Front'),
-            'url' => '',
+            'url' => $this->isAllFaqsPage ? $this->getCanonicalURL() : '',
         ];
 
         if ($this->tagName !== '') {
@@ -108,9 +130,12 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
 
     protected function buildPagination(int $currentPage, int $totalPages, int $itemsPerPage, int $totalItems): array
     {
-        $baseLink = $this->context->link->getModuleLink($this->module->name, 'faqs', [
-            'tag' => $this->tagName,
-        ]);
+        $baseParams = [];
+        if (!$this->isAllFaqsPage) {
+            $baseParams['tag'] = $this->tagName;
+        }
+
+        $baseLink = $this->context->link->getModuleLink($this->module->name, 'faqs', $baseParams);
         $pages = [];
 
         for ($page = 1; $page <= $totalPages; ++$page) {
@@ -118,10 +143,9 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
                 'number' => $page,
                 'link' => $page === 1
                     ? $baseLink
-                    : $this->context->link->getModuleLink($this->module->name, 'faqs', [
-                        'tag' => $this->tagName,
+                    : $this->context->link->getModuleLink($this->module->name, 'faqs', array_merge($baseParams, [
                         'page' => $page,
-                    ]),
+                    ])),
                 'active' => $page === $currentPage,
             ];
         }
@@ -136,16 +160,14 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
             'previous_link' => $currentPage > 1
                 ? ($currentPage - 1 === 1
                     ? $baseLink
-                    : $this->context->link->getModuleLink($this->module->name, 'faqs', [
-                        'tag' => $this->tagName,
+                    : $this->context->link->getModuleLink($this->module->name, 'faqs', array_merge($baseParams, [
                         'page' => $currentPage - 1,
-                    ]))
+                    ])))
                 : $baseLink,
             'next_link' => $currentPage < $totalPages
-                ? $this->context->link->getModuleLink($this->module->name, 'faqs', [
-                    'tag' => $this->tagName,
+                ? $this->context->link->getModuleLink($this->module->name, 'faqs', array_merge($baseParams, [
                     'page' => $currentPage + 1,
-                ])
+                ]))
                 : $baseLink,
             'pages' => $pages,
         ];
@@ -172,7 +194,9 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
         return [
             '@context' => 'https://schema.org',
             '@type' => 'FAQPage',
-            'name' => $this->trans('FAQ', [], 'Modules.Everblock.Front') . ' - ' . $this->tagName,
+            'name' => $this->tagName === ''
+                ? $this->trans('FAQ', [], 'Modules.Everblock.Front')
+                : $this->trans('FAQ', [], 'Modules.Everblock.Front') . ' - ' . $this->tagName,
             'mainEntity' => $entities,
         ];
     }
@@ -199,8 +223,24 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
 
     public function getCanonicalURL()
     {
-        return $this->context->link->getModuleLink($this->module->name, 'faqs', [
-            'tag' => $this->tagName,
-        ]);
+        $params = [];
+        if (!$this->isAllFaqsPage) {
+            $params['tag'] = $this->tagName;
+        }
+
+        return $this->context->link->getModuleLink($this->module->name, 'faqs', $params);
+    }
+
+    protected function attachTagLinks(array $faqs): array
+    {
+        foreach ($faqs as $faq) {
+            if (!isset($faq->tag_link)) {
+                $faq->tag_link = $this->context->link->getModuleLink($this->module->name, 'faqs', [
+                    'tag' => $faq->tag_name,
+                ]);
+            }
+        }
+
+        return $faqs;
     }
 }
