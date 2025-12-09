@@ -51,12 +51,15 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         }
 
         $structuredData = $this->buildItemListStructuredData($pages, $pageLinks);
+        $isPrettyBlocksEnabled = $this->isPrettyBlocksEnabled();
 
         $this->context->smarty->assign([
             'everblock_pages' => $pages,
             'everblock_page_links' => $pageLinks,
             'everblock_lang_id' => (int) $this->context->language->id,
             'everblock_structured_data' => $structuredData,
+            'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
+            'everblock_prettyblocks_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone' : '',
         ]);
 
         $this->setTemplate('module:everblock/views/templates/front/pages.tpl');
@@ -107,5 +110,12 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             'description' => $this->trans('Découvrez nos guides pratiques pour ...', [], 'Modules.Everblock.Front'),
             'itemListElement' => $elements,
         ];
+    }
+
+    protected function isPrettyBlocksEnabled(): bool
+    {
+        return (bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) Everblock\Tools\Service\EverblockTools::moduleDirectoryExists('prettyblocks') === true;
     }
 }
