@@ -11,7 +11,7 @@
         {foreach from=$everblock_pages item=page}
           <li class="everblock-page-item">
             <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" class="everblock-page-link">
-              <span class="h4">{$page->name|default:''|escape:'htmlall':'UTF-8'}</span>
+              <span class="h4">{$page->title|default:''|escape:'htmlall':'UTF-8'}</span>
               {if $page->short_description}
                 <p class="everblock-page-excerpt">{$page->short_description|strip_tags|truncate:180:'...':true}</p>
               {elseif $page->meta_description}
