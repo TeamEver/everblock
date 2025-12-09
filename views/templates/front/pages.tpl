@@ -38,6 +38,10 @@
     {/if}
   </section>
 
+  {if $everblock_prettyblocks_enabled}
+    {prettyblocks_zone zone_name=$everblock_prettyblocks_zone_name}
+  {/if}
+
   {if !empty($everblock_structured_data)}
     <script type="application/ld+json">
       {$everblock_structured_data|json_encode:$smarty.const.JSON_UNESCAPED_SLASHES|replace:'\/':'/' nofilter}

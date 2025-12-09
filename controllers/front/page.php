@@ -65,7 +65,9 @@ class EverblockPageModuleFrontController extends ModuleFrontController
         $metaDescription = $page->meta_description[(int) $this->context->language->id] ?? '';
 
         $renderedContent = $page->content[(int) $this->context->language->id] ?? '';
-        if ($this->isPrettyBlocksEnabled()) {
+        $isPrettyBlocksEnabled = $this->isPrettyBlocksEnabled();
+
+        if ($isPrettyBlocksEnabled) {
             $renderedContent = $this->context->smarty->fetch('string:' . $renderedContent);
         }
 
@@ -98,6 +100,8 @@ class EverblockPageModuleFrontController extends ModuleFrontController
                 : '',
             'everblock_lang_id' => (int) $this->context->language->id,
             'everblock_structured_data' => $this->buildItemListStructuredData($pages, $pageLinks),
+            'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
+            'everblock_prettyblocks_zone_name' => $isPrettyBlocksEnabled ? 'everblock_page_zone_' . (int) $page->id : '',
         ]);
 
         $this->setTemplate('module:everblock/views/templates/front/page.tpl');
