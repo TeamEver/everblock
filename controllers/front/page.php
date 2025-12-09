@@ -50,7 +50,7 @@ class EverblockPageModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $expectedRewrite = $page->link_rewrite[(int) $this->context->language->id] ?? '';
+        $expectedRewrite = $page->link_rewrite;
         if ($expectedRewrite && $rewrite && $rewrite !== $expectedRewrite) {
             Tools::redirect($this->context->link->getModuleLink(
                 $this->module->name,
@@ -62,14 +62,10 @@ class EverblockPageModuleFrontController extends ModuleFrontController
             ));
         }
 
-        $metaDescription = $page->meta_description[(int) $this->context->language->id] ?? '';
+        $metaDescription = $page->meta_description;
 
-        $renderedContent = $page->content[(int) $this->context->language->id] ?? '';
+        $renderedContent = $page->content;
         $isPrettyBlocksEnabled = $this->isPrettyBlocksEnabled();
-
-        if ($isPrettyBlocksEnabled) {
-            $renderedContent = $this->context->smarty->fetch('string:' . $renderedContent);
-        }
 
         $pages = EverblockPage::getPages(
             (int) $this->context->language->id,
@@ -85,7 +81,7 @@ class EverblockPageModuleFrontController extends ModuleFrontController
                 'page',
                 [
                     'id_everblock_page' => (int) $pageItem->id,
-                    'rewrite' => $pageItem->link_rewrite[(int) $this->context->language->id] ?? '',
+                    'rewrite' => $pageItem->link_rewrite,
                 ]
             );
         }
@@ -106,7 +102,7 @@ class EverblockPageModuleFrontController extends ModuleFrontController
 
         $this->setTemplate('module:everblock/views/templates/front/page.tpl');
 
-        $this->setTemplateMeta($page->title[(int) $this->context->language->id] ?? '', $metaDescription);
+        $this->setTemplateMeta($page->title, $metaDescription);
     }
 
     public function getBreadcrumbLinks()
@@ -120,13 +116,13 @@ class EverblockPageModuleFrontController extends ModuleFrontController
 
         if ($this->everblockPage instanceof EverblockPage) {
             $breadcrumb['links'][] = [
-                'title' => $this->everblockPage->name[(int) $this->context->language->id] ?? '',
+                'title' => $this->everblockPage->name,
                 'url' => $this->context->link->getModuleLink(
                     $this->module->name,
                     'page',
                     [
                         'id_everblock_page' => (int) $this->everblockPage->id,
-                        'rewrite' => $this->everblockPage->link_rewrite[(int) $this->context->language->id] ?? '',
+                        'rewrite' => $this->everblockPage->link_rewrite,
                     ]
                 ),
             ];
@@ -169,7 +165,7 @@ class EverblockPageModuleFrontController extends ModuleFrontController
                 '@type' => 'ListItem',
                 'position' => $position,
                 'url' => $pageLinks[(int) $page->id] ?? '',
-                'name' => $page->name[$langId] ?? '',
+                'name' => $page->name,
             ];
 
             ++$fallbackPosition;

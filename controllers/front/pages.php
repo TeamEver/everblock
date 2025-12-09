@@ -45,7 +45,7 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
                 'page',
                 [
                     'id_everblock_page' => (int) $page->id,
-                    'rewrite' => $page->link_rewrite[(int) $this->context->language->id] ?? '',
+                    'rewrite' => $page->link_rewrite,
                 ]
             );
         }
@@ -97,7 +97,7 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
                 '@type' => 'ListItem',
                 'position' => $position,
                 'url' => $pageLinks[(int) $page->id] ?? '',
-                'name' => $page->name[$langId] ?? '',
+                'name' => $page->name,
             ];
 
             ++$fallbackPosition;
