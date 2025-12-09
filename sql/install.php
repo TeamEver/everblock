@@ -179,6 +179,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_page` (
         `groups` text DEFAULT NULL,
         `cover_image` varchar(255) DEFAULT NULL,
         `active` int(10) unsigned NOT NULL DEFAULT 1,
+        `position` int(10) unsigned NOT NULL DEFAULT 0,
         `date_add` DATETIME DEFAULT NULL,
         `date_upd` DATETIME DEFAULT NULL,
         PRIMARY KEY (`id_everblock_page`, `id_shop`)
@@ -190,6 +191,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_page_lang` (
         `name` varchar(255) DEFAULT NULL,
         `title` varchar(255) DEFAULT NULL,
         `meta_description` text DEFAULT NULL,
+        `short_description` text DEFAULT NULL,
         `link_rewrite` varchar(255) DEFAULT NULL,
         `content` text DEFAULT NULL,
         PRIMARY KEY (`id_everblock_page`, `id_lang`)
