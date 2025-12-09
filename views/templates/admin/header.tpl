@@ -62,6 +62,11 @@
                 <i class="icon-eye-open"></i> {l s='View guides page' mod='everblock'}
             </a>
         {/if}
+        {if isset($everblock_all_faqs_front_link) && $everblock_all_faqs_front_link}
+            <a href="{$everblock_all_faqs_front_link|escape:'htmlall':'UTF-8'}" class="btn btn-info" target="_blank" rel="noopener">
+                <i class="icon-list"></i> {l s='View all FAQs' mod='everblock'}
+            </a>
+        {/if}
         {if isset($everblock_faq_front_link) && $everblock_faq_front_link}
             <a href="{$everblock_faq_front_link|escape:'htmlall':'UTF-8'}" class="btn btn-info" target="_blank" rel="noopener">
                 <i class="icon-eye-open"></i> {l s='View FAQ page' mod='everblock'}
