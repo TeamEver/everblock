@@ -975,6 +975,18 @@ class Everblock extends Module
             'configure' => $this->name,
             'module_name' => $this->name,
         ]);
+        $guideFrontLink = $this->context->link->getModuleLink(
+            $this->name,
+            'pages'
+        );
+        $faqFrontTag = EverblockFaq::getFirstActiveTagName((int) $this->context->shop->id);
+        $faqFrontLink = $faqFrontTag ? $this->context->link->getModuleLink(
+            $this->name,
+            'faqs',
+            [
+                'tag' => $faqFrontTag,
+            ]
+        ) : null;
         $cronLinks = [];
         $cronToken = $this->encrypt($this->name . '/evercron');
         foreach ($this->allowedActions as $action) {
@@ -1008,6 +1020,9 @@ class Everblock extends Module
             'everblock_stats' => $this->getModuleStatistics(),
             'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($this),
             'everblock_show_hero' => true,
+            'everblock_guide_front_link' => $guideFrontLink,
+            'everblock_faq_front_link' => $faqFrontLink,
+            'everblock_faq_front_tag' => $faqFrontTag,
         ]);
         $output = $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'

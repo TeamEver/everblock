@@ -57,6 +57,19 @@
                 {l s='Manage shortcodes' mod='everblock'}
             </a>
         {/if}
+        {if isset($everblock_guide_front_link) && $everblock_guide_front_link}
+            <a href="{$everblock_guide_front_link|escape:'htmlall':'UTF-8'}" class="btn btn-info" target="_blank" rel="noopener">
+                <i class="icon-eye-open"></i> {l s='View guides page' mod='everblock'}
+            </a>
+        {/if}
+        {if isset($everblock_faq_front_link) && $everblock_faq_front_link}
+            <a href="{$everblock_faq_front_link|escape:'htmlall':'UTF-8'}" class="btn btn-info" target="_blank" rel="noopener">
+                <i class="icon-eye-open"></i> {l s='View FAQ page' mod='everblock'}
+                {if isset($everblock_faq_front_tag) && $everblock_faq_front_tag}
+                    ({$everblock_faq_front_tag|escape:'htmlall':'UTF-8'})
+                {/if}
+            </a>
+        {/if}
         {if isset($donation_link)}
             <a href="{$donation_link|escape:'htmlall':'UTF-8'}" class="btn btn-warning" target="_blank">
                 <i class="icon-money"></i> {l s='Make a donation' mod='everblock'}

@@ -202,6 +202,31 @@ class EverblockFaq extends ObjectModel
         return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
     }
 
+    public static function getFirstActiveTagName(?int $shopId = null): ?string
+    {
+        $shopId = self::resolveShopId($shopId);
+        $cacheId = 'EverblockFaq_getFirstActiveTagName_' . (int) $shopId;
+
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $sql = new DbQuery();
+            $sql->select('tag_name');
+            $sql->from(self::$definition['table']);
+            $sql->where('active = 1');
+            $sql->where('id_shop = ' . (int) $shopId);
+            $sql->orderBy('tag_name ASC, id_everblock_faq ASC');
+
+            $tagName = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+            if (!is_string($tagName) || $tagName === '') {
+                $tagName = null;
+            }
+
+            EverblockCache::cacheStore($cacheId, $tagName);
+            return $tagName;
+        }
+
+        return EverblockCache::cacheRetrieve($cacheId);
+    }
+
     public static function getFaqByTagNamePaginated(
         int $shopId,
         int $langId,
