@@ -26,6 +26,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
 
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 
 class AdminEverBlockPageController extends ModuleAdminController
 {
@@ -41,6 +42,23 @@ class AdminEverBlockPageController extends ModuleAdminController
         $this->context = Context::getContext();
         $this->_defaultOrderBy = 'position';
         $this->_orderWay = 'ASC';
+
+        if (!Tools::getIsset('module_name')) {
+            $_GET['module_name'] = 'everblock';
+            $_REQUEST['module_name'] = 'everblock';
+        }
+
+        $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
+        $module_link .= Tools::getAdminTokenLite('AdminModules');
+        $moduleInstance = Module::getInstanceByName('everblock');
+        $this->context->smarty->assign([
+            $moduleInstance->name . '_version' => $moduleInstance->version,
+            'module_name' => $moduleInstance->displayName,
+            'module_link' => $module_link,
+            'everblock_dir' => _MODULE_DIR_ . '/everblock/',
+            'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
+            'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($moduleInstance),
+        ]);
 
         $this->_select = 'pl.name, pl.title';
         $this->_join = 'LEFT JOIN `' . _DB_PREFIX_ . 'everblock_page_lang` pl ON (pl.`id_everblock_page` = a.`id_everblock_page` AND pl.`id_lang` = ' . (int) $this->context->language->id . ')';
@@ -117,6 +135,11 @@ class AdminEverBlockPageController extends ModuleAdminController
             'desc' => $this->l('Add new page'),
             'icon' => 'process-icon-new',
         ];
+        $this->page_header_toolbar_btn['clear'] = [
+            'href' => self::$currentIndex . '&clearcache=1&token=' . $this->token,
+            'desc' => $this->l('Clear cache'),
+            'icon' => 'process-icon-refresh',
+        ];
         $module_link  = 'index.php?controller=AdminModules&configure=everblock&token=';
         $module_link .= Tools::getAdminTokenLite('AdminModules');
         $this->page_header_toolbar_btn['configuration'] = [
@@ -124,8 +147,64 @@ class AdminEverBlockPageController extends ModuleAdminController
             'desc' => $this->l('Configuration'),
             'icon' => 'process-icon-save',
         ];
+        $this->page_header_toolbar_btn['tabs'] = [
+            'href' => Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $this->module->name . '/input/sample/tabs.xlsx',
+            'desc' => $this->l('Download Excel tabs sample file'),
+            'icon' => 'process-icon-download',
+        ];
 
         parent::initPageHeaderToolbar();
+    }
+
+    public function renderList()
+    {
+        $this->addRowAction('edit');
+        $this->addRowAction('delete');
+
+        if (Tools::getValue('clearcache')) {
+            Tools::clearAllCache();
+            Tools::redirectAdmin(self::$currentIndex . '&cachecleared=1&token=' . $this->token);
+        }
+
+        if (Tools::getValue('cachecleared')) {
+            $this->confirmations[] = $this->l('Cache has been cleared');
+        }
+
+        $lists = parent::renderList();
+
+        $moduleInstance = Module::getInstanceByName('everblock');
+        $displayUpgrade = $moduleInstance->checkLatestEverModuleVersion();
+
+        $notifications = '';
+        if (count($this->errors)) {
+            foreach ($this->errors as $error) {
+                $notifications .= Tools::displayError($error);
+            }
+        }
+        if (is_array($this->confirmations) && count($this->confirmations)) {
+            foreach ($this->confirmations as $confirmation) {
+                $notifications .= $this->displayConfirmation($confirmation);
+            }
+        }
+
+        $this->context->smarty->assign([
+            'everblock_notifications' => $notifications,
+            'everblock_form' => $lists,
+            'display_upgrade' => $displayUpgrade,
+            'everblock_show_hero' => false,
+        ]);
+
+        $content = $this->context->smarty->fetch(
+            _PS_MODULE_DIR_ . '/everblock/views/templates/admin/header.tpl'
+        );
+        $content .= $this->context->smarty->fetch(
+            _PS_MODULE_DIR_ . '/everblock/views/templates/admin/configure.tpl'
+        );
+        $content .= $this->context->smarty->fetch(
+            _PS_MODULE_DIR_ . '/everblock/views/templates/admin/footer.tpl'
+        );
+
+        return $content;
     }
 
     public function renderForm()
