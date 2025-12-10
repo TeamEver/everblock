@@ -1397,7 +1397,6 @@ class AdminEverBlockController extends ModuleAdminController
             $query->where('cp.id_category = ' . (int) $categoryId);
             $query->where('ps.active = 1');
             $query->orderBy('ps.date_upd DESC');
-            $query->limit(1);
 
             $productId = (int) Db::getInstance()->getValue($query);
             if ($productId > 0) {
