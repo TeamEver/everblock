@@ -3207,6 +3207,8 @@ class Everblock extends Module
         ];
 
         if (!$isModuleConfiguration && !in_array($controller, $moduleControllers, true)) {
+            $this->context->controller->addCss($this->_path . 'views/css/admin_menu.css');
+
             return;
         }
 
