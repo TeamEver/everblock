@@ -1799,7 +1799,7 @@ class AdminEverBlockController extends ModuleAdminController
             $everblock_obj->position = (int) Tools::getValue('position');
             $everblock_obj->background =  pSQL(Tools::getValue('background'));
             $everblock_obj->css_class =  pSQL(Tools::getValue('css_class'));
-            $everblock_obj->data_attribute =  pSQL(Tools::getValue('data_attribute'));
+            $everblock_obj->data_attribute = Tools::getValue('data_attribute');
             $everblock_obj->bootstrap_class =  pSQL(Tools::getValue('bootstrap_class'));
             $everblock_obj->device = (int) Tools::getValue('device');
             if (!Tools::getValue('groupBox')
