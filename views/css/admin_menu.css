@@ -1,0 +1,9 @@
+/**
+ * Admin menu icon styles for Everblock
+ */
+.mi-icon-team-ever {
+    content: url(../img/logo.png);
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+}
