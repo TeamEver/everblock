@@ -3205,13 +3205,7 @@ class Everblock extends Module
             'AdminEverBlockShortcodeController',
             'AdminEverBlockPageController',
         ];
-
-        if (!$isModuleConfiguration && !in_array($controller, $moduleControllers, true)) {
-            $this->context->controller->addCss($this->_path . 'views/css/admin_menu.css');
-
-            return;
-        }
-
+        $this->context->controller->addCss($this->_path . 'views/css/admin_menu.css');
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
 
         if (Tools::getValue('id_' . $this->name)
