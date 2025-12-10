@@ -5530,9 +5530,17 @@ class EverblockTools extends ObjectModel
         $preparedPosts = [];
         foreach ($posts as $post) {
             $postId = (int) ($post['id'] ?? 0);
-            $title = strip_tags($post['title']['rendered'] ?? '');
+            $title = html_entity_decode(
+                strip_tags($post['title']['rendered'] ?? ''),
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            );
             $link = $post['link'] ?? '#';
-            $excerpt = strip_tags($post['excerpt']['rendered'] ?? '');
+            $excerpt = html_entity_decode(
+                strip_tags($post['excerpt']['rendered'] ?? ''),
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            );
 
             $mediaData = self::resolveWordpressFeaturedMedia($post, $apiBaseUrl);
             $featuredImageUrl = $mediaData['url'] ?? '';
