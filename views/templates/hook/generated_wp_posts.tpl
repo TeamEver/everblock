@@ -1,8 +1,8 @@
 {if isset($everblock_wp_posts) && $everblock_wp_posts|@count > 0}
 <section class="everblock-wp-section text-center my-5">
-  <h2 class="section-title text-uppercase mb-4">
+  <div class="h2 section-title text-uppercase mb-4">
     <span>Les dernières actus de notre blog</span>
-  </h2>
+  </div>
 
   <div class="everblock-wp-posts container">
     <div class="row justify-content-center align-items-stretch">
