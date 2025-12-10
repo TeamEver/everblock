@@ -1,7 +1,7 @@
 {if isset($everblock_wp_posts) && $everblock_wp_posts|@count > 0}
 <section class="everblock-wp-section text-center my-5">
   <div class="h2 section-title text-uppercase mb-4">
-    <span>Les dernières actus de notre blog</span>
+    <span>{l s='Latest news from our blog' mod='everblock'}</span>
   </div>
 
   <div class="everblock-wp-posts container">
@@ -55,7 +55,7 @@
 
     <div class="text-center mt-3">
       <a href="{$everblock_wp_blog_url|escape:'htmlall':'UTF-8'}" class="btn btn-warning fw-bold text-uppercase px-4 py-2 rounded-pill">
-        Visiter notre blog
+        {l s='Visit our blog' mod='everblock'}
       </a>
     </div>
   </div>
