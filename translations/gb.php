@@ -201,3 +201,5 @@ $_MODULE['<{everblock}prestashop>everblock_preview_select_context'] = 'Select a 
 $_MODULE['<{everblock}prestashop>everblock_preview_loading'] = 'Loading preview...';
 $_MODULE['<{everblock}prestashop>everblock_preview_error_generic'] = 'Unable to load the preview. Please try again.';
 $_MODULE['<{everblock}prestashop>everblock_preview_update_button'] = 'Update preview';
+$_MODULE['<{everblock}prestashop>generated_wp_posts_652646ea148d966b30d2ad88016ffc98'] = 'Latest news from our blog';
+$_MODULE['<{everblock}prestashop>generated_wp_posts_42a1827953d0470285d9d87c278b01e8'] = 'Visit our blog';

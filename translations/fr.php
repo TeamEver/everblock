@@ -848,3 +848,5 @@ $_MODULE['<{everblock}prestashop>everblock_preview_select_context'] = 'Sélectio
 $_MODULE['<{everblock}prestashop>everblock_preview_loading'] = 'Chargement de la prévisualisation…';
 $_MODULE['<{everblock}prestashop>everblock_preview_error_generic'] = 'Impossible de charger la prévisualisation. Veuillez réessayer.';
 $_MODULE['<{everblock}prestashop>everblock_preview_update_button'] = 'Actualiser la prévisualisation';
+$_MODULE['<{everblock}prestashop>generated_wp_posts_652646ea148d966b30d2ad88016ffc98'] = 'Les dernières actus de notre blog';
+$_MODULE['<{everblock}prestashop>generated_wp_posts_42a1827953d0470285d9d87c278b01e8'] = 'Visiter notre blog';
