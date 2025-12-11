@@ -39,18 +39,6 @@
     </header>
 
     {if $everblock_faqs|@count}
-      <div class="everblock-faqs-nav mb-4" aria-label="{l s='Jump to a question' mod='everblock' d='Modules.Everblock.Front'}">
-        <h2 class="h5 mb-3">{l s='Quick navigation' mod='everblock' d='Modules.Everblock.Front'}</h2>
-        <div class="everblock-faqs-nav__list" role="list">
-          {foreach from=$everblock_faqs item=faq}
-            <a class="everblock-faqs-nav__link" href="#headingEverFaq{$faq->id_everblock_faq}" role="listitem">
-              <span class="everblock-faqs-nav__title">{$faq->title}</span>
-              <span class="everblock-faqs-nav__pill">{l s='View answer' mod='everblock' d='Modules.Everblock.Front'}</span>
-            </a>
-          {/foreach}
-        </div>
-      </div>
-
       {assign var='everFaqs' value=$everblock_faqs}
       {include file='module:everblock/views/templates/hook/faq.tpl'}
 
