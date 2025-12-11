@@ -65,6 +65,7 @@
           {/if}
         {/capture}
         {assign var='prettyblock_cover_state_style' value=$smarty.capture.prettyblock_cover_state_style|trim}
+        {assign var='prettyblock_cover_link' value=$state.cover_link|default:''}
         <div id="block-{$block.id_prettyblocks}-{$key}"
              class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
             {if isset($state.background_image.url) && $state.background_image.url}
@@ -111,6 +112,9 @@
                 {/if}
               </div>
             {/if}
+            {if $prettyblock_cover_link}
+              <a href="{$prettyblock_cover_link|escape:'htmlall'}" class="prettyblock-cover-full-link stretched-link" aria-label="{$state.title|default:''|escape:'htmlall'}"></a>
+            {/if}
           </div>
         </div>
         {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
@@ -150,6 +154,7 @@
         {/if}
       {/capture}
       {assign var='prettyblock_cover_state_style' value=$smarty.capture.prettyblock_cover_state_style|trim}
+      {assign var='prettyblock_cover_link' value=$state.cover_link|default:''}
       {assign var='prettyblock_cover_item_base_class' value='prettyblock-cover-item'}
       {if $use_columns_layout}
         {assign var='prettyblock_cover_item_base_class' value=$columns_item_classes}
@@ -199,6 +204,9 @@
                 <a href="{$state.btn2_link|escape:'htmlall'}" class="btn btn-{$state.btn2_type|escape:'htmlall'}">{$state.btn2_text|escape:'htmlall'}</a>
               {/if}
             </div>
+          {/if}
+          {if $prettyblock_cover_link}
+            <a href="{$prettyblock_cover_link|escape:'htmlall'}" class="prettyblock-cover-full-link stretched-link" aria-label="{$state.title|default:''|escape:'htmlall'}"></a>
           {/if}
         </div>
       </div>

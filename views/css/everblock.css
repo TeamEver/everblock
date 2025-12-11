@@ -730,6 +730,21 @@
     align-items: center;
     text-align: center;
     padding: 1rem;
+    z-index: 2;
+}
+
+.prettyblock-cover-overlay > * {
+    position: relative;
+    z-index: 2;
+}
+
+.prettyblock-cover-full-link {
+    z-index: 3;
+}
+
+.prettyblock-cover-overlay .btn {
+    position: relative;
+    z-index: 4;
 }
 
 .prettyblock-cover-overlay.position-desktop-top {
