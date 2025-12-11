@@ -401,7 +401,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         return strip_tags($content, '<p><br><strong><em><ul><ol><li><span><div><a>');
     }
 
-    private function sanitizeUrl($value)
+    protected function sanitizeUrl($value)
     {
         if (!is_scalar($value)) {
             return null;
