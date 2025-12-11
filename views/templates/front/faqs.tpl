@@ -5,18 +5,52 @@
 {/block}
 
 {block name='page_content'}
-  <section class="everblock-faqs-list">
+  <section class="everblock-faqs-list" aria-label="{l s='Frequently asked questions' mod='everblock' d='Modules.Everblock.Front'}">
     <header class="mb-4">
-      {if $everblock_is_all_faqs_page}
-        <h1 class="h2 mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
-        <p class="text-muted mb-0">{l s='All frequently asked questions across every available group.' mod='everblock' d='Modules.Everblock.Front'}</p>
-      {else}
-        <h1 class="h2 mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'} - {$everblock_tag_name|escape:'htmlall':'UTF-8'}</h1>
-        <p class="text-muted mb-0">{l s='All frequently asked questions grouped by this tag.' mod='everblock' d='Modules.Everblock.Front'}</p>
-      {/if}
+      <div class="everblock-faqs-hero">
+        <div>
+          {if $everblock_is_all_faqs_page}
+            <h1 class="h2 mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
+            <p class="text-muted mb-0">{l s='Browse every question and answer available across all groups.' mod='everblock' d='Modules.Everblock.Front'}</p>
+          {else}
+            <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+              <h1 class="h2 mb-0">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
+              <span class="badge bg-primary everblock-faqs-tag" aria-label="{l s='Current FAQ tag' mod='everblock' d='Modules.Everblock.Front'}">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</span>
+            </div>
+            <p class="text-muted mb-0">{l s='All frequently asked questions grouped by this tag.' mod='everblock' d='Modules.Everblock.Front'}</p>
+          {/if}
+        </div>
+
+        {if $everblock_faqs|@count}
+          <div class="everblock-faqs-meta">
+            <div class="everblock-faqs-meta__item">
+              <span class="everblock-faqs-meta__label">{l s='Questions' mod='everblock' d='Modules.Everblock.Front'}</span>
+              <strong class="everblock-faqs-meta__value">{$everblock_faqs|@count}</strong>
+            </div>
+            {if !$everblock_is_all_faqs_page && isset($everblock_tag_name)}
+              <div class="everblock-faqs-meta__item">
+                <span class="everblock-faqs-meta__label">{l s='Group' mod='everblock' d='Modules.Everblock.Front'}</span>
+                <strong class="everblock-faqs-meta__value">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</strong>
+              </div>
+            {/if}
+          </div>
+        {/if}
+      </div>
     </header>
 
     {if $everblock_faqs|@count}
+      <div class="everblock-faqs-nav mb-4" aria-label="{l s='Jump to a question' mod='everblock' d='Modules.Everblock.Front'}">
+        <h2 class="h5 mb-3">{l s='Quick navigation' mod='everblock' d='Modules.Everblock.Front'}</h2>
+        <div class="everblock-faqs-nav__list" role="list">
+          {foreach from=$everblock_faqs item=faq}
+            <a class="everblock-faqs-nav__link" href="#headingEverFaq{$faq->id_everblock_faq}" role="listitem">
+              <span class="everblock-faqs-nav__title">{$faq->title}</span>
+              <span class="everblock-faqs-nav__pill">{l s='View answer' mod='everblock' d='Modules.Everblock.Front'}</span>
+            </a>
+          {/foreach}
+        </div>
+      </div>
+
       {assign var='everFaqs' value=$everblock_faqs}
       {include file='module:everblock/views/templates/hook/faq.tpl'}
 
