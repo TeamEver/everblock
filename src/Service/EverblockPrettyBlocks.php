@@ -2491,6 +2491,36 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Number of products to display (0 for default)'),
                             'default' => 0,
                         ],
+                        'slider' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable slider'),
+                            'default' => 0,
+                        ],
+                        'slider_devices' => [
+                            'type' => 'select',
+                            'label' => $module->l('Enable slider on'),
+                            'choices' => [
+                                'both' => $module->l('Desktop and mobile'),
+                                'desktop' => $module->l('Desktop only'),
+                                'mobile' => $module->l('Mobile only'),
+                            ],
+                            'default' => 'both',
+                        ],
+                        'products_per_slide_desktop' => [
+                            'type' => 'text',
+                            'label' => $module->l('Products per slide on desktop'),
+                            'default' => '4',
+                        ],
+                        'products_per_slide_tablet' => [
+                            'type' => 'text',
+                            'label' => $module->l('Products per slide on tablet'),
+                            'default' => '2',
+                        ],
+                        'products_per_slide_mobile' => [
+                            'type' => 'text',
+                            'label' => $module->l('Products per slide on mobile'),
+                            'default' => '1',
+                        ],
                         'css_class' => [
                             'type' => 'text',
                             'label' => $module->l('Custom CSS class'),
