@@ -27,6 +27,7 @@
 {capture assign=instructionsHtml}{$block.settings.instructions nofilter}{/capture}
 {assign var=startDate value=$block.settings.start_date|default:''}
 {assign var=restrictToCurrent value=$block.settings.restrict_to_current_day|default:true}
+{assign var=allowPastWindows value=$block.settings.allow_past_windows|default:false}
 {assign var=openedLabel value=$block.settings.opened_label|default:{l s='Opened' mod='everblock'}}
 {if isset($block.settings.snow_enabled)}
     {assign var=snowEnabled value=$block.settings.snow_enabled|@boolval}
@@ -39,6 +40,7 @@
     'token' => $static_token,
     'startDate' => $startDate,
     'restrictToCurrentDay' => (bool) $restrictToCurrent,
+    'allowPastWindows' => (bool) $allowPastWindows,
     'lockedMessage' => $lockedMessageHtml,
     'openedLabel' => $openedLabel,
     'snowEnabled' => (bool) $snowEnabled,

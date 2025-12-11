@@ -2402,6 +2402,7 @@ $(document).ready(function(){
             isEmployee = !!everblock_is_employee;
         }
         var restrictToCurrentDay = !!config.restrictToCurrentDay && !isEmployee;
+        var allowPastWindows = !!config.allowPastWindows || isEmployee;
         var startDate = parseDateValue(config.startDate);
         var now = new Date();
         var defaultStart = new Date(now.getFullYear(), 11, 1);
@@ -2632,7 +2633,7 @@ $(document).ready(function(){
                 var windowDate = addDays(startDate, day - 1);
                 $window.data('availableOn', windowDate);
                 if (restrictToCurrentDay) {
-                    if (sameDay(windowDate, today)) {
+                    if (sameDay(windowDate, today) || (allowPastWindows && windowDate < today)) {
                         $window.addClass('ever-advent-calendar__window--available');
                     } else {
                         lockWindow($window);

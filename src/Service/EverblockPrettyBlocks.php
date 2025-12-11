@@ -4038,6 +4038,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Calendar start date (YYYY-MM-DD)'),
                             'default' => date('Y') . '-12-01',
                         ],
+                        'allow_past_windows' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Allow opening past windows'),
+                            'default' => false,
+                        ],
                         'restrict_to_current_day' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Allow only the current day to be opened'),
