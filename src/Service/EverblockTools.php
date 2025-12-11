@@ -4404,31 +4404,39 @@ class EverblockTools extends ObjectModel
 
     public static function obfuscateTextByClass(string $text): string
     {
-        $pattern = '/<a\s+(.*?)>/i';
-        preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
-        foreach ($matches as $match) {
-            $wholeTag = $match[0];
-            $attributesPart = $match[1];
-            // Vérifie si la classe 'obfme' est présente
-            if (preg_match('/\bclass="[^"]*\bobfme\b[^"]*"/', $wholeTag) || preg_match("/\bclass='[^']*\\bobfme\\b[^']*'/", $wholeTag)) {
-                // Extraire l'URL
-                preg_match('/href="([^"]*)"/i', $wholeTag, $urlMatch);
-                $linkUrl = $urlMatch[1];
-                $encodedLink = base64_encode($linkUrl);
+        // Capturer uniquement <a ...obfme...>CONTENU</a>
+        $pattern = '/<a([^>]*)class=("|\')[^"\']*\bobfme\b[^"\']*\2([^>]*)>(.*?)<\/a>/is';
 
-                $newClassAttribute = preg_replace_callback(
-                    '/\bclass=("|\')([^"\']*)("|\')/i',
-                    function ($classMatch) {
-                        return 'class=' . $classMatch[1] . $classMatch[2] . ' obflink' . $classMatch[3];
-                    },
-                    $attributesPart
-                );
-                $newAttributesPart = preg_replace('/href="([^"]*)"/i', 'data-obflink="' . $encodedLink . '"', $newClassAttribute);
-                $newTag = '<span ' . $newAttributesPart . '>';
-                $text = str_replace($wholeTag, $newTag, $text);
-            }
-        }
-        return $text;
+        return preg_replace_callback($pattern, function ($m) {
+
+            $attrsBefore = trim($m[1]);
+            $quote = $m[2];
+            $attrsAfter  = trim($m[3]);
+            $innerHtml = $m[4];
+
+            $attributes = trim($attrsBefore . ' ' . $attrsAfter);
+
+            // Extraire href
+            preg_match('/href=("|\')(.*?)\1/i', $attributes, $hrefMatch);
+            $href = $hrefMatch[2] ?? '';
+            $encoded = base64_encode($href);
+
+            // Ajouter class obflink
+            $attributes = preg_replace(
+                '/class=("|\')([^"\']*)(\1)/i',
+                'class=$1$2 obflink$3',
+                $attributes
+            );
+
+            // Remplacer href par data-obflink
+            $attributes = preg_replace(
+                '/href=("|\')(.*?)\1/i',
+                'data-obflink="' . $encoded . '"',
+                $attributes
+            );
+
+            return '<span ' . $attributes . '>' . $innerHtml . '</span>';
+        }, $text);
     }
 
     public static function obfuscateText(string $text): string
