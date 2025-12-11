@@ -4404,59 +4404,53 @@ class EverblockTools extends ObjectModel
 
     public static function obfuscateTextByClass(string $text): string
     {
-        $pattern = '/<a\s+([^>]*\bclass=("|\')([^"\']*\bobfme\b[^"\']*)("|\')[^>]*)>(.*?)<\/a>/is';
-
-        return preg_replace_callback($pattern, function ($match) {
+        $pattern = '/<a\s+(.*?)>/i';
+        preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $wholeTag = $match[0];
             $attributesPart = $match[1];
-            $linkContent = $match[5];
+            // Vérifie si la classe 'obfme' est présente
+            if (preg_match('/\bclass="[^"]*\bobfme\b[^"]*"/', $wholeTag) || preg_match("/\bclass='[^']*\\bobfme\\b[^']*'/", $wholeTag)) {
+                // Extraire l'URL
+                preg_match('/href="([^"]*)"/i', $wholeTag, $urlMatch);
+                $linkUrl = $urlMatch[1];
+                $encodedLink = base64_encode($linkUrl);
 
-            // Extraire l'URL
-            preg_match('/href="([^"]*)"/i', $attributesPart, $urlMatch);
-            $linkUrl = !empty($urlMatch[1]) ? $urlMatch[1] : '';
-            $encodedLink = base64_encode($linkUrl);
-
-            $newAttributes = preg_replace_callback(
-                '/\bclass=("|\')([^"\']*)("|\')/i',
-                function ($classMatch) {
-                    return 'class=' . $classMatch[1] . trim($classMatch[2] . ' obflink') . $classMatch[3];
-                },
-                $attributesPart
-            );
-
-            // Supprimer l'attribut href et ajouter data-obflink
-            $newAttributes = preg_replace('/\s*href="[^"]*"/i', '', $newAttributes);
-            $newAttributes = trim($newAttributes);
-
-            return '<span ' . $newAttributes . ' data-obflink="' . $encodedLink . '">' . $linkContent . '</span>';
-        }, $text);
+                $newClassAttribute = preg_replace_callback(
+                    '/\bclass=("|\')([^"\']*)("|\')/i',
+                    function ($classMatch) {
+                        return 'class=' . $classMatch[1] . $classMatch[2] . ' obflink' . $classMatch[3];
+                    },
+                    $attributesPart
+                );
+                $newAttributesPart = preg_replace('/href="([^"]*)"/i', 'data-obflink="' . $encodedLink . '"', $newClassAttribute);
+                $newTag = '<span ' . $newAttributesPart . '>';
+                $text = str_replace($wholeTag, $newTag, $text);
+            }
+        }
+        return $text;
     }
 
     public static function obfuscateText(string $text): string
     {
         // Rechercher toutes les balises <a href> dans le texte
-        $pattern = '/<a\s+([^>]*href="([^"]*)"[^>]*)>(.*?)<\/a>/is';
-
-        return preg_replace_callback($pattern, function ($match) {
-            $attributesPart = $match[1];
-            $linkUrl = $match[2];
-            $linkContent = $match[3];
+        $pattern = '/<a\s+(?:[^>]*)href="([^"]*)"([^>]*)>/i';
+        preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
+        // Parcourir les correspondances et remplacer les balises <a> par des balises <span>
+        foreach ($matches as $match) {
+            $linkUrl = $match[1];
+            $linkAttributes = $match[2];
             $encodedLink = base64_encode($linkUrl);
-
             // Obtenir les classes existantes de la balise <a>
-            preg_match('/class="([^"]*)"/i', $attributesPart, $classMatches);
-            $existingClasses = !empty($classMatches[1]) ? trim($classMatches[1]) : '';
+            preg_match('/class="([^"]*)"/i', $match[0], $classMatches);
+            $existingClasses = !empty($classMatches[1]) ? $classMatches[1] : '';
             // Ajouter la classe 'obflink' aux classes existantes
-            $classesWithObflink = trim($existingClasses . ' obflink');
-
-            // Supprimer les attributs href et class tout en conservant les autres attributs
-            $linkAttributes = preg_replace('/\s*href="[^"]*"/i', '', $attributesPart);
-            $linkAttributes = preg_replace('/\s*class="[^"]*"/i', '', $linkAttributes);
-            $linkAttributes = trim($linkAttributes);
-            $linkAttributes = $linkAttributes ? ' ' . $linkAttributes : '';
-
+            $classesWithObflink = $existingClasses . ' obflink';
             // Construire la nouvelle balise <span> avec les classes existantes et les attributs de lien
-            return '<span class="' . $classesWithObflink . '" data-obflink="' . $encodedLink . '"' . $linkAttributes . '>' . $linkContent . '</span>';
-        }, $text);
+            $newTag = '<span class="' . $classesWithObflink . '" data-obflink="' . $encodedLink . '"' . $linkAttributes . '>';
+            $text = str_replace($match[0], $newTag, $text);
+        }
+        return $text;
     }
 
     public static function getCustomerShortcodes(string $txt, Context $context): string
