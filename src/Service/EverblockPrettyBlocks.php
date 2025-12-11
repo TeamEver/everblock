@@ -2699,6 +2699,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Content'),
                             'default' => '',
                         ],
+                        'cover_link' => [
+                            'type' => 'text',
+                            'label' => $module->l('Full cover link'),
+                            'default' => '',
+                        ],
                         'background_image' => [
                             'type' => 'fileupload',
                             'label' => $module->l('Background image'),
