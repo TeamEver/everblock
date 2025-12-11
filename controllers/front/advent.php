@@ -336,20 +336,20 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         }
 
         if (!empty($window['button_url'])) {
-            $url = $this->sanitizeUrl($window['button_url']);
-            if ($url !== null) {
+            $url = $this->sanitizeUrl((string) $window['button_url']);
+            if ($url !== '') {
                 $payload['button_url'] = $url;
             }
         }
 
         if (!empty($window['image']) && is_array($window['image'])) {
-            $imageUrl = $this->sanitizeUrl($window['image']['url'] ?? '');
-            if ($imageUrl !== null) {
+            $imageUrl = $this->sanitizeUrl((string) ($window['image']['url'] ?? ''));
+            if ($imageUrl !== '') {
                 $payload['image'] = ['url' => $imageUrl];
             }
         } elseif (!empty($window['image']) && is_string($window['image'])) {
             $imageUrl = $this->sanitizeUrl($window['image']);
-            if ($imageUrl !== null) {
+            if ($imageUrl !== '') {
                 $payload['image'] = ['url' => $imageUrl];
             }
         }
@@ -401,19 +401,15 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         return strip_tags($content, '<p><br><strong><em><ul><ol><li><span><div><a>');
     }
 
-    protected function sanitizeUrl($value)
+    protected function sanitizeUrl(string $url): string
     {
-        if (!is_scalar($value)) {
-            return null;
-        }
-
-        $url = trim((string) $value);
+        $url = trim($url);
         if ($url === '') {
-            return null;
+            return '';
         }
 
         if (stripos($url, 'javascript:') === 0) {
-            return null;
+            return '';
         }
 
         if (preg_match('/^(mailto|tel):[^\s]+$/i', $url)) {
@@ -432,7 +428,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
             return $url;
         }
 
-        return null;
+        return '';
     }
 
     private function sanitizeColor($value)
