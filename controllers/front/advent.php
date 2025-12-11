@@ -113,7 +113,11 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
             ]);
         }
 
-        if ($calendarSettings['restrict_to_current_day'] && $today->format('Y-m-d') !== $windowDate->format('Y-m-d')) {
+        if (
+            $calendarSettings['restrict_to_current_day']
+            && $today->format('Y-m-d') !== $windowDate->format('Y-m-d')
+            && !($calendarSettings['allow_past_windows'] && $today > $windowDate)
+        ) {
             $this->renderJson([
                 'status' => false,
                 'message' => $this->module->l('You can only open today\'s window.', 'advent'),
@@ -181,10 +185,18 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
     private function resolveCalendarSettings(array $settings)
     {
         $restrict = true;
+        $allowPastWindows = false;
         if (array_key_exists('restrict_to_current_day', $settings)) {
             $restrictValue = $this->resolveConfigValue($settings['restrict_to_current_day']);
             if ($restrictValue !== null) {
                 $restrict = (bool) $restrictValue;
+            }
+        }
+
+        if (array_key_exists('allow_past_windows', $settings)) {
+            $allowPastValue = $this->resolveConfigValue($settings['allow_past_windows']);
+            if ($allowPastValue !== null) {
+                $allowPastWindows = (bool) $allowPastValue;
             }
         }
 
@@ -201,6 +213,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
 
         return [
             'restrict_to_current_day' => $restrict,
+            'allow_past_windows' => $allowPastWindows,
             'start_date' => $startDate,
         ];
     }
