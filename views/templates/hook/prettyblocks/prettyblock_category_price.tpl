@@ -34,7 +34,7 @@
               <a href="{$data.category_link|default:'#'}" class="d-flex flex-column align-items-center text-decoration-none h-100" title="{$data.title|escape:'htmlall'}">
                 {if $data.image_url}
                   <div class="d-flex align-items-center justify-content-center mb-2 w-100" style="height:{$imageHeight}px;">
-                    <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" class="img-fluid h-100" style="object-fit:contain;" loading="lazy">
+                    <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" class="img-fluid h-100" style="object-fit:contain;" loading="lazy"{if $data.image_width && $data.image_height} width="{$data.image_width|escape:'htmlall'}" height="{$data.image_height|escape:'htmlall'}"{/if}>
                   </div>
                 {/if}
                 {if $data.title}
@@ -63,7 +63,7 @@
               <a href="{$data.category_link|default:'#'}" class="d-flex flex-column align-items-center text-decoration-none h-100" title="{$data.title|escape:'htmlall'}">
                 {if $data.image_url}
                     <div class="d-flex align-items-center justify-content-center mb-2 w-100" style="height:{$imageHeight}px;">
-                      <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" class="img-fluid h-100" style="object-fit:contain;" loading="lazy">
+                      <img src="{$data.image_url|escape:'htmlall'}" alt="{$data.title|unescape:'html'|escape:'html':'UTF-8'}" class="img-fluid h-100" style="object-fit:contain;" loading="lazy"{if $data.image_width && $data.image_height} width="{$data.image_width|escape:'htmlall'}" height="{$data.image_height|escape:'htmlall'}"{/if}>
                     </div>
                 {/if}
                 {if $data.title}
