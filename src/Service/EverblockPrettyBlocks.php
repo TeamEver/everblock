@@ -105,6 +105,7 @@ class EverblockPrettyBlocks
             $alertTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_alert.tpl';
             $buttonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_button.tpl';
             $gmapTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gmap.tpl';
+            $customIframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_custom_iframe.tpl';
             $shortcodeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shortcode.tpl';
             $iframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_iframe.tpl';
             $scrollVideoTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_scroll_video.tpl';
@@ -2062,6 +2063,52 @@ class EverblockPrettyBlocks
                         'iframe' => [
                             'type' => 'text',
                             'label' => $module->l('Map iframe link'),
+                            'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+
+            $blocks[] = [
+                'name' => $module->l('Iframe'),
+                'description' => $module->l('Display custom iframe content'),
+                'code' => 'everblock_custom_iframe',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $customIframeTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'iframe_src' => [
+                            'type' => 'text',
+                            'label' => $module->l('Iframe source URL'),
+                            'default' => '',
+                        ],
+                        'iframe_width' => [
+                            'type' => 'text',
+                            'label' => $module->l('Iframe width (like 100% or 600px)'),
+                            'default' => '100%',
+                        ],
+                        'iframe_height' => [
+                            'type' => 'text',
+                            'label' => $module->l('Iframe height (like 400 or 400px)'),
+                            'default' => '400',
+                        ],
+                        'allow_fullscreen' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Allow fullscreen'),
+                            'default' => true,
+                        ],
+                        'loading_behavior' => [
+                            'type' => 'text',
+                            'label' => $module->l('Loading attribute (like lazy)'),
+                            'default' => 'lazy',
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
                     ], $module),
