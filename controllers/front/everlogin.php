@@ -1,5 +1,4 @@
 <?php
-
 /**
  * 2019-2022 Team Ever
  *
@@ -26,54 +25,77 @@ class EverblockEverloginModuleFrontController extends ModuleFrontController
 {
     public function initContent()
     {
-        if (!Tools::getIsset('evertoken')
-            || $this->module->encrypt($this->module->name . '/everlogin') != Tools::getValue('evertoken')
+        // 🔐 Sécurité du token
+        if (
+            !Tools::getIsset('evertoken')
+            || Tools::encrypt($this->module->name . '/everlogin') !== Tools::getValue('evertoken')
             || !Module::isInstalled($this->module->name)
         ) {
             Tools::redirect('index.php');
         }
-        if (!Tools::getValue('id_ever_customer')) {
+
+        $idCustomer = (int) Tools::getValue('id_ever_customer');
+        if ($idCustomer <= 0) {
             Tools::redirect('index.php');
         }
-        $updatedVersion = Tools::version_compare(_PS_VERSION_, '1.7.6.6', '>=') ? true : false;
-        $customer = new Customer(
-            (int) Tools::getValue('id_ever_customer')
-        );
-        if (Validate::isLoadedObject($customer)) {
-            if ($this->context->customer->isLogged()) {
-                $this->context->customer->logout();
-            }
-            $customer->logged = 1;
-            $this->context->cookie->id_customer = (int) $customer->id;
-            $this->context->cookie->customer_lastname = $customer->lastname;
-            $this->context->cookie->customer_firstname = $customer->firstname;
-            $this->context->cookie->passwd = $customer->passwd;
-            $this->context->cookie->logged = 1;
-            $this->context->cookie->email = $customer->email;
-            $this->context->cookie->secure_key = $customer->secure_key;
-            $this->context->cookie->is_guest = $customer->isGuest();
-            $this->context->cart->secure_key = $customer->secure_key;
-            // Use this cookie to see if user have been logged from admin
-            $this->context->cookie->__set(
-                'everlogin',
-                true
-            );
-            if (Tools::getValue('ever_id_cart')
-                && Validate::isInt(Tools::getValue('ever_id_cart'))
-            ) {
-                $cart = new Cart(
-                    (int) Tools::getValue('ever_id_cart')
-                );
-                if (Validate::isLoadedObject($cart)) {
-                    $this->context->cart = $cart;
-                    $this->context->cookie->id_cart = $cart->id;
-                }
-            }
-            if ((bool) $updatedVersion === true) {
-                $this->context->cookie->registerSession(new CustomerSession());
-            }
-            Tools::redirect('index.php?controller=my-account');
+
+        $customer = new Customer($idCustomer);
+        if (!Validate::isLoadedObject($customer)) {
+            Tools::redirect('index.php');
         }
-        parent::initContent();
+
+        // 🔄 Déconnexion propre si déjà loggué
+        if ($this->context->customer->isLogged()) {
+            $this->context->customer->logout();
+        }
+
+        /**
+         * ✅ CONNEXION CLIENT PROPRE
+         */
+        $this->context->customer = $customer;
+        $this->context->updateCustomer($customer);
+
+        /**
+         * 🛒 CRÉATION D'UN PANIER PROPRE (IMPORTANT)
+         * ❌ ne jamais réutiliser un panier invité
+         */
+        $cart = new Cart();
+        $cart->id_customer = (int) $customer->id;
+        $cart->id_currency = (int) $this->context->currency->id;
+        $cart->id_lang = (int) $this->context->language->id;
+        $cart->id_shop = (int) $this->context->shop->id;
+        $cart->secure_key = $customer->secure_key;
+        $cart->add();
+
+        $this->context->cart = $cart;
+        $this->context->cookie->id_cart = (int) $cart->id;
+
+        /**
+         * 🍪 Synchronisation complète du cookie
+         */
+        $this->context->cookie->id_customer = (int) $customer->id;
+        $this->context->cookie->customer_lastname = $customer->lastname;
+        $this->context->cookie->customer_firstname = $customer->firstname;
+        $this->context->cookie->email = $customer->email;
+        $this->context->cookie->passwd = $customer->passwd;
+        $this->context->cookie->logged = 1;
+        $this->context->cookie->is_guest = (int) $customer->isGuest();
+        $this->context->cookie->secure_key = $customer->secure_key;
+
+        // 🧠 Flag interne (utile pour debug / hooks)
+        $this->context->cookie->__set('everlogin', true);
+
+        /**
+         * 🧠 Session PS 1.7.6+ / PS 8
+         */
+        if (method_exists($this->context->cookie, 'registerSession')) {
+            $this->context->cookie->registerSession(new CustomerSession());
+        }
+
+        /**
+         * 🔁 REDIRECTION AVEC FLAG
+         * => permet de forcer un reload JS propre
+         */
+        Tools::redirect('index.php?controller=my-account&from=everlogin');
     }
 }
