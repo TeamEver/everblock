@@ -3,6 +3,19 @@ services:
         autowire: true
         autoconfigure: true
 
+    Everblock\Tools\Controller\:
+        resource: '../src/Controller'
+        public: true
+        tags: ['controller.service_arguments']
+
+    Everblock\Tools\Form\:
+        resource: '../src/Form'
+        public: true
+
+    Everblock\Tools\Service\Configuration\:
+        resource: '../src/Service/Configuration'
+        public: true
+
     everblock.tools.import:
         class: Everblock\Tools\Command\ImportFileCommand
         public: true
@@ -44,4 +57,3 @@ services:
         public: true
         tags:
             - { name: 'console.command' }
-
