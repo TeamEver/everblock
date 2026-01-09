@@ -74,7 +74,7 @@
                             {if $useDesktopSlider}
                                 {assign var='carouselIdDesktop' value="category-tabs-carousel-desktop-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
                                 <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-none d-md-block">
-                                    <div id="{$carouselIdDesktop}" class="carousel slide prettyblocks-image-slider" data-ride="false" data-bs-ride="false" data-bs-wrap="true">
+                                    <div id="{$carouselIdDesktop}" class="carousel slide prettyblocks-image-slider" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
                                         <div class="carousel-inner products">
                                             {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                             {foreach from=$block.extra.products[$key] item=product name=desktopProducts}
@@ -114,7 +114,7 @@
                             {if $useMobileSlider}
                                 {assign var='carouselIdMobile' value="category-tabs-carousel-mobile-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
                                 <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-block d-md-none">
-                                    <div id="{$carouselIdMobile}" class="carousel slide prettyblocks-image-slider" data-ride="false" data-bs-ride="false" data-bs-wrap="true">
+                                    <div id="{$carouselIdMobile}" class="carousel slide prettyblocks-image-slider" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
                                         <div class="carousel-inner products">
                                             {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                             {foreach from=$block.extra.products[$key] item=product name=mobileProducts}
