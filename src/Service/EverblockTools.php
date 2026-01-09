@@ -4404,6 +4404,9 @@ class EverblockTools extends ObjectModel
 
     public static function obfuscateTextByClass(string $text): string
     {
+        if ((bool) Configuration::get('EVERBLOCK_USE_OBF') === false) {
+            return $text;
+        }
         // Capturer uniquement <a ...obfme...>CONTENU</a>
         $pattern = '/<a([^>]*)class=("|\')[^"\']*\bobfme\b[^"\']*\2([^>]*)>(.*?)<\/a>/is';
 
