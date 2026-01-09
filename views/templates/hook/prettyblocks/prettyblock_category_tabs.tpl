@@ -35,7 +35,7 @@
                 {foreach from=$block.states item=state key=key name=categorytabs}
                     {assign var='tabId' value="tab-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key}
                     <li class="nav-item">
-                        <a class="nav-link {if $smarty.foreach.categorytabs.first}active{/if}" id="{$tabId}-tab" data-toggle="tab" data-bs-toggle="tab" data-bs-target="#{$tabId}" href="#{$tabId}" role="tab" aria-controls="{$tabId}" aria-selected="{if $smarty.foreach.categorytabs.first}true{else}false{/if}">
+                        <a class="nav-link {if $smarty.foreach.categorytabs.first}active{/if}" id="{$tabId}-tab" data-toggle="tab" data-bs-toggle="tab" data-bs-target="#{$tabId}" href="#{$tabId}" role="tab" aria-controls="{$tabId}" aria-selected="{if $smarty.foreach.categorytabs.first}true{else}false{/if}" title="{$state.name|escape:'htmlall'}">
                             {$state.name}
                         </a>
                     </li>

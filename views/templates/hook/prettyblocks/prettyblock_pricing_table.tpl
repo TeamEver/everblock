@@ -45,7 +45,7 @@
             </ul>
           {/if}
           {if $state.cta_url && $state.cta_label}
-            <a href="{$state.cta_url|escape:'htmlall'}" class="btn btn-primary">{$state.cta_label|escape:'htmlall'}</a>
+            <a href="{$state.cta_url|escape:'htmlall'}" class="btn btn-primary" title="{$state.cta_label|escape:'htmlall'}">{$state.cta_label|escape:'htmlall'}</a>
           {/if}
         </div>
       </div>

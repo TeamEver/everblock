@@ -37,7 +37,7 @@
             {if $state.title}<h4>{$state.title}</h4>{/if}
             {if $state.message}<p>{$state.message}</p>{/if}
             {if $state.cta_label}
-              <a href="{$state.cta_url}" class="btn btn-primary">{$state.cta_label}</a>
+              <a href="{$state.cta_url}" class="btn btn-primary" title="{$state.cta_label|escape:'htmlall'}">{$state.cta_label}</a>
             {/if}
           </div>
         </div>

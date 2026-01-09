@@ -105,15 +105,15 @@
             {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
               <div class="d-flex justify-content-center gap-2">
                 {if $state.btn1_text && $state.btn1_link}
-                  <a href="{$state.btn1_link|escape:'htmlall'}" class="btn btn-{$state.btn1_type|escape:'htmlall'}">{$state.btn1_text|escape:'htmlall'}</a>
+                  <a href="{$state.btn1_link|escape:'htmlall'}" class="btn btn-{$state.btn1_type|escape:'htmlall'}" title="{$state.btn1_text|escape:'htmlall'}">{$state.btn1_text|escape:'htmlall'}</a>
                 {/if}
                 {if $state.btn2_text && $state.btn2_link}
-                  <a href="{$state.btn2_link|escape:'htmlall'}" class="btn btn-{$state.btn2_type|escape:'htmlall'}">{$state.btn2_text|escape:'htmlall'}</a>
+                  <a href="{$state.btn2_link|escape:'htmlall'}" class="btn btn-{$state.btn2_type|escape:'htmlall'}" title="{$state.btn2_text|escape:'htmlall'}">{$state.btn2_text|escape:'htmlall'}</a>
                 {/if}
               </div>
             {/if}
             {if $prettyblock_cover_link}
-              <a href="{$prettyblock_cover_link|escape:'htmlall'}" class="prettyblock-cover-full-link stretched-link" aria-label="{$state.title|default:''|escape:'htmlall'}"></a>
+              <a href="{$prettyblock_cover_link|escape:'htmlall'}" class="prettyblock-cover-full-link stretched-link" aria-label="{$state.title|default:''|escape:'htmlall'}" title="{$state.title|default:''|escape:'htmlall'}"></a>
             {/if}
           </div>
         </div>
@@ -198,15 +198,15 @@
           {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
             <div class="d-flex justify-content-center gap-2">
               {if $state.btn1_text && $state.btn1_link}
-                <a href="{$state.btn1_link|escape:'htmlall'}" class="btn btn-{$state.btn1_type|escape:'htmlall'}">{$state.btn1_text|escape:'htmlall'}</a>
+                <a href="{$state.btn1_link|escape:'htmlall'}" class="btn btn-{$state.btn1_type|escape:'htmlall'}" title="{$state.btn1_text|escape:'htmlall'}">{$state.btn1_text|escape:'htmlall'}</a>
               {/if}
               {if $state.btn2_text && $state.btn2_link}
-                <a href="{$state.btn2_link|escape:'htmlall'}" class="btn btn-{$state.btn2_type|escape:'htmlall'}">{$state.btn2_text|escape:'htmlall'}</a>
+                <a href="{$state.btn2_link|escape:'htmlall'}" class="btn btn-{$state.btn2_type|escape:'htmlall'}" title="{$state.btn2_text|escape:'htmlall'}">{$state.btn2_text|escape:'htmlall'}</a>
               {/if}
             </div>
           {/if}
           {if $prettyblock_cover_link}
-            <a href="{$prettyblock_cover_link|escape:'htmlall'}" class="prettyblock-cover-full-link stretched-link" aria-label="{$state.title|default:''|escape:'htmlall'}"></a>
+            <a href="{$prettyblock_cover_link|escape:'htmlall'}" class="prettyblock-cover-full-link stretched-link" aria-label="{$state.title|default:''|escape:'htmlall'}" title="{$state.title|default:''|escape:'htmlall'}"></a>
           {/if}
         </div>
       </div>

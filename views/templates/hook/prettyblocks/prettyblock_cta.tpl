@@ -45,7 +45,7 @@
             {$state.content nofilter}
           {/if}
           {if $state.cta_link && $state.cta_text}
-            <a href="{$state.cta_link|escape:'htmlall'}" class="btn btn-primary btn-cta mt-3">
+            <a href="{$state.cta_link|escape:'htmlall'}" class="btn btn-primary btn-cta mt-3" title="{$state.cta_text|strip_tags|escape:'htmlall'}">
               {$state.cta_text nofilter}
             </a>
           {/if}

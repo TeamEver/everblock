@@ -39,7 +39,7 @@
             <div class="everblock-scroll-video-content">
                 {if isset($state.title) && $state.title}<h3>{$state.title|escape:'htmlall':'UTF-8'}</h3>{/if}
                 {if isset($state.content) && $state.content}<p>{$state.content|escape:'htmlall':'UTF-8'}</p>{/if}
-                {if isset($state.button_label) && $state.button_label && isset($state.button_url) && $state.button_url}<a href="{$state.button_url|escape:'htmlall':'UTF-8'}" class="btn btn-primary">{$state.button_label|escape:'htmlall':'UTF-8'}</a>{/if}
+                {if isset($state.button_label) && $state.button_label && isset($state.button_url) && $state.button_url}<a href="{$state.button_url|escape:'htmlall':'UTF-8'}" class="btn btn-primary" title="{$state.button_label|escape:'htmlall':'UTF-8'}">{$state.button_label|escape:'htmlall':'UTF-8'}</a>{/if}
             </div>
         </div>
     {/foreach}

@@ -44,7 +44,7 @@
           {/if}
           <div>
             {if isset($state.file.url) && $state.file.url}
-              <a href="{$state.file.url|escape:'htmlall'}" class="download-title" download>{$state.title|escape:'htmlall'}</a>
+              <a href="{$state.file.url|escape:'htmlall'}" class="download-title" download title="{$state.title|escape:'htmlall'}">{$state.title|escape:'htmlall'}</a>
             {else}
               <span class="download-title">{$state.title|escape:'htmlall'}</span>
             {/if}

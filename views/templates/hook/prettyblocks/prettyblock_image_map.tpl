@@ -34,7 +34,7 @@
         <div>{$block.settings.content nofilter}</div>
       {/if}
       {if $block.settings.button_link && $block.settings.button_text}
-        <a href="{$block.settings.button_link|escape:'htmlall'}" class="btn btn-primary mt-3">
+        <a href="{$block.settings.button_link|escape:'htmlall'}" class="btn btn-primary mt-3" title="{$block.settings.button_text|escape:'htmlall'}">
           {$block.settings.button_text|escape:'htmlall'}
         </a>
       {/if}

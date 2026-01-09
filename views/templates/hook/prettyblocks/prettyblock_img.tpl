@@ -80,7 +80,7 @@
             {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
           ">
             {if isset($state.url) && $state.url}
-              <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative">
+              <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative" title="{if isset($state.alt)}{$state.alt|escape:'htmlall':'UTF-8'}{else}{$shop.name|escape:'htmlall':'UTF-8'}{/if}">
             {/if}
               <picture>
                 {if isset($state.banner_mobile.url) && $state.banner_mobile.url}
@@ -152,7 +152,7 @@
             {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
           ">
             {if isset($state.url) && $state.url}
-              <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative">
+              <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative" title="{if isset($state.alt)}{$state.alt|escape:'htmlall':'UTF-8'}{else}{$shop.name|escape:'htmlall':'UTF-8'}{/if}">
             {/if}
               <picture>
                 {if isset($state.banner_mobile.url) && $state.banner_mobile.url}

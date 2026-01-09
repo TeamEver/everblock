@@ -77,7 +77,7 @@
                   <div class="prettyblock-faq-answer text-body-secondary mb-3">{$state.answer nofilter}</div>
                 {/if}
                 {if $state.link_url}
-                  <a class="prettyblock-faq-link d-inline-flex align-items-center fw-semibold" href="{$state.link_url|escape:'htmlall':'UTF-8'}">
+                  <a class="prettyblock-faq-link d-inline-flex align-items-center fw-semibold" href="{$state.link_url|escape:'htmlall':'UTF-8'}" title="{$state.link_label|default:$module->l('Learn more')|escape:'htmlall':'UTF-8'}">
                     <span>{$state.link_label|default:$module->l('Learn more')|escape:'htmlall':'UTF-8'}</span>
                     <span class="ms-2" aria-hidden="true">&rarr;</span>
                   </a>
@@ -90,7 +90,7 @@
 
       {if $block.settings.cta_link}
         <div class="mt-4 text-center">
-          <a class="btn btn-dark rounded-pill px-4 py-3 prettyblock-faq-cta" href="{$block.settings.cta_link|escape:'htmlall':'UTF-8'}">
+          <a class="btn btn-dark rounded-pill px-4 py-3 prettyblock-faq-cta" href="{$block.settings.cta_link|escape:'htmlall':'UTF-8'}" title="{$block.settings.cta_text|escape:'htmlall':'UTF-8'}">
             {$block.settings.cta_text|escape:'htmlall':'UTF-8'}
           </a>
         </div>

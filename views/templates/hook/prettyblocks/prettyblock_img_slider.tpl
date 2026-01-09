@@ -215,11 +215,11 @@
             {/foreach}
           </div>
           {if $showArrows}
-            <a class="carousel-control-prev" href="#{$carouselId}" role="button" data-slide="prev" data-bs-slide="prev">
+            <a class="carousel-control-prev" href="#{$carouselId}" role="button" data-slide="prev" data-bs-slide="prev" title="{l s='Previous' mod='everblock'}">
               <span class="carousel-control-prev-icon" aria-hidden="true"></span>
               <span class="sr-only visually-hidden">Previous</span>
             </a>
-            <a class="carousel-control-next" href="#{$carouselId}" role="button" data-slide="next" data-bs-slide="next">
+            <a class="carousel-control-next" href="#{$carouselId}" role="button" data-slide="next" data-bs-slide="next" title="{l s='Next' mod='everblock'}">
               <span class="carousel-control-next-icon" aria-hidden="true"></span>
               <span class="sr-only visually-hidden">Next</span>
             </a>
