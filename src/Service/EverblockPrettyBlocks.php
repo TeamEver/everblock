@@ -663,6 +663,44 @@ class EverblockPrettyBlocks
                             ],
                             'default' => '3',
                         ],
+                        'slider' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Enable slider'),
+                            'default' => false,
+                        ],
+                        'slider_devices' => [
+                            'type' => 'select',
+                            'label' => $module->l('Enable slider on'),
+                            'choices' => [
+                                'desktop' => $module->l('Desktop only'),
+                                'mobile' => $module->l('Mobile only'),
+                                'both' => $module->l('Desktop and mobile'),
+                            ],
+                            'default' => 'both',
+                        ],
+                        'slider_items_desktop' => [
+                            'type' => 'select',
+                            'label' => $module->l('Items per slide (desktop)'),
+                            'choices' => [
+                                '1' => $module->l('1 item'),
+                                '2' => $module->l('2 items'),
+                                '3' => $module->l('3 items'),
+                                '4' => $module->l('4 items'),
+                                '5' => $module->l('5 items'),
+                                '6' => $module->l('6 items'),
+                            ],
+                            'default' => '3',
+                        ],
+                        'slider_items_mobile' => [
+                            'type' => 'select',
+                            'label' => $module->l('Items per slide (mobile)'),
+                            'choices' => [
+                                '1' => $module->l('1 item'),
+                                '2' => $module->l('2 items'),
+                                '3' => $module->l('3 items'),
+                            ],
+                            'default' => '1',
+                        ],
                     ],
                 ],
                 'repeater' => [

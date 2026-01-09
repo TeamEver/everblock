@@ -171,14 +171,25 @@ $(document).ready(function(){
     if ($.fn.slick) {
         $('.ever-slick-carousel:not(.slick-initialised)').each(function(){
             var $carousel = $(this);
-            var slides = parseInt($carousel.data('items')) || 4;
-            $carousel.slick({
-                infinite: true,
-                arrows: false,
-                dots: true,
-                slidesToShow: slides,
-                slidesToScroll: 1,
-                responsive: [{
+            var slidesDesktop = parseInt($carousel.data('itemsDesktop'), 10);
+            if (isNaN(slidesDesktop) || slidesDesktop <= 0) {
+                slidesDesktop = parseInt($carousel.data('items'), 10) || 4;
+            }
+            var slidesMobile = parseInt($carousel.data('itemsMobile'), 10);
+            var hasCustomMobile = !isNaN(slidesMobile) && slidesMobile > 0;
+            var slides = slidesDesktop;
+            var responsiveSettings = [];
+            if (hasCustomMobile) {
+                responsiveSettings = [{
+                    breakpoint: 768,
+                    settings: {
+                        slidesToShow: slidesMobile,
+                        slidesToScroll: 1,
+                        dots: true
+                    }
+                }];
+            } else {
+                responsiveSettings = [{
                     breakpoint: 1024,
                     settings: {
                         slidesToShow: Math.min(slides,3),
@@ -200,7 +211,15 @@ $(document).ready(function(){
                         slidesToScroll: 1,
                         dots: true
                     }
-                }]
+                }];
+            }
+            $carousel.slick({
+                infinite: true,
+                arrows: false,
+                dots: true,
+                slidesToShow: slides,
+                slidesToScroll: 1,
+                responsive: responsiveSettings
             });
             $carousel.on('setPosition', function(event, slick) {
                 $(slick.$slider).find('.slick-track').addClass('row');
