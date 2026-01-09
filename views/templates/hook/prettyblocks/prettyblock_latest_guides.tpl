@@ -61,9 +61,9 @@
               {/if}
               {assign var='guide_link' value=Context::getContext()->link->getModuleLink('everblock', 'page', ['id_everblock_page' => $guide->id, 'rewrite' => $guide->link_rewrite[Context::getContext()->language->id]|default:''])}
               {if $guide_link}
-                <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="stretched-link"></a>
+                <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="stretched-link" title="{$guide->title|default:$guide->name|default:''|escape:'htmlall':'UTF-8'}"></a>
               {/if}
-              <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="btn btn-primary">
+              <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="btn btn-primary" title="{l s='Read guide' mod='everblock' d='Modules.Everblock.Front'}">
                 {l s='Read guide' mod='everblock' d='Modules.Everblock.Front'}
               </a>
             </div>

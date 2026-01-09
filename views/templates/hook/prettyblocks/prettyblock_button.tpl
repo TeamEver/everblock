@@ -32,7 +32,7 @@
                 {$state.button_content nofilter}
             </span>
             {else}
-            <a href="{$state.button_link}" class="btn btn-{$state.button_type} {if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}"{if isset($state.color) && $state.color} style="color:{$state.color|escape:'htmlall':'UTF-8'};"{/if}>
+            <a href="{$state.button_link}" class="btn btn-{$state.button_type} {if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" title="{$state.button_content|strip_tags|escape:'htmlall':'UTF-8'}"{if isset($state.color) && $state.color} style="color:{$state.color|escape:'htmlall':'UTF-8'};"{/if}>
                 {$state.button_content nofilter}
             </a>
             {/if}

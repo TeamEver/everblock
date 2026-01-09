@@ -78,10 +78,10 @@
                 <div class="mb-3">{$guide_summary nofilter}</div>
               {/if}
               {if $guide_link}
-                <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="stretched-link"{if $state.target_blank} target="_blank" rel="noopener"{/if}></a>
+                <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="stretched-link" title="{$guide_title|default:$state.cta_text|escape:'htmlall':'UTF-8'}"{if $state.target_blank} target="_blank" rel="noopener"{/if}></a>
               {/if}
               {if $guide_link && $state.cta_text}
-                <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="btn btn-primary"{if $state.target_blank} target="_blank" rel="noopener"{/if}>
+                <a href="{$guide_link|escape:'htmlall':'UTF-8'}" class="btn btn-primary" title="{$state.cta_text|escape:'htmlall':'UTF-8'}"{if $state.target_blank} target="_blank" rel="noopener"{/if}>
                   {$state.cta_text|escape:'htmlall':'UTF-8'}
                 </a>
               {/if}

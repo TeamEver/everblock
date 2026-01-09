@@ -26,7 +26,7 @@
   {/if}
 {prettyblocks_zone zone_name="block-shoppingcart-{$block.id_prettyblocks}-before"}
 <div id="_desktop_cart" class="ever-shopping-cart dropdown"  style="{$prettyblock_spacing_style}{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
-  <a rel="nofollow" aria-label="{l s='Shopping cart link containing nbProducts product(s)' sprintf=['nbProducts' => $cart.products_count] mod='everblock'}" href="{$urls.pages.cart}" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown">
+  <a rel="nofollow" aria-label="{l s='Shopping cart link containing nbProducts product(s)' sprintf=['nbProducts' => $cart.products_count] mod='everblock'}" href="{$urls.pages.cart}" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" title="{l s='View cart' mod='everblock'}">
     <i class="material-icons shopping-cart" aria-hidden="true">shopping_cart</i>
     <span class="hidden-sm-down">{l s='Cart' mod='everblock'}</span>
     <span class="cart-products-count">({$cart.products_count})</span>
@@ -53,7 +53,7 @@
       <span class="total-label">{l s='Total' mod='everblock'}</span>
       <span class="total-value">{$cart.totals.total.value}</span>
     </div>
-    <a href="{$urls.pages.cart}" class="btn btn-primary btn-block w-100 text-white">{l s='View Cart' mod='everblock'}</a>
+    <a href="{$urls.pages.cart}" class="btn btn-primary btn-block w-100 text-white" title="{l s='View Cart' mod='everblock'}">{l s='View Cart' mod='everblock'}</a>
   </div>
 </div>
 {prettyblocks_zone zone_name="block-shoppingcart-{$block.id_prettyblocks}-after"}

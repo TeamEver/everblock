@@ -34,7 +34,7 @@
             <ul class="nav nav-tabs" role="tablist">
                 {foreach from=$block.states item=state key=key}
                     <li class="nav-item">
-                        <a class="nav-link {if $key == 0}active{/if}" data-toggle="tab" data-bs-toggle="tab" href="#tab-{$block.id_prettyblocks}-{$key}" role="tab" aria-controls="tab-{$block.id_prettyblocks}-{$key}" aria-selected="{if $key == 0}true{else}false{/if}">
+                        <a class="nav-link {if $key == 0}active{/if}" data-toggle="tab" data-bs-toggle="tab" href="#tab-{$block.id_prettyblocks}-{$key}" role="tab" aria-controls="tab-{$block.id_prettyblocks}-{$key}" aria-selected="{if $key == 0}true{else}false{/if}" title="{$state.name|escape:'htmlall'}">
                             {$state.name}
                         </a>
                     </li>

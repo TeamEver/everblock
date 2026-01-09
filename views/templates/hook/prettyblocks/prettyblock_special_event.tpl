@@ -32,7 +32,7 @@
             <h2 class="mb-3" style="{if $state.text_color}color:{$state.text_color}!important;{/if}">{$state.title nofilter}</h2>
           {/if}
           {if $state.cta_link && $state.cta_text}
-            <a href="{$state.cta_link|escape:'htmlall'}" class="btn btn-primary mb-3">{$state.cta_text nofilter}</a>
+            <a href="{$state.cta_link|escape:'htmlall'}" class="btn btn-primary mb-3" title="{$state.cta_text|strip_tags|escape:'htmlall'}">{$state.cta_text nofilter}</a>
           {/if}
           {if $state.target_date}
             <div class="everblock-countdown d-flex justify-content-center" data-target="{$state.target_date|escape:'htmlall'}">

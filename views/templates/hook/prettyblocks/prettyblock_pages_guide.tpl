@@ -54,10 +54,10 @@
                 <div class="mb-3">{$state.summary nofilter}</div>
               {/if}
               {if $page_link}
-                <a href="{$page_link|escape:'htmlall':'UTF-8'}" class="stretched-link"{if $state.target_blank} target="_blank" rel="noopener"{/if}></a>
+                <a href="{$page_link|escape:'htmlall':'UTF-8'}" class="stretched-link" title="{$page_title|default:$state.cta_text|escape:'htmlall':'UTF-8'}"{if $state.target_blank} target="_blank" rel="noopener"{/if}></a>
               {/if}
               {if $page_link && $state.cta_text}
-                <a href="{$page_link|escape:'htmlall':'UTF-8'}" class="btn btn-primary"{if $state.target_blank} target="_blank" rel="noopener"{/if}>
+                <a href="{$page_link|escape:'htmlall':'UTF-8'}" class="btn btn-primary" title="{$state.cta_text|escape:'htmlall':'UTF-8'}"{if $state.target_blank} target="_blank" rel="noopener"{/if}>
                   {$state.cta_text|escape:'htmlall':'UTF-8'}
                 </a>
               {/if}

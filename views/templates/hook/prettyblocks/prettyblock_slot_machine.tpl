@@ -130,7 +130,7 @@
                                         <button class="btn btn-primary btn-block" type="submit">{l s='Sign in' mod='everblock'}</button>
                                     </form>
                                     <div class="text-center mt-3">
-                                        <a href="{$link->getPageLink('authentication', true)|escape:'htmlall':'UTF-8'}?create_account=1&back={$urls.current_url|escape:'htmlall':'UTF-8'}">{l s='Create account' mod='everblock'}</a>
+                                        <a href="{$link->getPageLink('authentication', true)|escape:'htmlall':'UTF-8'}?create_account=1&back={$urls.current_url|escape:'htmlall':'UTF-8'}" title="{l s='Create account' mod='everblock'}">{l s='Create account' mod='everblock'}</a>
                                     </div>
                                 </div>
                             </div>
