@@ -67,7 +67,7 @@
         {assign var='prettyblock_cover_state_style' value=$smarty.capture.prettyblock_cover_state_style|trim}
         {assign var='prettyblock_cover_link' value=$state.cover_link|default:''}
         <div id="block-{$block.id_prettyblocks}-{$key}"
-             class="prettyblock-cover-item{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
+             class="prettyblock-cover-item{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
             {if isset($state.background_image.url) && $state.background_image.url}
               {if $state.parallax}
                 {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
@@ -97,9 +97,11 @@
             {if $state.title}
               <{$state.title_tag|default:'h2'}{if isset($state.title_color) && $state.title_color} style="color: {$state.title_color|escape:'htmlall'}"{/if}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
             {/if}
-            {if $state.content}
-              <div class="prettyblock-cover-content">
-                {$state.content nofilter}
+            {if $state.content || $state.css_class}
+              <div class="prettyblock-cover-content{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
+                {if $state.content}
+                  {$state.content nofilter}
+                {/if}
               </div>
             {/if}
             {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
@@ -160,7 +162,7 @@
         {assign var='prettyblock_cover_item_base_class' value=$columns_item_classes}
       {/if}
       <div id="block-{$block.id_prettyblocks}-{$key}"
-           class="{$prettyblock_cover_item_base_class}{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
+           class="{$prettyblock_cover_item_base_class}{if $state.parallax} prettyblock-cover-item--parallax{/if}"{if $prettyblock_cover_state_style} style="{$prettyblock_cover_state_style}"{/if}>
         {if isset($state.background_image.url) && $state.background_image.url}
           {if $state.parallax}
             {if isset($state.background_image_mobile.url) && $state.background_image_mobile.url}
@@ -190,9 +192,11 @@
           {if $state.title}
             <{$state.title_tag|default:'h2'}{if isset($state.title_color) && $state.title_color} style="color: {$state.title_color|escape:'htmlall'}"{/if}>{$state.title|escape:'htmlall'}</{$state.title_tag|default:'h2'}>
           {/if}
-          {if $state.content}
-            <div class="prettyblock-cover-content">
-              {$state.content nofilter}
+          {if $state.content || $state.css_class}
+            <div class="prettyblock-cover-content{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}">
+              {if $state.content}
+                {$state.content nofilter}
+              {/if}
             </div>
           {/if}
           {if ($state.btn1_text && $state.btn1_link) || ($state.btn2_text && $state.btn2_link)}
