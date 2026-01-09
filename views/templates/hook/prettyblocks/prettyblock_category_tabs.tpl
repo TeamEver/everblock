@@ -49,17 +49,30 @@
                     {assign var='sliderDevices' value=$state.slider_devices|default:'both'}
                     {assign var='useDesktopSlider' value=($useSlider && ($sliderDevices == 'both' || $sliderDevices == 'desktop'))}
                     {assign var='useMobileSlider' value=($useSlider && ($sliderDevices == 'both' || $sliderDevices == 'mobile'))}
+                    {assign var='productCount' value=0}
+                    {if isset($block.extra.products[$key]) && $block.extra.products[$key]}
+                        {assign var='productCount' value=$block.extra.products[$key]|@count}
+                    {/if}
                     {assign var='desktopItems' value=$state.products_per_slide_desktop|default:4|intval}
                     {if $desktopItems < 1}
                         {assign var='desktopItems' value=1}
+                    {/if}
+                    {if $productCount > 0 && $productCount < $desktopItems}
+                        {assign var='desktopItems' value=$productCount}
                     {/if}
                     {assign var='tabletItems' value=$state.products_per_slide_tablet|default:2|intval}
                     {if $tabletItems < 1}
                         {assign var='tabletItems' value=1}
                     {/if}
+                    {if $productCount > 0 && $productCount < $tabletItems}
+                        {assign var='tabletItems' value=$productCount}
+                    {/if}
                     {assign var='mobileItems' value=$state.products_per_slide_mobile|default:2|intval}
                     {if $mobileItems < 1}
                         {assign var='mobileItems' value=1}
+                    {/if}
+                    {if $productCount > 0 && $productCount < $mobileItems}
+                        {assign var='mobileItems' value=$productCount}
                     {/if}
                     {math equation="ceil(12 / x)" x=$mobileItems assign='mobileColumnWidth'}
                     {math equation="ceil(12 / x)" x=$tabletItems assign='tabletColumnWidth'}
@@ -90,11 +103,11 @@
                                             {/foreach}
                                             {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                         </div>
-                                        <button class="carousel-control-prev" type="button" data-bs-target="#{$carouselIdDesktop}" data-bs-slide="prev">
+                                        <button class="carousel-control-prev" type="button" data-target="#{$carouselIdDesktop}" data-slide="prev" data-bs-target="#{$carouselIdDesktop}" data-bs-slide="prev">
                                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                             <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
                                         </button>
-                                        <button class="carousel-control-next" type="button" data-bs-target="#{$carouselIdDesktop}" data-bs-slide="next">
+                                        <button class="carousel-control-next" type="button" data-target="#{$carouselIdDesktop}" data-slide="next" data-bs-target="#{$carouselIdDesktop}" data-bs-slide="next">
                                             <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                             <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
                                         </button>
@@ -130,11 +143,11 @@
                                             {/foreach}
                                             {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                         </div>
-                                        <button class="carousel-control-prev" type="button" data-bs-target="#{$carouselIdMobile}" data-bs-slide="prev">
+                                        <button class="carousel-control-prev" type="button" data-target="#{$carouselIdMobile}" data-slide="prev" data-bs-target="#{$carouselIdMobile}" data-bs-slide="prev">
                                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                             <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
                                         </button>
-                                        <button class="carousel-control-next" type="button" data-bs-target="#{$carouselIdMobile}" data-bs-slide="next">
+                                        <button class="carousel-control-next" type="button" data-target="#{$carouselIdMobile}" data-slide="next" data-bs-target="#{$carouselIdMobile}" data-bs-slide="next">
                                             <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                             <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
                                         </button>
