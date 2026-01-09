@@ -354,7 +354,7 @@ $(document).ready(function(){
         });
     });
 
-    $(document).on('click', '.everblock-modal-button', function(e) {
+    $(document).on('click', '.everblock-modal-button, [data-everclickmodal]', function(e) {
         e.preventDefault();
         let blockId = $(this).data('everclickmodal');
         let cmsId = $(this).data('evercms');
