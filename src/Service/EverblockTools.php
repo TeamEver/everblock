@@ -6117,10 +6117,13 @@ class EverblockTools extends ObjectModel
     {
         // Parse the current domain and the image URL
         $parsedUrl = parse_url($url);
-        $currentDomain = Tools::getHttpHost(true) . __PS_BASE_URI__;
+        $currentHost = parse_url(Tools::getHttpHost(true), PHP_URL_HOST);
+        if (!$currentHost) {
+            $currentHost = Tools::getHttpHost(false);
+        }
 
         // Check if the image is hosted on a different domain
-        if (isset($parsedUrl['host']) && $parsedUrl['host'] !== $currentDomain) {
+        if (isset($parsedUrl['host']) && $currentHost && $parsedUrl['host'] !== $currentHost) {
             // Download the image and return the local file path
             return self::downloadImage($url);
         } else {
@@ -6142,7 +6145,7 @@ class EverblockTools extends ObjectModel
             $localPath = _PS_ROOT_DIR_ . '/img/cms/' . $fileName;
 
             // Download the image
-            $imageContents = file_get_contents($url);
+            $imageContents = Tools::file_get_contents($url);
             if ($imageContents === false) {
                 return false; // Return false if the download failed
             }
