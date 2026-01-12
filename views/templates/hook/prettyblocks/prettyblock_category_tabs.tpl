@@ -82,6 +82,11 @@
                     {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-lg-"|cat:$desktopColumnWidth}
                     {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-xl-"|cat:$desktopColumnWidth}
                     <div class="tab-pane {if $smarty.foreach.categorytabs.first}show active{/if}{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" id="{$tabId}" role="tabpanel" aria-labelledby="{$tabId}-tab"style="{$prettyblock_state_spacing_style}{if isset($state.background_color) && $state.background_color}background-color:{$state.background_color|escape:'htmlall':'UTF-8'};{/if}{if isset($state.text_color) && $state.text_color}color:{$state.text_color|escape:'htmlall':'UTF-8'};{/if}">
+                        {if isset($state.html_before_products) && $state.html_before_products}
+                            <div class="prettyblock-category-tabs__intro">
+                                {$state.html_before_products nofilter}
+                            </div>
+                        {/if}
                         {if isset($block.extra.products[$key]) && $block.extra.products[$key]}
                         {if $useDesktopSlider || $useMobileSlider}
                             {if $useDesktopSlider}

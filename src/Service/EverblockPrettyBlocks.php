@@ -2563,6 +2563,11 @@ class EverblockPrettyBlocks
                             'label' => 'Tab title',
                             'default' => Configuration::get('PS_SHOP_NAME'),
                         ],
+                        'html_before_products' => [
+                            'type' => 'editor',
+                            'label' => $module->l('HTML content before products'),
+                            'default' => '',
+                        ],
                         'id_categories' => [
                             'type' => 'selector',
                             'label' => $module->l('Categories'),
