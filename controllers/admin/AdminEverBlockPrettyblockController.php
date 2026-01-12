@@ -38,6 +38,10 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
     private $hasActiveColumn = false;
     private $hasDateAddColumn = false;
     private $hasDateUpdColumn = false;
+    private $shopField;
+    private $shopFilterKey;
+    private $langField;
+    private $langFilterKey;
 
     protected function displayConfirmation($message)
     {
@@ -121,19 +125,53 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
         $this->hasDateUpdColumn = $this->hasColumn('date_upd');
 
         if ($this->hasColumn('id_hook')) {
-            $this->_select = 'a.*, h.title AS hook_title';
-            $this->_join = 'LEFT JOIN `' . _DB_PREFIX_ . 'hook` h ON (h.`id_hook` = a.`id_hook`)';
-            $this->hookField = 'hook_title';
-            $this->hookFilterKey = 'h!title';
+            $this->appendSelect('h.name AS hook_name');
+            $this->appendJoin('LEFT JOIN `' . _DB_PREFIX_ . 'hook` h ON (h.`id_hook` = a.`id_hook`)');
+            $this->hookField = 'hook_name';
+            $this->hookFilterKey = 'h!name';
         } elseif ($this->hasColumn('hook')) {
             $this->hookField = 'hook';
             $this->hookFilterKey = 'a!hook';
+        }
+
+        if ($this->hasShopColumn) {
+            $this->appendSelect('s.name AS shop_name');
+            $this->appendJoin('LEFT JOIN `' . _DB_PREFIX_ . 'shop` s ON (s.`id_shop` = a.`id_shop`)');
+            $this->shopField = 'shop_name';
+            $this->shopFilterKey = 's!name';
+        }
+
+        if ($this->hasLangColumn) {
+            $this->appendSelect('l.iso_code AS lang_code');
+            $this->appendJoin('LEFT JOIN `' . _DB_PREFIX_ . 'lang` l ON (l.`id_lang` = a.`id_lang`)');
+            $this->langField = 'lang_code';
+            $this->langFilterKey = 'l!iso_code';
         }
 
         $this->nameField = $this->resolveNameField();
         if ($this->nameField) {
             $this->nameFilterKey = 'a!' . $this->nameField;
         }
+    }
+
+    private function appendSelect(string $select): void
+    {
+        if (empty($this->_select)) {
+            $this->_select = $select;
+            return;
+        }
+
+        $this->_select .= ', ' . $select;
+    }
+
+    private function appendJoin(string $join): void
+    {
+        if (empty($this->_join)) {
+            $this->_join = $join;
+            return;
+        }
+
+        $this->_join .= ' ' . $join;
     }
 
     private function hasColumn(string $column): bool
@@ -197,25 +235,25 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             ];
         }
 
-        if ($this->hasShopColumn) {
-            $fields['id_shop'] = [
+        if ($this->hasShopColumn && $this->shopField) {
+            $fields[$this->shopField] = [
                 'title' => $this->l('Shop'),
                 'align' => 'left',
                 'width' => 'auto',
                 'search' => true,
                 'orderby' => true,
-                'filter_key' => 'a!id_shop',
+                'filter_key' => $this->shopFilterKey,
             ];
         }
 
-        if ($this->hasLangColumn) {
-            $fields['id_lang'] = [
+        if ($this->hasLangColumn && $this->langField) {
+            $fields[$this->langField] = [
                 'title' => $this->l('Language'),
                 'align' => 'left',
                 'width' => 'auto',
                 'search' => true,
                 'orderby' => true,
-                'filter_key' => 'a!id_lang',
+                'filter_key' => $this->langFilterKey,
             ];
         }
 
@@ -371,64 +409,68 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
 
         if ($this->hasShopColumn) {
             $shops = Shop::getShops(false);
-            $options = '';
-            foreach ($shops as $shop) {
-                $selectedFrom = (int) $shop['id_shop'] === (int) $this->context->shop->id ? ' selected="selected"' : '';
-                $options .= sprintf(
-                    '<option value="%d"%s>%s</option>',
-                    (int) $shop['id_shop'],
-                    $selectedFrom,
-                    Tools::safeOutput((string) $shop['name'])
-                );
-            }
+            if (count($shops) > 1) {
+                $options = '';
+                foreach ($shops as $shop) {
+                    $selectedFrom = (int) $shop['id_shop'] === (int) $this->context->shop->id ? ' selected="selected"' : '';
+                    $options .= sprintf(
+                        '<option value="%d"%s>%s</option>',
+                        (int) $shop['id_shop'],
+                        $selectedFrom,
+                        Tools::safeOutput((string) $shop['name'])
+                    );
+                }
 
-            $forms .= '<div class="panel">';
-            $forms .= '<h3><i class="icon-copy"></i> ' . $this->l('Duplicate between shops') . '</h3>';
-            $forms .= '<form method="post" action="' . $action . '">';
-            $forms .= '<div class="form-group">';
-            $forms .= '<label class="control-label">' . $this->l('From shop') . '</label>';
-            $forms .= '<select name="prettyblocks_from_shop" class="form-control">' . $options . '</select>';
-            $forms .= '</div>';
-            $forms .= '<div class="form-group">';
-            $forms .= '<label class="control-label">' . $this->l('To shop') . '</label>';
-            $forms .= '<select name="prettyblocks_to_shop" class="form-control">' . $options . '</select>';
-            $forms .= '</div>';
-            $forms .= '<p class="help-block">' . $this->l('All PrettyBlocks from the source shop will be duplicated to the destination shop.') . '</p>';
-            $forms .= '<button type="submit" name="submitConvertPrettyblocksShop" class="btn btn-default">'
-                . $this->l('Duplicate to shop') . '</button>';
-            $forms .= '</form>';
-            $forms .= '</div>';
+                $forms .= '<div class="panel">';
+                $forms .= '<h3><i class="icon-copy"></i> ' . $this->l('Duplicate between shops') . '</h3>';
+                $forms .= '<form method="post" action="' . $action . '">';
+                $forms .= '<div class="form-group">';
+                $forms .= '<label class="control-label">' . $this->l('From shop') . '</label>';
+                $forms .= '<select name="prettyblocks_from_shop" class="form-control">' . $options . '</select>';
+                $forms .= '</div>';
+                $forms .= '<div class="form-group">';
+                $forms .= '<label class="control-label">' . $this->l('To shop') . '</label>';
+                $forms .= '<select name="prettyblocks_to_shop" class="form-control">' . $options . '</select>';
+                $forms .= '</div>';
+                $forms .= '<p class="help-block">' . $this->l('All PrettyBlocks from the source shop will be duplicated to the destination shop.') . '</p>';
+                $forms .= '<button type="submit" name="submitConvertPrettyblocksShop" class="btn btn-default">'
+                    . $this->l('Duplicate to shop') . '</button>';
+                $forms .= '</form>';
+                $forms .= '</div>';
+            }
         }
 
         if ($this->hasLangColumn) {
             $languages = Language::getLanguages(false);
-            $options = '';
-            foreach ($languages as $language) {
-                $selectedFrom = (int) $language['id_lang'] === (int) $this->context->language->id ? ' selected="selected"' : '';
-                $options .= sprintf(
-                    '<option value="%d"%s>%s</option>',
-                    (int) $language['id_lang'],
-                    $selectedFrom,
-                    Tools::safeOutput((string) $language['name'])
-                );
-            }
+            if (count($languages) > 1) {
+                $options = '';
+                foreach ($languages as $language) {
+                    $selectedFrom = (int) $language['id_lang'] === (int) $this->context->language->id ? ' selected="selected"' : '';
+                    $options .= sprintf(
+                        '<option value="%d"%s>%s</option>',
+                        (int) $language['id_lang'],
+                        $selectedFrom,
+                        Tools::safeOutput((string) $language['name'])
+                    );
+                }
 
-            $forms .= '<div class="panel">';
-            $forms .= '<h3><i class="icon-copy"></i> ' . $this->l('Duplicate between languages') . '</h3>';
-            $forms .= '<form method="post" action="' . $action . '">';
-            $forms .= '<div class="form-group">';
-            $forms .= '<label class="control-label">' . $this->l('From language') . '</label>';
-            $forms .= '<select name="prettyblocks_from_lang" class="form-control">' . $options . '</select>';
-            $forms .= '</div>';
-            $forms .= '<div class="form-group">';
-            $forms .= '<label class="control-label">' . $this->l('To language') . '</label>';
-            $forms .= '<select name="prettyblocks_to_lang" class="form-control">' . $options . '</select>';
-            $forms .= '</div>';
-            $forms .= '<p class="help-block">' . $this->l('All PrettyBlocks from the source language will be duplicated to the destination language.') . '</p>';
-            $forms .= '<button type="submit" name="submitConvertPrettyblocksLang" class="btn btn-default">'
-                . $this->l('Duplicate to language') . '</button>';
-            $forms .= '</form>';
-            $forms .= '</div>';
+                $forms .= '<div class="panel">';
+                $forms .= '<h3><i class="icon-copy"></i> ' . $this->l('Duplicate between languages') . '</h3>';
+                $forms .= '<form method="post" action="' . $action . '">';
+                $forms .= '<div class="form-group">';
+                $forms .= '<label class="control-label">' . $this->l('From language') . '</label>';
+                $forms .= '<select name="prettyblocks_from_lang" class="form-control">' . $options . '</select>';
+                $forms .= '</div>';
+                $forms .= '<div class="form-group">';
+                $forms .= '<label class="control-label">' . $this->l('To language') . '</label>';
+                $forms .= '<select name="prettyblocks_to_lang" class="form-control">' . $options . '</select>';
+                $forms .= '</div>';
+                $forms .= '<p class="help-block">' . $this->l('All PrettyBlocks from the source language will be duplicated to the destination language.') . '</p>';
+                $forms .= '<button type="submit" name="submitConvertPrettyblocksLang" class="btn btn-default">'
+                    . $this->l('Duplicate to language') . '</button>';
+                $forms .= '</form>';
+                $forms .= '</div>';
+            }
         }
 
         return $forms;
