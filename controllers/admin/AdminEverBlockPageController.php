@@ -160,6 +160,7 @@ class AdminEverBlockPageController extends ModuleAdminController
     {
         $this->addRowAction('edit');
         $this->addRowAction('delete');
+        $this->addRowAction('viewfront');
 
         if (Tools::getValue('clearcache')) {
             Tools::clearAllCache();
@@ -201,6 +202,47 @@ class AdminEverBlockPageController extends ModuleAdminController
         );
 
         return $content;
+    }
+
+    public function displayViewfrontLink($token, $id, $name = null)
+    {
+        $pageId = (int) $id;
+        if ($pageId <= 0) {
+            return '';
+        }
+
+        $page = new $this->className($pageId, (int) $this->context->language->id);
+        if (!$page->active) {
+            return '';
+        }
+
+        $rewrite = trim((string) $page->link_rewrite);
+        if ($rewrite === '') {
+            return '';
+        }
+
+        $link = $this->context->link->getModuleLink(
+            $this->module->name,
+            'page',
+            [
+                'id_everblock_page' => (int) $page->id,
+                'rewrite' => $rewrite,
+            ]
+        );
+
+        $title = sprintf(
+            $this->l('View "%s" guide on front office'),
+            $page->title ?: $page->name
+        );
+
+        return sprintf(
+            '<a class="btn btn-default" href="%s" title="%s" target="_blank">'
+            . '<i class="icon-search"></i> %s'
+            . '</a>',
+            Tools::safeOutput($link),
+            Tools::safeOutput($title),
+            $this->l('View on front')
+        );
     }
 
     public function renderForm()
