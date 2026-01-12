@@ -2511,6 +2511,16 @@ class EverblockPrettyBlocks
                                 '6' => '6',
                             ],
                         ],
+                        'show_all_brands_button' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Show "All brands" button'),
+                            'default' => 0,
+                        ],
+                        'all_brands_button_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('All brands button text'),
+                            'default' => $module->l('Voir toutes les marques'),
+                        ],
                     ], $module),
                 ],
                 'repeater' => [
