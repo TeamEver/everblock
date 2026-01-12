@@ -5,9 +5,9 @@
 {/block}
 
 {block name='page_content'}
-  <section class="everblock-faqs-list" aria-label="{l s='Frequently asked questions' mod='everblock' d='Modules.Everblock.Front'}">
-    <header class="mb-4">
-      <div class="everblock-faqs-hero">
+  <section class="everblock-faqs-list d-flex flex-column gap-4" aria-label="{l s='Frequently asked questions' mod='everblock' d='Modules.Everblock.Front'}">
+    <header>
+      <div class="everblock-faqs-hero rounded-4 border bg-light p-4 p-md-5 d-flex flex-column flex-md-row justify-content-between gap-3">
         <div>
           {if $everblock_is_all_faqs_page}
             <h1 class="h2 mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
@@ -15,22 +15,22 @@
           {else}
             <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
               <h1 class="h2 mb-0">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
-              <span class="badge bg-primary everblock-faqs-tag" aria-label="{l s='Current FAQ tag' mod='everblock' d='Modules.Everblock.Front'}">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</span>
+              <span class="badge text-bg-primary text-lowercase everblock-faqs-tag" aria-label="{l s='Current FAQ tag' mod='everblock' d='Modules.Everblock.Front'}">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</span>
             </div>
             <p class="text-muted mb-0">{l s='All frequently asked questions grouped by this tag.' mod='everblock' d='Modules.Everblock.Front'}</p>
           {/if}
         </div>
 
         {if $everblock_faqs|@count}
-          <div class="everblock-faqs-meta">
-            <div class="everblock-faqs-meta__item">
-              <span class="everblock-faqs-meta__label">{l s='Questions' mod='everblock' d='Modules.Everblock.Front'}</span>
-              <strong class="everblock-faqs-meta__value">{$everblock_faqs|@count}</strong>
+          <div class="everblock-faqs-meta d-flex flex-wrap gap-3">
+            <div class="everblock-faqs-meta__item bg-white border rounded-3 px-3 py-2 text-center shadow-sm">
+              <span class="everblock-faqs-meta__label text-muted small">{l s='Questions' mod='everblock' d='Modules.Everblock.Front'}</span>
+              <strong class="everblock-faqs-meta__value d-block fs-5">{$everblock_faqs|@count}</strong>
             </div>
             {if !$everblock_is_all_faqs_page && isset($everblock_tag_name)}
-              <div class="everblock-faqs-meta__item">
-                <span class="everblock-faqs-meta__label">{l s='Group' mod='everblock' d='Modules.Everblock.Front'}</span>
-                <strong class="everblock-faqs-meta__value">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</strong>
+              <div class="everblock-faqs-meta__item bg-white border rounded-3 px-3 py-2 text-center shadow-sm">
+                <span class="everblock-faqs-meta__label text-muted small">{l s='Group' mod='everblock' d='Modules.Everblock.Front'}</span>
+                <strong class="everblock-faqs-meta__value d-block fs-5">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</strong>
               </div>
             {/if}
           </div>
