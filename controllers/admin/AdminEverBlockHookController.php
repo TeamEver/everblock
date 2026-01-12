@@ -200,9 +200,6 @@ class AdminEverBlockHookController extends ModuleAdminController
         
         $lists = parent::renderList();
 
-        $moduleInstance = Module::getInstanceByName('everblock');
-        $displayUpgrade = $moduleInstance->checkLatestEverModuleVersion();
-
         $notifications = '';
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
@@ -218,7 +215,6 @@ class AdminEverBlockHookController extends ModuleAdminController
         $this->context->smarty->assign([
             'everblock_notifications' => $notifications,
             'everblock_form' => $lists,
-            'display_upgrade' => $displayUpgrade,
             'everblock_show_hero' => false,
         ]);
 
@@ -351,9 +347,6 @@ class AdminEverBlockHookController extends ModuleAdminController
         $helper->currentIndex = AdminController::$currentIndex;
 
 
-        $moduleInstance = Module::getInstanceByName('everblock');
-        $displayUpgrade = $moduleInstance->checkLatestEverModuleVersion();
-
         $notifications = '';
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
@@ -369,7 +362,6 @@ class AdminEverBlockHookController extends ModuleAdminController
         $this->context->smarty->assign([
             'everblock_notifications' => $notifications,
             'everblock_form' => $helper->generateForm($fields_form),
-            'display_upgrade' => $displayUpgrade,
             'everblock_show_hero' => false,
         ]);
 

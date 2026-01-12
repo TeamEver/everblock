@@ -166,9 +166,6 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
         }
         $lists = parent::renderList();
 
-        $moduleInstance = Module::getInstanceByName('everblock');
-        $displayUpgrade = $moduleInstance->checkLatestEverModuleVersion();
-
         $notifications = '';
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
@@ -184,7 +181,6 @@ class AdminEverBlockShortcodeController extends ModuleAdminController
         $this->context->smarty->assign([
             'everblock_notifications' => $notifications,
             'everblock_form' => $lists,
-            'display_upgrade' => $displayUpgrade,
             'everblock_show_hero' => false,
         ]);
 
