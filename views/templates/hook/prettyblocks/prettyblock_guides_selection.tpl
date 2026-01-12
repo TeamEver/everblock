@@ -47,7 +47,8 @@
           {/if}
           {assign var='guide_link' value=''}
           {if $guide_object instanceof EverblockPage}
-            {assign var='guide_link' value=Context::getContext()->link->getModuleLink('everblock', 'page', ['id_everblock_page' => $guide_object->id, 'rewrite' => $guide_object->link_rewrite[Context::getContext()->language->id] ?? ''])}
+            {assign var='guide_rewrite' value=$guide_object->link_rewrite[Context::getContext()->language->id]|default:''}
+            {assign var='guide_link' value=Context::getContext()->link->getModuleLink('everblock', 'page', ['id_everblock_page' => $guide_object->id, 'rewrite' => $guide_rewrite])}
             {assign var='cover_image_data' value=$guide_object->getCoverImageData(Context::getContext())}
           {/if}
           {assign var='guide_title' value=$state.title|default:''}
