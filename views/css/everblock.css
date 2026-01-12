@@ -899,51 +899,36 @@
     flex-wrap: wrap;
 }
 
-/* Cover block slider */
-.ever-cover-carousel .slick-slide {
+/* Cover block slider (Bootstrap carousel) */
+.ever-cover-carousel.carousel .carousel-item {
     opacity: 0.5;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s ease-in-out;
 }
-.ever-cover-carousel .slick-center {
+
+.ever-cover-carousel.carousel .carousel-item.active {
     opacity: 1;
     position: relative;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
 }
-.ever-cover-carousel .slick-prev,
-.ever-cover-carousel .slick-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: 0;
-    color: #fff;
-    font-size: 0;
-    line-height: 0;
+
+.ever-cover-carousel .carousel-control-prev,
+.ever-cover-carousel .carousel-control-next {
+    width: 8%;
 }
-.ever-cover-carousel .slick-prev:before,
-.ever-cover-carousel .slick-next:before {
-    font-size: 2rem;
+
+.ever-cover-carousel .carousel-control-prev-icon,
+.ever-cover-carousel .carousel-control-next-icon {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
-.ever-cover-carousel .slick-prev {
-    left: 10px;
-}
-.ever-cover-carousel .slick-next {
-    right: 10px;
-}
+
 /* Zoom progressif sur l’image centrale */
-.ever-cover-carousel .slick-slide picture img {
-  transition: transform 0.6s ease-in-out;
+.ever-cover-carousel.carousel .carousel-item picture img {
+    transition: transform 0.6s ease-in-out;
 }
 
-.ever-cover-carousel .slick-center picture img {
-  transform: scale(1.1);
-  z-index: 3;
-  transition: transform 0.6s ease-in-out;
-}
-
-/* Optionnel : accentuer la profondeur visuelle */
-.ever-cover-carousel .slick-center {
-  opacity: 1;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+.ever-cover-carousel.carousel .carousel-item.active picture img {
+    transform: scale(1.05);
+    z-index: 3;
 }
 
 /* Prettyblocks image slider (Bootstrap) */

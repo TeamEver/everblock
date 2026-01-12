@@ -1629,26 +1629,6 @@ class Everblock extends Module
             ],
             [
                 'type' => 'switch',
-                'label' => $this->l('Enable slick slider scripts ?'),
-                'desc' => $this->l('Set yes to enable slick scripts for carousels'),
-                'hint' => $this->l('Else carousels wont work'),
-                'name' => 'EVERBLOCK_USE_SLICK',
-                'is_bool' => true,
-                'values' => [
-                    [
-                        'id' => 'active_on',
-                        'value' => true,
-                        'label' => $this->l('Yes'),
-                    ],
-                    [
-                        'id' => 'active_off',
-                        'value' => false,
-                        'label' => $this->l('No'),
-                    ],
-                ],
-            ],
-            [
-                'type' => 'switch',
                 'label' => $this->l('Extends TinyMCE on blocks management ?'),
                 'desc' => $this->l('Set yes to extends TinyMCE on blocs management'),
                 'hint' => $this->l('Else TinyMCE will be default'),
@@ -2540,7 +2520,6 @@ class Everblock extends Module
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
-            'EVERBLOCK_USE_SLICK' => Configuration::get('EVERBLOCK_USE_SLICK'),
             'EVERBLOCK_SOLDOUT_FLAG' => Configuration::get('EVERBLOCK_SOLDOUT_FLAG'),
             'EVER_SOLDOUT_COLOR' => Configuration::get('EVER_SOLDOUT_COLOR'),
             'EVER_SOLDOUT_TEXTCOLOR' => Configuration::get('EVER_SOLDOUT_TEXTCOLOR'),
@@ -2809,10 +2788,6 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_USE_OBF',
             Tools::getValue('EVERBLOCK_USE_OBF')
-        );
-        Configuration::updateValue(
-            'EVERBLOCK_USE_SLICK',
-            Tools::getValue('EVERBLOCK_USE_SLICK')
         );
         file_put_contents(
             $custom_css,
@@ -4765,26 +4740,6 @@ class Everblock extends Module
                 'modules/' . $this->name . '/views/css/outofstock-flag-' . $idShop . '.css',
                 ['media' => 'all', 'priority' => 200]
             );
-        }
-        if ((bool) Configuration::get('EVERBLOCK_USE_SLICK') === true) {
-            $this->context->controller->registerStylesheet(
-                'module-slick-min-css',
-                'modules/' . $this->name . '/views/css/slick-min.css',
-                ['media' => 'all', 'priority' => 200]
-            );
-            $this->context->controller->registerStylesheet(
-                'module-slick-theme-min-css',
-                'modules/' . $this->name . '/views/css/slick-theme-min.css',
-                ['media' => 'all', 'priority' => 200]
-            );
-            $this->context->controller->registerJavascript(
-                'module-slick-min-js',
-                'modules/' . $this->name . '/views/js/slick-min.js',
-                ['position' => 'bottom', 'priority' => 200]
-            );
-            Media::addJsDef([
-                'everblock_slick' => true,
-            ]);
         }
         $this->context->controller->registerJavascript(
             'module-' . $this->name . '-js',

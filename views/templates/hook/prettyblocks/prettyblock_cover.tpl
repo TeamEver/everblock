@@ -48,7 +48,11 @@
     {assign var='columns_item_classes' value='col'}
   {/if}
   {if $use_slider}
-    <div class="ever-cover-carousel">
+    <div class="ever-cover-carousel ever-bootstrap-carousel"
+         data-items="1"
+         data-layout="cover"
+         data-controls="true"
+         data-indicators="true">
       {foreach from=$block.states item=state key=key}
         {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_cover_state_spacing_style'}
         {capture name='prettyblock_cover_state_style'}
