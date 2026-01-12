@@ -29,6 +29,8 @@ return [
     'README.md',
     'composer.json',
     'composer.lock',
+    'classes/EverblockPage.php',
+    'classes/index.php',
     'config/allowed_files.php',
     'config/index.php',
     'config/services.yml',
