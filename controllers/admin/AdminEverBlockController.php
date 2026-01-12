@@ -288,9 +288,6 @@ class AdminEverBlockController extends ModuleAdminController
 
         $lists = parent::renderList();
 
-        $moduleInstance = Module::getInstanceByName($this->table);
-        $displayUpgrade = $moduleInstance->checkLatestEverModuleVersion();
-
         $notifications = '';
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
@@ -306,7 +303,6 @@ class AdminEverBlockController extends ModuleAdminController
         $this->context->smarty->assign([
             'everblock_notifications' => $notifications,
             'everblock_form' => $lists,
-            'display_upgrade' => $displayUpgrade,
             'everblock_show_hero' => false,
         ]);
 
@@ -1027,9 +1023,6 @@ class AdminEverBlockController extends ModuleAdminController
             'id_language' => (int) Context::getContext()->language->id,
         ];
         $helper->currentIndex = AdminController::$currentIndex;
-        $moduleInstance = Module::getInstanceByName($this->table);
-        $displayUpgrade = $moduleInstance->checkLatestEverModuleVersion();
-
         $notifications = '';
         if (count($this->errors)) {
             foreach ($this->errors as $error) {
@@ -1069,7 +1062,6 @@ class AdminEverBlockController extends ModuleAdminController
         $this->context->smarty->assign([
             'everblock_notifications' => $notifications,
             'everblock_form' => $helper->generateForm($fields_form),
-            'display_upgrade' => $displayUpgrade,
             'everblock_preview_contexts' => $previewContexts,
             'everblock_preview_url' => $previewUrl,
             'everblock_preview_available' => $previewAvailable,

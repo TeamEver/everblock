@@ -68,12 +68,6 @@
 
     <div class="everblock-config__layout">
         <div class="everblock-config__main">
-            {if isset($display_upgrade) && $display_upgrade}
-                <div class="everblock-config__card">
-                    {include file='module:everblock/views/templates/admin/upgrade.tpl'}
-                </div>
-            {/if}
-
             {if isset($everblock_form)}
                 <div class="everblock-config__card everblock-config__card--form">
                     {$everblock_form nofilter}

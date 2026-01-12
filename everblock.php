@@ -219,6 +219,15 @@ class Everblock extends Module
             && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'))
             && $this->installModuleTab('AdminEverBlockPage', 'AdminEverBlockParent', $this->l('Pages'));
 
+        if ($installed && $this->hasPrettyblocksModule()) {
+            $installed = $installed
+                && $this->installModuleTab(
+                    'AdminEverBlockPrettyblock',
+                    'AdminEverBlockParent',
+                    $this->l('PrettyBlocks')
+                );
+        }
+
         if ($installed) {
             $this->importLegacyTranslations();
         }
@@ -263,7 +272,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_PAGES_PER_PAGE');
         Configuration::deleteByName('EVERBLOCK_FAQ_BASE_URL');
         Configuration::deleteByName('EVERBLOCK_FAQ_PER_PAGE');
-        return (parent::uninstall()
+        $uninstalled = (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
             && $this->uninstallModuleTab('AdminEverBlock')
@@ -271,6 +280,12 @@ class Everblock extends Module
             && $this->uninstallModuleTab('AdminEverBlockShortcode')
             && $this->uninstallModuleTab('AdminEverBlockFaq')
             && $this->uninstallModuleTab('AdminEverBlockPage'));
+
+        if (Tab::getIdFromClassName('AdminEverBlockPrettyblock')) {
+            $uninstalled = $uninstalled && $this->uninstallModuleTab('AdminEverBlockPrettyblock');
+        }
+
+        return $uninstalled;
     }
 
     public function l($string, $specific = null, $idLang = null)
@@ -483,6 +498,13 @@ class Everblock extends Module
         return $tab->delete();
     }
 
+    private function hasPrettyblocksModule(): bool
+    {
+        return (bool) Module::isInstalled('prettyblocks')
+            && (bool) Module::isEnabled('prettyblocks')
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks');
+    }
+
     public function checkHooks()
     {
         if (!Hook::getIdByName('displayEverblockExtraOrderStep')) {
@@ -569,10 +591,7 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after product miniature is rendered';
             $hook->save();
         }
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
+        if ($this->hasPrettyblocksModule()) {
             if (!Hook::getIdByName('beforeRenderingEverblockProductHighlight')) {
                 $hook = new Hook();
                 $hook->name = 'beforeRenderingEverblockProductHighlight';
@@ -717,6 +736,20 @@ class Everblock extends Module
             }
             $tab->add();
         }
+        if ($this->hasPrettyblocksModule()) {
+            $id_tab = Tab::getIdFromClassName('AdminEverBlockPrettyblock');
+            if (!$id_tab) {
+                $tab = new Tab();
+                $tab->class_name = 'AdminEverBlockPrettyblock';
+                $tab->module = $this->name;
+                $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
+                $tab->position = Tab::getNewLastPosition($tab->id_parent);
+                foreach (Language::getLanguages(false) as $lang) {
+                    $tab->name[(int) $lang['id_lang']] = $this->l('PrettyBlocks');
+                }
+                $tab->add();
+            }
+        }
         $this->registerHook('displayContentWrapperTop');
         $this->registerHook('actionCmsPageFormBuilderModifier');
         $this->registerHook('actionObjectCmsUpdateAfter');
@@ -750,10 +783,7 @@ class Everblock extends Module
         $this->registerHook('displayWrapperTop');
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
+        if ($this->hasPrettyblocksModule()) {
             $this->registerHook('actionRegisterBlock');
             $this->registerHook('beforeRenderingEverblockProductSelector');
             $this->registerHook('beforeRenderingEverblockCategoryProducts');
@@ -1004,7 +1034,6 @@ class Everblock extends Module
                 ]
             );
         }
-        $displayUpgrade = $this->checkLatestEverModuleVersion();
         $notifications = $this->html;
         $this->html = '';
         $this->context->smarty->assign([
@@ -1021,7 +1050,6 @@ class Everblock extends Module
             'donation_link' => 'https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE',
             'everblock_notifications' => $notifications,
             'everblock_form' => $this->renderForm(),
-            'display_upgrade' => $displayUpgrade,
             'everblock_stats' => $this->getModuleStatistics(),
             'everblock_shortcode_docs' => ShortcodeDocumentationProvider::getDocumentation($this),
             'everblock_show_hero' => true,
@@ -3204,6 +3232,7 @@ class Everblock extends Module
             'AdminEverBlockHookController',
             'AdminEverBlockShortcodeController',
             'AdminEverBlockPageController',
+            'AdminEverBlockPrettyblockController',
         ];
         $this->context->controller->addCss($this->_path . 'views/css/admin_menu.css');
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
@@ -4870,35 +4899,6 @@ class Everblock extends Module
     public function hookActionRegisterBlock($params)
     {
         return EverblockPrettyBlocks::getEverPrettyBlocks($this->context);
-    }
-
-    public function checkLatestEverModuleVersion(): bool
-    {
-        $upgrade_link = 'https://upgrade.team-ever.com/upgrade.php?module=' . $this->name . '&version=' . $this->version;
-        try {
-            $handle = curl_init($upgrade_link);
-            curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, false);
-            curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
-            $response = curl_exec($handle);
-            $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-            if ($httpCode != 200) {
-                curl_close($handle);
-                return false;
-            }
-            curl_close($handle);
-            if ($response && Tools::version_compare($response, $this->version, '>')) {
-                return true;
-            }
-            return false;
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog('Unable to check latest ' . $this->displayName . ' version');
-            EverblockTools::setLog(
-                $this->name . date('y-m-d'),
-                $e->getMessage()
-            );
-            return false;
-        }
     }
 
     protected function compressCSSCode($css)
