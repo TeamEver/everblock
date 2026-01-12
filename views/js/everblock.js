@@ -168,98 +168,193 @@ $(document).ready(function(){
             $carousel.addClass('prettyblocks-carousel-initialised');
         });
     }
-    if ($.fn.slick) {
-        $('.ever-slick-carousel:not(.slick-initialised)').each(function(){
-            var $carousel = $(this);
-            var slidesDesktop = parseInt($carousel.data('itemsDesktop'), 10);
-            if (isNaN(slidesDesktop) || slidesDesktop <= 0) {
-                slidesDesktop = parseInt($carousel.data('items'), 10) || 4;
+    var everblockCarouselIndex = 0;
+
+    function getEverblockItemsPerSlide($carousel) {
+        var slidesDesktop = parseInt($carousel.data('itemsDesktop'), 10);
+        var slidesMobile = parseInt($carousel.data('itemsMobile'), 10);
+        var slides = parseInt($carousel.data('items'), 10);
+        if (isNaN(slidesDesktop) || slidesDesktop <= 0) {
+            slidesDesktop = !isNaN(slides) && slides > 0 ? slides : 1;
+        }
+        var viewportWidth = window.innerWidth || $(window).width();
+        if (!isNaN(slidesMobile) && slidesMobile > 0 && viewportWidth < 768) {
+            return slidesMobile;
+        }
+        return slidesDesktop;
+    }
+
+    function buildEverblockCarousel($carousel) {
+        var itemsPerSlide = getEverblockItemsPerSlide($carousel);
+        var storedItems = $carousel.data('everblockItems');
+        if (!storedItems) {
+            storedItems = $carousel.children().detach();
+            $carousel.data('everblockItems', storedItems);
+        } else {
+            storedItems = storedItems.detach();
+        }
+
+        var itemsArray = storedItems.toArray();
+        var hasMultipleSlides = itemsArray.length > itemsPerSlide;
+        var layout = $carousel.data('layout') || 'grid';
+        var rowClass = $carousel.data('rowClass') || 'row';
+        var controlsEnabled = $carousel.data('controls');
+        var indicatorsEnabled = $carousel.data('indicators');
+        var autoplay = parseInt($carousel.data('autoplay'), 10) === 1;
+        var autoplayDelay = parseInt($carousel.data('autoplayDelay'), 10);
+        var infinite = parseInt($carousel.data('infinite'), 10);
+        var pauseOnHover = parseInt($carousel.data('pauseOnHover'), 10);
+        if (isNaN(autoplayDelay) || autoplayDelay <= 0) {
+            autoplayDelay = 5000;
+        }
+        if (isNaN(infinite)) {
+            infinite = 0;
+        }
+        if (controlsEnabled === undefined) {
+            controlsEnabled = true;
+        }
+        if (indicatorsEnabled === undefined) {
+            indicatorsEnabled = true;
+        }
+
+        if (typeof bootstrap !== 'undefined' && typeof bootstrap.Carousel !== 'undefined') {
+            var instance = bootstrap.Carousel.getInstance($carousel[0]);
+            if (instance) {
+                instance.dispose();
             }
-            var slidesMobile = parseInt($carousel.data('itemsMobile'), 10);
-            var hasCustomMobile = !isNaN(slidesMobile) && slidesMobile > 0;
-            var slides = slidesDesktop;
-            var responsiveSettings = [];
-            if (hasCustomMobile) {
-                responsiveSettings = [{
-                    breakpoint: 768,
-                    settings: {
-                        slidesToShow: slidesMobile,
-                        slidesToScroll: 1,
-                        dots: true
-                    }
-                }];
+        } else if (typeof $carousel.carousel === 'function') {
+            $carousel.carousel('dispose');
+        }
+
+        $carousel.removeClass('carousel slide').removeAttr('data-bs-ride');
+        $carousel.empty();
+
+        if (!hasMultipleSlides) {
+            if (layout === 'grid') {
+                var $row = $('<div />').addClass(rowClass);
+                $row.append(storedItems);
+                $carousel.append($row);
             } else {
-                responsiveSettings = [{
-                    breakpoint: 1024,
-                    settings: {
-                        slidesToShow: Math.min(slides,3),
-                        slidesToScroll: 1,
-                        infinite: true,
-                        dots: true
-                    }
-                }, {
-                    breakpoint: 600,
-                    settings: {
-                        slidesToShow: Math.min(slides,2),
-                        slidesToScroll: 1,
-                        dots: true
-                    }
-                }, {
-                    breakpoint: 300,
-                    settings: {
-                        slidesToShow: 1,
-                        slidesToScroll: 1,
-                        dots: true
-                    }
-                }];
+                $carousel.append(storedItems);
             }
-            $carousel.slick({
-                infinite: true,
-                arrows: false,
-                dots: true,
-                slidesToShow: slides,
-                slidesToScroll: 1,
-                responsive: responsiveSettings
-            });
-            $carousel.on('setPosition', function(event, slick) {
-                $(slick.$slider).find('.slick-track').addClass('row');
-            });
-            $carousel.addClass('slick-initialised');
-        });
-        $('.ever-cover-carousel:not(.slick-initialised)').each(function(){
+            $carousel.data('everblockItemsPerSlide', itemsPerSlide);
+            return;
+        }
+
+        var carouselId = $carousel.attr('id');
+        if (!carouselId) {
+            everblockCarouselIndex += 1;
+            carouselId = 'everblock-carousel-' + everblockCarouselIndex;
+            $carousel.attr('id', carouselId);
+        }
+
+        var $inner = $('<div class="carousel-inner"></div>');
+        var slideCount = Math.ceil(itemsArray.length / itemsPerSlide);
+        for (var i = 0; i < slideCount; i += 1) {
+            var $slide = $('<div class="carousel-item"></div>');
+            if (i === 0) {
+                $slide.addClass('active');
+            }
+            var chunkStart = i * itemsPerSlide;
+            var chunkItems = itemsArray.slice(chunkStart, chunkStart + itemsPerSlide);
+            if (layout === 'grid') {
+                var $chunkRow = $('<div />').addClass(rowClass);
+                $chunkRow.append(chunkItems);
+                $slide.append($chunkRow);
+            } else {
+                $slide.append(chunkItems);
+            }
+            $inner.append($slide);
+        }
+
+        $carousel.addClass('carousel slide');
+        if (autoplay) {
+            $carousel.attr('data-bs-ride', 'carousel');
+        }
+
+        if (indicatorsEnabled) {
+            var $indicators = $('<div class="carousel-indicators"></div>');
+            for (var indicatorIndex = 0; indicatorIndex < slideCount; indicatorIndex += 1) {
+                var $indicator = $('<button type="button"></button>')
+                    .attr('data-bs-target', '#' + carouselId)
+                    .attr('data-bs-slide-to', indicatorIndex);
+                if (indicatorIndex === 0) {
+                    $indicator.addClass('active').attr('aria-current', 'true');
+                }
+                $indicator.attr('aria-label', 'Slide ' + (indicatorIndex + 1));
+                $indicators.append($indicator);
+            }
+            $carousel.append($indicators);
+        }
+
+        $carousel.append($inner);
+
+        if (controlsEnabled) {
+            var $prev = $('<button class="carousel-control-prev" type="button"></button>')
+                .attr('data-bs-target', '#' + carouselId)
+                .attr('data-bs-slide', 'prev')
+                .append('<span class="carousel-control-prev-icon" aria-hidden="true"></span>')
+                .append('<span class="visually-hidden">Previous</span>');
+            var $next = $('<button class="carousel-control-next" type="button"></button>')
+                .attr('data-bs-target', '#' + carouselId)
+                .attr('data-bs-slide', 'next')
+                .append('<span class="carousel-control-next-icon" aria-hidden="true"></span>')
+                .append('<span class="visually-hidden">Next</span>');
+            $carousel.append($prev, $next);
+        }
+
+        var pauseSetting = pauseOnHover === 0 ? false : 'hover';
+        var config = {
+            interval: autoplay ? autoplayDelay : false,
+            pause: pauseSetting,
+            ride: autoplay ? 'carousel' : false,
+            wrap: !!infinite,
+            keyboard: true,
+            touch: true
+        };
+
+        try {
+            if (typeof bootstrap !== 'undefined' && typeof bootstrap.Carousel !== 'undefined') {
+                var newInstance = new bootstrap.Carousel($carousel[0], config);
+                if (!autoplay && newInstance && typeof newInstance.pause === 'function') {
+                    newInstance.pause();
+                }
+            } else if (typeof $carousel.carousel === 'function') {
+                $carousel.carousel(config);
+                if (!autoplay) {
+                    $carousel.carousel('pause');
+                }
+            }
+        } catch (e) {
+            console.error('Everblock carousel initialization failed', e);
+        }
+
+        $carousel.data('everblockItemsPerSlide', itemsPerSlide);
+    }
+
+    function initEverblockCarousels($context) {
+        var $scope = $context && $context.length ? $context : $(document);
+        $scope.find('.ever-bootstrap-carousel').each(function () {
             var $carousel = $(this);
-            var slides = parseInt($carousel.data('items')) || 3;
-            var autoplay = parseInt($carousel.data('autoplay')) === 1;
-            var autoplayDelay = parseInt($carousel.data('autoplayDelay')) || 5000;
-            var infinite = parseInt($carousel.data('infinite')) === 1;
-            $carousel.on('init', function(event, slick){
-                var $center = $(slick.$slides[slick.currentSlide]);
-                $(slick.$prevArrow).appendTo($center);
-                $(slick.$nextArrow).appendTo($center);
-            });
-            $carousel.on('afterChange', function(event, slick, currentSlide){
-                var $center = $(slick.$slides[currentSlide]);
-                $(slick.$prevArrow).appendTo($center);
-                $(slick.$nextArrow).appendTo($center);
-            });
-            $carousel.slick({
-                slidesToShow: slides,
-                centerMode: true,
-                arrows: true,
-                dots: false,
-                infinite: infinite,
-                autoplay: autoplay,
-                autoplaySpeed: autoplayDelay,
-                responsive: [{
-                    breakpoint: 768,
-                    settings: {
-                        slidesToShow: Math.min(slides, 1)
-                    }
-                }]
-            });
+            var itemsPerSlide = getEverblockItemsPerSlide($carousel);
+            var previousItemsPerSlide = $carousel.data('everblockItemsPerSlide');
+            if (previousItemsPerSlide === itemsPerSlide && $carousel.find('.carousel-inner').length) {
+                return;
+            }
+            buildEverblockCarousel($carousel);
         });
     }
     initPrettyblocksImageSlider();
+    initEverblockCarousels();
+    var everblockCarouselResizeTimeout = null;
+    $(window).on('resize', function () {
+        if (everblockCarouselResizeTimeout) {
+            clearTimeout(everblockCarouselResizeTimeout);
+        }
+        everblockCarouselResizeTimeout = setTimeout(function () {
+            initEverblockCarousels();
+        }, 200);
+    });
     $('[data-ever-infinite-carousel="1"]').each(function(){
         var $carousel = $(this);
         var $inner = $carousel.find('.carousel-inner');
@@ -3206,6 +3301,7 @@ $(document).ready(function(){
             setTimeout(function () {
                 $(window).trigger('resize');
                 initPrettyblocksImageSlider($context);
+                initEverblockCarousels($context);
             }, 0);
         }
 

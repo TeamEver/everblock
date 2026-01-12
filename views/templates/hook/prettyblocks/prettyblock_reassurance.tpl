@@ -57,12 +57,16 @@
     {assign var='sliderItemsMobile' value=$block.settings.slider_items_mobile|default:1|intval}
 
     {if $useSlider}
-      {assign var='sliderRowClass' value=$rowClass|cat:' ever-slick-carousel'|trim}
+      {assign var='sliderRowClass' value='ever-bootstrap-carousel'}
 
       {if $useDesktopSlider && !$useMobileSlider}
         <div class="{$sliderRowClass} d-none d-md-flex"
              data-items-desktop="{$sliderItemsDesktop}"
-             data-items-mobile="{$sliderItemsMobile}">
+             data-items-mobile="{$sliderItemsMobile}"
+             data-row-class="{$rowClass}"
+             data-controls="true"
+             data-indicators="true"
+             data-infinite="1">
           {foreach from=$block.states item=state key=key}
             {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
             {assign var="icon_url" value=false}
@@ -179,7 +183,11 @@
         </div>
         <div class="{$sliderRowClass} d-flex d-md-none"
              data-items-desktop="{$sliderItemsDesktop}"
-             data-items-mobile="{$sliderItemsMobile}">
+             data-items-mobile="{$sliderItemsMobile}"
+             data-row-class="{$rowClass}"
+             data-controls="true"
+             data-indicators="true"
+             data-infinite="1">
           {foreach from=$block.states item=state key=key}
             {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
             {assign var="icon_url" value=false}
@@ -220,7 +228,11 @@
       {else}
         <div class="{$sliderRowClass}"
              data-items-desktop="{$sliderItemsDesktop}"
-             data-items-mobile="{$sliderItemsMobile}">
+             data-items-mobile="{$sliderItemsMobile}"
+             data-row-class="{$rowClass}"
+             data-controls="true"
+             data-indicators="true"
+             data-infinite="1">
           {foreach from=$block.states item=state key=key}
             {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
             {assign var="icon_url" value=false}

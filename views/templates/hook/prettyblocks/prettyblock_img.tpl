@@ -50,11 +50,15 @@
   {/foreach}
   {assign var='use_slider' value=(isset($block.settings.slider) && $block.settings.slider && $visibleStatesCount > 1)}
   {if $use_slider}
-    <div class="mt-4 ever-cover-carousel"
+    <div class="mt-4 ever-cover-carousel ever-bootstrap-carousel"
          data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}"
+         data-items-mobile="1"
          data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
          data-infinite="{if isset($block.settings.slider_infinite) && $block.settings.slider_infinite}1{else}0{/if}"
-         data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}">
+         data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}"
+         data-row-class="row g-3 justify-content-center"
+         data-controls="true"
+         data-indicators="true">
       {foreach from=$block.states item=state key=key}
         {assign var=isStateVisible value=true}
         {assign var=startDateStr value=$state.start_date|default:''}
@@ -75,7 +79,7 @@
         {/if}
         {if $isStateVisible}
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
-          <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
+          <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden col{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
             {$prettyblock_state_spacing_style}
             {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
           ">

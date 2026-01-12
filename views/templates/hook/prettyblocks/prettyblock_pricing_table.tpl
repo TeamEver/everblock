@@ -20,9 +20,17 @@
 
 {if isset($block.states) && $block.states}
 <div id="block-{$block.id_prettyblocks}" class="everblock-pricing-table{if $block.settings.default.force_full_width} container-fluid px-0 mx-0{elseif $block.settings.default.container} container{/if}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-  <div class="{if $block.settings.slider}ever-slick-carousel row g-4{else}row g-4{/if}"
-       {if $block.settings.slider}data-items="{$block.settings.plans_per_slide|escape:'htmlall'}"{/if}
-       style="{$prettyblock_spacing_style}">
+  {if $block.settings.slider}
+    <div class="ever-bootstrap-carousel"
+         data-items="{$block.settings.plans_per_slide|escape:'htmlall'}"
+         data-row-class="row g-4"
+         data-controls="true"
+         data-indicators="true"
+         data-infinite="1"
+         style="{$prettyblock_spacing_style}">
+  {else}
+    <div class="row g-4" style="{$prettyblock_spacing_style}">
+  {/if}
     {foreach from=$block.states item=state}
       <div class="col-12 col-sm-6 col-lg-4">
         <div class="pricing-plan{if $state.highlight} highlight{/if} h-100 p-4">

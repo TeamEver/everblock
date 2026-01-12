@@ -17,7 +17,12 @@
 *}
 {if $insta_imgs}
 <div class="ever_instagram block_instagram insta-idshop-{$everinsta_shopid} d-none d-md-block">
-  <div class="ever-slick-carousel row">
+  <div class="ever-bootstrap-carousel"
+       data-items="6"
+       data-row-class="row"
+       data-controls="true"
+       data-indicators="true"
+       data-infinite="1">
     {assign var='ik' value=0}
     {foreach $insta_imgs as $key => $img}
       {assign var='ik' value=$ik+1}
