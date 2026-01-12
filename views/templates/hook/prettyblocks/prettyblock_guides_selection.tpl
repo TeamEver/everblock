@@ -41,7 +41,7 @@
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_guides_selection_state_spacing_style'}
           {assign var='guide_id' value=$state.guide.id|default:$state.guide|default:null}
           {assign var='guide_object' value=null}
-          {assign var='cover_image_data' value=[]}
+          {assign var='cover_image_data' value=$state.cover_image|default:[]}
           {if $guide_id}
             {assign var='guide_object' value=EverblockPage::getById((int) $guide_id, (int) Context::getContext()->language->id, (int) Context::getContext()->shop->id)}
           {/if}
@@ -49,7 +49,9 @@
           {if $guide_object instanceof EverblockPage}
             {assign var='guide_rewrite' value=$guide_object->link_rewrite[Context::getContext()->language->id]|default:''}
             {assign var='guide_link' value=Context::getContext()->link->getModuleLink('everblock', 'page', ['id_everblock_page' => $guide_object->id, 'rewrite' => $guide_rewrite])}
-            {assign var='cover_image_data' value=$guide_object->getCoverImageData(Context::getContext())}
+            {if !isset($cover_image_data.url) || !$cover_image_data.url}
+              {assign var='cover_image_data' value=$guide_object->getCoverImageData(Context::getContext())}
+            {/if}
           {/if}
           {assign var='guide_title' value=$state.title|default:''}
           {if !$guide_title && $guide_object instanceof EverblockPage}

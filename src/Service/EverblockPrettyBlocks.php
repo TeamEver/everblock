@@ -92,6 +92,26 @@ class EverblockPrettyBlocks
         ];
     }
 
+    private static function getEverblockPageChoices(Context $context, Module $module): array
+    {
+        $choices = [
+            '' => $module->l('Select a guide'),
+        ];
+        $pages = \EverblockPage::getPages(
+            (int) $context->language->id,
+            (int) $context->shop->id,
+            false
+        );
+
+        foreach ($pages as $page) {
+            $pageId = (int) $page->id;
+            $pageTitle = $page->title ?: $page->name ?: $pageId;
+            $choices[$pageId] = $pageId . ' - ' . $pageTitle;
+        }
+
+        return $choices;
+    }
+
     public static function getEverPrettyBlocks($context)
     {
         $cacheId = 'EverblockPrettyBlocks_getEverPrettyBlocks_'
@@ -214,6 +234,7 @@ class EverblockPrettyBlocks
             foreach ($everblocks as $eblock) {
                 $everblockChoices[$eblock['id_everblock']] = $eblock['id_everblock'] . ' - ' . $eblock['name'];
             }
+            $everblockPageChoices = self::getEverblockPageChoices($context, $module);
             $allHooks = Hook::getHooks(false, true);
             $prettyBlocksHooks = [];
             foreach ($allHooks as $hook) {
@@ -3203,15 +3224,18 @@ class EverblockPrettyBlocks
                             'default' => '',
                         ],
                         'guide' => [
-                            'type' => 'selector',
+                            'type' => 'select',
                             'label' => $module->l('Choose a guide'),
-                            'collection' => 'EverblockPage',
-                            'selector' => '{id} - {title}',
+                            'choices' => $everblockPageChoices,
                             'default' => '',
+                        ],
+                        'cover_image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Cover image (optional)'),
                         ],
                         'summary' => [
                             'type' => 'textarea',
-                            'label' => $module->l('Summary'),
+                            'label' => $module->l('Excerpt'),
                             'default' => '',
                         ],
                         'cta_text' => [
