@@ -1168,7 +1168,7 @@
 .everblock-faqs-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .everblock-faqs-hero {
@@ -1176,38 +1176,27 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 1.5rem;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    background: linear-gradient(120deg, rgba(13, 110, 253, 0.08), rgba(111, 66, 193, 0.08));
-    border: 1px solid rgba(13, 110, 253, 0.15);
 }
 
 .everblock-faqs-meta {
     display: flex;
     gap: 1rem;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .everblock-faqs-meta__item {
     min-width: 120px;
-    background: #ffffff;
-    border: 1px solid #e9ecef;
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    text-align: center;
-    box-shadow: 0 8px 30px rgba(33, 37, 41, 0.05);
 }
 
 .everblock-faqs-meta__label {
     display: block;
     font-size: 0.875rem;
-    color: #6c757d;
 }
 
 .everblock-faqs-meta__value {
     display: block;
     font-size: 1.35rem;
-    color: #0d6efd;
 }
 
 .everblock-faqs-tag {
@@ -1215,55 +1204,8 @@
     letter-spacing: 0.01em;
 }
 
-.faq-accordion .card-header,
-.faq-accordion .accordion-header {
-    background-color: #f9fbff;
-    border: none;
-}
-
 .everblock-faq-accordion {
-    gap: 1rem;
-}
-
-.everblock-faq-item {
-    border: 1px solid #e9ecef;
-    border-radius: 0.85rem;
-    overflow: hidden;
-    box-shadow: 0 12px 34px rgba(15, 23, 42, 0.05);
-}
-
-.everblock-faq-item + .everblock-faq-item {
-    margin-top: 0.5rem;
-}
-
-.faq-question .everblock-faq-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #e9f2ff;
-    position: relative;
-    transition: transform 0.3s ease, background-color 0.2s ease;
-}
-
-.faq-question .everblock-faq-icon::before,
-.faq-question .everblock-faq-icon::after {
-    content: "";
-    position: absolute;
-    background-color: #0d6efd;
-    transition: transform 0.3s ease;
-}
-
-.faq-question .everblock-faq-icon::before {
-    width: 2px;
-    height: 10px;
-}
-
-.faq-question .everblock-faq-icon::after {
-    width: 10px;
-    height: 2px;
+    gap: 0;
 }
 
 .faq-accordion .accordion-button {
@@ -1272,25 +1214,24 @@
     font-weight: 600;
 }
 
-.faq-accordion .accordion-button:not(.collapsed) .everblock-faq-icon {
-    background-color: #0d6efd;
-    transform: rotate(45deg);
+.faq-accordion .accordion-button::after {
+    display: none;
 }
 
-.faq-accordion .accordion-button:not(.collapsed) .everblock-faq-icon::before,
-.faq-accordion .accordion-button:not(.collapsed) .everblock-faq-icon::after {
-    background-color: #ffffff;
+.faq-chevron {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    transition: transform 0.2s ease;
 }
 
-.faq-accordion .accordion-button:focus {
-    border-color: rgba(13, 110, 253, 0.35);
-    box-shadow: 0 0 0 0.1rem rgba(13, 110, 253, 0.2);
+.faq-accordion .accordion-button:not(.collapsed) .faq-chevron {
+    transform: rotate(180deg);
 }
 
 .faq-answer,
 .faq-accordion .accordion-body {
-    padding: 16px 20px 20px;
-    background: #ffffff;
     line-height: 1.7;
 }
 
