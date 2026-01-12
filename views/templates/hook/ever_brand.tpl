@@ -18,6 +18,9 @@
 {if isset($brands) && $brands}
   {assign var="numBrandsPerSlide" value=$brandsPerSlide|default:4}
   {assign var="colWidth" value=12/$numBrandsPerSlide}
+  {if isset($showAllBrandsButton) && $showAllBrandsButton && $allBrandsButtonLabel}
+    {assign var="allBrandsUrl" value=$link->getPageLink('manufacturer')}
+  {/if}
   {if isset($carousel) && $carousel}
     {assign var="carouselId" value="ever-brand-carousel-"|cat:mt_rand(1000,999999)}
     <section class="featured-brands clearfix mt-3 d-none d-md-block">
@@ -79,6 +82,11 @@
         </div>
       </div>
     </section>
+    {if isset($allBrandsUrl)}
+      <div class="text-center mt-3">
+        <a href="{$allBrandsUrl|escape:'htmlall':'UTF-8'}" class="btn btn-primary">{$allBrandsButtonLabel|escape:'htmlall':'UTF-8'}</a>
+      </div>
+    {/if}
   {else}
     <section class="featured-brands clearfix mt-3">
       <div class="brands row">
@@ -98,6 +106,10 @@
         {/foreach}
       </div>
     </section>
+    {if isset($allBrandsUrl)}
+      <div class="text-center mt-3">
+        <a href="{$allBrandsUrl|escape:'htmlall':'UTF-8'}" class="btn btn-primary">{$allBrandsButtonLabel|escape:'htmlall':'UTF-8'}</a>
+      </div>
+    {/if}
   {/if}
 {/if}
-
