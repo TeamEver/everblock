@@ -5284,9 +5284,24 @@ class Everblock extends Module
                 if ($limit <= 0) {
                     $limit = (int) Configuration::get('PS_PRODUCTS_PER_PAGE');
                 }
+                $orderBy = isset($state['order_by']) ? (string) $state['order_by'] : 'id_product';
+                if ($orderBy === 'id') {
+                    $orderBy = 'id_product';
+                }
+                $allowedOrderBy = ['id_product', 'date_add', 'price'];
+                if (!in_array($orderBy, $allowedOrderBy, true)) {
+                    $orderBy = 'id_product';
+                }
+                $orderWay = isset($state['order_way']) ? strtoupper((string) $state['order_way']) : 'ASC';
+                $allowedOrderWay = ['ASC', 'DESC'];
+                if (!in_array($orderWay, $allowedOrderWay, true)) {
+                    $orderWay = 'ASC';
+                }
                 $rawProducts = EverblockTools::getProductsByCategoryId(
                     (int) $state['id_categories']['id'],
-                    $limit
+                    $limit,
+                    $orderBy,
+                    $orderWay
                 );
                 $presented = EverblockTools::everPresentProducts(
                     array_column($rawProducts, 'id_product'),
