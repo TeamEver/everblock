@@ -2620,6 +2620,38 @@ class EverblockPrettyBlocks
                             'label' => 'Tab title',
                             'default' => Configuration::get('PS_SHOP_NAME'),
                         ],
+                        'slider_image_1' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Slider image 1'),
+                            'accept' => 'image/svg+xml,image/webp,image/png,image/jpeg,image/gif',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'slider_image_2' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Slider image 2'),
+                            'accept' => 'image/svg+xml,image/webp,image/png,image/jpeg,image/gif',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'slider_image_3' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Slider image 3'),
+                            'accept' => 'image/svg+xml,image/webp,image/png,image/jpeg,image/gif',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'slider_image_4' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Slider image 4'),
+                            'accept' => 'image/svg+xml,image/webp,image/png,image/jpeg,image/gif',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
                         'html_before_products' => [
                             'type' => 'editor',
                             'label' => $module->l('HTML content before products'),
