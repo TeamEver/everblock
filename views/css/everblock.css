@@ -390,6 +390,37 @@
     border-color: var(--bs-primary, #0d6efd);
     color: #fff;
 }
+.prettyblock-category-tabs__layout {
+    align-items: flex-start;
+}
+.prettyblock-category-tabs__slider {
+    width: 100%;
+}
+.prettyblock-category-tabs__slider-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+}
+.prettyblock-category-tabs__slider-title {
+    flex: 1;
+    font-weight: 600;
+    text-align: center;
+}
+.prettyblock-category-tabs__slider .carousel-control-prev,
+.prettyblock-category-tabs__slider .carousel-control-next {
+    position: static;
+    width: 2rem;
+    height: 2rem;
+    margin: 0;
+    opacity: 1;
+}
+.prettyblock-category-tabs__slider .carousel-control-prev.disabled,
+.prettyblock-category-tabs__slider .carousel-control-next.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
 #everblockModal button.close {
     float: right;
     padding: 0;
