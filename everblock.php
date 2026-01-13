@@ -5544,6 +5544,30 @@ class Everblock extends Module
         return ['deals' => $presentedProducts];
     }
 
+    public function hookBeforeRenderingEverblockBestSales($params)
+    {
+        $settings = [];
+        if (!empty($params['block']['settings']) && is_array($params['block']['settings'])) {
+            $settings = $params['block']['settings'];
+        }
+
+        $limit = isset($settings['product_limit']) ? (int) $settings['product_limit'] : 10;
+        if ($limit <= 0) {
+            $limit = 10;
+        }
+
+        $productIds = EverblockTools::getBestSellingProductIdsForPrettyblock($limit);
+        $presentedProducts = [];
+        if (!empty($productIds)) {
+            $presentedProducts = EverblockTools::everPresentProducts($productIds, $this->context);
+        }
+
+        return [
+            'products' => $presentedProducts,
+            'best_sales_url' => $this->context->link->getPageLink('best-sales'),
+        ];
+    }
+
     public function hookBeforeRenderingEverblockGuidedSelector($params)
     {
         $states = $params['block']['states'] ?? [];

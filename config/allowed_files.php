@@ -298,6 +298,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_accordeon.tpl',
     'views/templates/hook/prettyblocks/prettyblock_advent_calendar.tpl',
     'views/templates/hook/prettyblocks/prettyblock_alert.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_best_sales.tpl',
     'views/templates/hook/prettyblocks/prettyblock_brands.tpl',
     'views/templates/hook/prettyblocks/prettyblock_button.tpl',
     'views/templates/hook/prettyblocks/prettyblock_card.tpl',

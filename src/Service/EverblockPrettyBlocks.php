@@ -162,6 +162,7 @@ class EverblockPrettyBlocks
             $productSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_selector.tpl';
             $guidedSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guided_selector.tpl';
             $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
+            $bestSalesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_best_sales.tpl';
             $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
             $countersTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_counters.tpl';
             $countdownTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_countdown.tpl';
@@ -3500,6 +3501,51 @@ class EverblockPrettyBlocks
                             'type' => 'text',
                             'label' => $module->l('Number of products to display'),
                             'default' => 8,
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Best sellers'),
+                'description' => $module->l('Display best-selling products with optional sliders'),
+                'code' => 'everblock_best_sales',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $bestSalesTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'slider_desktop' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable desktop slider'),
+                            'default' => 1,
+                        ],
+                        'slider_mobile' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable mobile slider'),
+                            'default' => 1,
+                        ],
+                        'product_limit' => [
+                            'type' => 'text',
+                            'label' => $module->l('Number of best sellers to display'),
+                            'default' => 10,
+                        ],
+                        'items_per_slide_desktop' => [
+                            'type' => 'text',
+                            'label' => $module->l('Items per slide on desktop'),
+                            'default' => 4,
+                        ],
+                        'items_per_slide_mobile' => [
+                            'type' => 'text',
+                            'label' => $module->l('Items per slide on mobile'),
+                            'default' => 1,
+                        ],
+                        'button_url_override' => [
+                            'type' => 'text',
+                            'label' => $module->l('Override the best sellers button URL'),
+                            'default' => '',
                         ],
                     ], $module),
                 ],
