@@ -842,6 +842,7 @@ class Everblock extends Module
         $this->secureModuleFolder();
         EverblockTools::checkAndFixDatabase();
         $this->checkHooks();
+        EverblockPrettyBlocks::ensureBeforeRenderingHooksRegistered($this);
         $this->html = '';
 
         if (Tools::isSubmit('deleteEVERBLOCK_MARKER_ICON')) {
