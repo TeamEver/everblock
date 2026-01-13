@@ -311,6 +311,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_counters.tpl',
     'views/templates/hook/prettyblocks/prettyblock_cover.tpl',
     'views/templates/hook/prettyblocks/prettyblock_cta.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_custom_iframe.tpl',
     'views/templates/hook/prettyblocks/prettyblock_divider.tpl',
     'views/templates/hook/prettyblocks/prettyblock_downloads.tpl',
     'views/templates/hook/prettyblocks/prettyblock_everblock.tpl',
