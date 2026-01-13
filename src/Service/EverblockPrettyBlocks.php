@@ -2633,6 +2633,25 @@ class EverblockPrettyBlocks
                             'multiple' => true,
                             'default' => [],
                         ],
+                        'order_by' => [
+                            'type' => 'select',
+                            'label' => $module->l('Order by'),
+                            'choices' => [
+                                'id_product' => $module->l('ID'),
+                                'date_add' => $module->l('Date added'),
+                                'price' => $module->l('Price'),
+                            ],
+                            'default' => 'id_product',
+                        ],
+                        'order_way' => [
+                            'type' => 'select',
+                            'label' => $module->l('Order way'),
+                            'choices' => [
+                                'ASC' => $module->l('Ascending'),
+                                'DESC' => $module->l('Descending'),
+                            ],
+                            'default' => 'ASC',
+                        ],
                         'nb_products' => [
                             'type' => 'text',
                             'label' => $module->l('Number of products to display (0 for default)'),
