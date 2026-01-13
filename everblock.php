@@ -5557,7 +5557,16 @@ class Everblock extends Module
             $limit = 10;
         }
 
-        $productIds = EverblockTools::getBestSellingProductIdsForPrettyblock($limit);
+        $categoryId = 0;
+        if (!empty($settings['best_sales_category']['id'])) {
+            $categoryId = (int) $settings['best_sales_category']['id'];
+        }
+
+        if ($categoryId > 0) {
+            $productIds = EverblockTools::getBestSellingProductIdsForCategoryPrettyblock($categoryId, $limit);
+        } else {
+            $productIds = EverblockTools::getBestSellingProductIdsForPrettyblock($limit);
+        }
         $presentedProducts = [];
         if (!empty($productIds)) {
             $presentedProducts = EverblockTools::everPresentProducts($productIds, $this->context);
