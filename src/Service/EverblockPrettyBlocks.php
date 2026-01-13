@@ -39,10 +39,35 @@ if (!defined('_PS_VERSION_')) {
 class EverblockPrettyBlocks
 {
     private const MEDIA_PATH = '$/img/cms/prettyblocks/';
+    private const BEFORE_RENDERING_HOOKS = [
+        'beforeRenderingEverblockEverblock',
+        'beforeRenderingEverblockCategoryTabs',
+        'beforeRenderingEverblockCategoryPrice',
+        'beforeRenderingEverblockProductHighlight',
+        'beforeRenderingEverblockProductSelector',
+        'beforeRenderingEverblockVideoProducts',
+        'beforeRenderingEverblockSpecialEvent',
+        'beforeRenderingEverblockFlashDeals',
+        'beforeRenderingEverblockBestSales',
+        'beforeRenderingEverblockGuidedSelector',
+        'beforeRenderingEverblockLookbook',
+        'beforeRenderingEverblockCategoryProducts',
+    ];
 
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
     {
         return PrettyBlocksModel::registerBlockToZone($zone_name, $code, $id_lang, $id_shop);
+    }
+
+    public static function ensureBeforeRenderingHooksRegistered(Module $module): void
+    {
+        if (!Module::isInstalled('prettyblocks')) {
+            return;
+        }
+
+        foreach (self::BEFORE_RENDERING_HOOKS as $hookName) {
+            $module->registerHook($hookName);
+        }
     }
 
     private static function appendSpacingFields(array $groups, Module $module): array
