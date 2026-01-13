@@ -3042,6 +3042,17 @@
   border
 
 /* Prettyblock FAQ */
+.everblock-prettyblock-iframe {
+  display: block;
+  border: 0;
+  overflow: hidden;
+  max-width: 100%;
+  scrollbar-width: none;
+}
+
+.everblock-prettyblock-iframe::-webkit-scrollbar {
+  display: none;
+}
 .prettyblock-faq {
   gap: 1rem;
 }
