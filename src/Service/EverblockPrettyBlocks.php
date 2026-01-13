@@ -3567,6 +3567,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Items per slide on mobile'),
                             'default' => 1,
                         ],
+                        'show_best_sales_button' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Show best sellers button'),
+                            'default' => 1,
+                        ],
                         'button_url_override' => [
                             'type' => 'text',
                             'label' => $module->l('Override the best sellers button URL'),
