@@ -39,6 +39,7 @@
 
   {assign var='desktopCarouselEnabled' value=$block.settings.slider_desktop|default:0}
   {assign var='mobileCarouselEnabled' value=$block.settings.slider_mobile|default:0}
+  {assign var='showBestSalesButton' value=$block.settings.show_best_sales_button|default:1}
   {assign var='bestSalesLink' value=$block.settings.button_url_override|default:''}
   {if !$bestSalesLink}
     {assign var='bestSalesLink' value=$block.extra.best_sales_url|default:''}
@@ -135,7 +136,7 @@
           {/if}
         </section>
 
-        {if $bestSalesLink}
+        {if $showBestSalesButton && $bestSalesLink}
           <div class="text-center mt-4">
             <a class="btn btn-primary" href="{$bestSalesLink|escape:'htmlall':'UTF-8'}">
               {l s='See best sellers' mod='everblock'}
