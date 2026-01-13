@@ -16,7 +16,7 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($everPresentProducts) && $everPresentProducts}
-  <div id="{$carousel_id}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel">
+  <div id="{$carousel_id}" class="carousel slide" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true" data-ever-infinite-carousel="1">
     <div class="carousel-inner">
       {assign var="numProductsPerSlide" value=4}
       {foreach from=$everPresentProducts item=product name=products}

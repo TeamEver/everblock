@@ -97,7 +97,7 @@
           {if $mobileCarouselEnabled}
             {assign var="mobileCarouselId" value="ever-best-sales-carousel-mobile-"|cat:mt_rand(1000,999999)}
             {assign var="mobileNumProductsPerSlide" value=$mobileItems}
-            <div id="{$mobileCarouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true" data-ever-mobile-carousel="1">
+            <div id="{$mobileCarouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true" data-ever-mobile-carousel="1" data-ever-infinite-carousel="1">
               <div class="carousel-inner products">
                 {hook h='displayBeforeProductMiniature' products=$block.extra.products origin='best-sales' page_name=$page.page_name}
                 {foreach from=$block.extra.products item=product name=mobileProducts}

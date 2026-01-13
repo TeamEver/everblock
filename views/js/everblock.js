@@ -194,8 +194,6 @@ $(document).ready(function(){
             storedItems = storedItems.detach();
         }
 
-        var itemsArray = storedItems.toArray();
-        var hasMultipleSlides = itemsArray.length > itemsPerSlide;
         var layout = $carousel.data('layout') || 'grid';
         var rowClass = $carousel.data('rowClass') || 'row';
         var controlsEnabled = $carousel.data('controls');
@@ -208,7 +206,7 @@ $(document).ready(function(){
             autoplayDelay = 5000;
         }
         if (isNaN(infinite)) {
-            infinite = 0;
+            infinite = 1;
         }
         if (controlsEnabled === undefined) {
             controlsEnabled = true;
@@ -216,6 +214,9 @@ $(document).ready(function(){
         if (indicatorsEnabled === undefined) {
             indicatorsEnabled = true;
         }
+
+        var itemsArray = storedItems.toArray();
+        var hasMultipleSlides = itemsArray.length > itemsPerSlide;
 
         if (typeof bootstrap !== 'undefined' && typeof bootstrap.Carousel !== 'undefined') {
             var instance = bootstrap.Carousel.getInstance($carousel[0]);
@@ -248,15 +249,26 @@ $(document).ready(function(){
             $carousel.attr('id', carouselId);
         }
 
+        var paddedItems = itemsArray;
+        if (infinite && itemsArray.length && itemsArray.length % itemsPerSlide !== 0) {
+            paddedItems = itemsArray.slice();
+            var missingItems = itemsPerSlide - (itemsArray.length % itemsPerSlide);
+            for (var padIndex = 0; padIndex < missingItems; padIndex += 1) {
+                var sourceItem = itemsArray[padIndex % itemsArray.length];
+                var clonedItem = $(sourceItem).clone(true, true)[0];
+                paddedItems.push(clonedItem);
+            }
+        }
+
         var $inner = $('<div class="carousel-inner"></div>');
-        var slideCount = Math.ceil(itemsArray.length / itemsPerSlide);
+        var slideCount = Math.ceil(paddedItems.length / itemsPerSlide);
         for (var i = 0; i < slideCount; i += 1) {
             var $slide = $('<div class="carousel-item"></div>');
             if (i === 0) {
                 $slide.addClass('active');
             }
             var chunkStart = i * itemsPerSlide;
-            var chunkItems = itemsArray.slice(chunkStart, chunkStart + itemsPerSlide);
+            var chunkItems = paddedItems.slice(chunkStart, chunkStart + itemsPerSlide);
             if (layout === 'grid') {
                 var $chunkRow = $('<div />').addClass(rowClass);
                 $chunkRow.append(chunkItems);
@@ -355,12 +367,57 @@ $(document).ready(function(){
             initEverblockCarousels();
         }, 200);
     });
-    $('[data-ever-infinite-carousel="1"]').each(function(){
+    function padEverblockCarouselSlides($carousel) {
+        var $inner = $carousel.find('.carousel-inner');
+        if (!$inner.length) {
+            return;
+        }
+        var $slides = $inner.children('.carousel-item');
+        if ($slides.length <= 1) {
+            return;
+        }
+        var itemsPerSlide = 0;
+        $slides.each(function () {
+            var $slide = $(this);
+            var $row = $slide.children('.row');
+            var count = $row.length ? $row.first().children().length : $slide.children().length;
+            if (count > itemsPerSlide) {
+                itemsPerSlide = count;
+            }
+        });
+        if (itemsPerSlide <= 0) {
+            return;
+        }
+        var $allItems = $slides.map(function () {
+            var $slide = $(this);
+            var $row = $slide.children('.row');
+            return $row.length ? $row.first().children() : $slide.children();
+        }).get();
+        if (!$allItems.length) {
+            return;
+        }
+        var itemIndex = 0;
+        $slides.each(function () {
+            var $slide = $(this);
+            var $row = $slide.children('.row');
+            var $container = $row.length ? $row.first() : $slide;
+            var currentCount = $container.children().length;
+            var missing = itemsPerSlide - currentCount;
+            for (var i = 0; i < missing; i += 1) {
+                var sourceItem = $allItems[itemIndex % $allItems.length];
+                itemIndex += 1;
+                $container.append($(sourceItem).clone(true, true));
+            }
+        });
+    }
+
+    $('[data-ever-infinite-carousel="1"], [data-ever-mobile-carousel="1"]').each(function(){
         var $carousel = $(this);
         var $inner = $carousel.find('.carousel-inner');
         if (!$inner.length || $inner.children('.carousel-item').length <= 1) {
             return;
         }
+        padEverblockCarouselSlides($carousel);
         var refreshInstanceItems = function() {
             if (typeof bootstrap !== 'undefined' && typeof bootstrap.Carousel !== 'undefined') {
                 var instance = bootstrap.Carousel.getInstance($carousel[0]);
