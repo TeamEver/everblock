@@ -30,7 +30,7 @@
         <div class="row">
     {/if}
     {if isset($block.states) && $block.states}
-    <div id="testimonialCarousel-{$block.id_prettyblocks}" class="carousel slide everblock-testimonial" data-ride="carousel" data-bs-ride="carousel">
+    <div id="testimonialCarousel-{$block.id_prettyblocks}" class="carousel slide everblock-testimonial" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
         <div class="carousel-inner">
             {foreach from=$block.states item=state}
                 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}

@@ -89,7 +89,7 @@
   <section class="ever-featured-products featured-products mx-2 d-block d-md-none">
     {assign var="mobileCarouselId" value="ever-presented-carousel-mobile-"|cat:mt_rand(1000,999999)}
     {assign var="mobileNumProductsPerSlide" value=$mobileItems}
-    <div id="{$mobileCarouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true" data-ever-mobile-carousel="1">
+    <div id="{$mobileCarouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true" data-ever-mobile-carousel="1" data-ever-infinite-carousel="1">
       <div class="carousel-inner products">
         {hook h='displayBeforeProductMiniature' products=$everPresentProducts origin=$shortcodeClass|default:'' page_name=$page.page_name}
         {foreach from=$everPresentProducts item=product name=mobileProducts}

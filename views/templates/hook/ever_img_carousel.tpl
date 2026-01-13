@@ -1,5 +1,5 @@
 {if isset($images) && $images}
-  <div id="{$carousel_id}" class="carousel slide" data-bs-ride="carousel">
+  <div id="{$carousel_id}" class="carousel slide" data-bs-ride="carousel" data-bs-wrap="true">
     
     {* ✅ Dots (indicateurs) *}
     <div class="carousel-indicators">

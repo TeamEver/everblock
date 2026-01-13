@@ -54,7 +54,7 @@
          data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}"
          data-items-mobile="1"
          data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
-         data-infinite="{if isset($block.settings.slider_infinite) && $block.settings.slider_infinite}1{else}0{/if}"
+         data-infinite="1"
          data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}"
          data-row-class="row g-3 justify-content-center"
          data-controls="true"
