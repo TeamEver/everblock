@@ -29,9 +29,18 @@
   {/if}
   {assign var='tabletItems' value=2}
 
-  {math equation="ceil(12 / x)" x=$mobileItems assign='mobileColumnWidth'}
-  {math equation="ceil(12 / x)" x=$tabletItems assign='tabletColumnWidth'}
-  {math equation="ceil(12 / x)" x=$desktopItems assign='desktopColumnWidth'}
+  {math equation="floor(12 / x)" x=$mobileItems assign='mobileColumnWidth'}
+  {math equation="floor(12 / x)" x=$tabletItems assign='tabletColumnWidth'}
+  {math equation="floor(12 / x)" x=$desktopItems assign='desktopColumnWidth'}
+  {if $mobileColumnWidth < 1}
+    {assign var='mobileColumnWidth' value=1}
+  {/if}
+  {if $tabletColumnWidth < 1}
+    {assign var='tabletColumnWidth' value=1}
+  {/if}
+  {if $desktopColumnWidth < 1}
+    {assign var='desktopColumnWidth' value=1}
+  {/if}
   {assign var='productColumnClasses' value="col-"|cat:$mobileColumnWidth}
   {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-sm-"|cat:$tabletColumnWidth}
   {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-lg-"|cat:$desktopColumnWidth}
