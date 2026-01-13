@@ -2052,6 +2052,11 @@ class EverblockTools extends ObjectModel
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
+    public static function getBestSellingProductIdsForPrettyblock(int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
+    {
+        return static::getBestSellingProductIds($limit, $orderBy, $orderWay, $days);
+    }
+
     protected static function getBestSellingProductIds(int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
     {
         $context = Context::getContext();
