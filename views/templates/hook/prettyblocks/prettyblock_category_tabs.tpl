@@ -31,11 +31,11 @@
     {if isset($block.states) && $block.states}
     <div class="mt-2 col-12 d-flex justify-content-center text-center">
         <div class="tab-container">
-            <ul class="nav nav-tabs justify-content-center" role="tablist">
+            <ul class="nav nav-tabs justify-content-center prettyblock-category-tabs__nav" role="tablist">
                 {foreach from=$block.states item=state key=key name=categorytabs}
                     {assign var='tabId' value="tab-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key}
                     <li class="nav-item">
-                        <a class="nav-link {if $smarty.foreach.categorytabs.first}active{/if}" id="{$tabId}-tab" data-toggle="tab" data-bs-toggle="tab" data-bs-target="#{$tabId}" href="#{$tabId}" role="tab" aria-controls="{$tabId}" aria-selected="{if $smarty.foreach.categorytabs.first}true{else}false{/if}" title="{$state.name|escape:'htmlall'}">
+                        <a class="nav-link prettyblock-category-tabs__tab-link {if $smarty.foreach.categorytabs.first}active{/if}" id="{$tabId}-tab" data-toggle="tab" data-bs-toggle="tab" data-bs-target="#{$tabId}" href="#{$tabId}" role="tab" aria-controls="{$tabId}" aria-selected="{if $smarty.foreach.categorytabs.first}true{else}false{/if}" title="{$state.name|escape:'htmlall'}">
                             {$state.name}
                         </a>
                     </li>
