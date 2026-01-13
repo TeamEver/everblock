@@ -3557,6 +3557,13 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Number of best sellers to display'),
                             'default' => 10,
                         ],
+                        'best_sales_category' => [
+                            'type' => 'selector',
+                            'label' => $module->l('Optional category for best sellers'),
+                            'collection' => 'Category',
+                            'selector' => '{id} - {name}',
+                            'default' => '',
+                        ],
                         'items_per_slide_desktop' => [
                             'type' => 'text',
                             'label' => $module->l('Items per slide on desktop'),
