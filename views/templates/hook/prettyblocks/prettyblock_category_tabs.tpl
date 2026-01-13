@@ -143,100 +143,172 @@
                                 </div>
                             {/if}
                             {if isset($block.extra.products[$key]) && $block.extra.products[$key]}
-                                <div class="col-12{if $hasSliderImages} col-lg-8{/if}">
-                                    {if $useDesktopSlider || $useMobileSlider}
-                            {if $useDesktopSlider}
-                                {assign var='carouselIdDesktop' value="category-tabs-carousel-desktop-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
-                                <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-none d-md-block">
-                                    <div id="{$carouselIdDesktop}" class="carousel slide prettyblocks-image-slider" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
-                                        <div class="carousel-inner products">
+                                {if $hasSliderImages && !$useDesktopSlider}
+                                    {assign var='sideProductsCount' value=2}
+                                    <div class="col-12 col-lg-8">
+                                        <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-none d-md-block">
                                             {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
-                                            {foreach from=$block.extra.products[$key] item=product name=desktopProducts}
-                                                {if $product@index % $desktopItems == 0}
-                                                    <div class="carousel-item{if $product@first} active{/if}">
-                                                        <div class="row">
-                                                {/if}
-                                                {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
-                                                {if ($product@index + 1) % $desktopItems == 0 || $product@last}
-                                                        </div>
-                                                    </div>
-                                                {/if}
-                                            {/foreach}
-                                            {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
-                                        </div>
-                                        <button class="carousel-control-prev" type="button" data-target="#{$carouselIdDesktop}" data-slide="prev" data-bs-target="#{$carouselIdDesktop}" data-bs-slide="prev">
-                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
-                                        </button>
-                                        <button class="carousel-control-next" type="button" data-target="#{$carouselIdDesktop}" data-slide="next" data-bs-target="#{$carouselIdDesktop}" data-bs-slide="next">
-                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
-                                        </button>
-                                    </div>
-                                </section>
-                            {else}
-                                <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-none d-md-block">
-                                    <div class="products row">
-                                        {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
-                                        {foreach from=$block.extra.products[$key] item=product}
-                                            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
-                                        {/foreach}
-                                        {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
-                                    </div>
-                                </section>
-                            {/if}
-                            {if $useMobileSlider}
-                                {assign var='carouselIdMobile' value="category-tabs-carousel-mobile-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
-                                <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-block d-md-none">
-                                    <div id="{$carouselIdMobile}" class="carousel slide prettyblocks-image-slider" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
-                                        <div class="carousel-inner products">
-                                            {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
-                                            {foreach from=$block.extra.products[$key] item=product name=mobileProducts}
-                                                {if $product@index % $mobileItems == 0}
-                                                    <div class="carousel-item{if $product@first} active{/if}">
-                                                        <div class="row">
-                                                {/if}
-                                                {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
-                                                {if ($product@index + 1) % $mobileItems == 0 || $product@last}
-                                                        </div>
-                                                    </div>
-                                                {/if}
-                                            {/foreach}
-                                            {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
-                                        </div>
-                                        <button class="carousel-control-prev" type="button" data-target="#{$carouselIdMobile}" data-slide="prev" data-bs-target="#{$carouselIdMobile}" data-bs-slide="prev">
-                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
-                                        </button>
-                                        <button class="carousel-control-next" type="button" data-target="#{$carouselIdMobile}" data-slide="next" data-bs-target="#{$carouselIdMobile}" data-bs-slide="next">
-                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
-                                        </button>
-                                    </div>
-                                </section>
-                            {else}
-                                <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-block d-md-none">
-                                    <div class="products row">
-                                        {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
-                                        {foreach from=$block.extra.products[$key] item=product}
-                                            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
-                                        {/foreach}
-                                        {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
-                                    </div>
-                                </section>
-                            {/if}
-                                    {else}
-                                        <section class="ever-featured-products featured-products clearfix mt-3 category_tabs">
                                             <div class="products row">
-                                                {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
-                                                {foreach from=$block.extra.products[$key] item=product}
-                                                    {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                {foreach from=$block.extra.products[$key] item=product name=desktopSideProducts}
+                                                    {if $smarty.foreach.desktopSideProducts.index < $sideProductsCount}
+                                                        {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                    {/if}
                                                 {/foreach}
-                                                {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                             </div>
+                                            {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                         </section>
+                                    </div>
+                                {if $productCount > $sideProductsCount}
+                                        <div class="col-12">
+                                            <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-none d-md-block">
+                                                <div class="products row">
+                                                    {foreach from=$block.extra.products[$key] item=product name=desktopBottomProducts}
+                                                        {if $smarty.foreach.desktopBottomProducts.index >= $sideProductsCount}
+                                                            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses='col-12'}
+                                                        {/if}
+                                                    {/foreach}
+                                                </div>
+                                            </section>
+                                        </div>
                                     {/if}
-                                </div>
+                                    <div class="col-12">
+                                        {if $useMobileSlider}
+                                            {assign var='carouselIdMobile' value="category-tabs-carousel-mobile-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
+                                            <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-block d-md-none">
+                                                <div id="{$carouselIdMobile}" class="carousel slide prettyblocks-image-slider" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
+                                                    <div class="carousel-inner products">
+                                                        {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                        {foreach from=$block.extra.products[$key] item=product name=mobileProducts}
+                                                            {if $product@index % $mobileItems == 0}
+                                                                <div class="carousel-item{if $product@first} active{/if}">
+                                                                    <div class="row">
+                                                            {/if}
+                                                            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                            {if ($product@index + 1) % $mobileItems == 0 || $product@last}
+                                                                    </div>
+                                                                </div>
+                                                            {/if}
+                                                        {/foreach}
+                                                        {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                    </div>
+                                                    <button class="carousel-control-prev" type="button" data-target="#{$carouselIdMobile}" data-slide="prev" data-bs-target="#{$carouselIdMobile}" data-bs-slide="prev">
+                                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                        <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+                                                    </button>
+                                                    <button class="carousel-control-next" type="button" data-target="#{$carouselIdMobile}" data-slide="next" data-bs-target="#{$carouselIdMobile}" data-bs-slide="next">
+                                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                        <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+                                                    </button>
+                                                </div>
+                                            </section>
+                                        {else}
+                                            <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-block d-md-none">
+                                                <div class="products row">
+                                                    {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                    {foreach from=$block.extra.products[$key] item=product}
+                                                        {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                    {/foreach}
+                                                    {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                </div>
+                                            </section>
+                                        {/if}
+                                    </div>
+                                {else}
+                                    <div class="col-12{if $hasSliderImages} col-lg-8{/if}">
+                                        {if $useDesktopSlider || $useMobileSlider}
+                                            {if $useDesktopSlider}
+                                                {assign var='carouselIdDesktop' value="category-tabs-carousel-desktop-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
+                                                <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-none d-md-block">
+                                                    <div id="{$carouselIdDesktop}" class="carousel slide prettyblocks-image-slider" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
+                                                        <div class="carousel-inner products">
+                                                            {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                            {foreach from=$block.extra.products[$key] item=product name=desktopProducts}
+                                                                {if $product@index % $desktopItems == 0}
+                                                                    <div class="carousel-item{if $product@first} active{/if}">
+                                                                        <div class="row">
+                                                                {/if}
+                                                                {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                                {if ($product@index + 1) % $desktopItems == 0 || $product@last}
+                                                                        </div>
+                                                                    </div>
+                                                                {/if}
+                                                            {/foreach}
+                                                            {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                        </div>
+                                                        <button class="carousel-control-prev" type="button" data-target="#{$carouselIdDesktop}" data-slide="prev" data-bs-target="#{$carouselIdDesktop}" data-bs-slide="prev">
+                                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                            <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+                                                        </button>
+                                                        <button class="carousel-control-next" type="button" data-target="#{$carouselIdDesktop}" data-slide="next" data-bs-target="#{$carouselIdDesktop}" data-bs-slide="next">
+                                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                            <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+                                                        </button>
+                                                    </div>
+                                                </section>
+                                            {else}
+                                                <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-none d-md-block">
+                                                    <div class="products row">
+                                                        {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                        {foreach from=$block.extra.products[$key] item=product}
+                                                            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                        {/foreach}
+                                                        {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                    </div>
+                                                </section>
+                                            {/if}
+                                            {if $useMobileSlider}
+                                                {assign var='carouselIdMobile' value="category-tabs-carousel-mobile-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
+                                                <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-block d-md-none">
+                                                    <div id="{$carouselIdMobile}" class="carousel slide prettyblocks-image-slider" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
+                                                        <div class="carousel-inner products">
+                                                            {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                            {foreach from=$block.extra.products[$key] item=product name=mobileProducts}
+                                                                {if $product@index % $mobileItems == 0}
+                                                                    <div class="carousel-item{if $product@first} active{/if}">
+                                                                        <div class="row">
+                                                                {/if}
+                                                                {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                                {if ($product@index + 1) % $mobileItems == 0 || $product@last}
+                                                                        </div>
+                                                                    </div>
+                                                                {/if}
+                                                            {/foreach}
+                                                            {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                        </div>
+                                                        <button class="carousel-control-prev" type="button" data-target="#{$carouselIdMobile}" data-slide="prev" data-bs-target="#{$carouselIdMobile}" data-bs-slide="prev">
+                                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                            <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+                                                        </button>
+                                                        <button class="carousel-control-next" type="button" data-target="#{$carouselIdMobile}" data-slide="next" data-bs-target="#{$carouselIdMobile}" data-bs-slide="next">
+                                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                            <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+                                                        </button>
+                                                    </div>
+                                                </section>
+                                            {else}
+                                                <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-block d-md-none">
+                                                    <div class="products row">
+                                                        {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                        {foreach from=$block.extra.products[$key] item=product}
+                                                            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                        {/foreach}
+                                                        {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                    </div>
+                                                </section>
+                                            {/if}
+                                        {else}
+                                            <section class="ever-featured-products featured-products clearfix mt-3 category_tabs">
+                                                <div class="products row">
+                                                    {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                    {foreach from=$block.extra.products[$key] item=product}
+                                                        {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                    {/foreach}
+                                                    {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
+                                                </div>
+                                            </section>
+                                        {/if}
+                                    </div>
+                                {/if}
                             {/if}
                         </div>
                     </div>
