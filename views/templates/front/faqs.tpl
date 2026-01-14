@@ -10,11 +10,11 @@
       <div class="everblock-faqs-hero rounded-4 border bg-light p-4 p-md-5 d-flex flex-column flex-md-row justify-content-between gap-3">
         <div>
           {if $everblock_is_all_faqs_page}
-            <h1 class="h2 mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
+            <h1 class="mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
             <p class="text-muted mb-0">{l s='Browse every question and answer available across all groups.' mod='everblock' d='Modules.Everblock.Front'}</p>
           {else}
             <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
-              <h1 class="h2 mb-0">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
+              <h1 class="mb-0">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
               <span class="badge text-bg-primary text-lowercase everblock-faqs-tag" aria-label="{l s='Current FAQ tag' mod='everblock' d='Modules.Everblock.Front'}">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</span>
             </div>
             <p class="text-muted mb-0">{l s='All frequently asked questions grouped by this tag.' mod='everblock' d='Modules.Everblock.Front'}</p>

@@ -27,10 +27,14 @@
                 <button class="accordion-button bg-transparent shadow-none px-0 py-0 text-body fw-semibold d-flex align-items-center justify-content-between gap-3 {if !$smarty.foreach.faqloop.first}collapsed{/if}" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#collapse{$faq->id_everblock_faq}" data-bs-target="#collapse{$faq->id_everblock_faq}"
                         aria-expanded="{if $smarty.foreach.faqloop.first}true{else}false{/if}" aria-controls="collapse{$faq->id_everblock_faq}" itemprop="name">
                   <span class="text-start flex-grow-1">{$faq->title}</span>
-                  <span class="faq-chevron rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" aria-hidden="true">⌄</span>
+                  <span class="faq-chevron rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center flex-shrink-0" aria-hidden="true">
+                    <svg class="faq-chevron__icon" viewBox="0 0 20 20" role="presentation" focusable="false" aria-hidden="true">
+                      <path d="M5.5 7.5L10 12l4.5-4.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                  </span>
                 </button>
                 {if isset($faq->tag_link) && $faq->tag_link}
-                  <a class="badge text-bg-secondary text-decoration-none everblock-faq-chip flex-shrink-0" href="{$faq->tag_link|escape:'htmlall':'UTF-8'}" title="{l s='View all questions from the %s group' sprintf=[$faq->tag_name] mod='everblock' d='Modules.Everblock.Front'}">
+                  <a class="badge bg-secondary text-decoration-none everblock-faq-chip flex-shrink-0" href="{$faq->tag_link|escape:'htmlall':'UTF-8'}" title="{l s='View all questions from the %s group' sprintf=[$faq->tag_name] mod='everblock' d='Modules.Everblock.Front'}">
                     {$faq->tag_name|escape:'htmlall':'UTF-8'}
                   </a>
                 {/if}
