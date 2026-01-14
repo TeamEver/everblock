@@ -26,6 +26,10 @@
                     <label for="everblock_modal_content_{$language.id_lang|escape:'htmlall':'UTF-8'}">{l s='Modal content' mod='everblock'} {$language.iso_code|escape:'htmlall':'UTF-8'}</label>
                     <textarea id="everblock_modal_content_{$language.id_lang|escape:'htmlall':'UTF-8'}" name="everblock_modal_content_{$language.id_lang|escape:'htmlall':'UTF-8'}" class="form-control autoload_rte">{if isset($modal->content[$language.id_lang])}{$modal->content[$language.id_lang]|escape:'htmlall':'UTF-8'}{/if}</textarea>
                 </div>
+                <div class="form-group">
+                    <label for="everblock_modal_button_label_{$language.id_lang|escape:'htmlall':'UTF-8'}">{l s='Button label' mod='everblock'} {$language.iso_code|escape:'htmlall':'UTF-8'}</label>
+                    <input type="text" id="everblock_modal_button_label_{$language.id_lang|escape:'htmlall':'UTF-8'}" name="everblock_modal_button_label_{$language.id_lang|escape:'htmlall':'UTF-8'}" class="form-control" value="{if isset($modal->button_label[$language.id_lang])}{$modal->button_label[$language.id_lang]|escape:'htmlall':'UTF-8'}{/if}" />
+                </div>
             {/foreach}
         </div>
         <div class="form-group">
@@ -60,6 +64,39 @@
             <input type="hidden" name="everblock_modal_file_payload" id="everblock_modal_file_payload" value="" />
             <input type="hidden" name="everblock_modal_file_name" id="everblock_modal_file_name" value="" />
             <div class="everblock-modal-feedback alert d-none" role="alert"></div>
+        </div>
+        <div class="form-group">
+            <label for="everblock_modal_button_file">{l s='Button file' mod='everblock'}</label>
+            <div class="everblock-modal-button-file-wrapper">
+                {if $modal_button_file_url}
+                    <p class="everblock-modal-current-file">
+                        <a href="{$modal_button_file_url|escape:'htmlall':'UTF-8'}" target="_blank" class="everblock-modal-file-link">{$modal_button_file_name|escape:'htmlall':'UTF-8'}</a>
+                    </p>
+                {else}
+                    <p class="everblock-modal-current-file text-muted">{l s='No file uploaded yet.' mod='everblock'}</p>
+                {/if}
+            </div>
+            <div class="everblock-modal-button-delete-wrapper"{if !$modal_button_file_url} style="display:none;"{/if}>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="everblock_modal_button_file_delete" value="1" />
+                        {l s='Delete file' mod='everblock'}
+                    </label>
+                </div>
+            </div>
+            <div class="everblock-modal-button-preview-container mt-3{if !$modal_button_file_url} d-none{/if}" data-ever-preview-empty-text="{l s='Preview not available for this file.' mod='everblock'|escape:'htmlall':'UTF-8'}">
+                <label class="form-label d-block">{l s='Preview' mod='everblock'}</label>
+                <div class="everblock-modal-button-preview-wrapper{if !$modal_button_file_url || !$modal_button_file_is_image} d-none{/if}">
+                    <img class="everblock-modal-button-preview-image img-thumbnail" alt="{$modal_button_file_name|escape:'htmlall':'UTF-8'}"{if $modal_button_file_url && $modal_button_file_is_image} src="{$modal_button_file_preview_url|escape:'htmlall':'UTF-8'}" loading="lazy"{/if} />
+                </div>
+                <p class="everblock-modal-button-preview-empty text-muted{if $modal_button_file_url && $modal_button_file_is_image} d-none{/if}">
+                    {l s='Preview not available for this file.' mod='everblock'}
+                </p>
+            </div>
+            <input type="file" name="everblock_modal_button_file" id="everblock_modal_button_file" class="form-control" />
+            <input type="hidden" name="everblock_modal_button_file_payload" id="everblock_modal_button_file_payload" value="" />
+            <input type="hidden" name="everblock_modal_button_file_name" id="everblock_modal_button_file_name" value="" />
+            <div class="everblock-modal-button-feedback alert d-none" role="alert"></div>
         </div>
     </div>
 </div>

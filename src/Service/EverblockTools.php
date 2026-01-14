@@ -4750,6 +4750,7 @@ class EverblockTools extends ObjectModel
             'id_product' => 'int(10) unsigned NOT NULL',
             'id_shop' => 'int(10) unsigned NOT NULL',
             'file' => 'varchar(255) DEFAULT NULL',
+            'button_file' => 'varchar(255) DEFAULT NULL',
         ];
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_modal` `' . pSQL($columnName) . '`');
@@ -4767,6 +4768,7 @@ class EverblockTools extends ObjectModel
             'id_everblock_modal' => 'int(10) unsigned NOT NULL',
             'id_lang' => 'int(10) unsigned NOT NULL',
             'content' => 'text DEFAULT NULL',
+            'button_label' => 'text DEFAULT NULL',
         ];
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
             $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_modal_lang` `' . pSQL($columnName) . '`');

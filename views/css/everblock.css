@@ -457,6 +457,16 @@
     height: auto;
     max-height: 80vh;
 }
+
+.everblock-modal-button--image {
+    background: transparent;
+}
+
+.everblock-modal-button-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
 .ever-model-product.card {
     border: 1px solid #dee2e6; /* même valeur que Bootstrap 4 */
     border-radius: 0.25rem;
