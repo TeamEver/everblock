@@ -119,6 +119,7 @@
     border-radius: .75rem;
     min-height: 56px;
     padding: .35rem;
+    background-color: #ffffff;
     transition: box-shadow .2s ease, border-color .2s ease;
 }
 
@@ -133,10 +134,20 @@
     padding: .4rem;
     font-size: 1rem;
     color: #0f172a;
+    min-width: 100%;
+    width: 100% !important;
 }
 
 #everblock .everblock-faq-selector-wrapper .select2-container--default.select2-container--focus .select2-selection--multiple {
     box-shadow: 0 0 0 .2rem rgba(79, 70, 229, 0.2);
+}
+
+#everblock .everblock-faq-selector-wrapper .select2-container {
+    width: 100% !important;
+}
+
+#everblock .everblock-faq-selector-wrapper .select2-search--inline {
+    width: 100%;
 }
 
 #everblock .everblock-faq-selector-wrapper .select2-search--inline .select2-search__field::placeholder {
