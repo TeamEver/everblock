@@ -1277,6 +1277,12 @@
     transition: transform 0.2s ease;
 }
 
+.faq-chevron__icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    display: block;
+}
+
 .faq-accordion .accordion-button:not(.collapsed) .faq-chevron {
     transform: rotate(180deg);
 }
@@ -1287,7 +1293,14 @@
 }
 
 .everblock-faq-chip {
+    color: #fff;
+    background-color: var(--bs-secondary);
     text-transform: lowercase;
+}
+
+.everblock-faq-chip:hover,
+.everblock-faq-chip:focus {
+    color: #fff;
 }
 
 @media (max-width: 767px) {
