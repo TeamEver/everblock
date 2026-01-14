@@ -213,6 +213,16 @@ class EverblockFaq extends ObjectModel
         return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
     }
 
+    public static function countAll(int $shopId): int
+    {
+        $sql = new DbQuery();
+        $sql->select('COUNT(*)');
+        $sql->from(self::$definition['table']);
+        $sql->where('id_shop = ' . (int) $shopId);
+
+        return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+    }
+
     public static function getFirstActiveTagName(?int $shopId = null): ?string
     {
         $shopId = self::resolveShopId($shopId);

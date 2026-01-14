@@ -3223,6 +3223,9 @@ class Everblock extends Module
         ];
         $this->context->controller->addCss($this->_path . 'views/css/admin_menu.css');
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
+        if ($controller === 'AdminProducts') {
+            $this->context->controller->addJs($this->_path . 'views/js/product-faq.js');
+        }
 
         if (Tools::getValue('id_' . $this->name)
             || Tools::getIsset('add' . $this->name)
@@ -3711,11 +3714,12 @@ class Everblock extends Module
         }
 
         $productId = (int) $params['id_product'];
+        $shopId = (int) $this->context->shop->id;
         $tabsNumber = max((int) Configuration::get('EVERPS_TAB_NB'), 1);
         $flagsNumber = max((int) Configuration::get('EVERPS_FLAG_NB'), 1);
         
-        $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
-        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $this->context->shop->id);
+        $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $shopId);
+        $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $shopId);
 
         $tabsData = [];
         $flagsData = [];
@@ -3751,20 +3755,15 @@ class Everblock extends Module
 
         $everAjaxUrl = Context::getContext()->link->getAdminLink('AdminModules', true, [], ['configure' => $this->name, 'token' => Tools::getAdminTokenLite('AdminModules')]);
 
-        $selectedFaqIds = EverblockFaq::getFaqIdsByProduct($productId, $this->context->shop->id);
+        $faqTotalCount = EverblockFaq::countAll($shopId);
+        $selectedFaqIds = EverblockFaq::getFaqIdsByProduct($productId, $shopId);
         $langId = (int) $this->context->employee->id_lang;
         if ($langId <= 0) {
             $langId = (int) Configuration::get('PS_LANG_DEFAULT');
         }
-        $selectedFaqOptions = EverblockFaq::getFaqOptionsByIds($selectedFaqIds, $this->context->shop->id, $langId);
+        $selectedFaqOptions = EverblockFaq::getFaqOptionsByIds($selectedFaqIds, $shopId, $langId);
 
-        $faqSelectorData = [
-            'selected_options' => $selectedFaqOptions,
-            'ajax_url' => $everAjaxUrl . '&ajax=1&action=EverblockSearchFaq',
-            'placeholder' => $this->l('Search and attach FAQs…'),
-        ];
-
-        $this->smarty->assign([
+        $assigns = [
             'tabsData' => $tabsData,
             'flagsData' => $flagsData,
             'default_language' => $this->context->employee->id_lang,
@@ -3773,8 +3772,17 @@ class Everblock extends Module
             'ever_product_id' => $productId,
             'tabsRange' => range(1, $tabsNumber),
             'flagsRange' => range(1, $flagsNumber),
-            'everblock_faq_selector' => $faqSelectorData,
-        ]);
+        ];
+
+        if ($faqTotalCount > 0) {
+            $assigns['everblock_faq_selector'] = [
+                'selected_options' => $selectedFaqOptions,
+                'ajax_url' => $everAjaxUrl . '&ajax=1&action=EverblockSearchFaq',
+                'placeholder' => $this->l('Search and attach FAQs…'),
+            ];
+        }
+
+        $this->smarty->assign($assigns);
 
         return $this->display(__FILE__, 'views/templates/admin/productTab.tpl');
     }
