@@ -110,6 +110,7 @@ class Everblock extends Module
         Configuration::updateValue('EVERWP_API_URL', '');
         Configuration::updateValue('EVERWP_BLOG_URL', '/blog');
         Configuration::updateValue('EVERWP_POST_NBR', 3);
+        Configuration::updateValue('EVERWP_POSTS_BG_IMAGE', '');
         Configuration::updateValue('EVER_SOLDOUT_COLOR', '#ff0000');
         Configuration::updateValue('EVER_SOLDOUT_TEXTCOLOR', '#ffffff');
         Configuration::updateValue('EVERINSTA_SHOW_CAPTION', 0);
@@ -249,6 +250,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERWP_API_URL');
         Configuration::deleteByName('EVERWP_BLOG_URL');
         Configuration::deleteByName('EVERWP_POST_NBR');
+        Configuration::deleteByName('EVERWP_POSTS_BG_IMAGE');
         Configuration::deleteByName('EVER_SOLDOUT_COLOR');
         Configuration::deleteByName('EVER_SOLDOUT_TEXTCOLOR');
         Configuration::deleteByName('EVERBLOCK_SOLDOUT_FLAG');
@@ -854,6 +856,17 @@ class Everblock extends Module
                 }
                 Configuration::deleteByName('EVERBLOCK_MARKER_ICON');
                 $this->postSuccess[] = $this->l('Marker icon removed.');
+            }
+        }
+        if (Tools::isSubmit('deleteEVERWP_POSTS_BG_IMAGE')) {
+            $background = Configuration::get('EVERWP_POSTS_BG_IMAGE');
+            if ($background) {
+                $path = _PS_MODULE_DIR_ . $this->name . '/views/img/' . $background;
+                if (file_exists($path)) {
+                    @unlink($path);
+                }
+                Configuration::deleteByName('EVERWP_POSTS_BG_IMAGE');
+                $this->postSuccess[] = $this->l('WordPress background image removed.');
             }
         }
 
@@ -1741,6 +1754,7 @@ class Everblock extends Module
             $form['form']['input'][] = $input;
         }
 
+        $wordpressBackground = Configuration::get('EVERWP_POSTS_BG_IMAGE');
         $wordpressInputs = [
             [
                 'type' => 'html',
@@ -1766,6 +1780,18 @@ class Everblock extends Module
                 'type' => 'text',
                 'label' => $this->l('Number of blog posts to display'),
                 'name' => 'EVERWP_POST_NBR',
+            ],
+            [
+                'type' => 'file',
+                'label' => $this->l('Background image for WordPress posts'),
+                'desc' => $this->l('Optional background image for the latest WordPress posts section.'),
+                'name' => 'EVERWP_POSTS_BG_IMAGE',
+                'display_image' => true,
+                'image' => $wordpressBackground
+                    ? $this->context->link->getBaseLink(null, null) . 'modules/' . $this->name . '/views/img/' . $wordpressBackground
+                    : false,
+                'delete_url' => $this->context->link->getAdminLink('AdminModules')
+                    . '&configure=' . $this->name . '&deleteEVERWP_POSTS_BG_IMAGE=1',
             ],
         ];
 
@@ -2516,6 +2542,7 @@ class Everblock extends Module
             'EVERWP_API_URL' => Configuration::get('EVERWP_API_URL'),
             'EVERWP_BLOG_URL' => Configuration::get('EVERWP_BLOG_URL'),
             'EVERWP_POST_NBR' => Configuration::get('EVERWP_POST_NBR'),
+            'EVERWP_POSTS_BG_IMAGE' => Configuration::get('EVERWP_POSTS_BG_IMAGE'),
             'EVERBLOCK_GOOGLE_API_KEY' => Configuration::get('EVERBLOCK_GOOGLE_API_KEY'),
             'EVERBLOCK_GOOGLE_PLACE_ID' => Configuration::get('EVERBLOCK_GOOGLE_PLACE_ID'),
             'EVERBLOCK_GOOGLE_REVIEWS_LIMIT' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_LIMIT'),
@@ -3018,6 +3045,34 @@ class Everblock extends Module
                 copy($tmpName, $dest);
                 @unlink($tmpName);
                 Configuration::updateValue('EVERBLOCK_MARKER_ICON', 'store-locator-marker.svg');
+            }
+        }
+        if (isset($_FILES['EVERWP_POSTS_BG_IMAGE'])
+            && isset($_FILES['EVERWP_POSTS_BG_IMAGE']['tmp_name'])
+            && !empty($_FILES['EVERWP_POSTS_BG_IMAGE']['tmp_name'])
+        ) {
+            $filename = $_FILES['EVERWP_POSTS_BG_IMAGE']['name'];
+            $extension = Tools::strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+            if (!in_array($extension, $allowedExtensions, true)) {
+                $this->postErrors[] = $this->l('WordPress background image must be a JPG, PNG, WEBP, or GIF file.');
+            } elseif (!($tmpName = tempnam(_PS_TMP_IMG_DIR_, 'PS'))
+                || !move_uploaded_file($_FILES['EVERWP_POSTS_BG_IMAGE']['tmp_name'], $tmpName)
+            ) {
+                $this->postErrors[] = $this->l('Error while uploading WordPress background image.');
+            } else {
+                $previous = Configuration::get('EVERWP_POSTS_BG_IMAGE');
+                if ($previous) {
+                    $previousPath = _PS_MODULE_DIR_ . $this->name . '/views/img/' . $previous;
+                    if (file_exists($previousPath)) {
+                        @unlink($previousPath);
+                    }
+                }
+                $safeName = 'wp-posts-bg-' . time() . '.' . $extension;
+                $dest = _PS_MODULE_DIR_ . $this->name . '/views/img/' . $safeName;
+                copy($tmpName, $dest);
+                @unlink($tmpName);
+                Configuration::updateValue('EVERWP_POSTS_BG_IMAGE', $safeName);
             }
         }
         $stores = Store::getStores((int) $this->context->language->id);

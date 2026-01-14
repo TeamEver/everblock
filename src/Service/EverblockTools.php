@@ -1134,9 +1134,16 @@ class EverblockTools extends ObjectModel
             }
         }
 
+        $backgroundImage = Configuration::get('EVERWP_POSTS_BG_IMAGE');
+        $backgroundUrl = '';
+        if ($backgroundImage) {
+            $backgroundUrl = $context->link->getBaseLink(null, null)
+                . 'modules/' . $module->name . '/views/img/' . $backgroundImage;
+        }
         $context->smarty->assign([
             'everblock_wp_posts' => $storedPosts,
             'everblock_wp_blog_url' => Configuration::get('EVERWP_BLOG_URL') ?: '/blog',
+            'everblock_wp_background_image' => $backgroundUrl,
         ]);
 
         foreach ($matches as $match) {
