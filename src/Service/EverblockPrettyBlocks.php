@@ -418,6 +418,20 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Text color'),
                             'default' => '',
                         ],
+                        'background_image' => [
+                            'tab' => 'design',
+                            'type' => 'fileupload',
+                            'label' => $module->l('Background image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'background_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'default' => '',
+                            'label' => $module->l('Block background color'),
+                        ],
                     ], $module),
                 ],
             ];
