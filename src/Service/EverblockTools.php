@@ -4570,15 +4570,15 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_page',
             _DB_PREFIX_ . 'everblock_page_lang',
         ];
-        $tableExists = false;
+        $missingTableDetected = false;
         foreach ($tableNames as $tableName) {
             if (!static::ifTableExists($tableName)) {
-                $tableExists = true;
+                $missingTableDetected = true;
                 break; // Pas besoin de vérifier les autres tables
             }
         }
 
-        if ($tableExists) {
+        if ($missingTableDetected) {
             include _PS_MODULE_DIR_ . 'everblock/sql/install.php';
         }
         // Ajoute les colonnes manquantes à la table ps_everblock
@@ -4612,67 +4612,47 @@ class EverblockTools extends ObjectModel
             'date_end' => 'DATETIME DEFAULT NULL',
             'active' => 'int(10) unsigned NOT NULL DEFAULT 1',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock',
+            $columnsToAdd,
+            'Unable to update Ever Block database'
+        );
         // Ajoute les colonnes manquantes à la table ps_everblock_lang
         $columnsToAdd = [
             'id_lang' => 'int(10) unsigned NOT NULL',
             'content' => 'text DEFAULT NULL',
             'custom_code' => 'text DEFAULT NULL',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_lang` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_lang',
+            $columnsToAdd,
+            'Unable to update Ever Block database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_shortcode
         $columnsToAdd = [
             'shortcode' => 'text DEFAULT NULL',
             'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_shortcode` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_shortcode` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_shortcode',
+            $columnsToAdd,
+            'Unable to update Ever Block database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_shortcode_lang
         $columnsToAdd = [
             'id_lang' => 'int(10) unsigned NOT NULL',
             'title' => 'text DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_shortcode_lang` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_shortcode_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_shortcode_lang',
+            $columnsToAdd,
+            'Unable to update Ever Block database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_faq
         $columnsToAdd = [
             'tag_name' => 'text DEFAULT NULL',
@@ -4682,51 +4662,36 @@ class EverblockTools extends ObjectModel
             'date_add' => 'DATETIME DEFAULT NULL',
             'date_upd' => 'DATETIME DEFAULT NULL',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_faq` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_faq` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_faq',
+            $columnsToAdd,
+            'Unable to update Ever Block database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_faq_lang
         $columnsToAdd = [
             'id_lang' => 'int(10) unsigned NOT NULL',
             'title' => 'text DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_faq_lang` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_faq_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_faq_lang',
+            $columnsToAdd,
+            'Unable to update Ever Block database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_tabs
         $columnsToAdd = [
             'id_product' => 'int(10) unsigned NOT NULL',
             'id_tab' => 'int(10) unsigned DEFAULT 0',
             'id_shop' => 'int(10) unsigned DEFAULT 1',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_tabs` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_tabs` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block tabs database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_tabs',
+            $columnsToAdd,
+            'Unable to update Ever Block tabs database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_tabs_lang
         $columnsToAdd = [
             'id_everblock_tabs' => 'int(10) unsigned NOT NULL',
@@ -4734,17 +4699,12 @@ class EverblockTools extends ObjectModel
             'title' => 'varchar(255) DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_tabs_lang` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_tabs_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block tabs lang database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_tabs_lang',
+            $columnsToAdd,
+            'Unable to update Ever Block tabs lang database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_modal
         $columnsToAdd = [
             'id_product' => 'int(10) unsigned NOT NULL',
@@ -4752,17 +4712,12 @@ class EverblockTools extends ObjectModel
             'file' => 'varchar(255) DEFAULT NULL',
             'button_file' => 'varchar(255) DEFAULT NULL',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_modal` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_modal` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block modal database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_modal',
+            $columnsToAdd,
+            'Unable to update Ever Block modal database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_modal_lang
         $columnsToAdd = [
             'id_everblock_modal' => 'int(10) unsigned NOT NULL',
@@ -4770,17 +4725,12 @@ class EverblockTools extends ObjectModel
             'content' => 'text DEFAULT NULL',
             'button_label' => 'text DEFAULT NULL',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_modal_lang` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_modal_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block modal lang database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_modal_lang',
+            $columnsToAdd,
+            'Unable to update Ever Block modal lang database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_game_play
         $columnsToAdd = [
             'id_prettyblocks' => 'int(10) unsigned NOT NULL',
@@ -4790,17 +4740,12 @@ class EverblockTools extends ObjectModel
             'is_winner' => 'TINYINT(1) NOT NULL DEFAULT 0',
             'date_add' => 'DATETIME DEFAULT NULL',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_game_play` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_game_play` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block game play database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_game_play',
+            $columnsToAdd,
+            'Unable to update Ever Block game play database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_page
         $columnsToAdd = [
             'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
@@ -4811,17 +4756,12 @@ class EverblockTools extends ObjectModel
             'date_add' => 'DATETIME DEFAULT NULL',
             'date_upd' => 'DATETIME DEFAULT NULL',
         ];
-        foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_page` `' . pSQL($columnName) . '`');
-            if (!$columnExists) {
-                try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_page` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
-                    $db->execute($query);
-                } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block page database');
-                }
-            }
-        }
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_page',
+            $columnsToAdd,
+            'Unable to update Ever Block page database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_page_lang
         $columnsToAdd = [
             'id_lang' => 'int(10) unsigned NOT NULL',
@@ -4832,18 +4772,32 @@ class EverblockTools extends ObjectModel
             'link_rewrite' => 'varchar(255) DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_page_lang',
+            $columnsToAdd,
+            'Unable to update Ever Block page lang database'
+        );
+        static::cleanObsoleteFiles();
+    }
+
+    private static function addMissingColumns(Db $db, string $tableName, array $columnsToAdd, string $logMessage): void
+    {
+        if (!static::ifTableExists($tableName)) {
+            return;
+        }
+
         foreach ($columnsToAdd as $columnName => $columnDefinition) {
-            $columnExists = $db->ExecuteS('DESCRIBE `' . _DB_PREFIX_ . 'everblock_page_lang` `' . pSQL($columnName) . '`');
+            $columnExists = $db->ExecuteS('DESCRIBE `' . $tableName . '` `' . pSQL($columnName) . '`');
             if (!$columnExists) {
                 try {
-                    $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'everblock_page_lang` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
+                    $query = 'ALTER TABLE `' . $tableName . '` ADD `' . pSQL($columnName) . '` ' . $columnDefinition;
                     $db->execute($query);
                 } catch (Exception $e) {
-                    PrestaShopLogger::addLog('Unable to update Ever Block page lang database');
+                    PrestaShopLogger::addLog($logMessage);
                 }
             }
         }
-        static::cleanObsoleteFiles();
     }
 
     public static function everPresentProducts(array $result, Context $context): array
