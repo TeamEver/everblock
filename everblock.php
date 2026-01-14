@@ -1236,6 +1236,12 @@ class Everblock extends Module
         $this->context->controller->ajax = true;
         header('Content-Type: application/json');
 
+        $target = (string) Tools::getValue('target', 'modal');
+        $target = $target === 'button' ? 'button' : 'modal';
+        $fileField = $target === 'button' ? 'everblock_modal_button_file' : 'everblock_modal_file';
+        $fileProperty = $target === 'button' ? 'button_file' : 'file';
+        $targetLabel = $target === 'button' ? $this->l('Button file') : $this->l('Modal file');
+
         $response = [
             'success' => false,
             'message' => $this->l('An unexpected error occurred.'),
@@ -1259,42 +1265,46 @@ class Everblock extends Module
             if (!is_array($modal->content)) {
                 $modal->content = [];
             }
+            if (!is_array($modal->button_label)) {
+                $modal->button_label = [];
+            }
 
             if ((int) Tools::getValue('delete')) {
-                if (!empty($modal->file)) {
-                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+                if (!empty($modal->{$fileProperty})) {
+                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->{$fileProperty};
                     if (file_exists($oldFile)) {
                         @unlink($oldFile);
                         $this->cleanupModalDirectory(dirname($oldFile));
                     }
-                    $modal->file = '';
+                    $modal->{$fileProperty} = '';
                     if (!Validate::isLoadedObject($modal)) {
                         $languages = Language::getLanguages(true);
                         foreach ($languages as $language) {
                             $modal->content[$language['id_lang']] = $modal->content[$language['id_lang']] ?? '';
+                            $modal->button_label[$language['id_lang']] = $modal->button_label[$language['id_lang']] ?? '';
                         }
                     }
                     $modal->save();
                 }
 
                 $response['success'] = true;
-                $response['message'] = $this->l('Modal file removed successfully.');
+                $response['message'] = sprintf($this->l('%s removed successfully.'), $targetLabel);
                 die(json_encode($response));
             }
 
-            if (!isset($_FILES['everblock_modal_file']) || !is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
+            if (!isset($_FILES[$fileField]) || !is_uploaded_file($_FILES[$fileField]['tmp_name'])) {
                 $response['message'] = $this->l('No file received.');
                 die(json_encode($response));
             }
 
-            $uploadedFile = $_FILES['everblock_modal_file'];
+            $uploadedFile = $_FILES[$fileField];
             if (!empty($uploadedFile['error']) && $uploadedFile['error'] !== UPLOAD_ERR_OK) {
                 $response['message'] = $this->l('Unable to upload the file.');
                 die(json_encode($response));
             }
 
-            if (!empty($modal->file)) {
-                $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
+            if (!empty($modal->{$fileProperty})) {
+                $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->{$fileProperty};
                 if (file_exists($oldFile)) {
                     @unlink($oldFile);
                     $this->cleanupModalDirectory(dirname($oldFile));
@@ -1315,18 +1325,19 @@ class Everblock extends Module
                 $languages = Language::getLanguages(true);
                 foreach ($languages as $language) {
                     $modal->content[$language['id_lang']] = $modal->content[$language['id_lang']] ?? '';
+                    $modal->button_label[$language['id_lang']] = $modal->button_label[$language['id_lang']] ?? '';
                 }
             }
 
-            $modal->file = 'everblockmodal/' . (int) $productId . '/' . $fileName;
+            $modal->{$fileProperty} = 'everblockmodal/' . (int) $productId . '/' . $fileName;
             $modal->id_product = $productId;
             $modal->id_shop = $shopId;
             $modal->save();
 
             $response['success'] = true;
-            $response['message'] = $this->l('Modal file uploaded successfully.');
-            $response['file_url'] = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
-            $response['file_name'] = basename($modal->file);
+            $response['message'] = sprintf($this->l('%s uploaded successfully.'), $targetLabel);
+            $response['file_url'] = $this->context->link->getBaseLink() . 'img/cms/' . $modal->{$fileProperty};
+            $response['file_name'] = basename($modal->{$fileProperty});
             $response['file_display_name'] = preg_replace('/[\r\n]+/', '', basename($uploadedFile['name']));
 
             $timestamp = @filemtime($destinationPath);
@@ -3782,6 +3793,11 @@ class Everblock extends Module
         $filePreviewUrl = '';
         $fileTimestamp = null;
         $fileIsImage = false;
+        $buttonFileUrl = '';
+        $buttonFileName = '';
+        $buttonFilePreviewUrl = '';
+        $buttonFileTimestamp = null;
+        $buttonFileIsImage = false;
         if (!empty($modal->file)) {
             $fileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->file;
             $fileName = basename($modal->file);
@@ -3797,6 +3813,21 @@ class Everblock extends Module
                 }
             }
         }
+        if (!empty($modal->button_file)) {
+            $buttonFileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->button_file;
+            $buttonFileName = basename($modal->button_file);
+            $absolutePath = _PS_IMG_DIR_ . 'cms/' . $modal->button_file;
+            if (file_exists($absolutePath)) {
+                $buttonFileTimestamp = (int) @filemtime($absolutePath);
+                if (!$buttonFileTimestamp) {
+                    $buttonFileTimestamp = time();
+                }
+                $buttonFileIsImage = $this->isPreviewableModalFile($absolutePath);
+                if ($buttonFileIsImage) {
+                    $buttonFilePreviewUrl = $this->buildTimestampedUrl($buttonFileUrl, $buttonFileTimestamp);
+                }
+            }
+        }
         $everAjaxUrl = Context::getContext()->link->getAdminLink('AdminModules', true, [], ['configure' => $this->name]);
         $this->smarty->assign([
             'modal' => $modal,
@@ -3805,6 +3836,11 @@ class Everblock extends Module
             'modal_file_preview_url' => $filePreviewUrl,
             'modal_file_timestamp' => $fileTimestamp,
             'modal_file_is_image' => $fileIsImage,
+            'modal_button_file_url' => $buttonFileUrl,
+            'modal_button_file_name' => $buttonFileName,
+            'modal_button_file_preview_url' => $buttonFilePreviewUrl,
+            'modal_button_file_timestamp' => $buttonFileTimestamp,
+            'modal_button_file_is_image' => $buttonFileIsImage,
             'ever_languages' => Language::getLanguages(false),
             'ever_ajax_url' => $everAjaxUrl,
             'ever_product_id' => (int) $params['id_product'],
@@ -4024,6 +4060,12 @@ class Everblock extends Module
                 (int) $params['object']->id,
                 (int) $context->shop->id
             );
+            if (!is_array($modal->content)) {
+                $modal->content = [];
+            }
+            if (!is_array($modal->button_label)) {
+                $modal->button_label = [];
+            }
             foreach (Language::getLanguages(true) as $language) {
                 $content = Tools::getValue('everblock_modal_content_' . $language['id_lang']);
                 if ($content && !Validate::isCleanHtml($content)) {
@@ -4033,6 +4075,15 @@ class Everblock extends Module
                     ]));
                 }
                 $modal->content[$language['id_lang']] = $content;
+
+                $buttonLabel = Tools::getValue('everblock_modal_button_label_' . $language['id_lang']);
+                if ($buttonLabel && !Validate::isCleanHtml($buttonLabel)) {
+                    die(json_encode([
+                        'return' => false,
+                        'error' => $this->l('Button label is not valid'),
+                    ]));
+                }
+                $modal->button_label[$language['id_lang']] = $buttonLabel;
             }
             if (Tools::getValue('everblock_modal_file_delete')) {
                 if (!empty($modal->file)) {
@@ -4041,6 +4092,16 @@ class Everblock extends Module
                         @unlink($oldFile);
                     }
                     $modal->file = '';
+                }
+            }
+            if (Tools::getValue('everblock_modal_button_file_delete')) {
+                if (!empty($modal->button_file)) {
+                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->button_file;
+                    if (file_exists($oldFile)) {
+                        @unlink($oldFile);
+                        $this->cleanupModalDirectory(dirname($oldFile));
+                    }
+                    $modal->button_file = '';
                 }
             }
             $modalFilePayload = Tools::getValue('everblock_modal_file_payload');
@@ -4073,6 +4134,38 @@ class Everblock extends Module
                 $fileName = $this->sanitizeModalFileName($_FILES['everblock_modal_file']['name']);
                 if (move_uploaded_file($_FILES['everblock_modal_file']['tmp_name'], $targetDir . $fileName)) {
                     $modal->file = 'everblockmodal/' . (int) $params['object']->id . '/' . $fileName;
+                }
+            }
+            $buttonFilePayload = Tools::getValue('everblock_modal_button_file_payload');
+            $buttonFileOriginalName = Tools::getValue('everblock_modal_button_file_name');
+            if (!empty($buttonFilePayload) && !empty($buttonFileOriginalName)) {
+                $decodedPayload = base64_decode(str_replace([' ', "\r", "\n"], '', $buttonFilePayload), true);
+                if ($decodedPayload !== false) {
+                    $targetDir = $this->ensureModalDirectory((int) $params['object']->id);
+                    if (!empty($modal->button_file)) {
+                        $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->button_file;
+                        if (file_exists($oldFile)) {
+                            @unlink($oldFile);
+                            $this->cleanupModalDirectory(dirname($oldFile));
+                        }
+                    }
+                    $fileName = $this->sanitizeModalFileName($buttonFileOriginalName);
+                    if (file_put_contents($targetDir . $fileName, $decodedPayload) !== false) {
+                        $modal->button_file = 'everblockmodal/' . (int) $params['object']->id . '/' . $fileName;
+                    }
+                }
+            } elseif (isset($_FILES['everblock_modal_button_file']) && is_uploaded_file($_FILES['everblock_modal_button_file']['tmp_name'])) {
+                $targetDir = $this->ensureModalDirectory((int) $params['object']->id);
+                if (!empty($modal->button_file)) {
+                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->button_file;
+                    if (file_exists($oldFile)) {
+                        @unlink($oldFile);
+                        $this->cleanupModalDirectory(dirname($oldFile));
+                    }
+                }
+                $fileName = $this->sanitizeModalFileName($_FILES['everblock_modal_button_file']['name']);
+                if (move_uploaded_file($_FILES['everblock_modal_button_file']['tmp_name'], $targetDir . $fileName)) {
+                    $modal->button_file = 'everblockmodal/' . (int) $params['object']->id . '/' . $fileName;
                 }
             }
             $modal->id_product = (int) $params['object']->id;
@@ -5706,10 +5799,22 @@ class Everblock extends Module
             return;
         }
 
+        $buttonLabel = '';
+        if (is_array($modal->button_label) && isset($modal->button_label[$idLang])) {
+            $buttonLabel = (string) $modal->button_label[$idLang];
+        }
+
+        $buttonFileUrl = '';
+        if (!empty($modal->button_file)) {
+            $buttonFileUrl = $this->context->link->getBaseLink() . 'img/cms/' . $modal->button_file;
+        }
+
         $this->smarty->assign([
             'everblock_modal_id' => (int) $modal->id_everblock_modal,
             'everblock_modal_file' => $modal->file,
             'everblock_modal_content' => $modal->content[$idLang] ?? '',
+            'everblock_modal_button_label' => $buttonLabel,
+            'everblock_modal_button_file_url' => $buttonFileUrl,
         ]);
 
         return $this->fetch('module:everblock/views/templates/hook/modal.tpl');

@@ -35,8 +35,14 @@ class EverblockModal extends ObjectModel
     /** @var string */
     public $file;
 
+    /** @var string */
+    public $button_file;
+
     /** @var array */
     public $content;
+
+    /** @var array */
+    public $button_label;
 
     public static $definition = [
         'table' => 'everblock_modal',
@@ -58,7 +64,17 @@ class EverblockModal extends ObjectModel
                 'validate' => 'isString',
                 'required' => false,
             ],
+            'button_file' => [
+                'type' => self::TYPE_STRING,
+                'validate' => 'isString',
+                'required' => false,
+            ],
             'content' => [
+                'type' => self::TYPE_HTML,
+                'lang' => true,
+                'validate' => 'isCleanHtml',
+            ],
+            'button_label' => [
                 'type' => self::TYPE_HTML,
                 'lang' => true,
                 'validate' => 'isCleanHtml',
@@ -81,4 +97,3 @@ class EverblockModal extends ObjectModel
         return $modal;
     }
 }
-
