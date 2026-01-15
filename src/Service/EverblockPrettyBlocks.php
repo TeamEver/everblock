@@ -1514,16 +1514,6 @@ class EverblockPrettyBlocks
                             'label' => $module->l('End date (YYYY-MM-DD HH:MM:SS)'),
                             'default' => '',
                         ],
-                        'text_highlight_1' => [
-                            'type' => 'editor',
-                            'label' => $module->l('Highlight text 1'),
-                            'default' => '',
-                        ],
-                        'text_highlight_2' => [
-                            'type' => 'editor',
-                            'label' => $module->l('Highlight text 2'),
-                            'default' => '',
-                        ],
                         'css_class' => [
                             'type' => 'text',
                             'label' => $module->l('Custom CSS class'),
