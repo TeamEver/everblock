@@ -28,16 +28,20 @@
     <div class="everblock"  style="{$prettyblock_spacing_style}{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
       {foreach from=$block.states item=state key=key}
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
+          {assign var='iframe_link' value=$state.iframe_link|trim}
+          {if $iframe_link && ($iframe_link|regex_replace:"/^(https?:)?\\/\\//":'' == $iframe_link)}
+            {assign var='iframe_link' value="https://`$iframe_link`"}
+          {/if}
 
           <div id="block-{$block.id_prettyblocks}-{$key}" class="everblock {$state.css_class|escape:'htmlall':'UTF-8'}" style="{$prettyblock_state_spacing_style}{if isset($state.default.bg_color) && $state.default.bg_color}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
             {if $state.iframe_source == 'youtube'}
-            <iframe class="everblock-prettyblock-iframe" width="{if isset($state.width) && $state.width}{$state.width}{else}100{/if}" height="{if isset($state.height) && $state.height}{$state.height}{else}315{/if}" src="{$state.iframe_link}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen scrolling="no"></iframe>
+            <iframe class="everblock-prettyblock-iframe" width="{if isset($state.width) && $state.width}{$state.width}{else}100{/if}" height="{if isset($state.height) && $state.height}{$state.height}{else}315{/if}" src="{$iframe_link|escape:'htmlall':'UTF-8'}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen scrolling="no"></iframe>
             {elseif $state.iframe_source == 'vimeo'}
             <iframe class="everblock-prettyblock-iframe" src="https://player.vimeo.com/video/' . $matches[1] . '?color=ffffff&title=0&byline=0&portrait=0" width="{if isset($state.width) && $state.width}{$state.width}{else}100{/if}" height="{if isset($state.height) && $state.height}{$state.height}{else}360{/if}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen scrolling="no"></iframe>
             {elseif $state.iframe_source == 'dailymotion'}
-            <iframe class="everblock-prettyblock-iframe" frameborder="0" width="{if isset($state.width) && $state.width}{$state.width}{else}100{/if}" height="{if isset($state.height) && $state.height}{$state.height}{else}270{/if}" src="{$state.iframe_link}" allowfullscreen scrolling="no"></iframe>
+            <iframe class="everblock-prettyblock-iframe" frameborder="0" width="{if isset($state.width) && $state.width}{$state.width}{else}100{/if}" height="{if isset($state.height) && $state.height}{$state.height}{else}270{/if}" src="{$iframe_link|escape:'htmlall':'UTF-8'}" allowfullscreen scrolling="no"></iframe>
             {elseif $state.iframe_source == 'vidyard'}
-            <iframe class="everblock-prettyblock-iframe" src="{$state.iframe_link}" width="{if isset($state.width) && $state.width}{$state.width}{else}100{/if}" height="{if isset($state.height) && $state.height}{$state.height}{else}360{/if}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen scrolling="no"></iframe>
+            <iframe class="everblock-prettyblock-iframe" src="{$iframe_link|escape:'htmlall':'UTF-8'}" width="{if isset($state.width) && $state.width}{$state.width}{else}100{/if}" height="{if isset($state.height) && $state.height}{$state.height}{else}360{/if}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen scrolling="no"></iframe>
             {/if}
           </div>
       {/foreach}
