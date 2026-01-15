@@ -64,7 +64,7 @@
           'columns' => $state.columns|default:null,
           'css_class' => $state.css_class|default:'',
           'heading' => $state.title|default:'',
-          'intro' => $state.intro|default:'',
+          'intro' => $state.intro|default:''
         ]}
         {assign var=resolved value=EverblockTools::resolveGoogleReviews($overrides)}
         {if !$resolved.options.is_configured}
