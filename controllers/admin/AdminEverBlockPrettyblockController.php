@@ -135,7 +135,10 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             $this->hookFilterKey = 'a!hook';
         } elseif ($this->hasColumn('zone_name')) {
             $this->appendSelect('COALESCE(h.name, a.zone_name) AS hook_name');
-            $this->appendJoin('LEFT JOIN `' . _DB_PREFIX_ . 'hook` h ON (h.`name` = a.`zone_name`)');
+            $this->appendJoin(
+                'LEFT JOIN `' . _DB_PREFIX_ . 'hook` h ON (h.`name` COLLATE utf8mb4_unicode_ci ='
+                . ' a.`zone_name` COLLATE utf8mb4_unicode_ci)'
+            );
             $this->hookField = 'hook_name';
             $this->hookFilterKey = 'a!zone_name';
         }
