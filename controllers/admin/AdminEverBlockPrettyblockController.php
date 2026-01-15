@@ -130,7 +130,8 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             $this->hookField = 'hook_name';
             $this->hookFilterKey = 'h!name';
         } elseif ($this->hasColumn('hook')) {
-            $this->hookField = 'hook';
+            $this->appendSelect('a.hook AS hook_name');
+            $this->hookField = 'hook_name';
             $this->hookFilterKey = 'a!hook';
         }
 
