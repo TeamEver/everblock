@@ -235,7 +235,8 @@ class EverblockPrettyBlocksImportExport
         return $db->executeS(
             'SELECT h.name AS id, h.name AS name, COUNT(*) AS total'
             . ' FROM `' . _DB_PREFIX_ . 'prettyblocks` a'
-            . ' INNER JOIN `' . _DB_PREFIX_ . 'hook` h ON h.name = a.' . $hookColumn
+            . ' INNER JOIN `' . _DB_PREFIX_ . 'hook` h ON h.name COLLATE utf8mb4_unicode_ci ='
+            . ' a.' . $hookColumn . ' COLLATE utf8mb4_unicode_ci'
             . ' WHERE a.' . $hookColumn . ' IS NOT NULL AND a.' . $hookColumn . ' != ""'
             . ' GROUP BY h.name'
             . ' HAVING total > 0'
