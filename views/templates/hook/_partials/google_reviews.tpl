@@ -16,47 +16,43 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {assign var=reviews value=$googleReviewsData.reviews|default:[]}
-{assign var=columns value=$googleReviewsOptions.columns|default:3}
-{assign var=columns value=$columns|intval}
-{if $columns < 1}{assign var=columns value=1}{/if}
-{if $columns > 6}{assign var=columns value=6}{/if}
-<div class="everblock-google-reviews{if $googleReviewsOptions.css_class} {$googleReviewsOptions.css_class|escape:'htmlall':'UTF-8'}{/if}"{if isset($googleReviewsOptions.place_id) && $googleReviewsOptions.place_id} data-place-id="{$googleReviewsOptions.place_id|escape:'htmlall':'UTF-8'}"{/if}>
-  <div class="d-flex flex-column flex-lg-row gap-4 gap-lg-5">
-    <aside class="everblock-google-reviews__aside flex-shrink-0">
+<div class="everblock-google-reviews bg-white border rounded-4 p-4 shadow-sm{if $googleReviewsOptions.css_class} {$googleReviewsOptions.css_class|escape:'htmlall':'UTF-8'}{/if}"{if isset($googleReviewsOptions.place_id) && $googleReviewsOptions.place_id} data-place-id="{$googleReviewsOptions.place_id|escape:'htmlall':'UTF-8'}"{/if}>
+  <div class="row g-4 align-items-start">
+    <aside class="everblock-google-reviews__aside col-12 col-lg-4 col-xl-3 d-flex flex-column gap-3 align-items-start align-self-start">
       <header class="d-flex flex-column gap-2">
         {if $googleReviewsHeading}
-          <h3 class="everblock-google-reviews__title h4 mb-0">{$googleReviewsHeading|escape:'htmlall':'UTF-8'}</h3>
+          <h3 class="h4 fw-bold mb-0">{$googleReviewsHeading|escape:'htmlall':'UTF-8'}</h3>
         {/if}
         {if $googleReviewsIntro}
-          <div class="everblock-google-reviews__intro text-muted">{$googleReviewsIntro nofilter}</div>
+          <div class="text-muted">{$googleReviewsIntro nofilter}</div>
         {/if}
       </header>
       {if $googleReviewsOptions.show_rating && $googleReviewsData.rating}
-        <div class="everblock-google-reviews__summary border rounded-4 p-3 d-flex flex-column gap-2">
+        <div class="border rounded-3 p-3 bg-light d-flex flex-column gap-2">
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="everblock-google-reviews__rating fs-3 fw-bold">{$googleReviewsData.rating|number_format:1}</span>
-            <span class="everblock-google-reviews__stars" aria-hidden="true">
+            <span class="fs-3 fw-bold">{$googleReviewsData.rating|number_format:1}</span>
+            <span aria-hidden="true">
               {section name=globalStar loop=5}
                 {assign var=position value=$smarty.section.globalStar.index+1}
-                <span class="everblock-google-reviews__star{if $googleReviewsData.rating >= $position} is-filled{/if}">★</span>
+                <span class="{if $googleReviewsData.rating >= $position}text-warning{else}text-muted{/if}">★</span>
               {/section}
             </span>
             <span class="sr-only">{l s='%1$s out of %2$s' sprintf=[$googleReviewsData.rating|number_format:1, 5] mod='everblock'}</span>
           </div>
           {if $googleReviewsData.user_ratings_total}
-            <p class="everblock-google-reviews__total mb-0 text-muted">
+            <p class="mb-0 text-muted small">
               {l s='Based on %s reviews' sprintf=[$googleReviewsData.user_ratings_total] mod='everblock'}
             </p>
           {/if}
         </div>
       {/if}
-      <div class="everblock-google-reviews__provider d-inline-flex align-items-center gap-1" aria-label="Google">
-        <span class="everblock-google-reviews__logo-letter is-blue">G</span>
-        <span class="everblock-google-reviews__logo-letter is-red">o</span>
-        <span class="everblock-google-reviews__logo-letter is-yellow">o</span>
-        <span class="everblock-google-reviews__logo-letter is-blue">g</span>
-        <span class="everblock-google-reviews__logo-letter is-green">l</span>
-        <span class="everblock-google-reviews__logo-letter is-red">e</span>
+      <div class="d-inline-flex align-items-center gap-1 fw-bold fs-4 bg-light border rounded-pill px-2 py-1" aria-label="Google">
+        <span class="text-primary">G</span>
+        <span class="text-danger">o</span>
+        <span class="text-warning">o</span>
+        <span class="text-primary">g</span>
+        <span class="text-success">l</span>
+        <span class="text-danger">e</span>
       </div>
       {if $googleReviewsOptions.show_cta && $googleReviewsOptions.cta_url}
         <div class="everblock-google-reviews__cta">
@@ -66,26 +62,26 @@
         </div>
       {/if}
     </aside>
-    <div class="everblock-google-reviews__content flex-grow-1">
+    <div class="everblock-google-reviews__content col-12 col-lg-8 col-xl-9">
       {if $reviews}
-        <div class="everblock-google-reviews__list row row-cols-1 row-cols-md-2 row-cols-lg-{$columns} g-4">
+        <div class="everblock-google-reviews__list row g-4">
           {foreach from=$reviews item=review}
-            <div class="col">
-              <article class="card h-100 border-0 shadow-sm everblock-google-reviews__card">
-                <div class="card-body d-flex gap-3">
-                  {if $googleReviewsOptions.show_avatar && $review.profile_photo_url}
-                    <div class="everblock-google-reviews__avatar flex-shrink-0">
-                      <img src="{$review.profile_photo_url|escape:'htmlall':'UTF-8'}" alt="{$review.author_name|escape:'htmlall':'UTF-8'}" loading="lazy" class="img-fluid rounded-circle" width="56" height="56">
-                    </div>
-                  {elseif $googleReviewsOptions.show_avatar}
-                    <div class="everblock-google-reviews__avatar is-placeholder flex-shrink-0" aria-hidden="true">
-                      <span>{$review.author_name|default:'?'|truncate:1:""|escape:'htmlall':'UTF-8'}</span>
-                    </div>
-                  {/if}
-                  <div class="everblock-google-reviews__body flex-grow-1">
-                    <header class="everblock-google-reviews__header d-flex flex-column gap-1 mb-2">
+            <div class="col-12 col-md-6 col-lg-4">
+              <article class="card h-100 d-flex flex-column border-0 shadow-sm everblock-google-reviews__card">
+                <div class="card-body d-flex flex-column gap-3">
+                  <header class="everblock-google-reviews__header d-flex gap-3">
+                    {if $googleReviewsOptions.show_avatar && $review.profile_photo_url}
+                      <div class="everblock-google-reviews__avatar flex-shrink-0 overflow-hidden rounded-circle bg-light">
+                        <img src="{$review.profile_photo_url|escape:'htmlall':'UTF-8'}" alt="{$review.author_name|escape:'htmlall':'UTF-8'}" loading="lazy" class="img-fluid rounded-circle" width="56" height="56">
+                      </div>
+                    {elseif $googleReviewsOptions.show_avatar}
+                      <div class="everblock-google-reviews__avatar flex-shrink-0 rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-semibold" aria-hidden="true">
+                        <span>{$review.author_name|default:'?'|truncate:1:""|escape:'htmlall':'UTF-8'}</span>
+                      </div>
+                    {/if}
+                    <div class="everblock-google-reviews__body flex-grow-1">
                       {if $review.author_name}
-                        <p class="everblock-google-reviews__author mb-0">
+                        <p class="mb-1 fw-semibold">
                           {if $review.author_url}
                             <a href="{$review.author_url|escape:'htmlall':'UTF-8'}" rel="noopener nofollow" target="_blank">{$review.author_name|escape:'htmlall':'UTF-8'}</a>
                           {else}
@@ -93,25 +89,29 @@
                           {/if}
                         </p>
                       {/if}
-                      <div class="d-flex align-items-center gap-2 flex-wrap">
-                        {if $review.rating}
-                          <div class="everblock-google-reviews__rating" aria-label="{l s='%1$s out of %2$s' sprintf=[$review.rating|number_format:1, 5] mod='everblock'}">
+                      {if $review.relative_time_description}
+                        <p class="mb-2 small text-muted">{$review.relative_time_description|escape:'htmlall':'UTF-8'}</p>
+                      {/if}
+                      {if $review.rating}
+                        <div class="everblock-google-reviews__score d-flex align-items-center gap-2" aria-label="{l s='%1$s out of %2$s' sprintf=[$review.rating|number_format:1, 5] mod='everblock'}">
+                          <span class="fw-semibold">{$review.rating|number_format:1}</span>
+                          <span aria-hidden="true">
                             {section name=item loop=5}
                               {assign var=position value=$smarty.section.item.index+1}
-                              <span class="everblock-google-reviews__star{if $review.rating >= $position} is-filled{/if}">★</span>
+                              <span class="{if $review.rating >= $position}text-warning{else}text-muted{/if}">★</span>
                             {/section}
-                          </div>
-                        {/if}
-                        {if $review.relative_time_description}
-                          <p class="everblock-google-reviews__time mb-0">{$review.relative_time_description|escape:'htmlall':'UTF-8'}</p>
-                        {/if}
-                      </div>
-                    </header>
-                    {if $review.text}
+                          </span>
+                        </div>
+                      {/if}
+                    </div>
+                  </header>
+                  {if $review.text}
+                    <div class="flex-grow-1">
                       <p class="everblock-google-reviews__text mb-0">{$review.text|escape:'htmlall':'UTF-8'}</p>
-                    {/if}
-                  </div>
+                    </div>
+                  {/if}
                 </div>
+                <div class="card-footer bg-transparent border-0 pt-0"></div>
               </article>
             </div>
           {/foreach}
