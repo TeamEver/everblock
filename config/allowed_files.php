@@ -106,6 +106,7 @@ return [
     'src/Service/EverblockTools.php',
     'src/Service/ImportFile.php',
     'src/Service/ShortcodeDocumentationProvider.php',
+    'src/Service/EverblockPrettyBlocksImportExport.php',
     'src/Service/index.php',
     'src/index.php',
     'translations/fr.php',
