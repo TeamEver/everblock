@@ -138,7 +138,6 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             $this->appendJoin('LEFT JOIN `' . _DB_PREFIX_ . 'hook` h ON (h.`name` = a.`zone_name`)');
             $this->hookField = 'hook_name';
             $this->hookFilterKey = 'a!zone_name';
-            $this->notifyMissingHooksForZoneName();
         }
 
         if ($this->hasShopColumn) {
@@ -202,23 +201,6 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
         }
 
         return null;
-    }
-
-    private function notifyMissingHooksForZoneName(): void
-    {
-        try {
-            $missingCount = (int) Db::getInstance()->getValue(
-                'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'prettyblocks` a'
-                . ' LEFT JOIN `' . _DB_PREFIX_ . 'hook` h ON (h.`name` = a.`zone_name`)'
-                . ' WHERE a.`zone_name` IS NOT NULL AND a.`zone_name` != "" AND h.`id_hook` IS NULL'
-            );
-        } catch (Exception $e) {
-            $missingCount = 0;
-        }
-
-        if ($missingCount > 0) {
-            $this->errors[] = $this->l('Some PrettyBlocks are linked to missing hooks.');
-        }
     }
 
     private function configurePrettyblocksList(): void
