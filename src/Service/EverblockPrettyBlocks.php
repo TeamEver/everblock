@@ -1434,6 +1434,58 @@ class EverblockPrettyBlocks
                 ],
                 'config' => [
                     'fields' => static::appendSpacingFields([
+                        'display_mode' => [
+                            'type' => 'select',
+                            'label' => $module->l('Display mode'),
+                            'default' => 'grid',
+                            'choices' => [
+                                'grid' => $module->l('Grid'),
+                                'slider' => $module->l('Slider'),
+                                'columns' => $module->l('Columns'),
+                            ],
+                        ],
+                        'columns_desktop' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns (desktop)'),
+                            'default' => 1,
+                            'choices' => [
+                                1 => '1',
+                                2 => '2',
+                                3 => '3',
+                                4 => '4',
+                                6 => '6',
+                            ],
+                        ],
+                        'columns_tablet' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns (tablet)'),
+                            'default' => 1,
+                            'choices' => [
+                                1 => '1',
+                                2 => '2',
+                                3 => '3',
+                            ],
+                        ],
+                        'columns_mobile' => [
+                            'type' => 'select',
+                            'label' => $module->l('Columns (mobile)'),
+                            'default' => 1,
+                            'choices' => [
+                                1 => '1',
+                                2 => '2',
+                            ],
+                        ],
+                        'gap' => [
+                            'type' => 'select',
+                            'label' => $module->l('Gap'),
+                            'default' => 'medium',
+                            'choices' => [
+                                'none' => $module->l('None'),
+                                'small' => $module->l('Small'),
+                                'medium' => $module->l('Medium'),
+                                'large' => $module->l('Large'),
+                            ],
+                        ],
                         'slider' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Enable slider'),
