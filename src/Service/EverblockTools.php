@@ -6091,7 +6091,7 @@ class EverblockTools extends ObjectModel
         return false;
     }
 
-    private static function urlToFilePath($url)
+    public static function urlToFilePath($url)
     {
         // Parse the current domain and the image URL
         $parsedUrl = parse_url($url);

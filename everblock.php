@@ -33,6 +33,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
 use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
+use Everblock\Tools\Service\EverblockPrettyBlocksImportExport;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ImportFile;
@@ -99,6 +100,7 @@ class Everblock extends Module
             return $this->everHook($method, $args);
         }
     }
+
 
     public function install()
     {
@@ -885,6 +887,14 @@ class Everblock extends Module
         }
         if ((bool) Tools::isSubmit('submitUploadSvg') === true) {
             $this->uploadSvgFile();
+        }
+        if ((bool) Tools::isSubmit('submitExportPrettyblocks') === true) {
+            $prettyblocksImportExport = new EverblockPrettyBlocksImportExport();
+            $prettyblocksImportExport->exportPrettyblocks($this, $this->postErrors);
+        }
+        if ((bool) Tools::isSubmit('submitImportPrettyblocks') === true) {
+            $prettyblocksImportExport = $prettyblocksImportExport ?? new EverblockPrettyBlocksImportExport();
+            $prettyblocksImportExport->importPrettyblocks($this, $this->postErrors, $this->postSuccess);
         }
         if ((bool) Tools::isSubmit('submitEmptyCache') === true) {
             $this->emptyAllCache();
@@ -2176,6 +2186,12 @@ class Everblock extends Module
         }
 
         if ($isPrettyBlocksEnabled) {
+            $prettyblocksImportExport = new EverblockPrettyBlocksImportExport();
+            $prettyblocksHookOptions = $prettyblocksImportExport->getPrettyblocksHookOptions();
+            $prettyblocksHookDesc = $prettyblocksHookOptions
+                ? $this->l('Select a hook to export all PrettyBlocks data as JSON.')
+                : $this->l('No PrettyBlocks data found to export.');
+
             $prettyBlocksInputs = [
                 [
                     'type' => 'html',
@@ -2189,6 +2205,25 @@ class Everblock extends Module
                     'desc' => $this->l('Upload your own SVG icon for PrettyBlocks'),
                     'hint' => $this->l('Only SVG files are allowed'),
                     'name' => 'CUSTOM_SVG',
+                    'display_image' => false,
+                    'required' => false,
+                ],
+                [
+                    'type' => 'select',
+                    'label' => $this->l('PrettyBlocks hook to export'),
+                    'desc' => $prettyblocksHookDesc,
+                    'name' => 'EVERBLOCK_PRETTYBLOCKS_HOOK',
+                    'options' => [
+                        'query' => $prettyblocksHookOptions,
+                        'id' => 'id',
+                        'name' => 'name',
+                    ],
+                ],
+                [
+                    'type' => 'file',
+                    'label' => $this->l('Import PrettyBlocks JSON'),
+                    'desc' => $this->l('Upload a JSON export to import PrettyBlocks data. Images will be re-downloaded and URLs will be updated.'),
+                    'name' => 'PRETTYBLOCKS_IMPORT_FILE',
                     'display_image' => false,
                     'required' => false,
                 ],
@@ -2206,6 +2241,28 @@ class Everblock extends Module
                     '<button type="submit" name="%s" class="btn btn-default pull-right"><i class="process-icon-download"></i> %s</button>',
                     'submitUploadSvg',
                     htmlspecialchars($this->l('Upload SVG'), ENT_QUOTES, 'UTF-8')
+                ),
+                'tab' => 'prettyblock',
+            ];
+
+            $form['form']['input'][] = [
+                'type' => 'html',
+                'name' => 'submitExportPrettyblocksButton',
+                'html_content' => sprintf(
+                    '<button type="submit" name="%s" class="btn btn-default"><i class="process-icon-download"></i> %s</button>',
+                    'submitExportPrettyblocks',
+                    htmlspecialchars($this->l('Export PrettyBlocks JSON'), ENT_QUOTES, 'UTF-8')
+                ),
+                'tab' => 'prettyblock',
+            ];
+
+            $form['form']['input'][] = [
+                'type' => 'html',
+                'name' => 'submitImportPrettyblocksButton',
+                'html_content' => sprintf(
+                    '<button type="submit" name="%s" class="btn btn-default pull-right"><i class="process-icon-upload"></i> %s</button>',
+                    'submitImportPrettyblocks',
+                    htmlspecialchars($this->l('Import PrettyBlocks JSON'), ENT_QUOTES, 'UTF-8')
                 ),
                 'tab' => 'prettyblock',
             ];
@@ -2532,6 +2589,10 @@ class Everblock extends Module
                 'EVERPS_FEATURE_TEXTCOLOR_' . $featureId
             ] = Configuration::get('EVERPS_FEATURE_TEXTCOLOR_' . $featureId);
         }
+        $prettyblocksImportExport = new EverblockPrettyBlocksImportExport();
+        $prettyblocksHookOptions = $prettyblocksImportExport->getPrettyblocksHookOptions();
+        $prettyblocksHookDefault = $prettyblocksHookOptions ? $prettyblocksHookOptions[0]['id'] : '';
+        $prettyblocksHookValue = Tools::getValue('EVERBLOCK_PRETTYBLOCKS_HOOK', $prettyblocksHookDefault);
         $configData = [
             'EVEROPTIONS_POSITION' => Configuration::get('EVEROPTIONS_POSITION'),
             'EVEROPTIONS_TITLE' => $this->getConfigInMultipleLangs('EVEROPTIONS_TITLE'),
@@ -2577,6 +2638,7 @@ class Everblock extends Module
             'EVERPSCSS_S_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_S_LLOREM_NUMBER'),
             'EVERBLOCK_TINYMCE' => Configuration::get('EVERBLOCK_TINYMCE'),
             'EVERBLOCK_DISABLE_WEBP' => Configuration::get('EVERBLOCK_DISABLE_WEBP'),
+            'EVERBLOCK_PRETTYBLOCKS_HOOK' => $prettyblocksHookValue,
             'EVERPS_OLD_URL' => '',
             'EVERPS_NEW_URL' => '',
             'EVER_TAB_CONTENT' => $this->getConfigInMultipleLangs('EVER_TAB_CONTENT'),
@@ -2586,6 +2648,7 @@ class Everblock extends Module
             'TABS_FILE' => '',
             'BLOCKS_FILE' => '',
             'CUSTOM_SVG' => '',
+            'PRETTYBLOCKS_IMPORT_FILE' => '',
         ];
         $stores = Store::getStores((int) $this->context->language->id);
         $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
