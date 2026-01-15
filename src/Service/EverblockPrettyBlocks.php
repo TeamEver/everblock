@@ -858,11 +858,6 @@ class EverblockPrettyBlocks
                                 'url' => '',
                             ],
                         ],
-                        'parallax' => [
-                            'type' => 'checkbox',
-                            'label' => $module->l('Parallax mode'),
-                            'default' => false,
-                        ],
                         'background_color' => [
                             'tab' => 'design',
                             'type' => 'color',
@@ -1062,11 +1057,6 @@ class EverblockPrettyBlocks
                             'type' => 'text',
                             'label' => 'Image height (e.g., 100px)',
                             'default' => 'auto',
-                        ],
-                        'parallax' => [
-                            'type' => 'checkbox',
-                            'label' => $module->l('Parallax mode'),
-                            'default' => false,
                         ],
                         'content' => [
                             'type' => 'editor',
@@ -1638,11 +1628,6 @@ class EverblockPrettyBlocks
                             'type' => 'text',
                             'label' => 'Image height (e.g., 100px)',
                             'default' => 'auto',
-                        ],
-                        'parallax' => [
-                            'type' => 'checkbox',
-                            'label' => $module->l('Parallax mode'),
-                            'default' => false,
                         ],
                         'content' => [
                             'type' => 'editor',
@@ -2945,11 +2930,6 @@ class EverblockPrettyBlocks
                             'default' => [
                                 'url' => '',
                             ],
-                        ],
-                        'parallax' => [
-                            'type' => 'checkbox',
-                            'label' => $module->l('Enable parallax effect'),
-                            'default' => false,
                         ],
                         'btn1_text' => [
                             'type' => 'text',

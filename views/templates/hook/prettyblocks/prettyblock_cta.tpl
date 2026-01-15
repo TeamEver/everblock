@@ -34,7 +34,6 @@
           background-image: url('{$state.background_image.url|escape:'htmlall'}');
           background-size: cover;
           background-position: center;
-          {if $state.parallax}background-attachment: fixed;{/if}
         {/if}
       ">
         <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 px-3" style="z-index: 1;">
