@@ -22,6 +22,7 @@ namespace Everblock\Tools\Service;
 
 use Configuration;
 use Context;
+use Db;
 use EverBlockClass;
 use Everblock\Tools\Service\EverblockCache;
 use EverblockShortcode;
@@ -52,6 +53,7 @@ class EverblockPrettyBlocks
         'beforeRenderingEverblockGuidedSelector',
         'beforeRenderingEverblockLookbook',
         'beforeRenderingEverblockCategoryProducts',
+        'beforeRenderingEverblockMegamenuItem',
     ];
 
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
@@ -137,6 +139,43 @@ class EverblockPrettyBlocks
         return $choices;
     }
 
+    private static function getPrettyblocksChoicesByCode(
+        Context $context,
+        Module $module,
+        string $code,
+        string $labelField
+    ): array {
+        $choices = [
+            '' => $module->l('Select an item'),
+        ];
+
+        $query = 'SELECT id_prettyblocks, config'
+            . ' FROM ' . _DB_PREFIX_ . 'prettyblocks'
+            . ' WHERE code = "' . pSQL($code) . '"'
+            . ' AND id_lang = ' . (int) $context->language->id
+            . ' AND id_shop = ' . (int) $context->shop->id;
+
+        $rows = Db::getInstance()->executeS($query);
+        if (!is_array($rows)) {
+            return $choices;
+        }
+
+        foreach ($rows as $row) {
+            $id = (int) ($row['id_prettyblocks'] ?? 0);
+            $config = json_decode((string) ($row['config'] ?? ''), true);
+            $label = '';
+            if (is_array($config)) {
+                $label = (string) ($config[$labelField] ?? '');
+            }
+            if ($label === '') {
+                $label = $module->l('Item') . ' #' . $id;
+            }
+            $choices[$id] = $id . ' - ' . $label;
+        }
+
+        return $choices;
+    }
+
     public static function getEverPrettyBlocks($context)
     {
         $cacheId = 'EverblockPrettyBlocks_getEverPrettyBlocks_'
@@ -209,6 +248,10 @@ class EverblockPrettyBlocks
             $pagesGuideTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pages_guide.tpl';
             $guidesSelectionTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guides_selection.tpl';
             $latestGuidesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_latest_guides.tpl';
+            $megamenuItemTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_item.tpl';
+            $megamenuColumnTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_column.tpl';
+            $megamenuItemLinkTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_item_link.tpl';
+            $megamenuItemImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_item_image.tpl';
             $slotMachineDefaultStartDate = date('Y-m-d 00:00:00');
             $slotMachineDefaultEndDate = date('Y-m-d 23:59:59', strtotime('+30 days'));
             $slotMachineDefaultWinningCombinations = json_encode(
@@ -261,6 +304,18 @@ class EverblockPrettyBlocks
                 $everblockChoices[$eblock['id_everblock']] = $eblock['id_everblock'] . ' - ' . $eblock['name'];
             }
             $everblockPageChoices = self::getEverblockPageChoices($context, $module);
+            $megamenuParentChoices = self::getPrettyblocksChoicesByCode(
+                $context,
+                $module,
+                'megamenu_item',
+                'label'
+            );
+            $megamenuColumnChoices = self::getPrettyblocksChoicesByCode(
+                $context,
+                $module,
+                'megamenu_column',
+                'title'
+            );
             $allHooks = Hook::getHooks(false, true);
             $prettyBlocksHooks = [];
             foreach ($allHooks as $hook) {
@@ -366,6 +421,192 @@ class EverblockPrettyBlocks
                             'default' => '',
                         ],
                     ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Mega menu item'),
+                'description' => $module->l('Top-level mega menu entry'),
+                'code' => 'megamenu_item',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $megamenuItemTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Label'),
+                            'default' => '',
+                        ],
+                        'url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Link (optional)'),
+                            'default' => '',
+                        ],
+                        'is_mega' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Enable mega menu'),
+                            'default' => true,
+                        ],
+                        'full_width' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Full width dropdown'),
+                            'default' => false,
+                        ],
+                        'position' => [
+                            'type' => 'text',
+                            'label' => $module->l('Position'),
+                            'default' => '0',
+                        ],
+                        'active' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Active'),
+                            'default' => true,
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Mega menu column'),
+                'description' => $module->l('Column for a mega menu'),
+                'code' => 'megamenu_column',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $megamenuColumnTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'parent_menu' => [
+                            'type' => 'select',
+                            'label' => $module->l('Parent menu'),
+                            'choices' => $megamenuParentChoices,
+                            'default' => '',
+                        ],
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Column title'),
+                            'default' => '',
+                        ],
+                        'title_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title link (optional)'),
+                            'default' => '',
+                        ],
+                        'width' => [
+                            'type' => 'select',
+                            'label' => $module->l('Column width'),
+                            'choices' => [
+                                '3' => $module->l('3 columns'),
+                                '4' => $module->l('4 columns'),
+                                '6' => $module->l('6 columns'),
+                                '12' => $module->l('12 columns'),
+                            ],
+                            'default' => '3',
+                        ],
+                        'order' => [
+                            'type' => 'text',
+                            'label' => $module->l('Order'),
+                            'default' => '0',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Mega menu link'),
+                'description' => $module->l('Link item inside a mega menu column'),
+                'code' => 'megamenu_item_link',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $megamenuItemLinkTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'parent_column' => [
+                            'type' => 'select',
+                            'label' => $module->l('Parent column'),
+                            'choices' => $megamenuColumnChoices,
+                            'default' => '',
+                        ],
+                        'label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Label'),
+                            'default' => '',
+                        ],
+                        'url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Link'),
+                            'default' => '',
+                        ],
+                        'icon' => [
+                            'type' => 'text',
+                            'label' => $module->l('Icon (optional)'),
+                            'default' => '',
+                        ],
+                        'highlight' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Highlight'),
+                            'default' => false,
+                        ],
+                        'order' => [
+                            'type' => 'text',
+                            'label' => $module->l('Order'),
+                            'default' => '0',
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Mega menu image'),
+                'description' => $module->l('Image item inside a mega menu column'),
+                'code' => 'megamenu_item_image',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $megamenuItemImageTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'parent_column' => [
+                            'type' => 'select',
+                            'label' => $module->l('Parent column'),
+                            'choices' => $megamenuColumnChoices,
+                            'default' => '',
+                        ],
+                        'image' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title'),
+                            'default' => '',
+                        ],
+                        'url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Link'),
+                            'default' => '',
+                        ],
+                        'cta_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('CTA label'),
+                            'default' => '',
+                        ],
+                        'order' => [
+                            'type' => 'text',
+                            'label' => $module->l('Order'),
+                            'default' => '0',
+                        ],
+                    ],
                 ],
             ];
             $blocks[] = [
