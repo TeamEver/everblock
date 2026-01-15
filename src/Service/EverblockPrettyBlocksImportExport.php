@@ -223,10 +223,34 @@ class EverblockPrettyBlocksImportExport
     private function resolvePrettyblocksHookField(): ?string
     {
         $columns = $this->getPrettyblocksTableColumns();
-        if (in_array('id_hook', $columns, true)) {
+        $hasIdHook = in_array('id_hook', $columns, true);
+        $hasHook = in_array('hook', $columns, true);
+        $db = Db::getInstance();
+
+        if ($hasIdHook) {
+            $idHookCount = (int) $db->getValue(
+                'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'prettyblocks`'
+                . ' WHERE id_hook IS NOT NULL AND id_hook != 0'
+            );
+            if ($idHookCount > 0) {
+                return 'id_hook';
+            }
+        }
+
+        if ($hasHook) {
+            $hookCount = (int) $db->getValue(
+                'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'prettyblocks`'
+                . ' WHERE hook IS NOT NULL AND hook != ""'
+            );
+            if ($hookCount > 0 || !$hasIdHook) {
+                return 'hook';
+            }
+        }
+
+        if ($hasIdHook) {
             return 'id_hook';
         }
-        if (in_array('hook', $columns, true)) {
+        if ($hasHook) {
             return 'hook';
         }
 
