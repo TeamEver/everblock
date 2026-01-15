@@ -3164,6 +3164,12 @@
   flex: 0 0 56px;
 }
 
+.everblock-google-reviews__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .everblock-google-reviews__text {
   display: -webkit-box;
   -webkit-line-clamp: 4;

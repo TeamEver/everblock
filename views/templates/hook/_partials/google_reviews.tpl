@@ -55,9 +55,12 @@
         <span class="text-danger">e</span>
       </div>
       {if $googleReviewsOptions.show_cta && $googleReviewsOptions.cta_url}
-        <div class="everblock-google-reviews__cta">
+        <div class="everblock-google-reviews__cta d-flex flex-column align-items-start gap-2">
           <a class="btn btn-primary btn-lg" href="{$googleReviewsOptions.cta_url|escape:'htmlall':'UTF-8'}" target="_blank" rel="noopener nofollow" aria-label="{l s='Read all reviews on Google' mod='everblock'}">
             {if $googleReviewsOptions.cta_label}{$googleReviewsOptions.cta_label|escape:'htmlall':'UTF-8'}{else}{l s='Read all reviews on Google' mod='everblock'}{/if}
+          </a>
+          <a class="btn btn-outline-secondary btn-sm" href="{$googleReviewsOptions.cta_url|escape:'htmlall':'UTF-8'}" target="_blank" rel="noopener nofollow" aria-label="{l s='Laisser un avis sur Google' mod='everblock'}">
+            {l s='Laisser un avis' mod='everblock'}
           </a>
         </div>
       {/if}
@@ -76,13 +79,13 @@
                     <div class="col-12 col-lg-4">
                       <article class="card h-100 d-flex flex-column border-0 shadow-sm everblock-google-reviews__card">
                         <div class="card-body d-flex flex-column gap-3">
-                          <header class="everblock-google-reviews__header d-flex gap-3">
+                          <header class="everblock-google-reviews__header d-flex align-items-center gap-3">
                             {if $googleReviewsOptions.show_avatar && $review.profile_photo_url}
                               <div class="everblock-google-reviews__avatar flex-shrink-0 overflow-hidden rounded-circle bg-light">
-                                <img src="{$review.profile_photo_url|escape:'htmlall':'UTF-8'}" alt="{$review.author_name|escape:'htmlall':'UTF-8'}" loading="lazy" class="img-fluid rounded-circle" width="56" height="56">
+                                <img src="{$review.profile_photo_url|escape:'htmlall':'UTF-8'}" alt="{$review.author_name|escape:'htmlall':'UTF-8'}" loading="lazy" class="img-fluid w-100 h-100 object-fit-cover" width="56" height="56">
                               </div>
                             {elseif $googleReviewsOptions.show_avatar}
-                              <div class="everblock-google-reviews__avatar flex-shrink-0 rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-semibold" aria-hidden="true">
+                              <div class="everblock-google-reviews__avatar flex-shrink-0 overflow-hidden rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-semibold text-uppercase" aria-hidden="true">
                                 <span>{$review.author_name|default:'?'|truncate:1:""|escape:'htmlall':'UTF-8'}</span>
                               </div>
                             {/if}
@@ -147,13 +150,13 @@
                     <div class="col-12 col-md-6">
                       <article class="card h-100 d-flex flex-column border-0 shadow-sm everblock-google-reviews__card">
                         <div class="card-body d-flex flex-column gap-3">
-                          <header class="everblock-google-reviews__header d-flex gap-3">
+                          <header class="everblock-google-reviews__header d-flex align-items-center gap-3">
                             {if $googleReviewsOptions.show_avatar && $review.profile_photo_url}
                               <div class="everblock-google-reviews__avatar flex-shrink-0 overflow-hidden rounded-circle bg-light">
-                                <img src="{$review.profile_photo_url|escape:'htmlall':'UTF-8'}" alt="{$review.author_name|escape:'htmlall':'UTF-8'}" loading="lazy" class="img-fluid rounded-circle" width="56" height="56">
+                                <img src="{$review.profile_photo_url|escape:'htmlall':'UTF-8'}" alt="{$review.author_name|escape:'htmlall':'UTF-8'}" loading="lazy" class="img-fluid w-100 h-100 object-fit-cover" width="56" height="56">
                               </div>
                             {elseif $googleReviewsOptions.show_avatar}
-                              <div class="everblock-google-reviews__avatar flex-shrink-0 rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-semibold" aria-hidden="true">
+                              <div class="everblock-google-reviews__avatar flex-shrink-0 overflow-hidden rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-semibold text-uppercase" aria-hidden="true">
                                 <span>{$review.author_name|default:'?'|truncate:1:""|escape:'htmlall':'UTF-8'}</span>
                               </div>
                             {/if}
@@ -218,13 +221,13 @@
                     <div class="col-12">
                       <article class="card h-100 d-flex flex-column border-0 shadow-sm everblock-google-reviews__card">
                         <div class="card-body d-flex flex-column gap-3">
-                          <header class="everblock-google-reviews__header d-flex gap-3">
+                          <header class="everblock-google-reviews__header d-flex align-items-center gap-3">
                             {if $googleReviewsOptions.show_avatar && $review.profile_photo_url}
                               <div class="everblock-google-reviews__avatar flex-shrink-0 overflow-hidden rounded-circle bg-light">
-                                <img src="{$review.profile_photo_url|escape:'htmlall':'UTF-8'}" alt="{$review.author_name|escape:'htmlall':'UTF-8'}" loading="lazy" class="img-fluid rounded-circle" width="56" height="56">
+                                <img src="{$review.profile_photo_url|escape:'htmlall':'UTF-8'}" alt="{$review.author_name|escape:'htmlall':'UTF-8'}" loading="lazy" class="img-fluid w-100 h-100 object-fit-cover" width="56" height="56">
                               </div>
                             {elseif $googleReviewsOptions.show_avatar}
-                              <div class="everblock-google-reviews__avatar flex-shrink-0 rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-semibold" aria-hidden="true">
+                              <div class="everblock-google-reviews__avatar flex-shrink-0 overflow-hidden rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-semibold text-uppercase" aria-hidden="true">
                                 <span>{$review.author_name|default:'?'|truncate:1:""|escape:'htmlall':'UTF-8'}</span>
                               </div>
                             {/if}
