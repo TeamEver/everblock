@@ -25,6 +25,46 @@
   {/if}
 {assign var=everblockNow value=$smarty.now}
 {assign var=visibleStatesCount value=0}
+{assign var=displayMode value=$block.settings.display_mode|default:''}
+{if $displayMode == '' && isset($block.settings.slider) && $block.settings.slider}
+  {assign var=displayMode value='slider'}
+{elseif $displayMode == ''}
+  {assign var=displayMode value='grid'}
+{/if}
+{assign var=columnsDesktop value=$block.settings.columns_desktop|default:1}
+{assign var=columnsTablet value=$block.settings.columns_tablet|default:1}
+{assign var=columnsMobile value=$block.settings.columns_mobile|default:1}
+{assign var=colDesktopClass value='col-lg-12'}
+{if $columnsDesktop == 2}
+  {assign var=colDesktopClass value='col-lg-6'}
+{elseif $columnsDesktop == 3}
+  {assign var=colDesktopClass value='col-lg-4'}
+{elseif $columnsDesktop == 4}
+  {assign var=colDesktopClass value='col-lg-3'}
+{elseif $columnsDesktop == 6}
+  {assign var=colDesktopClass value='col-lg-2'}
+{/if}
+{assign var=colTabletClass value='col-md-12'}
+{if $columnsTablet == 2}
+  {assign var=colTabletClass value='col-md-6'}
+{elseif $columnsTablet == 3}
+  {assign var=colTabletClass value='col-md-4'}
+{/if}
+{assign var=colMobileClass value='col-12'}
+{if $columnsMobile == 2}
+  {assign var=colMobileClass value='col-6'}
+{/if}
+{assign var=gapSetting value=$block.settings.gap|default:'medium'}
+{assign var=gapClass value='g-3'}
+{if $gapSetting == 'none'}
+  {assign var=gapClass value='g-0'}
+{elseif $gapSetting == 'small'}
+  {assign var=gapClass value='g-2'}
+{elseif $gapSetting == 'large'}
+  {assign var=gapClass value='g-4'}
+{/if}
+{assign var=baseItemClass value='position-relative overflow-hidden'}
+{assign var=layoutItemClass value="{$baseItemClass} {$colMobileClass} {$colTabletClass} {$colDesktopClass}"}
 {if isset($block.states) && $block.states}
   {foreach from=$block.states item=state}
     {assign var=isStateVisible value=true}
@@ -48,15 +88,15 @@
       {assign var=visibleStatesCount value=$visibleStatesCount+1}
     {/if}
   {/foreach}
-  {assign var='use_slider' value=(isset($block.settings.slider) && $block.settings.slider && $visibleStatesCount > 1)}
+  {assign var='use_slider' value=($displayMode == 'slider' && $visibleStatesCount > 1)}
   {if $use_slider}
     <div class="mt-4 ever-cover-carousel ever-bootstrap-carousel"
          data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}"
-         data-items-mobile="1"
+         data-items-mobile="{$block.settings.columns_mobile|default:1|escape:'htmlall':'UTF-8'}"
          data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
          data-infinite="1"
          data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}"
-         data-row-class="row g-3 justify-content-center"
+         data-row-class="row {$gapClass} justify-content-center"
          data-controls="true"
          data-indicators="true">
       {foreach from=$block.states item=state key=key}
@@ -78,8 +118,12 @@
           {/if}
         {/if}
         {if $isStateVisible}
+          {assign var=itemClass value=$layoutItemClass}
+          {if $state.css_class}
+            {assign var=itemClass value="{$baseItemClass} {$state.css_class}"}
+          {/if}
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
-          <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden col{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
+          <div id="block-{$block.id_prettyblocks}-{$key}" class="{$itemClass|escape:'htmlall'}" style="
             {$prettyblock_state_spacing_style}
             {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
           ">
@@ -130,7 +174,7 @@
       {/foreach}
     </div>
   {else}
-    <div class="row mt-4 g-3 justify-content-center">
+    <div class="row mt-4 {$gapClass} justify-content-center">
       {foreach from=$block.states item=state key=key}
         {assign var=isStateVisible value=true}
         {assign var=startDateStr value=$state.start_date|default:''}
@@ -150,8 +194,12 @@
           {/if}
         {/if}
         {if $isStateVisible}
+          {assign var=itemClass value=$layoutItemClass}
+          {if $state.css_class}
+            {assign var=itemClass value="{$baseItemClass} {$state.css_class}"}
+          {/if}
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
-          <div id="block-{$block.id_prettyblocks}-{$key}" class="position-relative overflow-hidden col-12{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" style="
+          <div id="block-{$block.id_prettyblocks}-{$key}" class="{$itemClass|escape:'htmlall'}" style="
             {$prettyblock_state_spacing_style}
             {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
           ">
