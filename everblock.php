@@ -2238,10 +2238,11 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'submitUploadSvgButton',
                 'html_content' => sprintf(
-                    '<button type="submit" name="%s" class="btn btn-default pull-right"><i class="process-icon-download"></i> %s</button>',
+                    '<div class="everblock-prettyblocks-action__buttons"><button type="submit" name="%s" class="btn btn-default"><i class="process-icon-download"></i> %s</button></div>',
                     'submitUploadSvg',
                     htmlspecialchars($this->l('Upload SVG'), ENT_QUOTES, 'UTF-8')
                 ),
+                'form_group_class' => 'everblock-prettyblocks-action',
                 'tab' => 'prettyblock',
             ];
 
@@ -2249,10 +2250,11 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'submitExportPrettyblocksButton',
                 'html_content' => sprintf(
-                    '<button type="submit" name="%s" class="btn btn-default"><i class="process-icon-download"></i> %s</button>',
+                    '<div class="everblock-prettyblocks-action__buttons"><button type="submit" name="%s" class="btn btn-default"><i class="process-icon-download"></i> %s</button></div>',
                     'submitExportPrettyblocks',
                     htmlspecialchars($this->l('Export PrettyBlocks JSON'), ENT_QUOTES, 'UTF-8')
                 ),
+                'form_group_class' => 'everblock-prettyblocks-action',
                 'tab' => 'prettyblock',
             ];
 
@@ -2260,10 +2262,11 @@ class Everblock extends Module
                 'type' => 'html',
                 'name' => 'submitImportPrettyblocksButton',
                 'html_content' => sprintf(
-                    '<button type="submit" name="%s" class="btn btn-default pull-right"><i class="process-icon-upload"></i> %s</button>',
+                    '<div class="everblock-prettyblocks-action__buttons"><button type="submit" name="%s" class="btn btn-default"><i class="process-icon-upload"></i> %s</button></div>',
                     'submitImportPrettyblocks',
                     htmlspecialchars($this->l('Import PrettyBlocks JSON'), ENT_QUOTES, 'UTF-8')
                 ),
+                'form_group_class' => 'everblock-prettyblocks-action',
                 'tab' => 'prettyblock',
             ];
         }

@@ -461,6 +461,21 @@
     margin-bottom: 0;
 }
 
+#module_form .everblock-prettyblocks-action {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#module_form .everblock-prettyblocks-action .everblock-prettyblocks-action__buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
 #module_form label.control-label {
     font-size: 0.95rem;
     font-weight: 600;
