@@ -3166,17 +3166,10 @@
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
-.everblock-google-reviews__layout {
-  display: grid;
-  grid-template-columns: minmax(220px, 260px) 1fr;
-  gap: 32px;
-  align-items: start;
-}
-
 .everblock-google-reviews__aside {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   align-items: flex-start;
 }
 
@@ -3197,8 +3190,7 @@
 .everblock-google-reviews__summary {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: 6px;
   border-radius: 16px;
   background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
   border: 1px solid #e0e7ff;
@@ -3207,7 +3199,7 @@
 .everblock-google-reviews__score {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .everblock-google-reviews__rating {
@@ -3268,7 +3260,7 @@
   background-color: #111827;
   border-color: #111827;
   color: #fff;
-  padding: 0.6rem 1.4rem;
+  padding: 0.7rem 1.6rem;
   border-radius: 999px;
   font-weight: 700;
   box-shadow: 0 10px 20px rgba(17, 24, 39, 0.2);
@@ -3289,11 +3281,7 @@
 }
 
 .everblock-google-reviews__card {
-  display: flex;
-  gap: 16px;
-  padding: 18px;
   border-radius: 18px;
-  background: #ffffff;
   border: 1px solid #e5e7eb;
   box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
@@ -3306,9 +3294,9 @@
 }
 
 .everblock-google-reviews__avatar {
-  width: 52px;
-  height: 52px;
-  flex: 0 0 52px;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
   border-radius: 50%;
   overflow: hidden;
   display: flex;
@@ -3328,8 +3316,8 @@
 .everblock-google-reviews__header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: 4px;
+  margin-bottom: 8px;
 }
 
 .everblock-google-reviews__author {
@@ -3358,31 +3346,15 @@
   color: #374151;
   font-size: 0.95rem;
   line-height: 1.6;
-  max-height: 8rem;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.everblock-google-reviews__text::-webkit-scrollbar {
-  width: 6px;
-}
-
-.everblock-google-reviews__text::-webkit-scrollbar-thumb {
-  background: #9ca3af;
-  border-radius: 999px;
-}
-
-.everblock-google-reviews__text::-webkit-scrollbar-track {
-  background: transparent;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 @media (max-width: 991px) {
   .everblock-google-reviews {
     padding: 22px;
-  }
-
-  .everblock-google-reviews__layout {
-    grid-template-columns: 1fr;
   }
 
   .everblock-google-reviews__aside {
