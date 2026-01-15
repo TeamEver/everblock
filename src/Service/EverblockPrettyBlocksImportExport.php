@@ -57,8 +57,13 @@ class EverblockPrettyBlocksImportExport
             );
         } else {
             $hookName = (string) $hookSelection;
+            if (!$this->hookExistsByName($hookName)) {
+                $errors[] = $module->l('The selected hook does not exist.');
+                return;
+            }
             $rows = $db->executeS(
-                'SELECT * FROM `' . _DB_PREFIX_ . 'prettyblocks` WHERE hook = "' . pSQL($hookSelection) . '"'
+                'SELECT * FROM `' . _DB_PREFIX_ . 'prettyblocks`'
+                . ' WHERE ' . bqSQL($hookField) . ' = "' . pSQL($hookSelection) . '"'
             );
         }
 
@@ -137,6 +142,8 @@ class EverblockPrettyBlocksImportExport
             $errors[] = $module->l('PrettyBlocks table is not available.');
             return;
         }
+        $hookField = $this->resolvePrettyblocksHookField();
+        $missingHooks = [];
 
         $inserted = 0;
         foreach ($rows as $row) {
@@ -170,9 +177,27 @@ class EverblockPrettyBlocksImportExport
                 $data['date_upd'] = date('Y-m-d H:i:s');
             }
 
+            if (in_array($hookField, ['hook', 'zone_name'], true)
+                && isset($data[$hookField])
+                && $data[$hookField] !== ''
+                && !$this->hookExistsByName((string) $data[$hookField])
+            ) {
+                $missingHooks[] = (string) $data[$hookField];
+                continue;
+            }
+
             if (Db::getInstance()->insert('prettyblocks', $data)) {
                 $inserted++;
             }
+        }
+
+        if (!empty($missingHooks)) {
+            $missingHooks = array_unique($missingHooks);
+            sort($missingHooks);
+            $errors[] = sprintf(
+                $module->l('Some PrettyBlocks were skipped because hooks are missing: %s'),
+                implode(', ', $missingHooks)
+            );
         }
 
         if ($inserted === 0) {
@@ -205,13 +230,16 @@ class EverblockPrettyBlocksImportExport
             ) ?: [];
         }
 
+        $hookColumn = bqSQL($hookField);
+
         return $db->executeS(
-            'SELECT a.hook AS id, a.hook AS name, COUNT(*) AS total'
+            'SELECT h.name AS id, h.name AS name, COUNT(*) AS total'
             . ' FROM `' . _DB_PREFIX_ . 'prettyblocks` a'
-            . ' WHERE a.hook IS NOT NULL AND a.hook != ""'
-            . ' GROUP BY a.hook'
+            . ' INNER JOIN `' . _DB_PREFIX_ . 'hook` h ON h.name = a.' . $hookColumn
+            . ' WHERE a.' . $hookColumn . ' IS NOT NULL AND a.' . $hookColumn . ' != ""'
+            . ' GROUP BY h.name'
             . ' HAVING total > 0'
-            . ' ORDER BY a.hook ASC'
+            . ' ORDER BY h.name ASC'
         ) ?: [];
     }
 
@@ -225,6 +253,7 @@ class EverblockPrettyBlocksImportExport
         $columns = $this->getPrettyblocksTableColumns();
         $hasIdHook = in_array('id_hook', $columns, true);
         $hasHook = in_array('hook', $columns, true);
+        $hasZoneName = in_array('zone_name', $columns, true);
         $db = Db::getInstance();
 
         if ($hasIdHook) {
@@ -237,12 +266,22 @@ class EverblockPrettyBlocksImportExport
             }
         }
 
+        if ($hasZoneName) {
+            $zoneCount = (int) $db->getValue(
+                'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'prettyblocks`'
+                . ' WHERE zone_name IS NOT NULL AND zone_name != ""'
+            );
+            if ($zoneCount > 0) {
+                return 'zone_name';
+            }
+        }
+
         if ($hasHook) {
             $hookCount = (int) $db->getValue(
                 'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'prettyblocks`'
                 . ' WHERE hook IS NOT NULL AND hook != ""'
             );
-            if ($hookCount > 0 || !$hasIdHook) {
+            if ($hookCount > 0) {
                 return 'hook';
             }
         }
@@ -250,11 +289,25 @@ class EverblockPrettyBlocksImportExport
         if ($hasIdHook) {
             return 'id_hook';
         }
+        if ($hasZoneName) {
+            return 'zone_name';
+        }
         if ($hasHook) {
             return 'hook';
         }
 
         return null;
+    }
+
+    private function hookExistsByName(string $hookName): bool
+    {
+        if ($hookName === '') {
+            return false;
+        }
+
+        return (bool) Db::getInstance()->getValue(
+            'SELECT id_hook FROM `' . _DB_PREFIX_ . 'hook` WHERE name = "' . pSQL($hookName) . '"'
+        );
     }
 
     private function getPrettyblocksTableColumns(): array
