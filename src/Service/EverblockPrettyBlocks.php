@@ -165,7 +165,11 @@ class EverblockPrettyBlocks
             $config = json_decode((string) ($row['config'] ?? ''), true);
             $label = '';
             if (is_array($config)) {
-                $label = (string) ($config[$labelField] ?? '');
+                $labelValue = $config[$labelField] ?? '';
+                if (is_array($labelValue)) {
+                    $labelValue = reset($labelValue) ?: '';
+                }
+                $label = is_scalar($labelValue) ? (string) $labelValue : '';
             }
             if ($label === '') {
                 $label = $module->l('Item') . ' #' . $id;

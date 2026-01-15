@@ -3553,7 +3553,8 @@ class EverblockTools extends ObjectModel
             if (is_array($value)) {
                 $txt = static::renderSmartyVarsInArray($txt, $elementSearch, $value);
             } else {
-                $txt = str_replace($elementSearch, $value, $txt);
+                $replacement = is_scalar($value) ? (string) $value : '';
+                $txt = str_replace($elementSearch, $replacement, $txt);
             }
         }
         return $txt;
@@ -4502,7 +4503,8 @@ class EverblockTools extends ObjectModel
             '[entity_gender]' => $gender->name,
         ];
         foreach ($entityShortcodes as $key => $value) {
-            $txt = str_replace($key, $value, $txt);
+            $replacement = $value ?? '';
+            $txt = str_replace($key, (string) $replacement, $txt);
         }
         return $txt;
     }
@@ -4515,7 +4517,8 @@ class EverblockTools extends ObjectModel
         );
         $returnedShortcodes = [];
         foreach ($customShortcodes as $sc) {
-            $txt = str_replace($sc->shortcode, $sc->content, $txt);
+            $content = $sc->content ?? '';
+            $txt = str_replace($sc->shortcode, (string) $content, $txt);
         }
         return $txt;
     }
