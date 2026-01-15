@@ -298,30 +298,8 @@
     cursor: pointer;
 }
 .everblock-gallery-modal .modal-header,
-.everblock-testimonial .text-center,
-.everblock-parallax .text-center {
+.everblock-testimonial .text-center {
     text-align: center;
-}
-.everblock-parallax .parallax-container {
-    position: relative;
-    overflow: hidden;
-}
-.everblock-parallax .parallax-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
-    transform: translateZ(0);
-    z-index: 0;
-}
-.everblock-parallax .parallax-content {
-    position: relative;
-    z-index: 1;
-    padding: 20px;
 }
 .everblock-overlay .image-overlay-container {
     position: relative;
@@ -770,14 +748,6 @@
     overflow: hidden;
 }
 
-.prettyblock-cover-item--parallax {
-    background-attachment: fixed;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    min-height: 300px;
-}
-
 .prettyblock-cover-item img.prettyblock-cover-image,
 .prettyblock-cover-row > .col img.prettyblock-cover-image {
     width: 100%;
@@ -885,10 +855,6 @@
 }
 
 @media (max-width: 767px) {
-    .prettyblock-cover-item--parallax {
-        background-attachment: scroll;
-    }
-
     .prettyblock-cover-overlay.position-mobile-top {
         justify-content: flex-start;
         align-items: center;
