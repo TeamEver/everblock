@@ -38,15 +38,27 @@
     {if isset($block.states) && $block.states}
       {foreach from=$block.states item=state key=key}
         {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
+        {assign var=show_rating_override value=null}
+        {if isset($state.show_rating_override)}
+          {assign var=show_rating_override value=$state.show_rating_override}
+        {/if}
+        {assign var=show_avatar_override value=null}
+        {if isset($state.show_avatar_override)}
+          {assign var=show_avatar_override value=$state.show_avatar_override}
+        {/if}
+        {assign var=show_cta_override value=null}
+        {if isset($state.show_cta_override)}
+          {assign var=show_cta_override value=$state.show_cta_override}
+        {/if}
         {assign var=overrides value=[
           'api_key' => $state.api_key_override|default:null,
           'place_id' => $state.place_id_override|default:null,
           'limit' => $state.limit_override|default:null,
           'min_rating' => $state.min_rating_override|default:null,
           'sort' => $state.sort_override|default:null,
-          'show_rating' => isset($state.show_rating_override) ? $state.show_rating_override : null,
-          'show_avatar' => isset($state.show_avatar_override) ? $state.show_avatar_override : null,
-          'show_cta' => isset($state.show_cta_override) ? $state.show_cta_override : null,
+          'show_rating' => $show_rating_override,
+          'show_avatar' => $show_avatar_override,
+          'show_cta' => $show_cta_override,
           'cta_label' => $state.cta_label_override|default:null,
           'cta_url' => $state.cta_url_override|default:null,
           'columns' => $state.columns|default:null,
