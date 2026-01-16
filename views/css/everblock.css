@@ -3158,6 +3158,14 @@
 }
 
 /* Prettyblock Google reviews */
+.everblock-google-reviews__col {
+  display: flex;
+}
+
+.everblock-google-reviews__card {
+  flex: 1 1 auto;
+}
+
 .everblock-google-reviews__avatar {
   width: 56px;
   height: 56px;
