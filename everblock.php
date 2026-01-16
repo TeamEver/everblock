@@ -5903,11 +5903,6 @@ class Everblock extends Module
 
     public function hookBeforeRenderingMegaMenuItem($params)
     {
-        return $this->hookBeforeRenderingMegamenuItem($params);
-    }
-
-    public function hookBeforeRenderingMegamenuItem($params)
-    {
         $menuId = (int) ($params['block']['id_prettyblocks'] ?? 0);
         if ($menuId <= 0) {
             return ['columns' => []];
@@ -5922,11 +5917,6 @@ class Everblock extends Module
     }
 
     public function hookBeforeRenderingMegaMenuContainer($params)
-    {
-        return $this->hookBeforeRenderingMegamenuContainer($params);
-    }
-
-    public function hookBeforeRenderingMegamenuContainer($params)
     {
         $containerId = (int) ($params['block']['id_prettyblocks'] ?? 0);
         if ($containerId <= 0) {
