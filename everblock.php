@@ -659,6 +659,20 @@ class Everblock extends Module
                 $hook->description = 'This hook triggers before mega menu container block is rendered';
                 $hook->save();
             }
+            if (!Hook::getIdByName('beforeRenderingMegamenuItem')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingMegamenuItem';
+                $hook->title = 'Before rendering megamenu item block';
+                $hook->description = 'This hook triggers before megamenu item block is rendered';
+                $hook->save();
+            }
+            if (!Hook::getIdByName('beforeRenderingMegamenuContainer')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingMegamenuContainer';
+                $hook->title = 'Before rendering megamenu container block';
+                $hook->description = 'This hook triggers before megamenu container block is rendered';
+                $hook->save();
+            }
             $this->registerHook('beforeRenderingEverblockProductHighlight');
             $this->registerHook('beforeRenderingEverblockCategoryTabs');
             $this->registerHook('beforeRenderingEverblockCategoryPrice');
@@ -669,6 +683,8 @@ class Everblock extends Module
             $this->registerHook('beforeRenderingEverblockEverblock');
             $this->registerHook('beforeRenderingMegaMenuItem');
             $this->registerHook('beforeRenderingMegaMenuContainer');
+            $this->registerHook('beforeRenderingMegamenuItem');
+            $this->registerHook('beforeRenderingMegamenuContainer');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
             $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
@@ -680,6 +696,8 @@ class Everblock extends Module
             $this->unregisterHook('beforeRenderingEverblockEverblock');
             $this->unregisterHook('beforeRenderingMegaMenuItem');
             $this->unregisterHook('beforeRenderingMegaMenuContainer');
+            $this->unregisterHook('beforeRenderingMegamenuItem');
+            $this->unregisterHook('beforeRenderingMegamenuContainer');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
@@ -5885,6 +5903,11 @@ class Everblock extends Module
 
     public function hookBeforeRenderingMegaMenuItem($params)
     {
+        return $this->hookBeforeRenderingMegamenuItem($params);
+    }
+
+    public function hookBeforeRenderingMegamenuItem($params)
+    {
         $menuId = (int) ($params['block']['id_prettyblocks'] ?? 0);
         if ($menuId <= 0) {
             return ['columns' => []];
@@ -5899,6 +5922,11 @@ class Everblock extends Module
     }
 
     public function hookBeforeRenderingMegaMenuContainer($params)
+    {
+        return $this->hookBeforeRenderingMegamenuContainer($params);
+    }
+
+    public function hookBeforeRenderingMegamenuContainer($params)
     {
         $containerId = (int) ($params['block']['id_prettyblocks'] ?? 0);
         if ($containerId <= 0) {

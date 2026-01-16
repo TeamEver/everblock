@@ -15,8 +15,8 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-{include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
-
+{if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
+  {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 
   {assign var='menu_label' value=$block.settings.label|default:$block.settings.fallback_label|default:'Menu'}
   {assign var='menu_url' value=$block.settings.url|default:''}
@@ -67,3 +67,4 @@
       </div>
     {/if}
   </li>
+{/if}
