@@ -25,6 +25,15 @@
     {/if}
   {/if}
   {assign var='link_label' value=$link_label|default:''}
+  {assign var='link_icon' value=$block.settings.icon|default:''}
+  {if is_array($link_icon)}
+    {if isset($link_icon[$language.id_lang])}
+      {assign var='link_icon' value=$link_icon[$language.id_lang]}
+    {else}
+      {assign var='link_icon' value=$link_icon|@reset}
+    {/if}
+  {/if}
+  {assign var='link_icon' value=$link_icon|default:''}
   {assign var='link_url' value=$block.settings.url|default:''}
   {assign var='obfme_class' value=''}
   {if $page.page_name|default:'' != 'index'}
@@ -32,7 +41,7 @@
   {/if}
   {if $link_label && $link_url}
     <a class="dropdown-item d-flex align-items-center gap-2{$obfme_class}{if $block.settings.highlight} fw-semibold{/if}" href="{$link_url|escape:'htmlall':'UTF-8'}">
-      {if $block.settings.icon}<span class="everblock-megamenu-icon">{$block.settings.icon|escape:'htmlall':'UTF-8'}</span>{/if}
+      {if $link_icon}<span class="everblock-megamenu-icon">{$link_icon|escape:'htmlall':'UTF-8'}</span>{/if}
       <span>{$link_label|escape:'htmlall':'UTF-8'}</span>
     </a>
   {/if}
