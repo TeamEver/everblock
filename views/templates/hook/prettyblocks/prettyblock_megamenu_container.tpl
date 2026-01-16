@@ -21,7 +21,11 @@
   {assign var='collapse_id' value="everblock-megamenu-collapse-`$block.id_prettyblocks`"}
   {assign var='menu_label' value=$block.settings.menu_label}
   {if is_array($menu_label)}
-    {assign var='menu_label' value=$menu_label[$language.id_lang]|default:$menu_label|@reset}
+    {if isset($menu_label[$language.id_lang])}
+      {assign var='menu_label' value=$menu_label[$language.id_lang]}
+    {else}
+      {assign var='menu_label' value=$menu_label|@reset}
+    {/if}
   {/if}
   {assign var='menu_label' value=$menu_label|default:'Menu'}
   {assign var='fallback_label' value=$block.settings.fallback_label|default:$menu_label}
