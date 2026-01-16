@@ -68,11 +68,11 @@
                 {/if}
               {/if}
               <div class="accordion-item">
-                <h2 class="accordion-header" id="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
+                <div class="accordion-header h2" id="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
                   <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}" aria-expanded="false" aria-controls="everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
                     {$column_title|escape:'htmlall':'UTF-8'}
                   </button>
-                </h2>
+                </div>
                 <div id="everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}" class="accordion-collapse collapse" aria-labelledby="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
                   <div class="accordion-body">
                     <div class="row g-3">
