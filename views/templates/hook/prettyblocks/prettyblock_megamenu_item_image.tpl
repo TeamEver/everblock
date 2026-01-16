@@ -20,10 +20,21 @@
   {if $page.page_name|default:'' != 'index'}
     {assign var='obfme_class' value=' obfme'}
   {/if}
-  {if isset($block.settings.image.url) && $block.settings.image.url}
+  {assign var='image_value' value=$block.settings.image|default:''}
+  {assign var='image_url' value=''}
+  {if is_array($image_value)}
+    {if isset($image_value.url)}
+      {assign var='image_url' value=$image_value.url}
+    {elseif isset($image_value.value.url)}
+      {assign var='image_url' value=$image_value.value.url}
+    {/if}
+  {elseif $image_value}
+    {assign var='image_url' value=$image_value}
+  {/if}
+  {if $image_url}
     <div class="everblock-megamenu-image mb-3">
       <a href="{$block.settings.url|escape:'htmlall':'UTF-8'}" class="text-decoration-none d-block{$obfme_class}">
-        <img src="{$block.settings.image.url|escape:'htmlall':'UTF-8'}" alt="{$block.settings.title|escape:'htmlall':'UTF-8'}" class="img-fluid rounded">
+        <img src="{$image_url|escape:'htmlall':'UTF-8'}" alt="{$block.settings.title|escape:'htmlall':'UTF-8'}" class="img-fluid rounded">
         {if $block.settings.title}
           <div class="mt-2 fw-semibold">{$block.settings.title|escape:'htmlall':'UTF-8'}</div>
         {/if}
