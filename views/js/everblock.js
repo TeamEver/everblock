@@ -116,15 +116,49 @@ $(document).ready(function(){
         }
         return url + separator + 'autoplay=1&loop=1';
     }
-    function initPrettyblocksImageSlider($context) {
+    function isEverblockElementVisible($element) {
+        if (!$element || !$element.length) {
+            return false;
+        }
+        if (!$element.is(':visible')) {
+            return false;
+        }
+        var node = $element.get(0);
+        return !!(node && node.offsetParent !== null);
+    }
+
+    function disposePrettyblocksCarousel($carousel) {
+        try {
+            if (typeof bootstrap !== 'undefined' && typeof bootstrap.Carousel !== 'undefined') {
+                var instance = bootstrap.Carousel.getInstance($carousel[0]);
+                if (instance) {
+                    instance.dispose();
+                }
+            } else if (typeof $carousel.carousel === 'function') {
+                $carousel.carousel('dispose');
+            }
+        } catch (e) {
+            console.error('Prettyblocks carousel dispose failed', e);
+        }
+    }
+
+    function initPrettyblocksImageSlider($context, options) {
         var $scope = $context && $context.length ? $context : $(document);
+        var forceInit = options && options.force === true;
         $scope.find('.prettyblocks-image-slider').each(function(){
             var $carousel = $(this);
-            if ($carousel.hasClass('prettyblocks-carousel-initialised')) {
+            if (!isEverblockElementVisible($carousel)) {
                 return;
+            }
+            if ($carousel.hasClass('prettyblocks-carousel-initialised') && !forceInit) {
+                return;
+            }
+            if ($carousel.hasClass('prettyblocks-carousel-initialised') && forceInit) {
+                $carousel.removeClass('prettyblocks-carousel-initialised');
             }
             var $slides = $carousel.find('.carousel-item');
             if ($slides.length <= 1) {
+                disposePrettyblocksCarousel($carousel);
                 $carousel.addClass('prettyblocks-carousel-initialised');
                 return;
             }
@@ -148,15 +182,13 @@ $(document).ready(function(){
             };
             try {
                 if (typeof bootstrap !== 'undefined' && typeof bootstrap.Carousel !== 'undefined') {
-                    var existingInstance = bootstrap.Carousel.getInstance($carousel[0]);
-                    if (existingInstance) {
-                        existingInstance.dispose();
-                    }
+                    disposePrettyblocksCarousel($carousel);
                     var newInstance = new bootstrap.Carousel($carousel[0], config);
                     if (!autoplay && newInstance && typeof newInstance.pause === 'function') {
                         newInstance.pause();
                     }
                 } else if (typeof $carousel.carousel === 'function') {
+                    disposePrettyblocksCarousel($carousel);
                     $carousel.carousel(config);
                     if (!autoplay) {
                         $carousel.carousel('pause');
@@ -344,13 +376,17 @@ $(document).ready(function(){
         $carousel.data('everblockItemsPerSlide', itemsPerSlide);
     }
 
-    function initEverblockCarousels($context) {
+    function initEverblockCarousels($context, options) {
         var $scope = $context && $context.length ? $context : $(document);
+        var forceInit = options && options.force === true;
         $scope.find('.ever-bootstrap-carousel').each(function () {
             var $carousel = $(this);
+            if (!isEverblockElementVisible($carousel)) {
+                return;
+            }
             var itemsPerSlide = getEverblockItemsPerSlide($carousel);
             var previousItemsPerSlide = $carousel.data('everblockItemsPerSlide');
-            if (previousItemsPerSlide === itemsPerSlide && $carousel.find('.carousel-inner').length) {
+            if (!forceInit && previousItemsPerSlide === itemsPerSlide && $carousel.find('.carousel-inner').length) {
                 return;
             }
             buildEverblockCarousel($carousel);
@@ -364,6 +400,7 @@ $(document).ready(function(){
             clearTimeout(everblockCarouselResizeTimeout);
         }
         everblockCarouselResizeTimeout = setTimeout(function () {
+            initPrettyblocksImageSlider();
             initEverblockCarousels();
         }, 200);
     });
@@ -3349,6 +3386,10 @@ $(document).ready(function(){
         }
 
         function refreshProducts($context) {
+            var $activePane = $context.find('.tab-pane.active');
+            if (!$activePane.length) {
+                $activePane = $context;
+            }
             if (typeof prestashop !== 'undefined' && typeof prestashop.emit === 'function') {
                 prestashop.emit('updateProductList', {
                     html: $context.find('.tab-pane.active')
@@ -3357,8 +3398,8 @@ $(document).ready(function(){
 
             setTimeout(function () {
                 $(window).trigger('resize');
-                initPrettyblocksImageSlider($context);
-                initEverblockCarousels($context);
+                initPrettyblocksImageSlider($activePane, { force: true });
+                initEverblockCarousels($activePane, { force: true });
             }, 0);
         }
 
