@@ -17,6 +17,7 @@
 *}
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
   {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+  {include file='module:everblock/views/templates/hook/prettyblocks/_partials/megamenu_style_vars.tpl' block=$block assign='megamenu_style_vars'}
 
   {assign var='menu_label' value=$block.settings.label}
   {if is_array($menu_label)}
@@ -34,13 +35,13 @@
   {if $page.page_name|default:'' != 'index'}
     {assign var='obfme_class' value=' obfme'}
   {/if}
-  <li id="block-{$block.id_prettyblocks}" class="nav-item{if $has_dropdown} dropdown{/if}{$prettyblock_visibility_class} everblock-megamenu-item">
+  <li id="block-{$block.id_prettyblocks}" class="nav-item{if $has_dropdown} dropdown{/if}{$prettyblock_visibility_class} everblock-megamenu-item"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>
     {if $menu_url}
-      <a class="nav-link{if $has_dropdown} dropdown-toggle{/if}{$obfme_class}" href="{$menu_url|escape:'htmlall':'UTF-8'}" title="{$menu_label|escape:'htmlall':'UTF-8'}"{if $has_dropdown} id="{$menu_toggle_id}" role="button" data-bs-toggle="dropdown" aria-expanded="false"{/if}>
+      <a class="nav-link everblock-megamenu-item-link{if $has_dropdown} dropdown-toggle{/if}{$obfme_class}" href="{$menu_url|escape:'htmlall':'UTF-8'}" title="{$menu_label|escape:'htmlall':'UTF-8'}"{if $has_dropdown} id="{$menu_toggle_id}" role="button" data-bs-toggle="dropdown" aria-expanded="false"{/if}>
         {$menu_label|escape:'htmlall':'UTF-8'}
       </a>
     {else}
-      <button class="nav-link btn btn-link{if $has_dropdown} dropdown-toggle{/if}" type="button"{if $has_dropdown} id="{$menu_toggle_id}" data-bs-toggle="dropdown" aria-expanded="false"{/if}>
+      <button class="nav-link btn btn-link everblock-megamenu-item-link{if $has_dropdown} dropdown-toggle{/if}" type="button"{if $has_dropdown} id="{$menu_toggle_id}" data-bs-toggle="dropdown" aria-expanded="false"{/if}>
         {$menu_label|escape:'htmlall':'UTF-8'}
       </button>
     {/if}

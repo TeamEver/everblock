@@ -17,6 +17,7 @@
 *}
 
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
+  {include file='module:everblock/views/templates/hook/prettyblocks/_partials/megamenu_style_vars.tpl' block=$block assign='megamenu_style_vars'}
   {assign var='column_width' value=$block.settings.width|default:3}
   {if is_array($column_width)}
     {if isset($column_width[$language.id_lang])}
@@ -46,7 +47,7 @@
   {if $page.page_name|default:'' != 'index'}
     {assign var='obfme_class' value=' obfme'}
   {/if}
-  <div class="col col-12 col-lg-{$column_width|escape:'htmlall':'UTF-8'}">
+  <div class="col col-12 col-lg-{$column_width|escape:'htmlall':'UTF-8'} everblock-megamenu-column"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>
     {if $render_title}
       {assign var='column_title' value=$block.settings.title.value}
       {if is_array($column_title)}
@@ -62,11 +63,11 @@
         {/foreach}
       {elseif $column_title}
         {if $block.settings.title_url}
-          <a class="dropdown-header h6 text-decoration-none{$obfme_class}" href="{$block.settings.title_url|escape:'htmlall':'UTF-8'}" title="{$column_title|escape:'htmlall':'UTF-8'}">
+          <a class="dropdown-header h6 text-decoration-none everblock-megamenu-title{$obfme_class}" href="{$block.settings.title_url|escape:'htmlall':'UTF-8'}" title="{$column_title|escape:'htmlall':'UTF-8'}">
             {$column_title|escape:'htmlall':'UTF-8'}
           </a>
         {else}
-          <span class="dropdown-header h6">{$column_title|escape:'htmlall':'UTF-8'}</span>
+          <span class="dropdown-header h6 everblock-megamenu-title">{$column_title|escape:'htmlall':'UTF-8'}</span>
         {/if}
       {/if}
     {/if}

@@ -135,6 +135,7 @@ class Everblock extends Module
         Configuration::updateValue('EVERBLOCK_SOLDOUT_FLAG', 0);
         Configuration::updateValue('EVERBLOCK_LOW_STOCK_THRESHOLD', 5);
         Configuration::updateValue('EVERBLOCK_STORELOCATOR_TOGGLE', 0);
+        Configuration::updateValue('EVERBLOCK_WINTER_MODE', 0);
         Configuration::updateValue('EVERBLOCK_GOOGLE_API_KEY', '');
         Configuration::updateValue('EVERBLOCK_GOOGLE_PLACE_ID', '');
         Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT', 5);
@@ -2245,6 +2246,25 @@ class Everblock extends Module
                     'required' => false,
                 ],
                 [
+                    'type' => 'switch',
+                    'label' => $this->l('Enable winter theme mode'),
+                    'desc' => $this->l('Force the winter variant for PrettyBlocks mega menu styles.'),
+                    'name' => 'EVERBLOCK_WINTER_MODE',
+                    'is_bool' => true,
+                    'values' => [
+                        [
+                            'id' => 'active_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled'),
+                        ],
+                        [
+                            'id' => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled'),
+                        ],
+                    ],
+                ],
+                [
                     'type' => 'select',
                     'label' => $this->l('PrettyBlocks hook to export'),
                     'desc' => $prettyblocksHookDesc,
@@ -2636,6 +2656,7 @@ class Everblock extends Module
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERBLOCK_MARKER_ICON' => Configuration::get('EVERBLOCK_MARKER_ICON'),
             'EVERBLOCK_STORELOCATOR_TOGGLE' => Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
+            'EVERBLOCK_WINTER_MODE' => Configuration::get('EVERBLOCK_WINTER_MODE'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
@@ -3109,6 +3130,10 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_STORELOCATOR_TOGGLE',
             Tools::getValue('EVERBLOCK_STORELOCATOR_TOGGLE')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_WINTER_MODE',
+            Tools::getValue('EVERBLOCK_WINTER_MODE')
         );
         if (isset($_FILES['EVERBLOCK_MARKER_ICON'])
             && isset($_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'])
@@ -4891,6 +4916,9 @@ class Everblock extends Module
 
     public function hookDisplayHeader()
     {
+        $this->context->smarty->assign([
+            'everblock_winter_mode' => (bool) Configuration::get('EVERBLOCK_WINTER_MODE'),
+        ]);
         if (Tools::getValue('eac')
             && Validate::isInt(Tools::getValue('eac'))
         ) {

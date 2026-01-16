@@ -293,6 +293,7 @@ return [
     'views/templates/hook/pdf.tpl',
     'views/templates/hook/prettyblocks.tpl',
     'views/templates/hook/prettyblocks/_partials/index.php',
+    'views/templates/hook/prettyblocks/_partials/megamenu_style_vars.tpl',
     'views/templates/hook/prettyblocks/_partials/spacing_style.tpl',
     'views/templates/hook/prettyblocks/_partials/visibility_class.tpl',
     'views/templates/hook/prettyblocks/index.php',

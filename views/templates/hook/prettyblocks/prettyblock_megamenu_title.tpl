@@ -16,6 +16,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
+  {include file='module:everblock/views/templates/hook/prettyblocks/_partials/megamenu_style_vars.tpl' block=$block assign='megamenu_style_vars'}
   {assign var='title_label' value=$block.settings.label|default:$block.settings.title}
   {if is_array($title_label)}
     {if isset($title_label[$language.id_lang])}
@@ -32,11 +33,11 @@
   {/if}
   {if $title_label}
     {if $title_url}
-      <a class="dropdown-header h6 text-decoration-none{$obfme_class}" href="{$title_url|escape:'htmlall':'UTF-8'}" title="{$title_label|escape:'htmlall':'UTF-8'}">
+      <a class="dropdown-header h6 text-decoration-none everblock-megamenu-title{$obfme_class}" href="{$title_url|escape:'htmlall':'UTF-8'}" title="{$title_label|escape:'htmlall':'UTF-8'}"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>
         {$title_label|escape:'htmlall':'UTF-8'}
       </a>
     {else}
-      <span class="dropdown-header h6">{$title_label|escape:'htmlall':'UTF-8'}</span>
+      <span class="dropdown-header h6 everblock-megamenu-title"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>{$title_label|escape:'htmlall':'UTF-8'}</span>
     {/if}
   {/if}
 {/if}

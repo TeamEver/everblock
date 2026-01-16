@@ -109,6 +109,48 @@ class EverblockPrettyBlocks
         return $fields;
     }
 
+    private static function getMegaMenuStyleFields(Module $module): array
+    {
+        return [
+            'text_color' => [
+                'tab' => 'design',
+                'type' => 'color',
+                'label' => $module->l('Text color'),
+                'default' => '',
+            ],
+            'text_color_winter' => [
+                'tab' => 'design',
+                'type' => 'color',
+                'label' => $module->l('Text color (winter)'),
+                'default' => '',
+            ],
+            'background_color' => [
+                'tab' => 'design',
+                'type' => 'color',
+                'label' => $module->l('Background color'),
+                'default' => '',
+            ],
+            'background_color_winter' => [
+                'tab' => 'design',
+                'type' => 'color',
+                'label' => $module->l('Background color (winter)'),
+                'default' => '',
+            ],
+            'hover_text_color' => [
+                'tab' => 'design',
+                'type' => 'color',
+                'label' => $module->l('Hover text color'),
+                'default' => '',
+            ],
+            'hover_background_color' => [
+                'tab' => 'design',
+                'type' => 'color',
+                'label' => $module->l('Hover background color'),
+                'default' => '',
+            ],
+        ];
+    }
+
     private static function getColumnChoices(Module $module): array
     {
         return [
@@ -495,7 +537,7 @@ class EverblockPrettyBlocks
                     'default' => $megamenuContainerTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => array_merge([
                         'menu_label' => [
                             'type' => 'text',
                             'label' => $module->l('Menu label'),
@@ -511,7 +553,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Active'),
                             'default' => true,
                         ],
-                    ],
+                    ], static::getMegaMenuStyleFields($module)),
                 ],
             ];
             $blocks[] = [
@@ -525,7 +567,7 @@ class EverblockPrettyBlocks
                     'default' => $megamenuItemTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => array_merge([
                         'parent_id' => [
                             'type' => 'select',
                             'label' => $module->l('Parent menu container'),
@@ -562,7 +604,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Active'),
                             'default' => true,
                         ],
-                    ],
+                    ], static::getMegaMenuStyleFields($module)),
                 ],
             ];
             $blocks[] = [
@@ -576,7 +618,7 @@ class EverblockPrettyBlocks
                     'default' => $megamenuColumnTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => array_merge([
                         'parent_id' => [
                             'type' => 'select',
                             'label' => $module->l('Parent menu item'),
@@ -624,7 +666,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Active'),
                             'default' => true,
                         ],
-                    ],
+                    ], static::getMegaMenuStyleFields($module)),
                 ],
             ];
             $blocks[] = [
@@ -638,7 +680,7 @@ class EverblockPrettyBlocks
                     'default' => $megamenuTitleTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => array_merge([
                         'parent_id' => [
                             'type' => 'select',
                             'label' => $module->l('Parent column'),
@@ -665,7 +707,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Active'),
                             'default' => true,
                         ],
-                    ],
+                    ], static::getMegaMenuStyleFields($module)),
                 ],
             ];
             $blocks[] = [
@@ -679,7 +721,7 @@ class EverblockPrettyBlocks
                     'default' => $megamenuItemLinkTemplate,
                 ],
                 'config' => [
-                    'fields' => [
+                    'fields' => array_merge([
                         'parent_id' => [
                             'type' => 'select',
                             'label' => $module->l('Parent column'),
@@ -716,7 +758,7 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Active'),
                             'default' => true,
                         ],
-                    ],
+                    ], static::getMegaMenuStyleFields($module)),
                 ],
             ];
             $blocks[] = [
