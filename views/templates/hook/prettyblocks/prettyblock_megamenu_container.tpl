@@ -26,7 +26,7 @@
     </button>
     <div class="collapse navbar-collapse" id="{$collapse_id}">
       <ul class="navbar-nav w-100">
-        {if $block.extra.items}
+        {if isset($block.extra.items) && $block.extra.items}
           {foreach from=$block.extra.items item=item}
             {include file='module:everblock/views/templates/hook/prettyblocks/prettyblock_megamenu_item.tpl' block=$item from_parent=true}
           {/foreach}
