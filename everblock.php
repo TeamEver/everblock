@@ -5939,6 +5939,12 @@ class Everblock extends Module
         $preparedItems = [];
         foreach ($items as $item) {
             $item['settings']['url'] = $this->normalizePrettyblocksLink($item['settings']['url'] ?? '');
+            $item['settings']['label'] = (string) $this->resolvePrettyblocksValue(
+                $item['settings']['label'] ?? ''
+            );
+            $item['settings']['fallback_label'] = (string) $this->resolvePrettyblocksValue(
+                $item['settings']['fallback_label'] ?? ''
+            );
             $item['extra']['columns'] = $this->buildMegaMenuColumns(
                 (int) ($item['id_prettyblocks'] ?? 0),
                 $idLang,
@@ -6046,6 +6052,9 @@ class Everblock extends Module
                 continue;
             }
             $title['settings']['url'] = $this->normalizePrettyblocksLink($title['settings']['url'] ?? '');
+            $title['settings']['label'] = (string) $this->resolvePrettyblocksValue(
+                $title['settings']['label'] ?? $title['settings']['title'] ?? ''
+            );
             $titlesByColumn[$parentId][] = $title;
         }
 
@@ -6059,6 +6068,7 @@ class Everblock extends Module
                 continue;
             }
             $link['settings']['url'] = $this->normalizePrettyblocksLink($link['settings']['url'] ?? '');
+            $link['settings']['label'] = (string) $this->resolvePrettyblocksValue($link['settings']['label'] ?? '');
             $linksByColumn[$parentId][] = $link;
         }
 
