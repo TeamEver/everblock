@@ -20,7 +20,7 @@
 
   {assign var='menu_label' value=$block.settings.label}
   {if is_array($menu_label)}
-    {if isset($menu_label[$language.id_lang])}
+    {if isset($language.id_lang) && isset($menu_label[$language.id_lang])}
       {assign var='menu_label' value=$menu_label[$language.id_lang]}
     {else}
       {assign var='menu_label' value=$menu_label|@reset}
@@ -56,7 +56,7 @@
             {foreach from=$block.extra.columns item=column name=mobile_columns}
               {assign var='column_title' value=$column.extra.title_label|default:$column.settings.title|default:$menu_label}
               {if is_array($column_title)}
-                {if isset($column_title[$language.id_lang])}
+                {if isset($language.id_lang) && isset($column_title[$language.id_lang])}
                   {assign var='column_title' value=$column_title[$language.id_lang]}
                 {else}
                   {assign var='column_title' value=$column_title|@reset}
