@@ -27,7 +27,11 @@
     {if $render_title}
       {assign var='column_title' value=$block.settings.title}
       {if is_array($column_title)}
-        {assign var='column_title' value=$column_title[$language.id_lang]|default:$column_title|@reset}
+        {if isset($column_title[$language.id_lang])}
+          {assign var='column_title' value=$column_title[$language.id_lang]}
+        {else}
+          {assign var='column_title' value=$column_title|@reset}
+        {/if}
       {/if}
       {if $block.extra.titles}
         {foreach from=$block.extra.titles item=title}

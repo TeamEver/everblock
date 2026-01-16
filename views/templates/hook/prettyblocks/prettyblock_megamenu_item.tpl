@@ -20,7 +20,11 @@
 
   {assign var='menu_label' value=$block.settings.label}
   {if is_array($menu_label)}
-    {assign var='menu_label' value=$menu_label[$language.id_lang]|default:$menu_label|@reset}
+    {if isset($menu_label[$language.id_lang])}
+      {assign var='menu_label' value=$menu_label[$language.id_lang]}
+    {else}
+      {assign var='menu_label' value=$menu_label|@reset}
+    {/if}
   {/if}
   {assign var='menu_label' value=$menu_label|default:$block.settings.fallback_label|default:'Menu'}
   {assign var='menu_url' value=$block.settings.url|default:''}
@@ -52,7 +56,11 @@
             {foreach from=$block.extra.columns item=column name=mobile_columns}
               {assign var='column_title' value=$column.extra.title_label|default:$column.settings.title|default:$menu_label}
               {if is_array($column_title)}
-                {assign var='column_title' value=$column_title[$language.id_lang]|default:$column_title|@reset}
+                {if isset($column_title[$language.id_lang])}
+                  {assign var='column_title' value=$column_title[$language.id_lang]}
+                {else}
+                  {assign var='column_title' value=$column_title|@reset}
+                {/if}
               {/if}
               <div class="accordion-item">
                 <h2 class="accordion-header" id="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">

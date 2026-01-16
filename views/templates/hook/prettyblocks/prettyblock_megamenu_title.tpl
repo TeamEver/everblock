@@ -18,7 +18,11 @@
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
   {assign var='title_label' value=$block.settings.label|default:$block.settings.title}
   {if is_array($title_label)}
-    {assign var='title_label' value=$title_label[$language.id_lang]|default:$title_label|@reset}
+    {if isset($title_label[$language.id_lang])}
+      {assign var='title_label' value=$title_label[$language.id_lang]}
+    {else}
+      {assign var='title_label' value=$title_label|@reset}
+    {/if}
   {/if}
   {assign var='title_label' value=$title_label|default:''}
   {assign var='title_url' value=$block.settings.url|default:''}
