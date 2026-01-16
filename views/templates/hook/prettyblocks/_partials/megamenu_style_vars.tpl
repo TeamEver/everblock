@@ -26,7 +26,8 @@
     {assign var='text_color' value=$text_color|@reset}
   {/if}
 {/if}
-{if $text_color}
+{assign var='text_color' value=$text_color|trim}
+{if $text_color && $text_color|lower != 'color'}
   {assign var='style_vars' value=$style_vars|cat:'--everblock-megamenu-text:'|cat:$text_color|cat:';'}
 {/if}
 
@@ -38,7 +39,8 @@
     {assign var='text_color_winter' value=$text_color_winter|@reset}
   {/if}
 {/if}
-{if $text_color_winter}
+{assign var='text_color_winter' value=$text_color_winter|trim}
+{if $text_color_winter && $text_color_winter|lower != 'color'}
   {assign var='style_vars' value=$style_vars|cat:'--everblock-megamenu-text-winter:'|cat:$text_color_winter|cat:';'}
 {/if}
 
@@ -50,7 +52,8 @@
     {assign var='background_color' value=$background_color|@reset}
   {/if}
 {/if}
-{if $background_color}
+{assign var='background_color' value=$background_color|trim}
+{if $background_color && $background_color|lower != 'color'}
   {assign var='style_vars' value=$style_vars|cat:'--everblock-megamenu-bg:'|cat:$background_color|cat:';'}
 {/if}
 
@@ -62,7 +65,8 @@
     {assign var='background_color_winter' value=$background_color_winter|@reset}
   {/if}
 {/if}
-{if $background_color_winter}
+{assign var='background_color_winter' value=$background_color_winter|trim}
+{if $background_color_winter && $background_color_winter|lower != 'color'}
   {assign var='style_vars' value=$style_vars|cat:'--everblock-megamenu-bg-winter:'|cat:$background_color_winter|cat:';'}
 {/if}
 
@@ -74,7 +78,8 @@
     {assign var='hover_text_color' value=$hover_text_color|@reset}
   {/if}
 {/if}
-{if $hover_text_color}
+{assign var='hover_text_color' value=$hover_text_color|trim}
+{if $hover_text_color && $hover_text_color|lower != 'color'}
   {assign var='style_vars' value=$style_vars|cat:'--everblock-megamenu-hover-text:'|cat:$hover_text_color|cat:';'}
 {/if}
 
@@ -86,7 +91,8 @@
     {assign var='hover_background_color' value=$hover_background_color|@reset}
   {/if}
 {/if}
-{if $hover_background_color}
+{assign var='hover_background_color' value=$hover_background_color|trim}
+{if $hover_background_color && $hover_background_color|lower != 'color'}
   {assign var='style_vars' value=$style_vars|cat:'--everblock-megamenu-hover-bg:'|cat:$hover_background_color|cat:';'}
 {/if}
 
