@@ -33,7 +33,7 @@
   {/if}
   <div class="col col-12 col-lg-{$column_width|escape:'htmlall':'UTF-8'}">
     {if $render_title}
-      {assign var='column_title' value=$block.settings.title}
+      {assign var='column_title' value=$block.settings.title.value}
       {if is_array($column_title)}
         {if isset($column_title[$language.id_lang])}
           {assign var='column_title' value=$column_title[$language.id_lang]}
