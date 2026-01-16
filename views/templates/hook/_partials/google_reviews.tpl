@@ -76,7 +76,7 @@
               <div class="carousel-item{if $smarty.foreach.reviewsLg.first} active{/if}">
                 <div class="row g-4">
                   {foreach from=$reviewGroup item=review}
-                    <div class="col-12 col-lg-4">
+                    <div class="col-12 col-lg-4 everblock-google-reviews__col">
                       <article class="card h-100 d-flex flex-column border-0 shadow-sm everblock-google-reviews__card">
                         <div class="card-body d-flex flex-column gap-3">
                           <header class="everblock-google-reviews__header d-flex align-items-center gap-3">
@@ -147,7 +147,7 @@
               <div class="carousel-item{if $smarty.foreach.reviewsMd.first} active{/if}">
                 <div class="row g-4">
                   {foreach from=$reviewGroup item=review}
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6 everblock-google-reviews__col">
                       <article class="card h-100 d-flex flex-column border-0 shadow-sm everblock-google-reviews__card">
                         <div class="card-body d-flex flex-column gap-3">
                           <header class="everblock-google-reviews__header d-flex align-items-center gap-3">
@@ -218,7 +218,7 @@
               <div class="carousel-item{if $smarty.foreach.reviewsSm.first} active{/if}">
                 <div class="row g-4">
                   {foreach from=$reviewGroup item=review}
-                    <div class="col-12">
+                    <div class="col-12 everblock-google-reviews__col">
                       <article class="card h-100 d-flex flex-column border-0 shadow-sm everblock-google-reviews__card">
                         <div class="card-body d-flex flex-column gap-3">
                           <header class="everblock-google-reviews__header d-flex align-items-center gap-3">
