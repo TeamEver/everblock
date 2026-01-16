@@ -6091,7 +6091,7 @@ class Everblock extends Module
                 $column['extra']['title_label'] = (string) ($firstTitle['settings']['label'] ?? $firstTitle['settings']['title'] ?? '');
                 $column['extra']['title_url'] = (string) ($firstTitle['settings']['url'] ?? '');
             } elseif (!empty($column['settings']['title'])) {
-                $column['extra']['title_label'] = (string) $column['settings']['title'];
+                $column['extra']['title_label'] = (string) $this->resolvePrettyblocksValue($column['settings']['title']);
                 $column['extra']['title_url'] = (string) ($column['settings']['title_url'] ?? '');
             }
         }
