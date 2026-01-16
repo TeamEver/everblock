@@ -18,6 +18,14 @@
 
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
   {assign var='column_width' value=$block.settings.width|default:3}
+  {if is_array($column_width)}
+    {if isset($column_width[$language.id_lang])}
+      {assign var='column_width' value=$column_width[$language.id_lang]}
+    {else}
+      {assign var='column_width' value=$column_width|@reset}
+    {/if}
+  {/if}
+  {assign var='column_width' value=$column_width|default:3|intval}
   {assign var='render_title' value=$render_title|default:true}
   {assign var='obfme_class' value=''}
   {if $page.page_name|default:'' != 'index'}
