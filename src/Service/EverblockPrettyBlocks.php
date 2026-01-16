@@ -692,6 +692,14 @@ class EverblockPrettyBlocks
                             'default' => '',
                             'label' => $module->l('Block background color'),
                         ],
+                        'background_image' => [
+                            'tab' => 'design',
+                            'type' => 'fileupload',
+                            'label' => $module->l('Block background image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
                         'text_color' => [
                             'tab' => 'design',
                             'type' => 'color',
