@@ -137,9 +137,9 @@ class EverblockPrettyBlocks
         }
 
         return $choices;
-    }
+    } 
 
-    private static function getPrettyblocksChoicesByCode(
+   private static function getPrettyblocksChoicesByCode(
         Context $context,
         Module $module,
         string $code,
@@ -149,11 +149,12 @@ class EverblockPrettyBlocks
             '' => $module->l('Select an item'),
         ];
 
-        $query = 'SELECT id_prettyblocks, state'
-            . ' FROM ' . _DB_PREFIX_ . 'prettyblocks'
-            . ' WHERE code = "' . pSQL($code) . '"'
-            . ' AND id_lang = ' . (int) $context->language->id
-            . ' AND id_shop = ' . (int) $context->shop->id;
+        $query = '
+            SELECT id_prettyblocks, code, config, default_params, state
+            FROM ' . _DB_PREFIX_ . 'prettyblocks
+            WHERE code = "' . pSQL($code) . '"
+            AND id_lang = ' . (int) $context->language->id . '
+            AND id_shop = ' . (int) $context->shop->id;
 
         $rows = Db::getInstance()->executeS($query);
         if (!is_array($rows)) {
@@ -161,20 +162,46 @@ class EverblockPrettyBlocks
         }
 
         foreach ($rows as $row) {
-            $id = (int) ($row['id_prettyblocks'] ?? 0);
-            $state = json_decode((string) ($row['state'] ?? ''), true);
+            $id = (int) $row['id_prettyblocks'];
             $label = '';
-            if (is_array($state)) {
-                $label = self::resolvePrettyblockLabel($state, $labelField);
+
+            // 1️⃣ config[label][value] ← cas Prettyblocks avec force_default_value
+            $config = json_decode((string) $row['config'], true);
+            if (
+                is_array($config)
+                && isset($config[$labelField]['value'])
+                && is_string($config[$labelField]['value'])
+            ) {
+                $label = trim($config[$labelField]['value']);
             }
+
+            // 2️⃣ default_params[label]
             if ($label === '') {
-                $label = $module->l('Item') . ' #' . $id;
+                $defaultParams = json_decode((string) $row['default_params'], true);
+                if (is_array($defaultParams) && isset($defaultParams[$labelField])) {
+                    $label = trim((string) $defaultParams[$labelField]);
+                }
             }
+
+            // 3️⃣ state[label]
+            if ($label === '') {
+                $state = json_decode((string) $row['state'], true);
+                if (is_array($state) && isset($state[$labelField])) {
+                    $label = trim((string) $state[$labelField]);
+                }
+            }
+
+            // 4️⃣ fallback final
+            if ($label === '') {
+                $label = $row['code'] . ' #' . $id;
+            }
+
             $choices[$id] = $id . ' - ' . $label;
         }
 
         return $choices;
     }
+
 
     private static function resolvePrettyblockLabel(array $data, string $labelField): string
     {
