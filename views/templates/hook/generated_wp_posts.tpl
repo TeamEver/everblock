@@ -6,64 +6,58 @@
 
   {assign var='carouselId' value='everblock-wp-posts-carousel-'|cat:mt_rand(1000,999999)}
   <div class="everblock-wp-posts container">
-    <div id="{$carouselId}" class="carousel slide d-md-none" data-ride="carousel" data-bs-ride="carousel" data-bs-touch="true">
-      <div class="carousel-inner">
-        {foreach from=$everblock_wp_posts item=post name=wp_posts}
-          <div class="carousel-item{if $smarty.foreach.wp_posts.first} active{/if}">
-            <div class="card blog-card flex-fill border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-              {if $post.featured_image}
-                <div class="blog-image-wrapper overflow-hidden">
+    <div id="{$carouselId}"
+         class="ever-cover-carousel ever-bootstrap-carousel d-md-none"
+         data-items="1"
+         data-layout="cover"
+         data-controls="true"
+         data-indicators="true"
+         data-infinite="1">
+      {foreach from=$everblock_wp_posts item=post}
+        <div class="everblock-wp-posts__slide">
+          <div class="card blog-card flex-fill border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+            {if $post.featured_image}
+              <div class="blog-image-wrapper overflow-hidden">
+                <a href="{$post.link|escape:'htmlall':'UTF-8'}"
+                   target="_blank"
+                   rel="noopener"
+                   title="{$post.title|escape:'htmlall':'UTF-8'}">
+                  <img src="{$post.featured_image|escape:'htmlall':'UTF-8'}"
+                       width="{$post.featured_image_width|intval}"
+                       height="{$post.featured_image_height|intval}"
+                       loading="lazy"
+                       alt="{$post.title|escape:'htmlall':'UTF-8'}"
+                       class="card-img-top img-fluid" />
+                </a>
+              </div>
+            {/if}
+
+            <div class="card-body d-flex flex-column justify-content-between text-start p-3">
+              <div>
+                <div class="h5 fw-bold fs-6 mb-2 text-dark blog-title position-relative">
                   <a href="{$post.link|escape:'htmlall':'UTF-8'}"
                      target="_blank"
                      rel="noopener"
-                     title="{$post.title|escape:'htmlall':'UTF-8'}">
-                    <img src="{$post.featured_image|escape:'htmlall':'UTF-8'}"
-                         width="{$post.featured_image_width|intval}"
-                         height="{$post.featured_image_height|intval}"
-                         loading="lazy"
-                         alt="{$post.title|escape:'htmlall':'UTF-8'}"
-                         class="card-img-top img-fluid" />
+                     title="{$post.title|escape:'htmlall':'UTF-8'}"
+                     class="text-dark text-decoration-none">
+                    {$post.title|escape:'htmlall':'UTF-8'}
                   </a>
                 </div>
-              {/if}
-
-              <div class="card-body d-flex flex-column justify-content-between text-start p-3">
-                <div>
-                  <div class="h5 fw-bold fs-6 mb-2 text-dark blog-title position-relative">
-                    <a href="{$post.link|escape:'htmlall':'UTF-8'}"
-                       target="_blank"
-                       rel="noopener"
-                       title="{$post.title|escape:'htmlall':'UTF-8'}"
-                       class="text-dark text-decoration-none">
-                      {$post.title|escape:'htmlall':'UTF-8'}
-                    </a>
-                  </div>
-                  <div class="card-divider mb-2"></div>
-                  <p class="card-text text-muted small mb-0 line-clamp-5">
-                    <a href="{$post.link|escape:'htmlall':'UTF-8'}"
-                       target="_blank"
-                       rel="noopener"
-                       title="{$post.title|escape:'htmlall':'UTF-8'}"
-                       class="text-muted text-decoration-none">
-                      {$post.excerpt|strip_tags|truncate:100:'…'|escape:'htmlall':'UTF-8'}
-                    </a>
-                  </p>
-                </div>
+                <div class="card-divider mb-2"></div>
+                <p class="card-text text-muted small mb-0 line-clamp-5">
+                  <a href="{$post.link|escape:'htmlall':'UTF-8'}"
+                     target="_blank"
+                     rel="noopener"
+                     title="{$post.title|escape:'htmlall':'UTF-8'}"
+                     class="text-muted text-decoration-none">
+                    {$post.excerpt|strip_tags|truncate:100:'…'|escape:'htmlall':'UTF-8'}
+                  </a>
+                </p>
               </div>
             </div>
           </div>
-        {/foreach}
-      </div>
-      {if $everblock_wp_posts|@count > 1}
-        <button class="carousel-control-prev" type="button" data-target="#{$carouselId}" data-slide="prev" data-bs-target="#{$carouselId}" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="sr-only">{l s='Previous' mod='everblock'}</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-target="#{$carouselId}" data-slide="next" data-bs-target="#{$carouselId}" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="sr-only">{l s='Next' mod='everblock'}</span>
-        </button>
-      {/if}
+        </div>
+      {/foreach}
     </div>
 
     <div class="row justify-content-center align-items-stretch d-none d-md-flex">
