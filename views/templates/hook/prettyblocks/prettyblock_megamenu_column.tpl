@@ -25,17 +25,21 @@
   {/if}
   <div class="col col-12 col-lg-{$column_width|escape:'htmlall':'UTF-8'}">
     {if $render_title}
+      {assign var='column_title' value=$block.settings.title}
+      {if is_array($column_title)}
+        {assign var='column_title' value=$column_title[$language.id_lang]|default:$column_title|@reset}
+      {/if}
       {if $block.extra.titles}
         {foreach from=$block.extra.titles item=title}
           {include file='module:everblock/views/templates/hook/prettyblocks/prettyblock_megamenu_title.tpl' block=$title from_parent=true}
         {/foreach}
-      {elseif $block.settings.title}
+      {elseif $column_title}
         {if $block.settings.title_url}
           <a class="dropdown-header h6 text-decoration-none{$obfme_class}" href="{$block.settings.title_url|escape:'htmlall':'UTF-8'}">
-            {$block.settings.title|escape:'htmlall':'UTF-8'}
+            {$column_title|escape:'htmlall':'UTF-8'}
           </a>
         {else}
-          <span class="dropdown-header h6">{$block.settings.title|escape:'htmlall':'UTF-8'}</span>
+          <span class="dropdown-header h6">{$column_title|escape:'htmlall':'UTF-8'}</span>
         {/if}
       {/if}
     {/if}

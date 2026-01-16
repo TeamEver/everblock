@@ -16,7 +16,11 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
-  {assign var='title_label' value=$block.settings.label|default:$block.settings.title|default:''}
+  {assign var='title_label' value=$block.settings.label|default:$block.settings.title}
+  {if is_array($title_label)}
+    {assign var='title_label' value=$title_label[$language.id_lang]|default:$title_label|@reset}
+  {/if}
+  {assign var='title_label' value=$title_label|default:''}
   {assign var='title_url' value=$block.settings.url|default:''}
   {assign var='obfme_class' value=''}
   {if $page.page_name|default:'' != 'index'}

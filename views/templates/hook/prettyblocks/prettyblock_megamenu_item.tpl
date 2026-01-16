@@ -18,7 +18,11 @@
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
   {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 
-  {assign var='menu_label' value=$block.settings.label|default:$block.settings.fallback_label|default:'Menu'}
+  {assign var='menu_label' value=$block.settings.label}
+  {if is_array($menu_label)}
+    {assign var='menu_label' value=$menu_label[$language.id_lang]|default:$menu_label|@reset}
+  {/if}
+  {assign var='menu_label' value=$menu_label|default:$block.settings.fallback_label|default:'Menu'}
   {assign var='menu_url' value=$block.settings.url|default:''}
   {assign var='menu_toggle_id' value="everblock-megamenu-toggle-`$block.id_prettyblocks`"}
   {assign var='has_dropdown' value=($block.settings.is_mega && ($block.extra.columns|@count))}
@@ -47,6 +51,9 @@
           <div class="d-lg-none accordion" id="everblock-megamenu-accordion-{$block.id_prettyblocks}">
             {foreach from=$block.extra.columns item=column name=mobile_columns}
               {assign var='column_title' value=$column.extra.title_label|default:$column.settings.title|default:$menu_label}
+              {if is_array($column_title)}
+                {assign var='column_title' value=$column_title[$language.id_lang]|default:$column_title|@reset}
+              {/if}
               <div class="accordion-item">
                 <h2 class="accordion-header" id="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
                   <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}" aria-expanded="false" aria-controls="everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
