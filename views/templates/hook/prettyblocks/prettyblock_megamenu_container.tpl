@@ -145,6 +145,11 @@
       gap: 0.5rem;
     }
 
+    .everblock-megamenu .dropdown-megamenu-links--inline .dropdown-item {
+      display: inline-flex;
+      width: auto;
+    }
+
     .everblock-megamenu .dropdown-megamenu-links--grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));

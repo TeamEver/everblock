@@ -27,6 +27,13 @@
     {/if}
   {/if}
   {assign var='column_width' value=$column_width|default:3|intval}
+  {if $column_width <= 0}
+    {assign var='column_width' value=12}
+  {/if}
+  {assign var='allowed_widths' value=[12, 6, 4, 3]}
+  {if !in_array($column_width, $allowed_widths)}
+    {assign var='column_width' value=12}
+  {/if}
   {assign var='render_title' value=$render_title|default:true}
   {assign var='link_layout' value=$block.settings.link_layout|default:'stacked'}
   {if is_array($link_layout)}
