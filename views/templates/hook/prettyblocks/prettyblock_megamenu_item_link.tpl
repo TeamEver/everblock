@@ -25,7 +25,7 @@
     {/if}
   {/if}
   {assign var='link_label' value=$link_label|default:''}
-  {assign var='link_icon' value=$block.settings.icon|default:''}
+  {assign var='link_icon' value=$block.settings.icon.value|default:''}
   {if is_array($link_icon)}
     {if isset($link_icon[$language.id_lang])}
       {assign var='link_icon' value=$link_icon[$language.id_lang]}
