@@ -5959,33 +5959,51 @@ class Everblock extends Module
 
     private function normalizePrettyblocksRelationId($value): int
     {
-        if (is_array($value)) {
-            if (isset($value['id'])) {
-                return (int) $value['id'];
-            }
-            if (isset($value['value'])) {
-                return (int) $value['value'];
-            }
-        }
+        $resolved = $this->resolvePrettyblocksValue($value);
 
-        return (int) $value;
+        return (int) $resolved;
     }
 
     private function normalizePrettyblocksLink($value): string
     {
-        if (is_array($value)) {
-            if (isset($value['url'])) {
-                return (string) $value['url'];
-            }
-            if (isset($value['link'])) {
-                return (string) $value['link'];
-            }
-            if (isset($value['href'])) {
-                return (string) $value['href'];
-            }
+        $resolved = $this->resolvePrettyblocksValue($value);
+
+        return (string) $resolved;
+    }
+
+    private function resolvePrettyblocksValue($value)
+    {
+        if (!is_array($value)) {
+            return $value;
         }
 
-        return (string) $value;
+        if (array_key_exists('id', $value)) {
+            return $value['id'];
+        }
+        if (array_key_exists('value', $value)) {
+            return $value['value'];
+        }
+        if (array_key_exists('url', $value)) {
+            return $value['url'];
+        }
+        if (array_key_exists('link', $value)) {
+            return $value['link'];
+        }
+        if (array_key_exists('href', $value)) {
+            return $value['href'];
+        }
+
+        $langId = isset($this->context->language) ? (int) $this->context->language->id : 0;
+        if ($langId > 0 && array_key_exists($langId, $value)) {
+            return $this->resolvePrettyblocksValue($value[$langId]);
+        }
+
+        $first = reset($value);
+        if ($first !== false) {
+            return $this->resolvePrettyblocksValue($first);
+        }
+
+        return null;
     }
 
     private function sortPrettyblocksByOrder(array $items): array
