@@ -494,7 +494,7 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
                 $forms .= '<form method="post" action="' . $action . '" id="prettyblocks-hook-change-form">';
                 $forms .= '<div class="form-group">';
                 $forms .= '<label class="control-label">' . $this->l('New hook') . '</label>';
-                $forms .= '<select name="prettyblocks_hook_target" class="form-control">';
+                $forms .= '<select name="prettyblocks_hook_target" class="form-control chosen">';
                 foreach ($hookOptions as $option) {
                     $forms .= sprintf(
                         '<option value="%s">%s</option>',
@@ -548,6 +548,10 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
         $options = [];
         foreach ($hooks as $hook) {
             if (empty($hook['name'])) {
+                continue;
+            }
+
+            if (strpos($hook['name'], 'display') !== 0) {
                 continue;
             }
 
