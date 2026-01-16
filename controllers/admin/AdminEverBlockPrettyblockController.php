@@ -358,6 +358,10 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             $this->processDuplicateLang();
         }
 
+        if (Tools::isSubmit('submitBulkchangeHook' . $this->table)) {
+            $this->processBulkHookChange();
+        }
+
         if (Tools::getValue('clearcache')) {
             Tools::clearAllCache();
             Tools::redirectAdmin(self::$currentIndex . '&cachecleared=1&token=' . $this->token);
@@ -482,7 +486,141 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             }
         }
 
+        if ($this->hookField) {
+            $hookOptions = $this->getAvailableHookOptions();
+            if (count($hookOptions) > 0) {
+                $forms .= '<div class="panel">';
+                $forms .= '<h3><i class="icon-random"></i> ' . $this->l('Change hook for selected PrettyBlocks') . '</h3>';
+                $forms .= '<form method="post" action="' . $action . '" id="prettyblocks-hook-change-form">';
+                $forms .= '<div class="form-group">';
+                $forms .= '<label class="control-label">' . $this->l('New hook') . '</label>';
+                $forms .= '<select name="prettyblocks_hook_target" class="form-control">';
+                foreach ($hookOptions as $option) {
+                    $forms .= sprintf(
+                        '<option value="%s">%s</option>',
+                        Tools::safeOutput((string) $option['value']),
+                        Tools::safeOutput((string) $option['label'])
+                    );
+                }
+                $forms .= '</select>';
+                $forms .= '</div>';
+                $forms .= '<p class="help-block">' . $this->l('Select one or more PrettyBlocks above and choose the target hook.') . '</p>';
+                $forms .= '<button type="submit" name="submitBulkchangeHook' . $this->table . '" class="btn btn-default">'
+                    . $this->l('Change hook') . '</button>';
+                $forms .= '</form>';
+                $forms .= '</div>';
+                $forms .= '<script type="text/javascript">
+                    (function () {
+                        var form = document.getElementById("prettyblocks-hook-change-form");
+                        if (!form) {
+                            return;
+                        }
+                        form.addEventListener("submit", function (event) {
+                            var existing = form.querySelectorAll("input[name=\"' . $this->table . 'Box[]\"]");
+                            for (var i = 0; i < existing.length; i++) {
+                                existing[i].parentNode.removeChild(existing[i]);
+                            }
+                            var checked = document.querySelectorAll("input[name=\"' . $this->table . 'Box[]\"]:checked");
+                            if (!checked.length) {
+                                alert("' . $this->l('Please select at least one PrettyBlocks entry first.') . '");
+                                event.preventDefault();
+                                return;
+                            }
+                            checked.forEach(function (input) {
+                                var hidden = document.createElement("input");
+                                hidden.type = "hidden";
+                                hidden.name = "' . $this->table . 'Box[]";
+                                hidden.value = input.value;
+                                form.appendChild(hidden);
+                            });
+                        });
+                    })();
+                </script>';
+            }
+        }
+
         return $forms;
+    }
+
+    private function getAvailableHookOptions(): array
+    {
+        $hooks = Hook::getHooks(false);
+        $options = [];
+        foreach ($hooks as $hook) {
+            if (empty($hook['name'])) {
+                continue;
+            }
+
+            $value = $hook['name'];
+            if ($this->hasColumn('id_hook') && isset($hook['id_hook'])) {
+                $value = (int) $hook['id_hook'];
+            }
+
+            $options[] = [
+                'value' => $value,
+                'label' => $hook['name'],
+            ];
+        }
+
+        return $options;
+    }
+
+    private function processBulkHookChange(): void
+    {
+        $selected = Tools::getValue($this->table . 'Box');
+        if (!is_array($selected) || count($selected) === 0) {
+            $this->errors[] = $this->l('Please select at least one PrettyBlocks entry.');
+            return;
+        }
+
+        $hookValue = Tools::getValue('prettyblocks_hook_target');
+        if ($this->hasColumn('id_hook')) {
+            if (!Validate::isUnsignedId($hookValue)) {
+                $this->errors[] = $this->l('Invalid hook selection.');
+                return;
+            }
+            $hookName = Hook::getNameById((int) $hookValue);
+            if (!$hookName) {
+                $this->errors[] = $this->l('Invalid hook selection.');
+                return;
+            }
+            $update = ['id_hook' => (int) $hookValue];
+        } elseif ($this->hasColumn('hook')) {
+            if (!Validate::isHookName($hookValue)) {
+                $this->errors[] = $this->l('Invalid hook selection.');
+                return;
+            }
+            $update = ['hook' => pSQL($hookValue)];
+        } elseif ($this->hasColumn('zone_name')) {
+            if (!Validate::isHookName($hookValue)) {
+                $this->errors[] = $this->l('Invalid hook selection.');
+                return;
+            }
+            $update = ['zone_name' => pSQL($hookValue)];
+        } else {
+            $this->errors[] = $this->l('Hook update is not available.');
+            return;
+        }
+
+        $ids = array_map('intval', $selected);
+        $ids = array_filter($ids, function ($id) {
+            return $id > 0;
+        });
+        if (!$ids) {
+            $this->errors[] = $this->l('Invalid selection.');
+            return;
+        }
+
+        $where = '`' . pSQL($this->identifier) . '` IN (' . implode(',', $ids) . ')';
+        if (!Db::getInstance()->update($this->table, $update, $where)) {
+            $this->errors[] = $this->l('An error occurred while updating hooks.');
+            return;
+        }
+
+        $this->confirmations[] = sprintf(
+            $this->l('%d PrettyBlocks updated with the selected hook.'),
+            count($ids)
+        );
     }
 
     private function processDuplicateShop(): void
