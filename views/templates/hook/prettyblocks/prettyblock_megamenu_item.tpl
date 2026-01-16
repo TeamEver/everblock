@@ -30,9 +30,13 @@
   {assign var='menu_url' value=$block.settings.url|default:''}
   {assign var='menu_toggle_id' value="everblock-megamenu-toggle-`$block.id_prettyblocks`"}
   {assign var='has_dropdown' value=($block.settings.is_mega && ($block.extra.columns|@count))}
+  {assign var='obfme_class' value=''}
+  {if $page.page_name|default:'' != 'index'}
+    {assign var='obfme_class' value=' obfme'}
+  {/if}
   <li id="block-{$block.id_prettyblocks}" class="nav-item{if $has_dropdown} dropdown{/if}{$prettyblock_visibility_class} everblock-megamenu-item">
     {if $menu_url}
-      <a class="nav-link{if $has_dropdown} dropdown-toggle{/if}" href="{$menu_url|escape:'htmlall':'UTF-8'}"{if $has_dropdown} id="{$menu_toggle_id}" role="button" data-bs-toggle="dropdown" aria-expanded="false"{/if}>
+      <a class="nav-link{if $has_dropdown} dropdown-toggle{/if}{$obfme_class}" href="{$menu_url|escape:'htmlall':'UTF-8'}" title="{$menu_label|escape:'htmlall':'UTF-8'}"{if $has_dropdown} id="{$menu_toggle_id}" role="button" data-bs-toggle="dropdown" aria-expanded="false"{/if}>
         {$menu_label|escape:'htmlall':'UTF-8'}
       </a>
     {else}
@@ -68,7 +72,7 @@
                     {$column_title|escape:'htmlall':'UTF-8'}
                   </button>
                 </h2>
-                <div id="everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}" class="accordion-collapse collapse" aria-labelledby="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}" data-bs-parent="#everblock-megamenu-accordion-{$block.id_prettyblocks}">
+                <div id="everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}" class="accordion-collapse collapse" aria-labelledby="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
                   <div class="accordion-body">
                     <div class="row g-3">
                       {include file='module:everblock/views/templates/hook/prettyblocks/prettyblock_megamenu_column.tpl' block=$column from_parent=true render_title=false}

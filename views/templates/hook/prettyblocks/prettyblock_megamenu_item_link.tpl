@@ -35,12 +35,13 @@
   {/if}
   {assign var='link_icon' value=$link_icon|default:''}
   {assign var='link_url' value=$block.settings.url|default:''}
+  {assign var='link_title' value=$link_label|default:$link_url|default:'Link'}
   {assign var='obfme_class' value=''}
   {if $page.page_name|default:'' != 'index'}
     {assign var='obfme_class' value=' obfme'}
   {/if}
   {if $link_label && $link_url}
-    <a class="dropdown-item d-flex align-items-center gap-2{$obfme_class}{if $block.settings.highlight} fw-semibold{/if}" href="{$link_url|escape:'htmlall':'UTF-8'}">
+    <a class="dropdown-item d-flex align-items-center gap-2{$obfme_class}{if $block.settings.highlight} fw-semibold{/if}" href="{$link_url|escape:'htmlall':'UTF-8'}" title="{$link_title|escape:'htmlall':'UTF-8'}">
       {if $link_icon}<span class="everblock-megamenu-icon">{$link_icon|escape:'htmlall':'UTF-8'}</span>{/if}
       <span>{$link_label|escape:'htmlall':'UTF-8'}</span>
     </a>

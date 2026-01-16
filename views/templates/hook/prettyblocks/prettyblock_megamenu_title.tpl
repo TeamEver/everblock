@@ -32,7 +32,7 @@
   {/if}
   {if $title_label}
     {if $title_url}
-      <a class="dropdown-header h6 text-decoration-none{$obfme_class}" href="{$title_url|escape:'htmlall':'UTF-8'}">
+      <a class="dropdown-header h6 text-decoration-none{$obfme_class}" href="{$title_url|escape:'htmlall':'UTF-8'}" title="{$title_label|escape:'htmlall':'UTF-8'}">
         {$title_label|escape:'htmlall':'UTF-8'}
       </a>
     {else}

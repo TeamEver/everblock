@@ -29,11 +29,15 @@
   {/if}
   {assign var='menu_label' value=$menu_label|default:'Menu'}
   {assign var='fallback_label' value=$block.settings.fallback_label|default:$menu_label}
+  {assign var='obfme_class' value=''}
+  {if $page.page_name|default:'' != 'index'}
+    {assign var='obfme_class' value=' obfme'}
+  {/if}
   <nav class="navbar navbar-expand-lg navbar-light everblock-megamenu{$prettyblock_visibility_class}" aria-label="{$menu_label|escape:'htmlall':'UTF-8'}">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#{$collapse_id}" aria-controls="{$collapse_id}" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="{$collapse_id}">
+    <div class="collapse navbar-collapse everblock-megamenu-collapse w-100" id="{$collapse_id}">
       <ul class="navbar-nav w-100">
         {if isset($block.extra.items) && $block.extra.items}
           {foreach from=$block.extra.items item=item}
@@ -41,7 +45,7 @@
           {/foreach}
         {else}
           <li class="nav-item">
-            <a class="nav-link" href="#">{$fallback_label|escape:'htmlall':'UTF-8'}</a>
+            <a class="nav-link{$obfme_class}" href="#" title="{$fallback_label|escape:'htmlall':'UTF-8'}">{$fallback_label|escape:'htmlall':'UTF-8'}</a>
           </li>
         {/if}
       </ul>
@@ -71,5 +75,31 @@
     .everblock-megamenu .everblock-megamenu-icon {
       font-size: 0.9em;
       line-height: 1;
+    }
+
+    .everblock-megamenu .dropdown-megamenu-links--stacked {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .everblock-megamenu .dropdown-megamenu-links--inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .everblock-megamenu .dropdown-megamenu-links--grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 991.98px) {
+      .everblock-megamenu .everblock-megamenu-collapse {
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+      }
     }
   </style>
