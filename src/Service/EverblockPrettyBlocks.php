@@ -31,6 +31,7 @@ use Group;
 use Hook;
 use Module;
 use PrettyBlocksModel;
+use PrestaShopLogger;
 use Tools;
 
 if (!defined('_PS_VERSION_')) {
@@ -139,7 +140,7 @@ class EverblockPrettyBlocks
         return $choices;
     } 
 
-   private static function getPrettyblocksChoicesByCode(
+    private static function getPrettyblocksChoicesByCode(
         Context $context,
         Module $module,
         string $code,
@@ -149,54 +150,61 @@ class EverblockPrettyBlocks
             '' => $module->l('Select an item'),
         ];
 
-        $query = '
-            SELECT id_prettyblocks, code, config, default_params, state
-            FROM ' . _DB_PREFIX_ . 'prettyblocks
-            WHERE code = "' . pSQL($code) . '"
-            AND id_lang = ' . (int) $context->language->id . '
-            AND id_shop = ' . (int) $context->shop->id;
+        try {
+            $query = '
+                SELECT id_prettyblocks, code, config, default_params, state
+                FROM ' . _DB_PREFIX_ . 'prettyblocks
+                WHERE code = "' . pSQL($code) . '"
+                AND id_lang = ' . (int) $context->language->id . '
+                AND id_shop = ' . (int) $context->shop->id;
 
-        $rows = Db::getInstance()->executeS($query);
-        if (!is_array($rows)) {
-            return $choices;
-        }
-
-        foreach ($rows as $row) {
-            $id = (int) $row['id_prettyblocks'];
-            $label = '';
-
-            // 1️⃣ config[label][value] ← cas Prettyblocks avec force_default_value
-            $config = json_decode((string) $row['config'], true);
-            if (
-                is_array($config)
-                && isset($config[$labelField]['value'])
-                && is_string($config[$labelField]['value'])
-            ) {
-                $label = trim($config[$labelField]['value']);
+            $rows = Db::getInstance()->executeS($query);
+            if (!is_array($rows)) {
+                return $choices;
             }
 
-            // 2️⃣ default_params[label]
-            if ($label === '') {
-                $defaultParams = json_decode((string) $row['default_params'], true);
-                if (is_array($defaultParams) && isset($defaultParams[$labelField])) {
-                    $label = trim((string) $defaultParams[$labelField]);
+            foreach ($rows as $row) {
+                $id = (int) $row['id_prettyblocks'];
+                $label = '';
+
+                // 1️⃣ config[label][value] ← cas Prettyblocks avec force_default_value
+                $config = json_decode((string) $row['config'], true);
+                if (
+                    is_array($config)
+                    && isset($config[$labelField]['value'])
+                    && is_string($config[$labelField]['value'])
+                ) {
+                    $label = trim($config[$labelField]['value']);
                 }
-            }
 
-            // 3️⃣ state[label]
-            if ($label === '') {
-                $state = json_decode((string) $row['state'], true);
-                if (is_array($state) && isset($state[$labelField])) {
-                    $label = trim((string) $state[$labelField]);
+                // 2️⃣ default_params[label]
+                if ($label === '') {
+                    $defaultParams = json_decode((string) $row['default_params'], true);
+                    if (is_array($defaultParams) && isset($defaultParams[$labelField])) {
+                        $label = trim((string) $defaultParams[$labelField]);
+                    }
                 }
-            }
 
-            // 4️⃣ fallback final
-            if ($label === '') {
-                $label = $row['code'] . ' #' . $id;
-            }
+                // 3️⃣ state[label]
+                if ($label === '') {
+                    $state = json_decode((string) $row['state'], true);
+                    if (is_array($state) && isset($state[$labelField])) {
+                        $label = trim((string) $state[$labelField]);
+                    }
+                }
 
-            $choices[$id] = $id . ' - ' . $label;
+                // 4️⃣ fallback final
+                if ($label === '') {
+                    $label = $row['code'] . ' #' . $id;
+                }
+
+                $choices[$id] = $id . ' - ' . $label;
+            }
+        } catch (\Throwable $e) {
+            PrestaShopLogger::addLog(
+                sprintf('Prettyblocks choices lookup failed for code "%s": %s', $code, $e->getMessage()),
+                3
+            );
         }
 
         return $choices;
