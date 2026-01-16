@@ -35,8 +35,8 @@
     {assign var='obfme_class' value=' obfme'}
   {/if}
   <nav class="navbar navbar-expand-lg navbar-light everblock-megamenu{if $everblock_winter_mode} everblock-megamenu--winter{/if}{$prettyblock_visibility_class}" aria-label="{$menu_label|escape:'htmlall':'UTF-8'}"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#{$collapse_id}" aria-controls="{$collapse_id}" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+    <button class="navbar-toggler everblock-megamenu-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#{$collapse_id}" aria-controls="{$collapse_id}" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="everblock-megamenu-toggler-icon" aria-hidden="true"></span>
     </button>
     <div class="collapse navbar-collapse everblock-megamenu-collapse w-100" id="{$collapse_id}">
       <ul class="navbar-nav w-100">
