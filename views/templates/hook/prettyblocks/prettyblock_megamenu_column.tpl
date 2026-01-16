@@ -16,9 +16,14 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 
+{if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
   {assign var='column_width' value=$block.settings.width|default:3}
   {assign var='render_title' value=$render_title|default:true}
-  <div class="col-12 col-lg-{$column_width|escape:'htmlall':'UTF-8'}">
+  {assign var='obfme_class' value=''}
+  {if $page.page_name|default:'' != 'index'}
+    {assign var='obfme_class' value=' obfme'}
+  {/if}
+  <div class="col col-12 col-lg-{$column_width|escape:'htmlall':'UTF-8'}">
     {if $render_title}
       {if $block.extra.titles}
         {foreach from=$block.extra.titles item=title}
@@ -26,21 +31,21 @@
         {/foreach}
       {elseif $block.settings.title}
         {if $block.settings.title_url}
-          <a class="h6 d-block mb-2 text-decoration-none" href="{$block.settings.title_url|escape:'htmlall':'UTF-8'}">
+          <a class="dropdown-header h6 text-decoration-none{$obfme_class}" href="{$block.settings.title_url|escape:'htmlall':'UTF-8'}">
             {$block.settings.title|escape:'htmlall':'UTF-8'}
           </a>
         {else}
-          <span class="h6 d-block mb-2">{$block.settings.title|escape:'htmlall':'UTF-8'}</span>
+          <span class="dropdown-header h6">{$block.settings.title|escape:'htmlall':'UTF-8'}</span>
         {/if}
       {/if}
     {/if}
 
     {if $block.extra.links}
-      <ul class="list-unstyled mb-3">
+      <div class="dropdown-megamenu-links mb-3">
         {foreach from=$block.extra.links item=item}
           {include file='module:everblock/views/templates/hook/prettyblocks/prettyblock_megamenu_item_link.tpl' block=$item from_parent=true}
         {/foreach}
-      </ul>
+      </div>
     {/if}
 
     {if $block.extra.images}
@@ -49,3 +54,4 @@
       {/foreach}
     {/if}
   </div>
+{/if}

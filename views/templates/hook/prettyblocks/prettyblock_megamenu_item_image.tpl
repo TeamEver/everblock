@@ -16,9 +16,13 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
+  {assign var='obfme_class' value=''}
+  {if $page.page_name|default:'' != 'index'}
+    {assign var='obfme_class' value=' obfme'}
+  {/if}
   {if isset($block.settings.image.url) && $block.settings.image.url}
     <div class="everblock-megamenu-image mb-3">
-      <a href="{$block.settings.url|escape:'htmlall':'UTF-8'}" class="text-decoration-none d-block">
+      <a href="{$block.settings.url|escape:'htmlall':'UTF-8'}" class="text-decoration-none d-block{$obfme_class}">
         <img src="{$block.settings.image.url|escape:'htmlall':'UTF-8'}" alt="{$block.settings.title|escape:'htmlall':'UTF-8'}" class="img-fluid rounded">
         {if $block.settings.title}
           <div class="mt-2 fw-semibold">{$block.settings.title|escape:'htmlall':'UTF-8'}</div>

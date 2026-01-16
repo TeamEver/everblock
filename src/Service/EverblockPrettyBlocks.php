@@ -56,6 +56,8 @@ class EverblockPrettyBlocks
         'beforeRenderingEverblockCategoryProducts',
         'beforeRenderingMegaMenuItem',
         'beforeRenderingMegaMenuContainer',
+        'beforeRenderingMegamenuItem',
+        'beforeRenderingMegamenuContainer',
     ];
 
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
