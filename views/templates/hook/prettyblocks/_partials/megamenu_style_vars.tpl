@@ -15,6 +15,7 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
+{strip}
 {assign var='style_vars' value=''}
 
 {assign var='text_color' value=$block.settings.text_color|default:''}
@@ -89,4 +90,5 @@
   {assign var='style_vars' value=$style_vars|cat:'--everblock-megamenu-hover-bg:'|cat:$hover_background_color|cat:';'}
 {/if}
 
-{$style_vars}
+{$style_vars|trim}
+{/strip}

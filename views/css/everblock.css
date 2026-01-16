@@ -40,6 +40,126 @@
 [data-obflink] {
     cursor: pointer;
 }
+
+/* Mega menu */
+.everblock-megamenu,
+.everblock-megamenu-item,
+.everblock-megamenu-column,
+.everblock-megamenu-title,
+.everblock-megamenu-link {
+    --everblock-megamenu-text-active: var(--everblock-megamenu-text);
+    --everblock-megamenu-bg-active: var(--everblock-megamenu-bg);
+}
+
+.theme-winter .everblock-megamenu,
+.theme-winter .everblock-megamenu-item,
+.theme-winter .everblock-megamenu-column,
+.theme-winter .everblock-megamenu-title,
+.theme-winter .everblock-megamenu-link,
+.everblock-megamenu--winter,
+.everblock-megamenu--winter .everblock-megamenu-item,
+.everblock-megamenu--winter .everblock-megamenu-column,
+.everblock-megamenu--winter .everblock-megamenu-title,
+.everblock-megamenu--winter .everblock-megamenu-link {
+    --everblock-megamenu-text-active: var(--everblock-megamenu-text-winter, var(--everblock-megamenu-text));
+    --everblock-megamenu-bg-active: var(--everblock-megamenu-bg-winter, var(--everblock-megamenu-bg));
+}
+
+.everblock-megamenu {
+    --everblock-megamenu-zindex: 1030;
+    --everblock-megamenu-dropdown-zindex: calc(var(--everblock-megamenu-zindex) + 10);
+    position: relative;
+    z-index: var(--everblock-megamenu-zindex);
+    color: var(--everblock-megamenu-text-active);
+    background-color: var(--everblock-megamenu-bg-active);
+}
+
+.everblock-megamenu-dropdown,
+.everblock-megamenu-column {
+    color: var(--everblock-megamenu-text-active);
+    background-color: var(--everblock-megamenu-bg-active);
+}
+
+.everblock-megamenu .dropdown-menu {
+    position: absolute;
+    z-index: var(--everblock-megamenu-dropdown-zindex);
+}
+
+.everblock-megamenu-item > .everblock-megamenu-item-link,
+.everblock-megamenu-item > .everblock-megamenu-item-link.btn,
+.everblock-megamenu-title,
+.everblock-megamenu-link,
+.everblock-megamenu .accordion-button {
+    color: var(--everblock-megamenu-text-active);
+    background-color: var(--everblock-megamenu-bg-active);
+}
+
+.everblock-megamenu-item > .everblock-megamenu-item-link:hover,
+.everblock-megamenu-item > .everblock-megamenu-item-link:focus,
+.everblock-megamenu-title:hover,
+.everblock-megamenu-title:focus,
+.everblock-megamenu-link:hover,
+.everblock-megamenu-link:focus,
+.everblock-megamenu .accordion-button:hover,
+.everblock-megamenu .accordion-button:focus {
+    color: var(--everblock-megamenu-hover-text, var(--everblock-megamenu-text-active));
+    background-color: var(--everblock-megamenu-hover-bg, var(--everblock-megamenu-bg-active));
+}
+
+@media (min-width: 992px) {
+    .everblock-megamenu .dropdown:hover > .dropdown-menu,
+    .everblock-megamenu .dropdown:focus-within > .dropdown-menu {
+        display: block;
+    }
+
+    .everblock-megamenu .dropdown-menu {
+        margin-top: 0;
+    }
+}
+
+.everblock-megamenu .nav-link.btn {
+    padding: 0;
+}
+
+.everblock-megamenu .everblock-megamenu-dropdown {
+    padding: 1.5rem 0;
+}
+
+.everblock-megamenu .everblock-megamenu-icon {
+    font-size: 0.9em;
+    line-height: 1;
+}
+
+.everblock-megamenu .dropdown-megamenu-links--stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.everblock-megamenu .dropdown-megamenu-links--inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.everblock-megamenu .dropdown-megamenu-links--inline .dropdown-item {
+    display: inline-flex;
+    width: auto;
+}
+
+.everblock-megamenu .dropdown-megamenu-links--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.5rem;
+}
+
+@media (max-width: 991.98px) {
+    .everblock-megamenu .everblock-megamenu-collapse {
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+    }
+}
 /* Lookbook product markers */
 
 .lookbook-marker {
