@@ -16,6 +16,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
+  {include file='module:everblock/views/templates/hook/prettyblocks/_partials/megamenu_style_vars.tpl' block=$block assign='megamenu_style_vars'}
   {assign var='link_label' value=$block.settings.label}
   {if is_array($link_label)}
     {if isset($link_label[$language.id_lang])}
@@ -41,7 +42,7 @@
     {assign var='obfme_class' value=' obfme'}
   {/if}
   {if $link_label && $link_url}
-    <a class="dropdown-item d-flex align-items-center gap-2{$obfme_class}{if $block.settings.highlight} fw-semibold{/if}" href="{$link_url|escape:'htmlall':'UTF-8'}" title="{$link_title|escape:'htmlall':'UTF-8'}">
+    <a class="dropdown-item d-flex align-items-center gap-2 everblock-megamenu-link{$obfme_class}{if $block.settings.highlight} fw-semibold{/if}" href="{$link_url|escape:'htmlall':'UTF-8'}" title="{$link_title|escape:'htmlall':'UTF-8'}"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>
       {if $link_icon}<span class="everblock-megamenu-icon">{$link_icon|escape:'htmlall':'UTF-8'}</span>{/if}
       <span>{$link_label|escape:'htmlall':'UTF-8'}</span>
     </a>

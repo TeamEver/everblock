@@ -16,6 +16,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
+{include file='module:everblock/views/templates/hook/prettyblocks/_partials/megamenu_style_vars.tpl' block=$block assign='megamenu_style_vars'}
 
 
   {assign var='collapse_id' value="everblock-megamenu-collapse-`$block.id_prettyblocks`"}
@@ -33,7 +34,7 @@
   {if $page.page_name|default:'' != 'index'}
     {assign var='obfme_class' value=' obfme'}
   {/if}
-  <nav class="navbar navbar-expand-lg navbar-light everblock-megamenu{$prettyblock_visibility_class}" aria-label="{$menu_label|escape:'htmlall':'UTF-8'}">
+  <nav class="navbar navbar-expand-lg navbar-light everblock-megamenu{if $everblock_winter_mode} everblock-megamenu--winter{/if}{$prettyblock_visibility_class}" aria-label="{$menu_label|escape:'htmlall':'UTF-8'}"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#{$collapse_id}" aria-controls="{$collapse_id}" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -53,6 +54,61 @@
   </nav>
 
   <style>
+    .everblock-megamenu,
+    .everblock-megamenu-item,
+    .everblock-megamenu-column,
+    .everblock-megamenu-title,
+    .everblock-megamenu-link {
+      --everblock-megamenu-text-active: var(--everblock-megamenu-text);
+      --everblock-megamenu-bg-active: var(--everblock-megamenu-bg);
+    }
+
+    .theme-winter .everblock-megamenu,
+    .theme-winter .everblock-megamenu-item,
+    .theme-winter .everblock-megamenu-column,
+    .theme-winter .everblock-megamenu-title,
+    .theme-winter .everblock-megamenu-link,
+    .everblock-megamenu--winter,
+    .everblock-megamenu--winter .everblock-megamenu-item,
+    .everblock-megamenu--winter .everblock-megamenu-column,
+    .everblock-megamenu--winter .everblock-megamenu-title,
+    .everblock-megamenu--winter .everblock-megamenu-link {
+      --everblock-megamenu-text-active: var(--everblock-megamenu-text-winter, var(--everblock-megamenu-text));
+      --everblock-megamenu-bg-active: var(--everblock-megamenu-bg-winter, var(--everblock-megamenu-bg));
+    }
+
+    .everblock-megamenu {
+      color: var(--everblock-megamenu-text-active);
+      background-color: var(--everblock-megamenu-bg-active);
+    }
+
+    .everblock-megamenu-dropdown,
+    .everblock-megamenu-column {
+      color: var(--everblock-megamenu-text-active);
+      background-color: var(--everblock-megamenu-bg-active);
+    }
+
+    .everblock-megamenu-item > .everblock-megamenu-item-link,
+    .everblock-megamenu-item > .everblock-megamenu-item-link.btn,
+    .everblock-megamenu-title,
+    .everblock-megamenu-link,
+    .everblock-megamenu .accordion-button {
+      color: var(--everblock-megamenu-text-active);
+      background-color: var(--everblock-megamenu-bg-active);
+    }
+
+    .everblock-megamenu-item > .everblock-megamenu-item-link:hover,
+    .everblock-megamenu-item > .everblock-megamenu-item-link:focus,
+    .everblock-megamenu-title:hover,
+    .everblock-megamenu-title:focus,
+    .everblock-megamenu-link:hover,
+    .everblock-megamenu-link:focus,
+    .everblock-megamenu .accordion-button:hover,
+    .everblock-megamenu .accordion-button:focus {
+      color: var(--everblock-megamenu-hover-text, var(--everblock-megamenu-text-active));
+      background-color: var(--everblock-megamenu-hover-bg, var(--everblock-megamenu-bg-active));
+    }
+
     @media (min-width: 992px) {
       .everblock-megamenu .dropdown:hover > .dropdown-menu,
       .everblock-megamenu .dropdown:focus-within > .dropdown-menu {
