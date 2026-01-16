@@ -652,6 +652,13 @@ class Everblock extends Module
                 $hook->description = 'This hook triggers before mega menu item block is rendered';
                 $hook->save();
             }
+            if (!Hook::getIdByName('beforeRenderingMegaMenuContainer')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingMegaMenuContainer';
+                $hook->title = 'Before rendering mega menu container block';
+                $hook->description = 'This hook triggers before mega menu container block is rendered';
+                $hook->save();
+            }
             $this->registerHook('beforeRenderingEverblockProductHighlight');
             $this->registerHook('beforeRenderingEverblockCategoryTabs');
             $this->registerHook('beforeRenderingEverblockCategoryPrice');
@@ -661,6 +668,7 @@ class Everblock extends Module
             $this->registerHook('beforeRenderingEverblockSpecialEvent');
             $this->registerHook('beforeRenderingEverblockEverblock');
             $this->registerHook('beforeRenderingMegaMenuItem');
+            $this->registerHook('beforeRenderingMegaMenuContainer');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
             $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
@@ -671,6 +679,7 @@ class Everblock extends Module
             $this->unregisterHook('beforeRenderingEverblockSpecialEvent');
             $this->unregisterHook('beforeRenderingEverblockEverblock');
             $this->unregisterHook('beforeRenderingMegaMenuItem');
+            $this->unregisterHook('beforeRenderingMegaMenuContainer');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
@@ -5884,48 +5893,45 @@ class Everblock extends Module
         $idLang = (int) $this->context->language->id;
         $idShop = (int) $this->context->shop->id;
 
-        $columns = $this->getPrettyblocksByCode('megamenu_column', $idLang, $idShop);
-        $links = $this->getPrettyblocksByCode('megamenu_item_link', $idLang, $idShop);
-        $images = $this->getPrettyblocksByCode('megamenu_item_image', $idLang, $idShop);
+        return [
+            'columns' => $this->buildMegaMenuColumns($menuId, $idLang, $idShop),
+        ];
+    }
 
-        $columns = array_filter($columns, function (array $column) use ($menuId): bool {
-            $parentId = $this->normalizePrettyblocksRelationId($column['settings']['parent_menu'] ?? null);
-            return $parentId === $menuId;
+    public function hookBeforeRenderingMegaMenuContainer($params)
+    {
+        $containerId = (int) ($params['block']['id_prettyblocks'] ?? 0);
+        if ($containerId <= 0) {
+            return ['items' => []];
+        }
+
+        $idLang = (int) $this->context->language->id;
+        $idShop = (int) $this->context->shop->id;
+
+        $items = $this->getPrettyblocksByCode('megamenu_item', $idLang, $idShop);
+        $items = array_filter($items, function (array $item) use ($containerId): bool {
+            if (!$this->isPrettyblocksActive($item)) {
+                return false;
+            }
+            $parentId = $this->resolvePrettyblocksParentId($item, ['parent_id', 'parent_container']);
+
+            return $parentId === $containerId;
         });
 
-        $linksByColumn = [];
-        foreach ($links as $link) {
-            $parentId = $this->normalizePrettyblocksRelationId($link['settings']['parent_column'] ?? null);
-            if ($parentId <= 0) {
-                continue;
-            }
-            $link['settings']['url'] = $this->normalizePrettyblocksLink($link['settings']['url'] ?? '');
-            $linksByColumn[$parentId][] = $link;
-        }
-
-        $imagesByColumn = [];
-        foreach ($images as $image) {
-            $parentId = $this->normalizePrettyblocksRelationId($image['settings']['parent_column'] ?? null);
-            if ($parentId <= 0) {
-                continue;
-            }
-            $image['settings']['url'] = $this->normalizePrettyblocksLink($image['settings']['url'] ?? '');
-            $imagesByColumn[$parentId][] = $image;
-        }
-
-        foreach ($columns as &$column) {
-            $columnId = (int) $column['id_prettyblocks'];
-            $column['settings']['title_url'] = $this->normalizePrettyblocksLink(
-                $column['settings']['title_url'] ?? ''
+        $preparedItems = [];
+        foreach ($items as $item) {
+            $item['settings']['url'] = $this->normalizePrettyblocksLink($item['settings']['url'] ?? '');
+            $item['extra']['columns'] = $this->buildMegaMenuColumns(
+                (int) ($item['id_prettyblocks'] ?? 0),
+                $idLang,
+                $idShop
             );
-            $column['links'] = $this->sortPrettyblocksByOrder($linksByColumn[$columnId] ?? []);
-            $column['images'] = $this->sortPrettyblocksByOrder($imagesByColumn[$columnId] ?? []);
+            $preparedItems[] = $item;
         }
-        unset($column);
 
-        $columns = $this->sortPrettyblocksByOrder(array_values($columns));
-
-        return ['columns' => $columns];
+        return [
+            'items' => $this->sortPrettyblocksByOrder($preparedItems),
+        ];
     }
 
     private function getPrettyblocksByCode(string $code, int $idLang, int $idShop): array
@@ -5971,6 +5977,111 @@ class Everblock extends Module
         return (string) $resolved;
     }
 
+    private function resolvePrettyblocksParentId(array $block, array $keys): int
+    {
+        $settings = $block['settings'] ?? [];
+        foreach ($keys as $key) {
+            if (isset($settings[$key])) {
+                return $this->normalizePrettyblocksRelationId($settings[$key]);
+            }
+        }
+
+        return 0;
+    }
+
+    private function isPrettyblocksActive(array $block): bool
+    {
+        if (!isset($block['settings']) || !is_array($block['settings'])) {
+            return true;
+        }
+
+        return !array_key_exists('active', $block['settings']) || (bool) $block['settings']['active'];
+    }
+
+    private function buildMegaMenuColumns(int $menuId, int $idLang, int $idShop): array
+    {
+        if ($menuId <= 0) {
+            return [];
+        }
+
+        $columns = $this->getPrettyblocksByCode('megamenu_column', $idLang, $idShop);
+        $titles = $this->getPrettyblocksByCode('megamenu_title', $idLang, $idShop);
+        $links = $this->getPrettyblocksByCode('megamenu_item_link', $idLang, $idShop);
+        $images = $this->getPrettyblocksByCode('megamenu_item_image', $idLang, $idShop);
+
+        $columns = array_filter($columns, function (array $column) use ($menuId): bool {
+            if (!$this->isPrettyblocksActive($column)) {
+                return false;
+            }
+            $parentId = $this->resolvePrettyblocksParentId($column, ['parent_id', 'parent_menu']);
+
+            return $parentId === $menuId;
+        });
+
+        $titlesByColumn = [];
+        foreach ($titles as $title) {
+            if (!$this->isPrettyblocksActive($title)) {
+                continue;
+            }
+            $parentId = $this->resolvePrettyblocksParentId($title, ['parent_id', 'parent_column']);
+            if ($parentId <= 0) {
+                continue;
+            }
+            $title['settings']['url'] = $this->normalizePrettyblocksLink($title['settings']['url'] ?? '');
+            $titlesByColumn[$parentId][] = $title;
+        }
+
+        $linksByColumn = [];
+        foreach ($links as $link) {
+            if (!$this->isPrettyblocksActive($link)) {
+                continue;
+            }
+            $parentId = $this->resolvePrettyblocksParentId($link, ['parent_id', 'parent_column']);
+            if ($parentId <= 0) {
+                continue;
+            }
+            $link['settings']['url'] = $this->normalizePrettyblocksLink($link['settings']['url'] ?? '');
+            $linksByColumn[$parentId][] = $link;
+        }
+
+        $imagesByColumn = [];
+        foreach ($images as $image) {
+            if (!$this->isPrettyblocksActive($image)) {
+                continue;
+            }
+            $parentId = $this->resolvePrettyblocksParentId($image, ['parent_id', 'parent_column']);
+            if ($parentId <= 0) {
+                continue;
+            }
+            $image['settings']['url'] = $this->normalizePrettyblocksLink($image['settings']['url'] ?? '');
+            $imagesByColumn[$parentId][] = $image;
+        }
+
+        foreach ($columns as &$column) {
+            $columnId = (int) $column['id_prettyblocks'];
+            $column['settings']['title_url'] = $this->normalizePrettyblocksLink(
+                $column['settings']['title_url'] ?? ''
+            );
+            $column['extra']['titles'] = $this->sortPrettyblocksByOrder($titlesByColumn[$columnId] ?? []);
+            $column['extra']['links'] = $this->sortPrettyblocksByOrder($linksByColumn[$columnId] ?? []);
+            $column['extra']['images'] = $this->sortPrettyblocksByOrder($imagesByColumn[$columnId] ?? []);
+            $column['extra']['title_label'] = '';
+            $column['extra']['title_url'] = '';
+
+            if (!empty($column['extra']['titles'])) {
+                $firstTitle = reset($column['extra']['titles']);
+                $column['extra']['title_label'] = (string) ($firstTitle['settings']['label'] ?? $firstTitle['settings']['title'] ?? '');
+                $column['extra']['title_url'] = (string) ($firstTitle['settings']['url'] ?? '');
+            } elseif (!empty($column['settings']['title'])) {
+                $column['extra']['title_label'] = (string) $column['settings']['title'];
+                $column['extra']['title_url'] = (string) ($column['settings']['title_url'] ?? '');
+            }
+        }
+        unset($column);
+
+        return $this->sortPrettyblocksByOrder(array_values($columns));
+    }
+
     private function resolvePrettyblocksValue($value)
     {
         if (!is_array($value)) {
@@ -6009,8 +6120,12 @@ class Everblock extends Module
     private function sortPrettyblocksByOrder(array $items): array
     {
         usort($items, function (array $left, array $right): int {
-            $leftOrder = isset($left['settings']['order']) ? (int) $left['settings']['order'] : 0;
-            $rightOrder = isset($right['settings']['order']) ? (int) $right['settings']['order'] : 0;
+            $leftOrder = isset($left['settings']['order'])
+                ? (int) $left['settings']['order']
+                : (isset($left['settings']['position']) ? (int) $left['settings']['position'] : 0);
+            $rightOrder = isset($right['settings']['order'])
+                ? (int) $right['settings']['order']
+                : (isset($right['settings']['position']) ? (int) $right['settings']['position'] : 0);
 
             if ($leftOrder === $rightOrder) {
                 return ($left['position'] ?? 0) <=> ($right['position'] ?? 0);

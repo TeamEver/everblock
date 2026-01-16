@@ -16,14 +16,15 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
 {if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
-  {assign var='link_label' value=$block.settings.label|default:''}
-  {assign var='link_url' value=$block.settings.url|default:''}
-  {if $link_label && $link_url}
-    <li class="mb-1{if $block.settings.highlight} fw-semibold{/if}">
-      <a class="text-decoration-none d-inline-flex align-items-center gap-2" href="{$link_url|escape:'htmlall':'UTF-8'}">
-        {if $block.settings.icon}<span class="everblock-megamenu-icon">{$block.settings.icon|escape:'htmlall':'UTF-8'}</span>{/if}
-        <span>{$link_label|escape:'htmlall':'UTF-8'}</span>
+  {assign var='title_label' value=$block.settings.label|default:$block.settings.title|default:''}
+  {assign var='title_url' value=$block.settings.url|default:''}
+  {if $title_label}
+    {if $title_url}
+      <a class="h6 d-block mb-2 text-decoration-none" href="{$title_url|escape:'htmlall':'UTF-8'}">
+        {$title_label|escape:'htmlall':'UTF-8'}
       </a>
-    </li>
+    {else}
+      <span class="h6 d-block mb-2">{$title_label|escape:'htmlall':'UTF-8'}</span>
+    {/if}
   {/if}
 {/if}

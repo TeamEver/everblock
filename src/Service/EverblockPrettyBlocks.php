@@ -55,6 +55,7 @@ class EverblockPrettyBlocks
         'beforeRenderingEverblockLookbook',
         'beforeRenderingEverblockCategoryProducts',
         'beforeRenderingMegaMenuItem',
+        'beforeRenderingMegaMenuContainer',
     ];
 
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
@@ -300,8 +301,10 @@ class EverblockPrettyBlocks
             $pagesGuideTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pages_guide.tpl';
             $guidesSelectionTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guides_selection.tpl';
             $latestGuidesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_latest_guides.tpl';
+            $megamenuContainerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_container.tpl';
             $megamenuItemTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_item.tpl';
             $megamenuColumnTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_column.tpl';
+            $megamenuTitleTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_title.tpl';
             $megamenuItemLinkTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_item_link.tpl';
             $megamenuItemImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_item_image.tpl';
             $slotMachineDefaultStartDate = date('Y-m-d 00:00:00');
@@ -361,6 +364,12 @@ class EverblockPrettyBlocks
                 $module,
                 'megamenu_item',
                 'label'
+            );
+            $megamenuContainerChoices = self::getPrettyblocksChoicesByCode(
+                $context,
+                $module,
+                'megamenu_container',
+                'menu_label'
             );
             $megamenuColumnChoices = self::getPrettyblocksChoicesByCode(
                 $context,
@@ -476,6 +485,36 @@ class EverblockPrettyBlocks
                 ],
             ];
             $blocks[] = [
+                'name' => $module->l('Mega menu container'),
+                'description' => $module->l('Root mega menu block (navigation container)'),
+                'code' => 'megamenu_container',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $megamenuContainerTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'menu_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Menu label'),
+                            'default' => $module->l('Menu'),
+                        ],
+                        'fallback_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Fallback item label'),
+                            'default' => $module->l('Menu'),
+                        ],
+                        'active' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Active'),
+                            'default' => true,
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
                 'name' => $module->l('Mega menu item'),
                 'description' => $module->l('Top-level mega menu entry'),
                 'code' => 'megamenu_item',
@@ -487,6 +526,12 @@ class EverblockPrettyBlocks
                 ],
                 'config' => [
                     'fields' => [
+                        'parent_id' => [
+                            'type' => 'select',
+                            'label' => $module->l('Parent menu container'),
+                            'choices' => $megamenuContainerChoices,
+                            'default' => '',
+                        ],
                         'label' => [
                             'type' => 'text',
                             'label' => $module->l('Label'),
@@ -507,9 +552,9 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Full width dropdown'),
                             'default' => false,
                         ],
-                        'position' => [
+                        'order' => [
                             'type' => 'text',
-                            'label' => $module->l('Position'),
+                            'label' => $module->l('Order'),
                             'default' => '0',
                         ],
                         'active' => [
@@ -532,9 +577,9 @@ class EverblockPrettyBlocks
                 ],
                 'config' => [
                     'fields' => [
-                        'parent_menu' => [
+                        'parent_id' => [
                             'type' => 'select',
-                            'label' => $module->l('Parent menu'),
+                            'label' => $module->l('Parent menu item'),
                             'choices' => $megamenuParentChoices,
                             'default' => '',
                         ],
@@ -564,6 +609,52 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Order'),
                             'default' => '0',
                         ],
+                        'active' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Active'),
+                            'default' => true,
+                        ],
+                    ],
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Mega menu title'),
+                'description' => $module->l('Title inside a mega menu column'),
+                'code' => 'megamenu_title',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $megamenuTitleTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        'parent_id' => [
+                            'type' => 'select',
+                            'label' => $module->l('Parent column'),
+                            'choices' => $megamenuColumnChoices,
+                            'default' => '',
+                        ],
+                        'label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title label'),
+                            'default' => '',
+                        ],
+                        'url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title link (optional)'),
+                            'default' => '',
+                        ],
+                        'order' => [
+                            'type' => 'text',
+                            'label' => $module->l('Order'),
+                            'default' => '0',
+                        ],
+                        'active' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Active'),
+                            'default' => true,
+                        ],
                     ],
                 ],
             ];
@@ -579,7 +670,7 @@ class EverblockPrettyBlocks
                 ],
                 'config' => [
                     'fields' => [
-                        'parent_column' => [
+                        'parent_id' => [
                             'type' => 'select',
                             'label' => $module->l('Parent column'),
                             'choices' => $megamenuColumnChoices,
@@ -610,6 +701,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Order'),
                             'default' => '0',
                         ],
+                        'active' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Active'),
+                            'default' => true,
+                        ],
                     ],
                 ],
             ];
@@ -625,7 +721,7 @@ class EverblockPrettyBlocks
                 ],
                 'config' => [
                     'fields' => [
-                        'parent_column' => [
+                        'parent_id' => [
                             'type' => 'select',
                             'label' => $module->l('Parent column'),
                             'choices' => $megamenuColumnChoices,
@@ -657,6 +753,11 @@ class EverblockPrettyBlocks
                             'type' => 'text',
                             'label' => $module->l('Order'),
                             'default' => '0',
+                        ],
+                        'active' => [
+                            'type' => 'switch',
+                            'label' => $module->l('Active'),
+                            'default' => true,
                         ],
                     ],
                 ],
