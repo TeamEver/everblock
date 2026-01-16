@@ -17,7 +17,7 @@
 *}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 
-{if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
+
   {assign var='menu_label' value=$block.settings.label|default:$block.settings.fallback_label|default:'Menu'}
   {assign var='menu_url' value=$block.settings.url|default:''}
   {assign var='menu_toggle_id' value="everblock-megamenu-toggle-`$block.id_prettyblocks`"}
@@ -67,4 +67,3 @@
       </div>
     {/if}
   </li>
-{/if}

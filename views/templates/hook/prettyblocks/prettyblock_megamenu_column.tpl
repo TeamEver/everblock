@@ -15,7 +15,7 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-{if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
+
   {assign var='column_width' value=$block.settings.width|default:3}
   {assign var='render_title' value=$render_title|default:true}
   <div class="col-12 col-lg-{$column_width|escape:'htmlall':'UTF-8'}">
@@ -49,4 +49,3 @@
       {/foreach}
     {/if}
   </div>
-{/if}

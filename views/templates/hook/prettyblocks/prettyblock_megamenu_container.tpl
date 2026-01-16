@@ -17,7 +17,7 @@
 *}
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 
-{if !isset($block.settings.active) || $block.settings.active}
+
   {assign var='collapse_id' value="everblock-megamenu-collapse-`$block.id_prettyblocks`"}
   {assign var='fallback_label' value=$block.settings.fallback_label|default:$block.settings.menu_label|default:'Menu'}
   <nav class="navbar navbar-expand-lg navbar-light everblock-megamenu{$prettyblock_visibility_class}" aria-label="{$block.settings.menu_label|default:'Menu'|escape:'htmlall':'UTF-8'}">
@@ -64,4 +64,3 @@
       line-height: 1;
     }
   </style>
-{/if}

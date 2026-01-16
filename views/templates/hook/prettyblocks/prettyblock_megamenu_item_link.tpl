@@ -15,7 +15,6 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *}
-{if isset($from_parent) && $from_parent && (!isset($block.settings.active) || $block.settings.active)}
   {assign var='link_label' value=$block.settings.label|default:''}
   {assign var='link_url' value=$block.settings.url|default:''}
   {if $link_label && $link_url}
@@ -26,4 +25,3 @@
       </a>
     </li>
   {/if}
-{/if}
