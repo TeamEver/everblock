@@ -19,8 +19,13 @@
 
 
   {assign var='collapse_id' value="everblock-megamenu-collapse-`$block.id_prettyblocks`"}
-  {assign var='fallback_label' value=$block.settings.fallback_label|default:$block.settings.menu_label|default:'Menu'}
-  <nav class="navbar navbar-expand-lg navbar-light everblock-megamenu{$prettyblock_visibility_class}" aria-label="{$block.settings.menu_label|default:'Menu'|escape:'htmlall':'UTF-8'}">
+  {assign var='menu_label' value=$block.settings.menu_label}
+  {if is_array($menu_label)}
+    {assign var='menu_label' value=$menu_label[$language.id_lang]|default:$menu_label|@reset}
+  {/if}
+  {assign var='menu_label' value=$menu_label|default:'Menu'}
+  {assign var='fallback_label' value=$block.settings.fallback_label|default:$menu_label}
+  <nav class="navbar navbar-expand-lg navbar-light everblock-megamenu{$prettyblock_visibility_class}" aria-label="{$menu_label|escape:'htmlall':'UTF-8'}">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#{$collapse_id}" aria-controls="{$collapse_id}" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
