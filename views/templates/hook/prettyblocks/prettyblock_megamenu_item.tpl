@@ -36,15 +36,22 @@
     {assign var='obfme_class' value=' obfme'}
   {/if}
   <li id="block-{$block.id_prettyblocks}" class="nav-item{if $has_dropdown} dropdown{/if}{$prettyblock_visibility_class} everblock-megamenu-item"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>
-    {if $menu_url}
-      <a class="nav-link everblock-megamenu-item-link{if $has_dropdown} dropdown-toggle{/if}{$obfme_class}" href="{$menu_url|escape:'htmlall':'UTF-8'}" title="{$menu_label|escape:'htmlall':'UTF-8'}"{if $has_dropdown} id="{$menu_toggle_id}" role="button" data-bs-toggle="dropdown" aria-expanded="false"{/if}>
-        {$menu_label|escape:'htmlall':'UTF-8'}
-      </a>
-    {else}
-      <button class="nav-link btn btn-link everblock-megamenu-item-link{if $has_dropdown} dropdown-toggle{/if}" type="button"{if $has_dropdown} id="{$menu_toggle_id}" data-bs-toggle="dropdown" aria-expanded="false"{/if}>
-        {$menu_label|escape:'htmlall':'UTF-8'}
-      </button>
-    {/if}
+    <div class="everblock-megamenu-item-header d-flex d-lg-block align-items-center justify-content-between">
+      {if $menu_url}
+        <a class="nav-link everblock-megamenu-item-link{$obfme_class}" href="{$menu_url|escape:'htmlall':'UTF-8'}" title="{$menu_label|escape:'htmlall':'UTF-8'}">
+          {$menu_label|escape:'htmlall':'UTF-8'}
+        </a>
+      {else}
+        <span class="nav-link everblock-megamenu-item-link" aria-label="{$menu_label|escape:'htmlall':'UTF-8'}">
+          {$menu_label|escape:'htmlall':'UTF-8'}
+        </span>
+      {/if}
+      {if $has_dropdown}
+        <button class="btn everblock-megamenu-toggle dropdown-toggle d-lg-none" type="button" id="{$menu_toggle_id}" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{$menu_label|escape:'htmlall':'UTF-8'}">
+          <span class="everblock-megamenu-toggle-icon" aria-hidden="true"></span>
+        </button>
+      {/if}
+    </div>
 
     {if $has_dropdown}
       <div class="dropdown-menu everblock-megamenu-dropdown{if $block.settings.full_width} w-100{/if}" aria-labelledby="{$menu_toggle_id}" data-bs-popper="static">
@@ -57,9 +64,9 @@
             </div>
           </div>
 
-          <div class="d-lg-none accordion" id="everblock-megamenu-accordion-{$block.id_prettyblocks}">
+          <div class="d-lg-none everblock-megamenu-mobile">
             {foreach from=$block.extra.columns item=column name=mobile_columns}
-              {assign var='column_title' value=$column.extra.title_label|default:$column.settings.title|default:$menu_label}
+              {assign var='column_title' value=$column.extra.title_label|default:$column.settings.title|default:''}
               {if is_array($column_title)}
                 {if isset($language.id_lang) && isset($column_title[$language.id_lang])}
                   {assign var='column_title' value=$column_title[$language.id_lang]}
@@ -67,19 +74,31 @@
                   {assign var='column_title' value=$column_title|@reset}
                 {/if}
               {/if}
-              <div class="accordion-item">
-                <div class="accordion-header h2" id="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}" aria-expanded="false" aria-controls="everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
-                    {$column_title|escape:'htmlall':'UTF-8'}
-                  </button>
-                </div>
-                <div id="everblock-megamenu-collapse-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}" class="accordion-collapse collapse" aria-labelledby="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
-                  <div class="accordion-body">
+              {assign var='column_title' value=$column_title|default:''}
+              {assign var='has_column_title' value=($column_title|trim != '')}
+              {assign var='column_collapse_id' value="everblock-megamenu-collapse-`$block.id_prettyblocks`-`$smarty.foreach.mobile_columns.iteration`"}
+              <div class="everblock-megamenu-mobile-column{if $has_column_title} is-collapsible{/if}">
+                {if $has_column_title}
+                  <div class="everblock-megamenu-mobile-header" id="everblock-megamenu-heading-{$block.id_prettyblocks}-{$smarty.foreach.mobile_columns.iteration}">
+                    <button class="everblock-megamenu-mobile-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{$column_collapse_id}" aria-expanded="false" aria-controls="{$column_collapse_id}">
+                      <span class="everblock-megamenu-mobile-title">{$column_title|escape:'htmlall':'UTF-8'}</span>
+                      <span class="everblock-megamenu-mobile-icon" aria-hidden="true"></span>
+                    </button>
+                  </div>
+                  <div id="{$column_collapse_id}" class="collapse">
+                    <div class="everblock-megamenu-mobile-body">
+                      <div class="row g-3">
+                        {include file='module:everblock/views/templates/hook/prettyblocks/prettyblock_megamenu_column.tpl' block=$column from_parent=true render_title=false}
+                      </div>
+                    </div>
+                  </div>
+                {else}
+                  <div class="everblock-megamenu-mobile-body">
                     <div class="row g-3">
                       {include file='module:everblock/views/templates/hook/prettyblocks/prettyblock_megamenu_column.tpl' block=$column from_parent=true render_title=false}
                     </div>
                   </div>
-                </div>
+                {/if}
               </div>
             {/foreach}
           </div>

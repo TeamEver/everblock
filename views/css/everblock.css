@@ -96,6 +96,29 @@
     min-width: 100%;
 }
 
+.everblock-megamenu .navbar-toggler.everblock-megamenu-toggler {
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    background-color: transparent;
+    z-index: calc(var(--everblock-megamenu-zindex) + 20);
+}
+
+.everblock-megamenu-toggler-icon {
+    width: 1.5rem;
+    height: 1.2rem;
+    display: block;
+    background:
+        linear-gradient(currentColor 0 0) 0 0 / 100% 2px,
+        linear-gradient(currentColor 0 0) 0 50% / 100% 2px,
+        linear-gradient(currentColor 0 0) 0 100% / 100% 2px;
+    background-repeat: no-repeat;
+}
+
 .everblock-megamenu-item > .everblock-megamenu-item-link,
 .everblock-megamenu-item > .everblock-megamenu-item-link.btn,
 .everblock-megamenu-title,
@@ -130,6 +153,33 @@
 
 .everblock-megamenu .nav-link.btn {
     padding: 0;
+}
+
+.everblock-megamenu-item-header {
+    gap: 0.75rem;
+}
+
+.everblock-megamenu .everblock-megamenu-toggle {
+    border: 0;
+    padding: 0.25rem;
+    background: transparent;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.everblock-megamenu .everblock-megamenu-toggle.dropdown-toggle::after {
+    display: none;
+}
+
+.everblock-megamenu-toggle-icon {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    display: inline-block;
 }
 
 .everblock-megamenu .everblock-megamenu-dropdown {
@@ -184,9 +234,62 @@
 
 @media (max-width: 991.98px) {
     .everblock-megamenu .everblock-megamenu-collapse {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100vh;
+        overflow-y: auto;
+        padding: 4.5rem 1rem 2rem;
+        background-color: var(--everblock-megamenu-bg-active);
         width: 100vw;
         margin-left: calc(50% - 50vw);
         margin-right: calc(50% - 50vw);
+    }
+
+    .everblock-megamenu .dropdown-menu {
+        position: static;
+        width: 100%;
+        box-shadow: none;
+    }
+
+    .everblock-megamenu .dropdown-menu.everblock-megamenu-dropdown {
+        padding: 0.75rem 0;
+    }
+
+    .everblock-megamenu-mobile-column + .everblock-megamenu-mobile-column {
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .everblock-megamenu-mobile-toggle {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        font-weight: 600;
+    }
+
+    .everblock-megamenu-mobile-icon {
+        width: 0.7rem;
+        height: 0.7rem;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(45deg);
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .everblock-megamenu-mobile-toggle[aria-expanded="true"] .everblock-megamenu-mobile-icon {
+        transform: rotate(-135deg);
+    }
+
+    .everblock-megamenu-mobile-body {
+        padding: 0.5rem 0 1rem;
     }
 }
 /* Lookbook product markers */
