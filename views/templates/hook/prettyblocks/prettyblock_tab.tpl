@@ -42,7 +42,7 @@
             </ul>
             <div class="tab-content">
                 {foreach from=$block.states item=state key=key}
-                    <div class="tab-pane {if $key == 0}active{/if}" id="tab-{$block.id_prettyblocks}-{$key}" role="tabpanel" aria-labelledby="tab-{$block.id_prettyblocks}-{$key}-tab">
+                    <div class="tab-pane {if $key == 0}active{/if}{if $state.css_class} {$state.css_class|escape:'htmlall'}{/if}" id="tab-{$block.id_prettyblocks}-{$key}" role="tabpanel" aria-labelledby="tab-{$block.id_prettyblocks}-{$key}-tab"{if isset($state.background_image.url) && $state.background_image.url} style="background-image:url('{$state.background_image.url|escape:'htmlall'}');background-size:cover;background-position:center;background-repeat:no-repeat;"{/if}>
                         {$state.content nofilter}
                     </div>
                 {/foreach}

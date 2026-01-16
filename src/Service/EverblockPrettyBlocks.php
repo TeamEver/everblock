@@ -890,6 +890,14 @@ class EverblockPrettyBlocks
                             'label' => 'Tab content',
                             'default' => '[llorem]',
                         ],
+                        'background_image' => [
+                            'tab' => 'design',
+                            'type' => 'fileupload',
+                            'label' => $module->l('Tab background image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
                         'css_class' => [
                             'type' => 'text',
                             'label' => $module->l('Custom CSS class'),
