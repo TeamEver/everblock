@@ -149,7 +149,7 @@ class EverblockPrettyBlocks
             '' => $module->l('Select an item'),
         ];
 
-        $query = 'SELECT id_prettyblocks, config'
+        $query = 'SELECT id_prettyblocks, state'
             . ' FROM ' . _DB_PREFIX_ . 'prettyblocks'
             . ' WHERE code = "' . pSQL($code) . '"'
             . ' AND id_lang = ' . (int) $context->language->id
@@ -162,14 +162,10 @@ class EverblockPrettyBlocks
 
         foreach ($rows as $row) {
             $id = (int) ($row['id_prettyblocks'] ?? 0);
-            $config = json_decode((string) ($row['config'] ?? ''), true);
+            $state = json_decode((string) ($row['state'] ?? ''), true);
             $label = '';
-            if (is_array($config)) {
-                $labelValue = $config[$labelField] ?? '';
-                if (is_array($labelValue)) {
-                    $labelValue = reset($labelValue) ?: '';
-                }
-                $label = is_scalar($labelValue) ? (string) $labelValue : '';
+            if (is_array($state)) {
+                $label = self::resolvePrettyblockLabel($state, $labelField);
             }
             if ($label === '') {
                 $label = $module->l('Item') . ' #' . $id;
@@ -178,6 +174,23 @@ class EverblockPrettyBlocks
         }
 
         return $choices;
+    }
+
+    private static function resolvePrettyblockLabel(array $data, string $labelField): string
+    {
+        $labelValue = '';
+
+        if (array_key_exists($labelField, $data)) {
+            $labelValue = $data[$labelField];
+        } elseif (isset($data['default']) && is_array($data['default']) && array_key_exists($labelField, $data['default'])) {
+            $labelValue = $data['default'][$labelField];
+        }
+
+        if (is_array($labelValue)) {
+            $labelValue = $labelValue['text'] ?? (reset($labelValue) ?: '');
+        }
+
+        return is_scalar($labelValue) ? (string) $labelValue : '';
     }
 
     public static function getEverPrettyBlocks($context)
