@@ -2309,24 +2309,39 @@ class EverblockTools extends ObjectModel
             && (bool) Module::isEnabled('prettyblocks') === true
             && (bool) static::moduleDirectoryExists('prettyblocks') === true
         ) {
-            // Définir le chemin vers le template
-            $templatePath = static::getTemplatePath('hook/prettyblocks.tpl', $module);
-            // Regex pour trouver les shortcodes de type [prettyblocks name="mon_nom"]
-            $pattern = '/\[prettyblocks name="([^"]+)"\]/';
-            
-            // Fonction de remplacement pour traiter chaque shortcode trouvé
-            $replacementFunction = function ($matches) use ($context, $templatePath) {
-                // Extraire le nom de la zone depuis le shortcode
-                $zoneName = $matches[1];
-                // Assigner le nom de la zone à Smarty
-                $context->smarty->assign('zone_name', $zoneName);
-                
-                // Récupérer le rendu du template avec Smarty
-                return $context->smarty->fetch($templatePath);
-            };
-            
-            // Remplacer tous les shortcodes trouvés par le rendu Smarty correspondant
-            $txt = preg_replace_callback($pattern, $replacementFunction, $txt);
+            try {
+                // Définir le chemin vers le template
+                $templatePath = static::getTemplatePath('hook/prettyblocks.tpl', $module);
+                // Regex pour trouver les shortcodes de type [prettyblocks name="mon_nom"]
+                $pattern = '/\[prettyblocks name="([^"]+)"\]/';
+
+                // Fonction de remplacement pour traiter chaque shortcode trouvé
+                $replacementFunction = function ($matches) use ($context, $templatePath) {
+                    $zoneName = $matches[1];
+
+                    try {
+                        // Assigner le nom de la zone à Smarty
+                        $context->smarty->assign('zone_name', $zoneName);
+
+                        // Récupérer le rendu du template avec Smarty
+                        return $context->smarty->fetch($templatePath);
+                    } catch (\Throwable $e) {
+                        PrestaShopLogger::addLog(
+                            sprintf('Prettyblocks shortcode rendering failed for zone "%s": %s', $zoneName, $e->getMessage()),
+                            3
+                        );
+                        return '';
+                    }
+                };
+
+                // Remplacer tous les shortcodes trouvés par le rendu Smarty correspondant
+                $txt = preg_replace_callback($pattern, $replacementFunction, $txt);
+            } catch (\Throwable $e) {
+                PrestaShopLogger::addLog(
+                    sprintf('Prettyblocks shortcode parsing failed: %s', $e->getMessage()),
+                    3
+                );
+            }
         }
         
         return $txt;
