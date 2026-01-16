@@ -45,7 +45,7 @@
       <a href="{$block.settings.url|escape:'htmlall':'UTF-8'}" class="text-decoration-none d-block{$obfme_class}" title="{$image_title|escape:'htmlall':'UTF-8'}">
         <img src="{$image_url|escape:'htmlall':'UTF-8'}" alt="{$block.settings.title.value|escape:'htmlall':'UTF-8'}" width="{$image_width}" height="{$image_height}" class="img-fluid rounded">
         {if $block.settings.cta_label}
-          <span class="btn btn-sm btn-outline-primary mt-2">{$block.settings.cta_label|escape:'htmlall':'UTF-8'}</span>
+          <span class="btn btn-sm btn-outline-primary mt-2">{$block.settings.cta_label.value|escape:'htmlall':'UTF-8'}</span>
         {/if}
       </a>
     </div>
