@@ -27,6 +27,21 @@
   {/if}
   {assign var='column_width' value=$column_width|default:3|intval}
   {assign var='render_title' value=$render_title|default:true}
+  {assign var='link_layout' value=$block.settings.link_layout|default:'stacked'}
+  {if is_array($link_layout)}
+    {if isset($link_layout[$language.id_lang])}
+      {assign var='link_layout' value=$link_layout[$language.id_lang]}
+    {else}
+      {assign var='link_layout' value=$link_layout|@reset}
+    {/if}
+  {/if}
+  {assign var='link_layout' value=$link_layout|default:'stacked'}
+  {assign var='link_layout_class' value='dropdown-megamenu-links--stacked'}
+  {if $link_layout == 'inline'}
+    {assign var='link_layout_class' value='dropdown-megamenu-links--inline'}
+  {elseif $link_layout == 'grid'}
+    {assign var='link_layout_class' value='dropdown-megamenu-links--grid'}
+  {/if}
   {assign var='obfme_class' value=''}
   {if $page.page_name|default:'' != 'index'}
     {assign var='obfme_class' value=' obfme'}
@@ -47,7 +62,7 @@
         {/foreach}
       {elseif $column_title}
         {if $block.settings.title_url}
-          <a class="dropdown-header h6 text-decoration-none{$obfme_class}" href="{$block.settings.title_url|escape:'htmlall':'UTF-8'}">
+          <a class="dropdown-header h6 text-decoration-none{$obfme_class}" href="{$block.settings.title_url|escape:'htmlall':'UTF-8'}" title="{$column_title|escape:'htmlall':'UTF-8'}">
             {$column_title|escape:'htmlall':'UTF-8'}
           </a>
         {else}
@@ -57,7 +72,7 @@
     {/if}
 
     {if $block.extra.links}
-      <div class="dropdown-megamenu-links mb-3">
+      <div class="dropdown-megamenu-links {$link_layout_class} mb-3">
         {foreach from=$block.extra.links item=item}
           {include file='module:everblock/views/templates/hook/prettyblocks/prettyblock_megamenu_item_link.tpl' block=$item from_parent=true}
         {/foreach}

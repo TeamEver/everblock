@@ -604,6 +604,16 @@ class EverblockPrettyBlocks
                             ],
                             'default' => '3',
                         ],
+                        'link_layout' => [
+                            'type' => 'select',
+                            'label' => $module->l('Links layout'),
+                            'choices' => [
+                                'stacked' => $module->l('Stacked'),
+                                'inline' => $module->l('Inline'),
+                                'grid' => $module->l('Grid'),
+                            ],
+                            'default' => 'stacked',
+                        ],
                         'order' => [
                             'type' => 'text',
                             'label' => $module->l('Order'),
@@ -733,6 +743,16 @@ class EverblockPrettyBlocks
                             'default' => [
                                 'url' => '',
                             ],
+                        ],
+                        'image_width' => [
+                            'type' => 'text',
+                            'label' => $module->l('Image width'),
+                            'default' => '400',
+                        ],
+                        'image_height' => [
+                            'type' => 'text',
+                            'label' => $module->l('Image height'),
+                            'default' => '300',
                         ],
                         'title' => [
                             'type' => 'text',
