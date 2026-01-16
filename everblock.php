@@ -645,9 +645,9 @@ class Everblock extends Module
                 $hook->description = 'This hook triggers before special event block is rendered';
                 $hook->save();
             }
-            if (!Hook::getIdByName('beforeRenderingEverblockMegamenuItem')) {
+            if (!Hook::getIdByName('beforeRenderingMegaMenuItem')) {
                 $hook = new Hook();
-                $hook->name = 'beforeRenderingEverblockMegamenuItem';
+                $hook->name = 'beforeRenderingMegaMenuItem';
                 $hook->title = 'Before rendering mega menu item block';
                 $hook->description = 'This hook triggers before mega menu item block is rendered';
                 $hook->save();
@@ -660,7 +660,7 @@ class Everblock extends Module
             $this->registerHook('beforeRenderingEverblockCategoryProducts');
             $this->registerHook('beforeRenderingEverblockSpecialEvent');
             $this->registerHook('beforeRenderingEverblockEverblock');
-            $this->registerHook('beforeRenderingEverblockMegamenuItem');
+            $this->registerHook('beforeRenderingMegaMenuItem');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
             $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
@@ -670,7 +670,7 @@ class Everblock extends Module
             $this->unregisterHook('beforeRenderingEverblockCategoryProducts');
             $this->unregisterHook('beforeRenderingEverblockSpecialEvent');
             $this->unregisterHook('beforeRenderingEverblockEverblock');
-            $this->unregisterHook('beforeRenderingEverblockMegamenuItem');
+            $this->unregisterHook('beforeRenderingMegaMenuItem');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
@@ -5874,7 +5874,7 @@ class Everblock extends Module
         return ['products' => $products];
     }
 
-    public function hookBeforeRenderingEverblockMegamenuItem($params)
+    public function hookBeforeRenderingMegaMenuItem($params)
     {
         $menuId = (int) ($params['block']['id_prettyblocks'] ?? 0);
         if ($menuId <= 0) {
