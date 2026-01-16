@@ -25,7 +25,7 @@
 {/capture}
 {assign var='prettyblock_cover_wrapper_style' value=$smarty.capture.prettyblock_cover_wrapper_style|trim}
 
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if $prettyblock_cover_wrapper_style} style="{$prettyblock_cover_wrapper_style}"{/if}>
+<div id="block-{$block.id_prettyblocks}" class="prettyblock-cover-block prettyblock-cover-block-{$block.id_prettyblocks} {if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if $prettyblock_cover_wrapper_style} style="{$prettyblock_cover_wrapper_style}"{/if}>
   {if $block.settings.default.force_full_width}
     <div class="row gx-0 no-gutters">
       <div class="col-12 px-0">
