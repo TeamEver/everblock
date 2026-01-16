@@ -42,7 +42,7 @@
     {assign var='obfme_class' value=' obfme'}
   {/if}
   {if $link_label && $link_url}
-    <a class="dropdown-item d-flex align-items-center gap-2 everblock-megamenu-link{$obfme_class}{if $block.settings.highlight} fw-semibold{/if}" href="{$link_url|escape:'htmlall':'UTF-8'}" title="{$link_title|escape:'htmlall':'UTF-8'}"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>
+    <a class="dropdown-item d-flex align-items-center gap-2 everblock-megamenu-link{$obfme_class}{if $block.settings.highlight} fw-semibold{/if}{if $link_layout|default:'' == 'grid'} col-6 col-md-4{/if}" href="{$link_url|escape:'htmlall':'UTF-8'}" title="{$link_title|escape:'htmlall':'UTF-8'}"{if $megamenu_style_vars} style="{$megamenu_style_vars|escape:'htmlall':'UTF-8'}"{/if}>
       {if $link_icon}<span class="everblock-megamenu-icon">{$link_icon|escape:'htmlall':'UTF-8'}</span>{/if}
       <span>{$link_label|escape:'htmlall':'UTF-8'}</span>
     </a>

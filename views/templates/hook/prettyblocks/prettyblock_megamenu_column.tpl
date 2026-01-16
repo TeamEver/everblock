@@ -35,7 +35,7 @@
     {assign var='column_width' value=12}
   {/if}
   {assign var='render_title' value=$render_title|default:true}
-  {assign var='link_layout' value=$block.settings.link_layout|default:'stacked'}
+  {assign var='link_layout' value=$block.settings.link_layout|default:''}
   {if is_array($link_layout)}
     {if isset($link_layout[$language.id_lang])}
       {assign var='link_layout' value=$link_layout[$language.id_lang]}
@@ -43,12 +43,22 @@
       {assign var='link_layout' value=$link_layout|@reset}
     {/if}
   {/if}
-  {assign var='link_layout' value=$link_layout|default:'stacked'}
+  {assign var='link_layout' value=$link_layout|default:''}
+  {if !$link_layout}
+    {assign var='links_count' value=$block.extra.links|@count}
+    {if $links_count > 6}
+      {assign var='link_layout' value='grid'}
+    {elseif $links_count > 1}
+      {assign var='link_layout' value='inline'}
+    {else}
+      {assign var='link_layout' value='stacked'}
+    {/if}
+  {/if}
   {assign var='link_layout_class' value='dropdown-megamenu-links--stacked'}
   {if $link_layout == 'inline'}
     {assign var='link_layout_class' value='dropdown-megamenu-links--inline'}
   {elseif $link_layout == 'grid'}
-    {assign var='link_layout_class' value='dropdown-megamenu-links--grid'}
+    {assign var='link_layout_class' value='dropdown-megamenu-links--grid row g-2'}
   {/if}
   {assign var='obfme_class' value=''}
   {if $page.page_name|default:'' != 'index'}
@@ -82,7 +92,7 @@
     {if $block.extra.links}
       <div class="dropdown-megamenu-links {$link_layout_class} mb-3">
         {foreach from=$block.extra.links item=item}
-          {include file='module:everblock/views/templates/hook/prettyblocks/prettyblock_megamenu_item_link.tpl' block=$item from_parent=true}
+          {include file='module:everblock/views/templates/hook/prettyblocks/prettyblock_megamenu_item_link.tpl' block=$item from_parent=true link_layout=$link_layout}
         {/foreach}
       </div>
     {/if}
