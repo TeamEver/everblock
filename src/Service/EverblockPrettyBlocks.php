@@ -22,7 +22,6 @@ namespace Everblock\Tools\Service;
 
 use Configuration;
 use Context;
-use Db;
 use EverBlockClass;
 use Everblock\Tools\Service\EverblockCache;
 use EverblockShortcode;
@@ -31,7 +30,6 @@ use Group;
 use Hook;
 use Module;
 use PrettyBlocksModel;
-use PrestaShopLogger;
 use Tools;
 
 if (!defined('_PS_VERSION_')) {
@@ -54,8 +52,6 @@ class EverblockPrettyBlocks
         'beforeRenderingEverblockGuidedSelector',
         'beforeRenderingEverblockLookbook',
         'beforeRenderingEverblockCategoryProducts',
-        'beforeRenderingMegaMenuItem',
-        'beforeRenderingMegaMenuContainer',
     ];
 
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
@@ -109,48 +105,6 @@ class EverblockPrettyBlocks
         return $fields;
     }
 
-    private static function getMegaMenuStyleFields(Module $module): array
-    {
-        return [
-            'text_color' => [
-                'tab' => 'design',
-                'type' => 'color',
-                'label' => $module->l('Text color'),
-                'default' => '',
-            ],
-            'text_color_winter' => [
-                'tab' => 'design',
-                'type' => 'color',
-                'label' => $module->l('Text color (winter)'),
-                'default' => '',
-            ],
-            'background_color' => [
-                'tab' => 'design',
-                'type' => 'color',
-                'label' => $module->l('Background color'),
-                'default' => '',
-            ],
-            'background_color_winter' => [
-                'tab' => 'design',
-                'type' => 'color',
-                'label' => $module->l('Background color (winter)'),
-                'default' => '',
-            ],
-            'hover_text_color' => [
-                'tab' => 'design',
-                'type' => 'color',
-                'label' => $module->l('Hover text color'),
-                'default' => '',
-            ],
-            'hover_background_color' => [
-                'tab' => 'design',
-                'type' => 'color',
-                'label' => $module->l('Hover background color'),
-                'default' => '',
-            ],
-        ];
-    }
-
     private static function getColumnChoices(Module $module): array
     {
         return [
@@ -182,76 +136,6 @@ class EverblockPrettyBlocks
 
         return $choices;
     } 
-
-    private static function getPrettyblocksChoicesByCode(
-        Context $context,
-        Module $module,
-        string $code,
-        string $labelField
-    ): array {
-        $choices = [
-            '' => $module->l('Select an item'),
-        ];
-
-        try {
-            $query = '
-                SELECT id_prettyblocks, code, config, default_params, state
-                FROM ' . _DB_PREFIX_ . 'prettyblocks
-                WHERE code = "' . pSQL($code) . '"
-                AND id_lang = ' . (int) $context->language->id . '
-                AND id_shop = ' . (int) $context->shop->id;
-
-            $rows = Db::getInstance()->executeS($query);
-            if (!is_array($rows)) {
-                return $choices;
-            }
-
-            foreach ($rows as $row) {
-                $id = (int) $row['id_prettyblocks'];
-                $label = '';
-
-                // 1️⃣ config[label][value] ← cas Prettyblocks avec force_default_value
-                $config = json_decode((string) $row['config'], true);
-                if (
-                    is_array($config)
-                    && isset($config[$labelField]['value'])
-                    && is_string($config[$labelField]['value'])
-                ) {
-                    $label = trim($config[$labelField]['value']);
-                }
-
-                // 2️⃣ default_params[label]
-                if ($label === '') {
-                    $defaultParams = json_decode((string) $row['default_params'], true);
-                    if (is_array($defaultParams) && isset($defaultParams[$labelField])) {
-                        $label = trim((string) $defaultParams[$labelField]);
-                    }
-                }
-
-                // 3️⃣ state[label]
-                if ($label === '') {
-                    $state = json_decode((string) $row['state'], true);
-                    if (is_array($state) && isset($state[$labelField])) {
-                        $label = trim((string) $state[$labelField]);
-                    }
-                }
-
-                // 4️⃣ fallback final
-                if ($label === '') {
-                    $label = $row['code'] . ' #' . $id;
-                }
-
-                $choices[$id] = $id . ' - ' . $label;
-            }
-        } catch (\Throwable $e) {
-            PrestaShopLogger::addLog(
-                sprintf('Prettyblocks choices lookup failed for code "%s": %s', $code, $e->getMessage()),
-                3
-            );
-        }
-
-        return $choices;
-    }
 
 
     private static function resolvePrettyblockLabel(array $data, string $labelField): string
@@ -343,12 +227,6 @@ class EverblockPrettyBlocks
             $pagesGuideTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pages_guide.tpl';
             $guidesSelectionTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guides_selection.tpl';
             $latestGuidesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_latest_guides.tpl';
-            $megamenuContainerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_container.tpl';
-            $megamenuItemTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_item.tpl';
-            $megamenuColumnTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_column.tpl';
-            $megamenuTitleTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_title.tpl';
-            $megamenuItemLinkTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_item_link.tpl';
-            $megamenuItemImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_megamenu_item_image.tpl';
             $slotMachineDefaultStartDate = date('Y-m-d 00:00:00');
             $slotMachineDefaultEndDate = date('Y-m-d 23:59:59', strtotime('+30 days'));
             $slotMachineDefaultWinningCombinations = json_encode(
@@ -401,24 +279,6 @@ class EverblockPrettyBlocks
                 $everblockChoices[$eblock['id_everblock']] = $eblock['id_everblock'] . ' - ' . $eblock['name'];
             }
             $everblockPageChoices = self::getEverblockPageChoices($context, $module);
-            $megamenuParentChoices = self::getPrettyblocksChoicesByCode(
-                $context,
-                $module,
-                'megamenu_item',
-                'label'
-            );
-            $megamenuContainerChoices = self::getPrettyblocksChoicesByCode(
-                $context,
-                $module,
-                'megamenu_container',
-                'menu_label'
-            );
-            $megamenuColumnChoices = self::getPrettyblocksChoicesByCode(
-                $context,
-                $module,
-                'megamenu_column',
-                'title'
-            );
             $allHooks = Hook::getHooks(false, true);
             $prettyBlocksHooks = [];
             foreach ($allHooks as $hook) {
@@ -524,304 +384,6 @@ class EverblockPrettyBlocks
                             'default' => '',
                         ],
                     ], $module),
-                ],
-            ];
-            $blocks[] = [
-                'name' => $module->l('Mega menu container'),
-                'description' => $module->l('Root mega menu block (navigation container)'),
-                'code' => 'megamenu_container',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $megamenuContainerTemplate,
-                ],
-                'config' => [
-                    'fields' => array_merge([
-                        'menu_label' => [
-                            'type' => 'text',
-                            'label' => $module->l('Menu label'),
-                            'default' => $module->l('Menu'),
-                        ],
-                        'fallback_label' => [
-                            'type' => 'text',
-                            'label' => $module->l('Fallback item label'),
-                            'default' => $module->l('Menu'),
-                        ],
-                        'active' => [
-                            'type' => 'switch',
-                            'label' => $module->l('Active'),
-                            'default' => true,
-                        ],
-                    ], static::getMegaMenuStyleFields($module)),
-                ],
-            ];
-            $blocks[] = [
-                'name' => $module->l('Mega menu item'),
-                'description' => $module->l('Top-level mega menu entry'),
-                'code' => 'megamenu_item',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $megamenuItemTemplate,
-                ],
-                'config' => [
-                    'fields' => array_merge([
-                        'parent_id' => [
-                            'type' => 'select',
-                            'label' => $module->l('Parent menu container'),
-                            'choices' => $megamenuContainerChoices,
-                            'default' => '',
-                        ],
-                        'label' => [
-                            'type' => 'text',
-                            'label' => $module->l('Label'),
-                            'default' => '',
-                        ],
-                        'url' => [
-                            'type' => 'text',
-                            'label' => $module->l('Link (optional)'),
-                            'default' => '',
-                        ],
-                        'is_mega' => [
-                            'type' => 'switch',
-                            'label' => $module->l('Enable mega menu'),
-                            'default' => true,
-                        ],
-                        'full_width' => [
-                            'type' => 'switch',
-                            'label' => $module->l('Full width dropdown'),
-                            'default' => false,
-                        ],
-                        'order' => [
-                            'type' => 'text',
-                            'label' => $module->l('Order'),
-                            'default' => '0',
-                        ],
-                        'active' => [
-                            'type' => 'switch',
-                            'label' => $module->l('Active'),
-                            'default' => true,
-                        ],
-                    ], static::getMegaMenuStyleFields($module)),
-                ],
-            ];
-            $blocks[] = [
-                'name' => $module->l('Mega menu column'),
-                'description' => $module->l('Column for a mega menu'),
-                'code' => 'megamenu_column',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $megamenuColumnTemplate,
-                ],
-                'config' => [
-                    'fields' => array_merge([
-                        'parent_id' => [
-                            'type' => 'select',
-                            'label' => $module->l('Parent menu item'),
-                            'choices' => $megamenuParentChoices,
-                            'default' => '',
-                        ],
-                        'title' => [
-                            'type' => 'text',
-                            'label' => $module->l('Column title'),
-                            'default' => '',
-                        ],
-                        'title_url' => [
-                            'type' => 'text',
-                            'label' => $module->l('Title link (optional)'),
-                            'default' => '',
-                        ],
-                        'width' => [
-                            'type' => 'select',
-                            'label' => $module->l('Column width'),
-                            'choices' => [
-                                '3' => $module->l('3 columns'),
-                                '4' => $module->l('4 columns'),
-                                '6' => $module->l('6 columns'),
-                                '12' => $module->l('12 columns'),
-                            ],
-                            'default' => '3',
-                        ],
-                        'link_layout' => [
-                            'type' => 'select',
-                            'label' => $module->l('Links layout'),
-                            'choices' => [
-                                'stacked' => $module->l('Stacked'),
-                                'inline' => $module->l('Inline'),
-                                'grid' => $module->l('Grid'),
-                            ],
-                            'default' => 'stacked',
-                        ],
-                        'order' => [
-                            'type' => 'text',
-                            'label' => $module->l('Order'),
-                            'default' => '0',
-                        ],
-                        'active' => [
-                            'type' => 'switch',
-                            'label' => $module->l('Active'),
-                            'default' => true,
-                        ],
-                    ], static::getMegaMenuStyleFields($module)),
-                ],
-            ];
-            $blocks[] = [
-                'name' => $module->l('Mega menu title'),
-                'description' => $module->l('Title inside a mega menu column'),
-                'code' => 'megamenu_title',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $megamenuTitleTemplate,
-                ],
-                'config' => [
-                    'fields' => array_merge([
-                        'parent_id' => [
-                            'type' => 'select',
-                            'label' => $module->l('Parent column'),
-                            'choices' => $megamenuColumnChoices,
-                            'default' => '',
-                        ],
-                        'label' => [
-                            'type' => 'text',
-                            'label' => $module->l('Title label'),
-                            'default' => '',
-                        ],
-                        'url' => [
-                            'type' => 'text',
-                            'label' => $module->l('Title link (optional)'),
-                            'default' => '',
-                        ],
-                        'order' => [
-                            'type' => 'text',
-                            'label' => $module->l('Order'),
-                            'default' => '0',
-                        ],
-                        'active' => [
-                            'type' => 'switch',
-                            'label' => $module->l('Active'),
-                            'default' => true,
-                        ],
-                    ], static::getMegaMenuStyleFields($module)),
-                ],
-            ];
-            $blocks[] = [
-                'name' => $module->l('Mega menu link'),
-                'description' => $module->l('Link item inside a mega menu column'),
-                'code' => 'megamenu_item_link',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $megamenuItemLinkTemplate,
-                ],
-                'config' => [
-                    'fields' => array_merge([
-                        'parent_id' => [
-                            'type' => 'select',
-                            'label' => $module->l('Parent column'),
-                            'choices' => $megamenuColumnChoices,
-                            'default' => '',
-                        ],
-                        'label' => [
-                            'type' => 'text',
-                            'label' => $module->l('Label'),
-                            'default' => '',
-                        ],
-                        'url' => [
-                            'type' => 'text',
-                            'label' => $module->l('Link'),
-                            'default' => '',
-                        ],
-                        'icon' => [
-                            'type' => 'text',
-                            'label' => $module->l('Icon (optional)'),
-                            'default' => '',
-                        ],
-                        'highlight' => [
-                            'type' => 'switch',
-                            'label' => $module->l('Highlight'),
-                            'default' => false,
-                        ],
-                        'order' => [
-                            'type' => 'text',
-                            'label' => $module->l('Order'),
-                            'default' => '0',
-                        ],
-                        'active' => [
-                            'type' => 'switch',
-                            'label' => $module->l('Active'),
-                            'default' => true,
-                        ],
-                    ], static::getMegaMenuStyleFields($module)),
-                ],
-            ];
-            $blocks[] = [
-                'name' => $module->l('Mega menu image'),
-                'description' => $module->l('Image item inside a mega menu column'),
-                'code' => 'megamenu_item_image',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $megamenuItemImageTemplate,
-                ],
-                'config' => [
-                    'fields' => [
-                        'parent_id' => [
-                            'type' => 'select',
-                            'label' => $module->l('Parent column'),
-                            'choices' => $megamenuColumnChoices,
-                            'default' => '',
-                        ],
-                        'image' => [
-                            'type' => 'fileupload',
-                            'label' => $module->l('Image'),
-                            'default' => [
-                                'url' => '',
-                            ],
-                        ],
-                        'image_width' => [
-                            'type' => 'text',
-                            'label' => $module->l('Image width'),
-                            'default' => '400',
-                        ],
-                        'image_height' => [
-                            'type' => 'text',
-                            'label' => $module->l('Image height'),
-                            'default' => '300',
-                        ],
-                        'title' => [
-                            'type' => 'text',
-                            'label' => $module->l('Title'),
-                            'default' => '',
-                        ],
-                        'url' => [
-                            'type' => 'text',
-                            'label' => $module->l('Link'),
-                            'default' => '',
-                        ],
-                        'cta_label' => [
-                            'type' => 'text',
-                            'label' => $module->l('CTA label'),
-                            'default' => '',
-                        ],
-                        'order' => [
-                            'type' => 'text',
-                            'label' => $module->l('Order'),
-                            'default' => '0',
-                        ],
-                        'active' => [
-                            'type' => 'switch',
-                            'label' => $module->l('Active'),
-                            'default' => true,
-                        ],
-                    ],
                 ],
             ];
             $blocks[] = [

@@ -135,7 +135,6 @@ class Everblock extends Module
         Configuration::updateValue('EVERBLOCK_SOLDOUT_FLAG', 0);
         Configuration::updateValue('EVERBLOCK_LOW_STOCK_THRESHOLD', 5);
         Configuration::updateValue('EVERBLOCK_STORELOCATOR_TOGGLE', 0);
-        Configuration::updateValue('EVERBLOCK_WINTER_MODE', 0);
         Configuration::updateValue('EVERBLOCK_GOOGLE_API_KEY', '');
         Configuration::updateValue('EVERBLOCK_GOOGLE_PLACE_ID', '');
         Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT', 5);
@@ -646,34 +645,6 @@ class Everblock extends Module
                 $hook->description = 'This hook triggers before special event block is rendered';
                 $hook->save();
             }
-            if (!Hook::getIdByName('beforeRenderingMegaMenuItem')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingMegaMenuItem';
-                $hook->title = 'Before rendering mega menu item block';
-                $hook->description = 'This hook triggers before mega menu item block is rendered';
-                $hook->save();
-            }
-            if (!Hook::getIdByName('beforeRenderingMegaMenuContainer')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingMegaMenuContainer';
-                $hook->title = 'Before rendering mega menu container block';
-                $hook->description = 'This hook triggers before mega menu container block is rendered';
-                $hook->save();
-            }
-            if (!Hook::getIdByName('beforeRenderingMegamenuItem')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingMegamenuItem';
-                $hook->title = 'Before rendering megamenu item block';
-                $hook->description = 'This hook triggers before megamenu item block is rendered';
-                $hook->save();
-            }
-            if (!Hook::getIdByName('beforeRenderingMegamenuContainer')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingMegamenuContainer';
-                $hook->title = 'Before rendering megamenu container block';
-                $hook->description = 'This hook triggers before megamenu container block is rendered';
-                $hook->save();
-            }
             $this->registerHook('beforeRenderingEverblockProductHighlight');
             $this->registerHook('beforeRenderingEverblockCategoryTabs');
             $this->registerHook('beforeRenderingEverblockCategoryPrice');
@@ -682,10 +653,6 @@ class Everblock extends Module
             $this->registerHook('beforeRenderingEverblockCategoryProducts');
             $this->registerHook('beforeRenderingEverblockSpecialEvent');
             $this->registerHook('beforeRenderingEverblockEverblock');
-            $this->registerHook('beforeRenderingMegaMenuItem');
-            $this->registerHook('beforeRenderingMegaMenuContainer');
-            $this->registerHook('beforeRenderingMegamenuItem');
-            $this->registerHook('beforeRenderingMegamenuContainer');
         } else {
             $this->unregisterHook('beforeRenderingEverblockProductHighlight');
             $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
@@ -695,10 +662,6 @@ class Everblock extends Module
             $this->unregisterHook('beforeRenderingEverblockCategoryProducts');
             $this->unregisterHook('beforeRenderingEverblockSpecialEvent');
             $this->unregisterHook('beforeRenderingEverblockEverblock');
-            $this->unregisterHook('beforeRenderingMegaMenuItem');
-            $this->unregisterHook('beforeRenderingMegaMenuContainer');
-            $this->unregisterHook('beforeRenderingMegamenuItem');
-            $this->unregisterHook('beforeRenderingMegamenuContainer');
         }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
@@ -2246,25 +2209,6 @@ class Everblock extends Module
                     'required' => false,
                 ],
                 [
-                    'type' => 'switch',
-                    'label' => $this->l('Enable winter theme mode'),
-                    'desc' => $this->l('Force the winter variant for PrettyBlocks mega menu styles.'),
-                    'name' => 'EVERBLOCK_WINTER_MODE',
-                    'is_bool' => true,
-                    'values' => [
-                        [
-                            'id' => 'active_on',
-                            'value' => 1,
-                            'label' => $this->l('Enabled'),
-                        ],
-                        [
-                            'id' => 'active_off',
-                            'value' => 0,
-                            'label' => $this->l('Disabled'),
-                        ],
-                    ],
-                ],
-                [
                     'type' => 'select',
                     'label' => $this->l('PrettyBlocks hook to export'),
                     'desc' => $prettyblocksHookDesc,
@@ -2656,7 +2600,6 @@ class Everblock extends Module
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERBLOCK_MARKER_ICON' => Configuration::get('EVERBLOCK_MARKER_ICON'),
             'EVERBLOCK_STORELOCATOR_TOGGLE' => Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
-            'EVERBLOCK_WINTER_MODE' => Configuration::get('EVERBLOCK_WINTER_MODE'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
@@ -3131,10 +3074,6 @@ class Everblock extends Module
             'EVERBLOCK_STORELOCATOR_TOGGLE',
             Tools::getValue('EVERBLOCK_STORELOCATOR_TOGGLE')
         );
-        Configuration::updateValue(
-            'EVERBLOCK_WINTER_MODE',
-            Tools::getValue('EVERBLOCK_WINTER_MODE')
-        );
         if (isset($_FILES['EVERBLOCK_MARKER_ICON'])
             && isset($_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'])
             && !empty($_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'])
@@ -3383,7 +3322,6 @@ class Everblock extends Module
             'AdminEverBlockPageController',
             'AdminEverBlockPrettyblockController',
         ];
-        $this->context->controller->addCss($this->_path . 'views/css/admin_menu.css');
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
         if ($controller === 'AdminProducts') {
             $this->context->controller->addJs($this->_path . 'views/js/product-faq.js');
@@ -4916,9 +4854,6 @@ class Everblock extends Module
 
     public function hookDisplayHeader()
     {
-        $this->context->smarty->assign([
-            'everblock_winter_mode' => (bool) Configuration::get('EVERBLOCK_WINTER_MODE'),
-        ]);
         if (Tools::getValue('eac')
             && Validate::isInt(Tools::getValue('eac'))
         ) {
@@ -5929,214 +5864,6 @@ class Everblock extends Module
         return ['products' => $products];
     }
 
-    public function hookBeforeRenderingMegaMenuItem($params)
-    {
-        $menuId = (int) ($params['block']['id_prettyblocks'] ?? 0);
-        if ($menuId <= 0) {
-            return ['columns' => []];
-        }
-
-        $idLang = (int) $this->context->language->id;
-        $idShop = (int) $this->context->shop->id;
-
-        return [
-            'columns' => $this->buildMegaMenuColumns($menuId, $idLang, $idShop),
-        ];
-    }
-
-    public function hookBeforeRenderingMegaMenuContainer($params)
-    {
-        $containerId = (int) ($params['block']['id_prettyblocks'] ?? 0);
-        if ($containerId <= 0) {
-            return ['items' => []];
-        }
-
-        $idLang = (int) $this->context->language->id;
-        $idShop = (int) $this->context->shop->id;
-
-        $items = $this->getPrettyblocksByCode('megamenu_item', $idLang, $idShop);
-        $items = array_filter($items, function (array $item) use ($containerId): bool {
-            if (!$this->isPrettyblocksActive($item)) {
-                return false;
-            }
-            $parentId = $this->resolvePrettyblocksParentId($item, ['parent_id', 'parent_container']);
-
-            return $parentId === $containerId;
-        });
-
-        $preparedItems = [];
-        foreach ($items as $item) {
-            $item['settings']['url'] = $this->normalizePrettyblocksLink($item['settings']['url'] ?? '');
-            $item['settings']['label'] = (string) $this->resolvePrettyblocksValue(
-                $item['settings']['label'] ?? ''
-            );
-            $item['settings']['fallback_label'] = (string) $this->resolvePrettyblocksValue(
-                $item['settings']['fallback_label'] ?? ''
-            );
-            $item['extra']['columns'] = $this->buildMegaMenuColumns(
-                (int) ($item['id_prettyblocks'] ?? 0),
-                $idLang,
-                $idShop
-            );
-            $preparedItems[] = $item;
-        }
-
-        return [
-            'items' => $this->sortPrettyblocksByOrder($preparedItems),
-        ];
-    }
-
-    private function getPrettyblocksByCode(string $code, int $idLang, int $idShop): array
-    {
-        $query = 'SELECT id_prettyblocks, config, position'
-            . ' FROM ' . _DB_PREFIX_ . 'prettyblocks'
-            . ' WHERE code = "' . pSQL($code) . '"'
-            . ' AND id_lang = ' . $idLang
-            . ' AND id_shop = ' . $idShop;
-
-        $rows = Db::getInstance()->executeS($query);
-        if (!is_array($rows)) {
-            return [];
-        }
-
-        $blocks = [];
-        foreach ($rows as $row) {
-            $settings = json_decode((string) ($row['config'] ?? ''), true);
-            if (!is_array($settings)) {
-                $settings = [];
-            }
-            $blocks[] = [
-                'id_prettyblocks' => (int) ($row['id_prettyblocks'] ?? 0),
-                'settings' => $settings,
-                'position' => (int) ($row['position'] ?? 0),
-            ];
-        }
-
-        return $blocks;
-    }
-
-    private function normalizePrettyblocksRelationId($value): int
-    {
-        $resolved = $this->resolvePrettyblocksValue($value);
-
-        return (int) $resolved;
-    }
-
-    private function normalizePrettyblocksLink($value): string
-    {
-        $resolved = $this->resolvePrettyblocksValue($value);
-
-        return (string) $resolved;
-    }
-
-    private function resolvePrettyblocksParentId(array $block, array $keys): int
-    {
-        $settings = $block['settings'] ?? [];
-        foreach ($keys as $key) {
-            if (isset($settings[$key])) {
-                return $this->normalizePrettyblocksRelationId($settings[$key]);
-            }
-        }
-
-        return 0;
-    }
-
-    private function isPrettyblocksActive(array $block): bool
-    {
-        if (!isset($block['settings']) || !is_array($block['settings'])) {
-            return true;
-        }
-
-        return !array_key_exists('active', $block['settings']) || (bool) $block['settings']['active'];
-    }
-
-    private function buildMegaMenuColumns(int $menuId, int $idLang, int $idShop): array
-    {
-        if ($menuId <= 0) {
-            return [];
-        }
-
-        $columns = $this->getPrettyblocksByCode('megamenu_column', $idLang, $idShop);
-        $titles = $this->getPrettyblocksByCode('megamenu_title', $idLang, $idShop);
-        $links = $this->getPrettyblocksByCode('megamenu_item_link', $idLang, $idShop);
-        $images = $this->getPrettyblocksByCode('megamenu_item_image', $idLang, $idShop);
-
-        $columns = array_filter($columns, function (array $column) use ($menuId): bool {
-            if (!$this->isPrettyblocksActive($column)) {
-                return false;
-            }
-            $parentId = $this->resolvePrettyblocksParentId($column, ['parent_id', 'parent_menu']);
-
-            return $parentId === $menuId;
-        });
-
-        $titlesByColumn = [];
-        foreach ($titles as $title) {
-            if (!$this->isPrettyblocksActive($title)) {
-                continue;
-            }
-            $parentId = $this->resolvePrettyblocksParentId($title, ['parent_id', 'parent_column']);
-            if ($parentId <= 0) {
-                continue;
-            }
-            $title['settings']['url'] = $this->normalizePrettyblocksLink($title['settings']['url'] ?? '');
-            $title['settings']['label'] = (string) $this->resolvePrettyblocksValue(
-                $title['settings']['label'] ?? $title['settings']['title'] ?? ''
-            );
-            $titlesByColumn[$parentId][] = $title;
-        }
-
-        $linksByColumn = [];
-        foreach ($links as $link) {
-            if (!$this->isPrettyblocksActive($link)) {
-                continue;
-            }
-            $parentId = $this->resolvePrettyblocksParentId($link, ['parent_id', 'parent_column']);
-            if ($parentId <= 0) {
-                continue;
-            }
-            $link['settings']['url'] = $this->normalizePrettyblocksLink($link['settings']['url'] ?? '');
-            $link['settings']['label'] = (string) $this->resolvePrettyblocksValue($link['settings']['label'] ?? '');
-            $linksByColumn[$parentId][] = $link;
-        }
-
-        $imagesByColumn = [];
-        foreach ($images as $image) {
-            if (!$this->isPrettyblocksActive($image)) {
-                continue;
-            }
-            $parentId = $this->resolvePrettyblocksParentId($image, ['parent_id', 'parent_column']);
-            if ($parentId <= 0) {
-                continue;
-            }
-            $image['settings']['url'] = $this->normalizePrettyblocksLink($image['settings']['url'] ?? '');
-            $imagesByColumn[$parentId][] = $image;
-        }
-
-        foreach ($columns as &$column) {
-            $columnId = (int) $column['id_prettyblocks'];
-            $column['settings']['title_url'] = $this->normalizePrettyblocksLink(
-                $column['settings']['title_url'] ?? ''
-            );
-            $column['extra']['titles'] = $this->sortPrettyblocksByOrder($titlesByColumn[$columnId] ?? []);
-            $column['extra']['links'] = $this->sortPrettyblocksByOrder($linksByColumn[$columnId] ?? []);
-            $column['extra']['images'] = $this->sortPrettyblocksByOrder($imagesByColumn[$columnId] ?? []);
-            $column['extra']['title_label'] = '';
-            $column['extra']['title_url'] = '';
-
-            if (!empty($column['extra']['titles'])) {
-                $firstTitle = reset($column['extra']['titles']);
-                $column['extra']['title_label'] = (string) ($firstTitle['settings']['label'] ?? $firstTitle['settings']['title'] ?? '');
-                $column['extra']['title_url'] = (string) ($firstTitle['settings']['url'] ?? '');
-            } elseif (!empty($column['settings']['title'])) {
-                $column['extra']['title_label'] = (string) $this->resolvePrettyblocksValue($column['settings']['title']);
-                $column['extra']['title_url'] = (string) ($column['settings']['title_url'] ?? '');
-            }
-        }
-        unset($column);
-
-        return $this->sortPrettyblocksByOrder(array_values($columns));
-    }
 
     private function resolvePrettyblocksValue($value)
     {
