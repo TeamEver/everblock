@@ -169,6 +169,7 @@ class EverblockPrettyBlocks
             $buttonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_button.tpl';
             $gmapTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gmap.tpl';
             $customIframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_custom_iframe.tpl';
+            $customCodeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_custom_code.tpl';
             $shortcodeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shortcode.tpl';
             $iframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_iframe.tpl';
             $scrollVideoTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_scroll_video.tpl';
@@ -2259,6 +2260,32 @@ class EverblockPrettyBlocks
                             'type' => 'text',
                             'label' => $module->l('Loading attribute (like lazy)'),
                             'default' => 'lazy',
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+
+            $blocks[] = [
+                'name' => $module->l('Custom code'),
+                'description' => $module->l('Display JSON-like code snippet'),
+                'code' => 'everblock_custom_code',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $customCodeTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'code' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Code'),
+                            'default' => "{\n  \"message\": \"Hello\"\n}",
                         ],
                         'css_class' => [
                             'type' => 'text',
