@@ -4827,78 +4827,64 @@ class EverblockTools extends ObjectModel
 
     public static function everPresentProducts(array $result, Context $context): array
     {
-        $resultHash = md5(json_encode($result));
-        $cacheId = 'everblock_everPresentProducts_'
-            . (int) $context->shop->id
-            . '_'
-            . (int) $context->language->id
-            . '_'
-            . $resultHash;
-
         $products = [];
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            if (!empty($result)) {
-                $assembler = new \ProductAssembler($context);
-                $presenterFactory = new \ProductPresenterFactory($context);
-                $presentationSettings = $presenterFactory->getPresentationSettings();
+        if (!empty($result)) {
+            $assembler = new \ProductAssembler($context);
+            $presenterFactory = new \ProductPresenterFactory($context);
+            $presentationSettings = $presenterFactory->getPresentationSettings();
 
-                // compatibilité PS 8 et PS 9
-                if (class_exists(\PrestaShop\PrestaShop\Core\Product\ProductListingPresenter::class)) {
-                    // PS 1.7 / 8
-                    $presenter = new \PrestaShop\PrestaShop\Core\Product\ProductListingPresenter(
-                        new ImageRetriever($context->link),
-                        $context->link,
-                        new PriceFormatter(),
-                        new ProductColorsRetriever(),
-                        $context->getTranslator()
-                    );
-                } elseif (class_exists(\PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter::class)) {
-                    // PS 9
-                    $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter(
-                        new ImageRetriever($context->link),
-                        $context->link,
-                        new PriceFormatter(),
-                        new ProductColorsRetriever(),
-                        $context->getTranslator()
-                    );
-                } else {
-                    throw new \Exception('No suitable product presenter class found for this PrestaShop version.');
-                }
-
-
-                $presentationSettings->showPrices = true;
-
-                foreach ($result as $productId) {
-                    $psProduct = new Product((int) $productId);
-
-                    if (!Validate::isLoadedObject($psProduct) || !(bool) $psProduct->active) {
-                        continue;
-                    }
-
-                    $rawProduct = [
-                        'id_product' => $productId,
-                        'id_lang'   => $context->language->id,
-                        'id_shop'   => $context->shop->id,
-                    ];
-
-                    $pproduct = $assembler->assembleProduct($rawProduct);
-
-                    if (Product::checkAccessStatic((int) $productId, (int) $context->customer->id)) {
-                        $products[] = $presenter->present(
-                            $presentationSettings,
-                            $pproduct,
-                            $context->language
-                        );
-                    }
-                }
+            // compatibilité PS 8 et PS 9
+            if (class_exists(\PrestaShop\PrestaShop\Core\Product\ProductListingPresenter::class)) {
+                // PS 1.7 / 8
+                $presenter = new \PrestaShop\PrestaShop\Core\Product\ProductListingPresenter(
+                    new ImageRetriever($context->link),
+                    $context->link,
+                    new PriceFormatter(),
+                    new ProductColorsRetriever(),
+                    $context->getTranslator()
+                );
+            } elseif (class_exists(\PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter::class)) {
+                // PS 9
+                $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter(
+                    new ImageRetriever($context->link),
+                    $context->link,
+                    new PriceFormatter(),
+                    new ProductColorsRetriever(),
+                    $context->getTranslator()
+                );
+            } else {
+                throw new \Exception('No suitable product presenter class found for this PrestaShop version.');
             }
 
-            EverblockCache::cacheStore($cacheId, $products);
-            return $products;
+            $presentationSettings->showPrices = true;
+
+            foreach ($result as $productId) {
+                $psProduct = new Product((int) $productId);
+
+                if (!Validate::isLoadedObject($psProduct) || !(bool) $psProduct->active) {
+                    continue;
+                }
+
+                $rawProduct = [
+                    'id_product' => $productId,
+                    'id_lang'   => $context->language->id,
+                    'id_shop'   => $context->shop->id,
+                ];
+
+                $pproduct = $assembler->assembleProduct($rawProduct);
+
+                if (Product::checkAccessStatic((int) $productId, (int) $context->customer->id)) {
+                    $products[] = $presenter->present(
+                        $presentationSettings,
+                        $pproduct,
+                        $context->language
+                    );
+                }
+            }
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return $products;
     }
     public static function dropUnusedLangs(): array
     {
