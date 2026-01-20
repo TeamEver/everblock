@@ -3085,7 +3085,8 @@
 /* ---- BOUTON ---- */
 .everblock-wp-section .btn-warning {
   background-color: #f28c3a;
-  border
+  border: 0;
+}
 
 /* Prettyblock FAQ */
 .everblock-prettyblock-iframe {
