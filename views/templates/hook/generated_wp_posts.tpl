@@ -1,8 +1,8 @@
 {if isset($everblock_wp_posts) && $everblock_wp_posts|@count > 0}
 <section class="everblock-wp-section text-center my-5"{if $everblock_wp_background_image} style="background-image:url('{$everblock_wp_background_image|escape:'htmlall':'UTF-8'}');background-size:cover;background-position:center;background-repeat:no-repeat;"{/if}>
-  <div class="h2 section-title text-uppercase mb-4">
+  <h2 class="section-title text-uppercase mb-4">
     <span>{l s='Latest news from our blog' mod='everblock'}</span>
-  </div>
+  </h2>
 
   {assign var='carouselId' value='everblock-wp-posts-carousel-'|cat:mt_rand(1000,999999)}
   <div class="everblock-wp-posts container">
