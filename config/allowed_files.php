@@ -104,6 +104,7 @@ return [
     'src/Service/EverblockPrettyBlocks.php',
     'src/Service/EverblockPreviewBuilder.php',
     'src/Service/EverblockTools.php',
+    'src/Service/GithubReleaseChecker.php',
     'src/Service/ImportFile.php',
     'src/Service/ShortcodeDocumentationProvider.php',
     'src/Service/EverblockPrettyBlocksImportExport.php',
