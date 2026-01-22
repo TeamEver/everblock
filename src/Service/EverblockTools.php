@@ -4593,7 +4593,9 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_faq_lang',
             _DB_PREFIX_ . 'everblock_faq_product',
             _DB_PREFIX_ . 'everblock_tabs',
+            _DB_PREFIX_ . 'everblock_tabs_lang',
             _DB_PREFIX_ . 'everblock_flags',
+            _DB_PREFIX_ . 'everblock_flags_lang',
             _DB_PREFIX_ . 'everblock_modal',
             _DB_PREFIX_ . 'everblock_modal_lang',
             _DB_PREFIX_ . 'everblock_game_play',
@@ -4710,6 +4712,19 @@ class EverblockTools extends ObjectModel
             $columnsToAdd,
             'Unable to update Ever Block database'
         );
+        // Ajoute les colonnes manquantes à la table everblock_faq_product
+        $columnsToAdd = [
+            'id_everblock_faq' => 'int(10) unsigned NOT NULL',
+            'id_product' => 'int(10) unsigned NOT NULL',
+            'id_shop' => 'int(10) unsigned NOT NULL',
+            'position' => 'int(10) unsigned NOT NULL DEFAULT 0',
+        ];
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_faq_product',
+            $columnsToAdd,
+            'Unable to update Ever Block FAQ product database'
+        );
         // Ajoute les colonnes manquantes à la table everblock_tabs
         $columnsToAdd = [
             'id_product' => 'int(10) unsigned NOT NULL',
@@ -4734,6 +4749,31 @@ class EverblockTools extends ObjectModel
             _DB_PREFIX_ . 'everblock_tabs_lang',
             $columnsToAdd,
             'Unable to update Ever Block tabs lang database'
+        );
+        // Ajoute les colonnes manquantes à la table everblock_flags
+        $columnsToAdd = [
+            'id_product' => 'int(10) unsigned NOT NULL',
+            'id_flag' => 'int(10) unsigned DEFAULT 0',
+            'id_shop' => 'int(10) unsigned DEFAULT 0',
+        ];
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_flags',
+            $columnsToAdd,
+            'Unable to update Ever Block flags database'
+        );
+        // Ajoute les colonnes manquantes à la table everblock_flags_lang
+        $columnsToAdd = [
+            'id_everblock_flags' => 'int(10) unsigned NOT NULL',
+            'id_lang' => 'int(10) unsigned NOT NULL',
+            'title' => 'varchar(255) DEFAULT NULL',
+            'content' => 'text DEFAULT NULL',
+        ];
+        static::addMissingColumns(
+            $db,
+            _DB_PREFIX_ . 'everblock_flags_lang',
+            $columnsToAdd,
+            'Unable to update Ever Block flags lang database'
         );
         // Ajoute les colonnes manquantes à la table everblock_modal
         $columnsToAdd = [
