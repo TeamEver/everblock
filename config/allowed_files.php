@@ -226,6 +226,7 @@ return [
     'views/js/custom.js',
     'views/js/everblock-obfuscation.js',
     'views/js/everblock.js',
+    'views/js/everblock-slider.js',
     'views/js/index.php',
     'views/js/product-faq.js',
     'views/js/product-modal.js',

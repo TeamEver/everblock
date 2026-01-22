@@ -56,12 +56,16 @@
 {/if}
 {assign var=gapSetting value=$block.settings.gap|default:'medium'}
 {assign var=gapClass value='g-3'}
+{assign var=sliderGapClass value='gap-3'}
 {if $gapSetting == 'none'}
   {assign var=gapClass value='g-0'}
+  {assign var=sliderGapClass value='gap-0'}
 {elseif $gapSetting == 'small'}
   {assign var=gapClass value='g-2'}
+  {assign var=sliderGapClass value='gap-2'}
 {elseif $gapSetting == 'large'}
   {assign var=gapClass value='g-4'}
+  {assign var=sliderGapClass value='gap-4'}
 {/if}
 {assign var=baseItemClass value='position-relative overflow-hidden'}
 {assign var=layoutItemClass value="{$baseItemClass} {$colMobileClass} {$colTabletClass} {$colDesktopClass}"}
@@ -90,15 +94,14 @@
   {/foreach}
   {assign var='use_slider' value=($displayMode == 'slider' && $visibleStatesCount > 1)}
   {if $use_slider}
-    <div class="mt-4 ever-cover-carousel ever-bootstrap-carousel"
+    <div class="mt-4 ever-slider overflow-hidden position-relative"
          data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}"
+         data-items-tablet="{$block.settings.columns_tablet|default:1|escape:'htmlall':'UTF-8'}"
          data-items-mobile="{$block.settings.columns_mobile|default:1|escape:'htmlall':'UTF-8'}"
          data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
          data-infinite="1"
-         data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}"
-         data-row-class="row {$gapClass} justify-content-center"
-         data-controls="true"
-         data-indicators="true">
+         data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}">
+      <div class="ever-slider-track d-flex {$sliderGapClass}">
       {foreach from=$block.states item=state key=key}
         {assign var=isStateVisible value=true}
         {assign var=startDateStr value=$state.start_date|default:''}
@@ -118,9 +121,9 @@
           {/if}
         {/if}
         {if $isStateVisible}
-          {assign var=itemClass value=$layoutItemClass}
+          {assign var=itemClass value="{$baseItemClass} ever-slider-item flex-shrink-0"}
           {if $state.css_class}
-            {assign var=itemClass value="{$baseItemClass} {$state.css_class}"}
+            {assign var=itemClass value="{$baseItemClass} ever-slider-item flex-shrink-0 {$state.css_class}"}
           {/if}
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
           <div id="block-{$block.id_prettyblocks}-{$key}" class="{$itemClass|escape:'htmlall'}" style="
@@ -172,6 +175,14 @@
           {/if}
         {/if}
       {/foreach}
+      </div>
+      <button class="ever-slider-button ever-slider-prev btn btn-light position-absolute top-50 start-0 translate-middle-y" type="button" aria-label="{l s='Previous slide' mod='everblock'}">
+        <span aria-hidden="true">&lsaquo;</span>
+      </button>
+      <button class="ever-slider-button ever-slider-next btn btn-light position-absolute top-50 end-0 translate-middle-y" type="button" aria-label="{l s='Next slide' mod='everblock'}">
+        <span aria-hidden="true">&rsaquo;</span>
+      </button>
+      <div class="ever-slider-dots d-flex justify-content-center mt-3"></div>
     </div>
   {else}
     <div class="row mt-4 {$gapClass} justify-content-center">
