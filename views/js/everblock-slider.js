@@ -65,39 +65,20 @@
         state.nextButton.disabled = state.index >= state.maxIndex;
     }
 
-    function updateDots(state) {
-        if (!state.dotsWrapper) {
-            return;
-        }
-        state.dotsWrapper.innerHTML = '';
-        if (state.pageCount <= 1) {
-            state.dotsWrapper.hidden = true;
-            return;
-        }
-        state.dotsWrapper.hidden = false;
-        for (let i = 0; i < state.pageCount; i += 1) {
-            const dot = document.createElement('button');
-            dot.type = 'button';
-            dot.className = 'ever-slider-dot';
-            dot.setAttribute('aria-label', `Aller au slide ${i + 1}`);
-            dot.dataset.index = String(i);
-            if (i === state.pageIndex) {
-                dot.classList.add('is-active');
-                dot.setAttribute('aria-current', 'true');
-            }
-            dot.addEventListener('click', () => {
-                goToPage(state, i, true);
-            });
-            state.dotsWrapper.appendChild(dot);
-        }
-    }
-
     function updateTrackPosition(state) {
         if (!state.track) {
             return;
         }
         const offset = (state.itemWidth + state.gap) * state.index;
         state.track.style.transform = `translateX(${-offset}px)`;
+    }
+
+    function updateItemStates(state) {
+        state.items.forEach((item, itemIndex) => {
+            const isActive = itemIndex === state.index;
+            item.classList.toggle('is-active', isActive);
+            item.classList.toggle('is-inactive', !isActive);
+        });
     }
 
     function updateState(state) {
@@ -119,8 +100,8 @@
         state.pageCount = state.disabled ? 1 : Math.ceil(totalItems / state.itemsPerView);
         state.pageIndex = Math.min(state.pageCount - 1, Math.round(state.index / state.itemsPerView));
         updateTrackPosition(state);
+        updateItemStates(state);
         updateButtons(state);
-        updateDots(state);
     }
 
     function clearAutoplay(state) {
@@ -155,21 +136,11 @@
         state.index = targetIndex;
         state.pageIndex = Math.min(state.pageCount - 1, Math.round(state.index / state.itemsPerView));
         updateTrackPosition(state);
+        updateItemStates(state);
         updateButtons(state);
         if (resetAutoplay) {
             startAutoplay(state);
         }
-        const dots = state.dotsWrapper ? state.dotsWrapper.querySelectorAll('.ever-slider-dot') : [];
-        dots.forEach((dot, dotIndex) => {
-            const isActive = dotIndex === state.pageIndex;
-            dot.classList.toggle('is-active', isActive);
-            dot.toggleAttribute('aria-current', isActive);
-        });
-    }
-
-    function goToPage(state, pageIndex, resetAutoplay) {
-        const targetIndex = Math.min(pageIndex * state.itemsPerView, state.maxIndex);
-        goToIndex(state, targetIndex, resetAutoplay);
     }
 
     function bindControls(state) {
@@ -193,7 +164,6 @@
         const items = Array.from(track.querySelectorAll('.ever-slider-item'));
         const prevButton = slider.querySelector('.ever-slider-prev');
         const nextButton = slider.querySelector('.ever-slider-next');
-        const dotsWrapper = slider.querySelector('.ever-slider-dots');
         const autoplay = parseNumber(slider.dataset.autoplay, 0) === 1;
         const autoplayDelay = parseNumber(slider.dataset.autoplayDelay, 5000);
         const infinite = parseNumber(slider.dataset.infinite, 0) === 1;
@@ -204,7 +174,6 @@
             items,
             prevButton,
             nextButton,
-            dotsWrapper,
             autoplay,
             autoplayDelay,
             infinite,
