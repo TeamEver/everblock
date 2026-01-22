@@ -30,7 +30,9 @@
     <div class="row">
   {/if}
     <div class="col-12">
-      <pre class="prettyblock-custom-code {$block.settings.css_class nofilter}"><code>{$block.settings.code nofilter}</code></pre>
+      <div class="prettyblock-custom-code {$block.settings.css_class nofilter}">
+        {$block.settings.code nofilter}
+      </div>
     </div>
   {if $block.settings.default.container}
     </div>
