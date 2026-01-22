@@ -1041,6 +1041,39 @@
         opacity var(--prettyblocks-transition-speed, 600ms) ease-in-out;
 }
 
+/* Simple image slider (vanilla) */
+.ever-slider-track {
+    transition: transform 0.4s ease;
+    will-change: transform;
+}
+
+.ever-slider-button {
+    z-index: 2;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ever-slider-dots {
+    gap: 0.5rem;
+}
+
+.ever-slider-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 999px;
+    border: 0;
+    background-color: rgba(0, 0, 0, 0.25);
+    transition: background-color 0.2s ease;
+}
+
+.ever-slider-dot.is-active {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
 @media (max-width: 767.98px) {
     .prettyblocks-image-slider-wrapper {
         padding-left: 0.5rem;

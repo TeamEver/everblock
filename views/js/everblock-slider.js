@@ -1,0 +1,260 @@
+/**
+ * 2019-2025 Team Ever
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ *  @author    Team Ever <https://www.team-ever.com/>
+ *  @copyright 2019-2025 Team Ever
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+(function () {
+    const sliderStates = new Map();
+    const mobileBreakpoint = 768;
+    const tabletBreakpoint = 992;
+
+    function parseNumber(value, fallback) {
+        const parsed = parseInt(value, 10);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+    }
+
+    function getItemsPerView(slider) {
+        const itemsDesktop = parseNumber(slider.dataset.items, 1);
+        const itemsTablet = parseNumber(slider.dataset.itemsTablet, itemsDesktop);
+        const itemsMobile = parseNumber(slider.dataset.itemsMobile, 1);
+        const width = window.innerWidth;
+        if (width < mobileBreakpoint) {
+            return itemsMobile;
+        }
+        if (width < tabletBreakpoint) {
+            return itemsTablet;
+        }
+        return itemsDesktop;
+    }
+
+    function getGapValue(track) {
+        const styles = window.getComputedStyle(track);
+        const gapValue = styles.columnGap || styles.gap || '0';
+        return parseFloat(gapValue) || 0;
+    }
+
+    function updateButtons(state) {
+        if (!state.prevButton || !state.nextButton) {
+            return;
+        }
+        if (state.disabled) {
+            state.prevButton.hidden = true;
+            state.nextButton.hidden = true;
+            return;
+        }
+        state.prevButton.hidden = false;
+        state.nextButton.hidden = false;
+        if (state.infinite) {
+            state.prevButton.disabled = false;
+            state.nextButton.disabled = false;
+            return;
+        }
+        state.prevButton.disabled = state.index === 0;
+        state.nextButton.disabled = state.index >= state.maxIndex;
+    }
+
+    function updateDots(state) {
+        if (!state.dotsWrapper) {
+            return;
+        }
+        state.dotsWrapper.innerHTML = '';
+        if (state.pageCount <= 1) {
+            state.dotsWrapper.hidden = true;
+            return;
+        }
+        state.dotsWrapper.hidden = false;
+        for (let i = 0; i < state.pageCount; i += 1) {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'ever-slider-dot';
+            dot.setAttribute('aria-label', `Aller au slide ${i + 1}`);
+            dot.dataset.index = String(i);
+            if (i === state.pageIndex) {
+                dot.classList.add('is-active');
+                dot.setAttribute('aria-current', 'true');
+            }
+            dot.addEventListener('click', () => {
+                goToPage(state, i, true);
+            });
+            state.dotsWrapper.appendChild(dot);
+        }
+    }
+
+    function updateTrackPosition(state) {
+        if (!state.track) {
+            return;
+        }
+        const offset = (state.itemWidth + state.gap) * state.index;
+        state.track.style.transform = `translateX(${-offset}px)`;
+    }
+
+    function updateState(state) {
+        const totalItems = state.items.length;
+        state.itemsPerView = getItemsPerView(state.slider);
+        state.itemsPerView = Math.max(1, state.itemsPerView);
+        state.gap = getGapValue(state.track);
+        const containerWidth = state.slider.clientWidth || 0;
+        const totalGap = state.gap * Math.max(0, state.itemsPerView - 1);
+        state.itemWidth = state.itemsPerView > 0 ? (containerWidth - totalGap) / state.itemsPerView : 0;
+        state.items.forEach((item) => {
+            item.style.width = `${state.itemWidth}px`;
+        });
+        state.maxIndex = Math.max(0, totalItems - state.itemsPerView);
+        state.disabled = totalItems <= 1 || state.itemsPerView >= totalItems;
+        if (state.index > state.maxIndex) {
+            state.index = state.maxIndex;
+        }
+        state.pageCount = state.disabled ? 1 : Math.ceil(totalItems / state.itemsPerView);
+        state.pageIndex = Math.min(state.pageCount - 1, Math.round(state.index / state.itemsPerView));
+        updateTrackPosition(state);
+        updateButtons(state);
+        updateDots(state);
+    }
+
+    function clearAutoplay(state) {
+        if (state.timer) {
+            window.clearInterval(state.timer);
+            state.timer = null;
+        }
+    }
+
+    function startAutoplay(state) {
+        clearAutoplay(state);
+        if (!state.autoplay || state.pageCount <= 1 || state.disabled) {
+            return;
+        }
+        state.timer = window.setInterval(() => {
+            goToIndex(state, state.index + state.itemsPerView, false);
+        }, state.autoplayDelay);
+    }
+
+    function goToIndex(state, index, resetAutoplay) {
+        let targetIndex = index;
+        if (state.infinite) {
+            if (targetIndex > state.maxIndex) {
+                targetIndex = 0;
+            }
+            if (targetIndex < 0) {
+                targetIndex = state.maxIndex;
+            }
+        } else {
+            targetIndex = Math.max(0, Math.min(state.maxIndex, targetIndex));
+        }
+        state.index = targetIndex;
+        state.pageIndex = Math.min(state.pageCount - 1, Math.round(state.index / state.itemsPerView));
+        updateTrackPosition(state);
+        updateButtons(state);
+        if (resetAutoplay) {
+            startAutoplay(state);
+        }
+        const dots = state.dotsWrapper ? state.dotsWrapper.querySelectorAll('.ever-slider-dot') : [];
+        dots.forEach((dot, dotIndex) => {
+            const isActive = dotIndex === state.pageIndex;
+            dot.classList.toggle('is-active', isActive);
+            dot.toggleAttribute('aria-current', isActive);
+        });
+    }
+
+    function goToPage(state, pageIndex, resetAutoplay) {
+        const targetIndex = Math.min(pageIndex * state.itemsPerView, state.maxIndex);
+        goToIndex(state, targetIndex, resetAutoplay);
+    }
+
+    function bindControls(state) {
+        if (state.prevButton) {
+            state.prevButton.addEventListener('click', () => {
+                goToIndex(state, state.index - state.itemsPerView, true);
+            });
+        }
+        if (state.nextButton) {
+            state.nextButton.addEventListener('click', () => {
+                goToIndex(state, state.index + state.itemsPerView, true);
+            });
+        }
+    }
+
+    function setupSlider(slider) {
+        const track = slider.querySelector('.ever-slider-track');
+        if (!track) {
+            return;
+        }
+        const items = Array.from(track.querySelectorAll('.ever-slider-item'));
+        const prevButton = slider.querySelector('.ever-slider-prev');
+        const nextButton = slider.querySelector('.ever-slider-next');
+        const dotsWrapper = slider.querySelector('.ever-slider-dots');
+        const autoplay = parseNumber(slider.dataset.autoplay, 0) === 1;
+        const autoplayDelay = parseNumber(slider.dataset.autoplayDelay, 5000);
+        const infinite = parseNumber(slider.dataset.infinite, 0) === 1;
+
+        const state = {
+            slider,
+            track,
+            items,
+            prevButton,
+            nextButton,
+            dotsWrapper,
+            autoplay,
+            autoplayDelay,
+            infinite,
+            index: 0,
+            itemsPerView: 1,
+            itemWidth: 0,
+            gap: 0,
+            maxIndex: 0,
+            pageCount: 1,
+            pageIndex: 0,
+            disabled: false,
+            timer: null
+        };
+
+        sliderStates.set(slider, state);
+        bindControls(state);
+        updateState(state);
+        startAutoplay(state);
+    }
+
+    function initEverblockSliders() {
+        const sliders = document.querySelectorAll('.ever-slider');
+        sliders.forEach((slider) => {
+            if (sliderStates.has(slider)) {
+                const state = sliderStates.get(slider);
+                if (state) {
+                    updateState(state);
+                    startAutoplay(state);
+                }
+                return;
+            }
+            setupSlider(slider);
+        });
+    }
+
+    let resizeTimer = null;
+    function handleResize() {
+        if (resizeTimer) {
+            window.clearTimeout(resizeTimer);
+        }
+        resizeTimer = window.setTimeout(() => {
+            sliderStates.forEach((state) => {
+                updateState(state);
+                startAutoplay(state);
+            });
+        }, 150);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initEverblockSliders();
+        window.addEventListener('resize', handleResize);
+    });
+})();
