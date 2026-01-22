@@ -36,6 +36,7 @@ use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockPrettyBlocksImportExport;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;
+use Everblock\Tools\Service\GithubReleaseChecker;
 use Everblock\Tools\Service\ImportFile;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
@@ -1062,6 +1063,9 @@ class Everblock extends Module
         }
         $notifications = $this->html;
         $this->html = '';
+        $releaseChecker = new GithubReleaseChecker($this->version);
+        $latestRelease = $releaseChecker->getLatestEverblockRelease();
+        $updateAvailable = $releaseChecker->isEverblockUpdateAvailable();
         $this->context->smarty->assign([
             'module_name' => $this->displayName,
             $this->name . '_version' => $this->version,
@@ -1083,6 +1087,8 @@ class Everblock extends Module
             'everblock_faq_front_link' => $faqFrontLink,
             'everblock_faq_front_tag' => $faqFrontTag,
             'everblock_all_faqs_front_link' => $faqAllFrontLink,
+            'everblock_latest_release' => $latestRelease,
+            'everblock_update_available' => $updateAvailable,
         ]);
         $output = $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'
