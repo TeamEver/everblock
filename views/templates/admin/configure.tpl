@@ -68,6 +68,37 @@
 
     <div class="everblock-config__layout">
         <div class="everblock-config__main">
+            <div class="everblock-config__card everblock-config__card--update">
+                <h3 class="everblock-config__card-title">{l s='Module update' mod='everblock'}</h3>
+                <ul class="everblock-config__card-list">
+                    <li>
+                        <strong>{l s='Installed version' mod='everblock'}:</strong>
+                        {$everblock_version|escape:'htmlall':'UTF-8'}
+                    </li>
+                    <li>
+                        <strong>{l s='Latest GitHub version' mod='everblock'}:</strong>
+                        {if isset($everblock_latest_release.tag_name) && $everblock_latest_release.tag_name}
+                            {$everblock_latest_release.tag_name|escape:'htmlall':'UTF-8'}
+                        {else}
+                            {l s='Unavailable' mod='everblock'}
+                        {/if}
+                    </li>
+                    <li>
+                        <strong>{l s='Status' mod='everblock'}:</strong>
+                        {if isset($everblock_update_available) && $everblock_update_available}
+                            {l s='An update is available' mod='everblock'}
+                        {else}
+                            {l s='Your module is up to date' mod='everblock'}
+                        {/if}
+                    </li>
+                </ul>
+                {if isset($everblock_latest_release.published_at) && $everblock_latest_release.published_at}
+                    <p class="everblock-config__card-meta">
+                        {l s='Published on' mod='everblock'}:
+                        {$everblock_latest_release.published_at|escape:'htmlall':'UTF-8'}
+                    </p>
+                {/if}
+            </div>
             {if isset($everblock_form)}
                 <div class="everblock-config__card everblock-config__card--form">
                     {$everblock_form nofilter}
