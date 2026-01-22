@@ -5090,6 +5090,7 @@ class Everblock extends Module
 
     public function hookActionRegisterBlock($params)
     {
+        EverblockTools::checkAndFixDatabase();
         return EverblockPrettyBlocks::getEverPrettyBlocks($this->context);
     }
 
