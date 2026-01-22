@@ -22,9 +22,9 @@
 {assign var=visibleStatesCount value=0}
 {assign var=displayMode value=$block.settings.display_mode|default:''}
 {if $displayMode == '' && isset($block.settings.slider) && $block.settings.slider}
-  {assign var=displayMode value='slider'}
+  {assign var=displayMode value='Slider'}
 {elseif $displayMode == ''}
-  {assign var=displayMode value='grid'}
+  {assign var=displayMode value='Grid'}
 {/if}
 {assign var=columnsDesktop value=$block.settings.columns_desktop|default:1}
 {assign var=columnsTablet value=$block.settings.columns_tablet|default:1}
@@ -93,7 +93,7 @@
       {assign var=visibleStatesCount value=$visibleStatesCount+1}
     {/if}
   {/foreach}
-  {assign var='use_slider' value=($displayMode == 'slider' && $visibleStatesCount > 1 && $maxSliderItems < $visibleStatesCount)}
+  {assign var='use_slider' value=($displayMode == 'Slider' && $visibleStatesCount > 1 && $maxSliderItems < $visibleStatesCount)}
   {if $use_slider}
     <div class="ever-slider overflow-hidden position-relative"
          data-items="{$sliderItemsDesktop|escape:'htmlall':'UTF-8'}"
