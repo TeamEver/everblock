@@ -1048,7 +1048,7 @@
 }
 
 .ever-slider-item {
-    transition: opacity 0.4s ease, filter 0.4s ease;
+    transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease;
     opacity: 1;
     filter: none;
 }
@@ -1059,8 +1059,13 @@
 }
 
 .ever-slider-item.is-inactive {
+    opacity: 0.4;
+    filter: brightness(0.85);
+}
+
+.ever-slider-item.is-adjacent {
     opacity: 0.6;
-    filter: grayscale(10%) brightness(0.95);
+    filter: brightness(0.9);
 }
 
 .ever-slider-prev,
@@ -1083,11 +1088,11 @@
 }
 
 .ever-slider-prev {
-    left: 10px;
+    left: -40px;
 }
 
 .ever-slider-next {
-    right: 10px;
+    right: -40px;
 }
 
 .ever-slider-prev:hover,

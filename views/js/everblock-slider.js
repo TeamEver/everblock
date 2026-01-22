@@ -49,11 +49,6 @@
         if (!state.prevButton || !state.nextButton) {
             return;
         }
-        if (state.disabled) {
-            state.prevButton.hidden = true;
-            state.nextButton.hidden = true;
-            return;
-        }
         state.prevButton.hidden = false;
         state.nextButton.hidden = false;
         if (state.infinite) {
@@ -61,7 +56,12 @@
             state.nextButton.disabled = false;
             return;
         }
-        state.prevButton.disabled = state.index === 0;
+        if (state.disabled) {
+            state.prevButton.disabled = true;
+            state.nextButton.disabled = true;
+            return;
+        }
+        state.prevButton.disabled = state.index <= 0;
         state.nextButton.disabled = state.index >= state.maxIndex;
     }
 
@@ -69,15 +69,19 @@
         if (!state.track) {
             return;
         }
-        const offset = (state.itemWidth + state.gap) * state.index;
-        state.track.style.transform = `translateX(${-offset}px)`;
+        const containerWidth = state.containerWidth || state.slider.clientWidth || 0;
+        const step = state.itemWidth + state.gap;
+        const offset = (containerWidth / 2) - (state.itemWidth / 2) - (state.index * step);
+        state.track.style.transform = `translateX(${offset}px)`;
     }
 
     function updateItemStates(state) {
         state.items.forEach((item, itemIndex) => {
             const isActive = itemIndex === state.index;
+            const isAdjacent = itemIndex === state.index - 1 || itemIndex === state.index + 1;
             item.classList.toggle('is-active', isActive);
-            item.classList.toggle('is-inactive', !isActive);
+            item.classList.toggle('is-adjacent', !isActive && isAdjacent);
+            item.classList.toggle('is-inactive', !isActive && !isAdjacent);
         });
     }
 
@@ -87,18 +91,19 @@
         state.itemsPerView = Math.max(1, state.itemsPerView);
         state.gap = getGapValue(state.track);
         const containerWidth = state.slider.clientWidth || 0;
+        state.containerWidth = containerWidth;
         const totalGap = state.gap * Math.max(0, state.itemsPerView - 1);
         state.itemWidth = state.itemsPerView > 0 ? (containerWidth - totalGap) / state.itemsPerView : 0;
         state.items.forEach((item) => {
             item.style.width = `${state.itemWidth}px`;
         });
-        state.maxIndex = Math.max(0, totalItems - state.itemsPerView);
-        state.disabled = totalItems <= 1 || state.itemsPerView >= totalItems;
+        state.maxIndex = Math.max(0, totalItems - 1);
+        state.disabled = totalItems <= 1;
         if (state.index > state.maxIndex) {
             state.index = state.maxIndex;
         }
-        state.pageCount = state.disabled ? 1 : Math.ceil(totalItems / state.itemsPerView);
-        state.pageIndex = Math.min(state.pageCount - 1, Math.round(state.index / state.itemsPerView));
+        state.pageCount = state.disabled ? 1 : totalItems;
+        state.pageIndex = Math.min(state.pageCount - 1, state.index);
         updateTrackPosition(state);
         updateItemStates(state);
         updateButtons(state);
@@ -117,7 +122,7 @@
             return;
         }
         state.timer = window.setInterval(() => {
-            goToIndex(state, state.index + state.itemsPerView, false);
+            goToIndex(state, state.index + 1, false);
         }, state.autoplayDelay);
     }
 
@@ -134,7 +139,7 @@
             targetIndex = Math.max(0, Math.min(state.maxIndex, targetIndex));
         }
         state.index = targetIndex;
-        state.pageIndex = Math.min(state.pageCount - 1, Math.round(state.index / state.itemsPerView));
+        state.pageIndex = Math.min(state.pageCount - 1, state.index);
         updateTrackPosition(state);
         updateItemStates(state);
         updateButtons(state);
@@ -146,12 +151,12 @@
     function bindControls(state) {
         if (state.prevButton) {
             state.prevButton.addEventListener('click', () => {
-                goToIndex(state, state.index - state.itemsPerView, true);
+                goToIndex(state, state.index - 1, true);
             });
         }
         if (state.nextButton) {
             state.nextButton.addEventListener('click', () => {
-                goToIndex(state, state.index + state.itemsPerView, true);
+                goToIndex(state, state.index + 1, true);
             });
         }
     }
