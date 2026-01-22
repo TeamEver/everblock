@@ -51,16 +51,22 @@
 {/if}
 {assign var=gapSetting value=$block.settings.gap|default:'medium'}
 {assign var=gapClass value='g-3'}
-{assign var=sliderGapClass value='gap-3'}
 {if $gapSetting == 'none'}
   {assign var=gapClass value='g-0'}
-  {assign var=sliderGapClass value='gap-0'}
 {elseif $gapSetting == 'small'}
   {assign var=gapClass value='g-2'}
-  {assign var=sliderGapClass value='gap-2'}
 {elseif $gapSetting == 'large'}
   {assign var=gapClass value='g-4'}
-  {assign var=sliderGapClass value='gap-4'}
+{/if}
+{assign var=sliderItemsDesktop value=$block.settings.slider_items|default:3|intval}
+{assign var=sliderItemsTablet value=$block.settings.columns_tablet|default:1|intval}
+{assign var=sliderItemsMobile value=$block.settings.columns_mobile|default:1|intval}
+{assign var=maxSliderItems value=$sliderItemsDesktop}
+{if $sliderItemsTablet > $maxSliderItems}
+  {assign var=maxSliderItems value=$sliderItemsTablet}
+{/if}
+{if $sliderItemsMobile > $maxSliderItems}
+  {assign var=maxSliderItems value=$sliderItemsMobile}
 {/if}
 {assign var=baseItemClass value='position-relative overflow-hidden'}
 {assign var=layoutItemClass value="{$baseItemClass} {$colMobileClass} {$colTabletClass} {$colDesktopClass}"}
@@ -87,16 +93,15 @@
       {assign var=visibleStatesCount value=$visibleStatesCount+1}
     {/if}
   {/foreach}
-  {assign var='use_slider' value=($displayMode == 'slider' && $visibleStatesCount > 1)}
+  {assign var='use_slider' value=($displayMode == 'slider' && $visibleStatesCount > 1 && $maxSliderItems < $visibleStatesCount)}
   {if $use_slider}
-    <div class="mt-4 ever-slider overflow-hidden position-relative"
-         data-items="{$block.settings.slider_items|default:3|escape:'htmlall':'UTF-8'}"
-         data-items-tablet="{$block.settings.columns_tablet|default:1|escape:'htmlall':'UTF-8'}"
-         data-items-mobile="{$block.settings.columns_mobile|default:1|escape:'htmlall':'UTF-8'}"
+    <div class="ever-slider overflow-hidden position-relative"
+         data-items="{$sliderItemsDesktop|escape:'htmlall':'UTF-8'}"
+         data-items-mobile="{$sliderItemsMobile|escape:'htmlall':'UTF-8'}"
          data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
-         data-infinite="1"
-         data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}">
-      <div class="ever-slider-track d-flex transition {$sliderGapClass}">
+         data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}"
+         data-infinite="1">
+      <div class="ever-slider-track d-flex">
       {foreach from=$block.states item=state key=key}
         {assign var=isStateVisible value=true}
         {assign var=startDateStr value=$state.start_date|default:''}
@@ -171,13 +176,9 @@
         {/if}
       {/foreach}
       </div>
-      <button class="ever-slider-button ever-slider-prev btn btn-light position-absolute top-50 start-0 translate-middle-y" type="button" aria-label="{l s='Previous slide' mod='everblock'}">
-        <span aria-hidden="true">&lsaquo;</span>
-      </button>
-      <button class="ever-slider-button ever-slider-next btn btn-light position-absolute top-50 end-0 translate-middle-y" type="button" aria-label="{l s='Next slide' mod='everblock'}">
-        <span aria-hidden="true">&rsaquo;</span>
-      </button>
-      <div class="ever-slider-dots d-flex justify-content-center mt-3"></div>
+      <button class="ever-slider-prev" type="button" aria-label="Previous"></button>
+      <button class="ever-slider-next" type="button" aria-label="Next"></button>
+      <div class="ever-slider-dots"></div>
     </div>
   {else}
     {if $block.settings.default.force_full_width}
