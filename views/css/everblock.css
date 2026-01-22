@@ -1042,6 +1042,10 @@
 }
 
 /* Simple image slider (vanilla) */
+.ever-slider {
+    width: 100%;
+}
+
 .ever-slider-track {
     transition: transform 0.4s ease;
     will-change: transform;
@@ -1056,6 +1060,8 @@
 .ever-slider-item.is-active {
     opacity: 1;
     filter: none;
+    transform: scale(1.08);
+    z-index: 2;
 }
 
 .ever-slider-item.is-inactive {
@@ -1088,11 +1094,11 @@
 }
 
 .ever-slider-prev {
-    left: -40px;
+    left: calc(50% - (var(--ever-slider-active-width, 0px) / 2) - 3.25rem);
 }
 
 .ever-slider-next {
-    right: -40px;
+    right: calc(50% - (var(--ever-slider-active-width, 0px) / 2) - 3.25rem);
 }
 
 .ever-slider-prev:hover,
