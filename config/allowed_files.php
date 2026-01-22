@@ -279,7 +279,7 @@ return [
     'views/templates/hook/ever_brand.tpl',
     'views/templates/hook/ever_img_carousel.tpl',
     'views/templates/hook/ever_presented_products.tpl',
-    'views/templates/hook/prettyblock_custom_code.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_custom_code.tpl',
     'views/templates/hook/everblock.tpl',
     'views/templates/hook/faq.tpl',
     'views/templates/hook/generated_wp_posts.tpl',
