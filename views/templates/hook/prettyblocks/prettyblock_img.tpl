@@ -18,11 +18,6 @@
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 
 <div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
-  {if $block.settings.default.force_full_width}
-    <div class="row gx-0 no-gutters">
-  {elseif $block.settings.default.container}
-    <div class="row">
-  {/if}
 {assign var=everblockNow value=$smarty.now}
 {assign var=visibleStatesCount value=0}
 {assign var=displayMode value=$block.settings.display_mode|default:''}
@@ -101,7 +96,7 @@
          data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
          data-infinite="1"
          data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}">
-      <div class="ever-slider-track d-flex {$sliderGapClass}">
+      <div class="ever-slider-track d-flex transition {$sliderGapClass}">
       {foreach from=$block.states item=state key=key}
         {assign var=isStateVisible value=true}
         {assign var=startDateStr value=$state.start_date|default:''}
@@ -185,6 +180,11 @@
       <div class="ever-slider-dots d-flex justify-content-center mt-3"></div>
     </div>
   {else}
+    {if $block.settings.default.force_full_width}
+      <div class="row gx-0 no-gutters">
+    {elseif $block.settings.default.container}
+      <div class="row">
+    {/if}
     <div class="row mt-4 {$gapClass} justify-content-center">
       {foreach from=$block.states item=state key=key}
         {assign var=isStateVisible value=true}
@@ -260,10 +260,9 @@
         {/if}
       {/foreach}
     </div>
+    {if $block.settings.default.force_full_width || $block.settings.default.container}
+      </div>
+    {/if}
   {/if}
 {/if}
-
-  {if $block.settings.default.force_full_width || $block.settings.default.container}
-    </div>
-  {/if}
 </div>
