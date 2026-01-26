@@ -1002,6 +1002,10 @@ class Everblock extends Module
                 }
             }
         }
+        $releaseChecker = new GithubReleaseChecker($this->version);
+        if ((bool) Tools::isSubmit('submitEverblockUpdate') === true) {
+            $this->processEverblockUpdate($releaseChecker);
+        }
         if (count($this->postErrors)) {
             foreach ($this->postErrors as $error) {
                 $this->html .= $this->displayError($error);
@@ -1063,7 +1067,6 @@ class Everblock extends Module
         }
         $notifications = $this->html;
         $this->html = '';
-        $releaseChecker = new GithubReleaseChecker($this->version);
         $latestRelease = $releaseChecker->getLatestEverblockRelease();
         $updateAvailable = $releaseChecker->isEverblockUpdateAvailable();
         $this->context->smarty->assign([
@@ -1089,6 +1092,11 @@ class Everblock extends Module
             'everblock_all_faqs_front_link' => $faqAllFrontLink,
             'everblock_latest_release' => $latestRelease,
             'everblock_update_available' => $updateAvailable,
+            'everblock_update_action' => $this->context->link->getAdminLink('AdminModules', true, [], [
+                'configure' => $this->name,
+                'module_name' => $this->name,
+                'tab_module' => $this->tab,
+            ]),
         ]);
         $output = $this->context->smarty->fetch(
             $this->local_path . 'views/templates/admin/header.tpl'
@@ -1117,6 +1125,188 @@ class Everblock extends Module
             && Tools::getValue('ajax')
             && Tools::getValue('action') === 'EverblockSearchFaq'
             && Tools::getValue('configure') === $this->name;
+    }
+
+    protected function processEverblockUpdate(GithubReleaseChecker $releaseChecker): void
+    {
+        if (!$releaseChecker->isEverblockUpdateAvailable()) {
+            $this->postErrors[] = $this->l('Ever Block is already up to date.');
+            return;
+        }
+
+        $release = $releaseChecker->getLatestEverblockRelease();
+        if (!$release || empty($release['tag_name'])) {
+            $this->postErrors[] = $this->l('Unable to fetch the latest release details.');
+            return;
+        }
+
+        $tagName = (string) $release['tag_name'];
+        $downloadUrl = 'https://github.com/TeamEver/everblock/archive/refs/tags/' . rawurlencode($tagName) . '.zip';
+        $tmpBase = rtrim(_PS_CACHE_DIR_, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'everblock_update' . DIRECTORY_SEPARATOR;
+        if (!is_dir($tmpBase) && !@mkdir($tmpBase, 0755, true)) {
+            $this->postErrors[] = $this->l('Unable to prepare the update cache directory.');
+            return;
+        }
+
+        $tempFile = tempnam($tmpBase, 'everblock_');
+        if (!$tempFile) {
+            $this->postErrors[] = $this->l('Unable to create the update archive.');
+            return;
+        }
+        $zipPath = $tempFile . '.zip';
+        @rename($tempFile, $zipPath);
+
+        if (!Tools::copy($downloadUrl, $zipPath)) {
+            @unlink($zipPath);
+            $this->postErrors[] = $this->l('Unable to download the latest release archive.');
+            return;
+        }
+
+        $extractDir = $tmpBase . 'extract_' . uniqid('', true) . DIRECTORY_SEPARATOR;
+        if (!@mkdir($extractDir, 0755, true)) {
+            @unlink($zipPath);
+            $this->postErrors[] = $this->l('Unable to prepare the extraction directory.');
+            return;
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            $this->removeDirectory($extractDir);
+            @unlink($zipPath);
+            $this->postErrors[] = $this->l('Unable to open the downloaded archive.');
+            return;
+        }
+        $zip->extractTo($extractDir);
+        $zip->close();
+        @unlink($zipPath);
+
+        $sourceDir = $this->locateEverblockSource($extractDir);
+        if (!$sourceDir) {
+            $this->removeDirectory($extractDir);
+            $this->postErrors[] = $this->l('Unable to locate the module files in the archive.');
+            return;
+        }
+
+        if (!$this->replaceModuleFiles($sourceDir)) {
+            $this->removeDirectory($extractDir);
+            $this->postErrors[] = $this->l('Unable to install the latest release.');
+            return;
+        }
+
+        $this->removeDirectory($extractDir);
+        $this->postSuccess[] = $this->l('Ever Block has been updated. The page will now reload.');
+        $this->redirectToModuleConfiguration();
+    }
+
+    protected function locateEverblockSource(string $extractDir)
+    {
+        if (file_exists($extractDir . 'everblock.php')) {
+            return $extractDir;
+        }
+
+        $entries = @scandir($extractDir);
+        if (!is_array($entries)) {
+            return null;
+        }
+
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $candidate = $extractDir . $entry . DIRECTORY_SEPARATOR;
+            if (is_dir($candidate) && file_exists($candidate . 'everblock.php')) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    protected function replaceModuleFiles(string $sourceDir): bool
+    {
+        $targetDir = rtrim(_PS_MODULE_DIR_, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $this->name;
+        $backupDir = $targetDir . '_backup_' . date('YmdHis');
+
+        if (@rename($targetDir, $backupDir)) {
+            if (@rename($sourceDir, $targetDir)) {
+                $this->removeDirectory($backupDir);
+                return true;
+            }
+            @rename($backupDir, $targetDir);
+            return false;
+        }
+
+        return $this->recursiveCopy($sourceDir, $targetDir);
+    }
+
+    protected function recursiveCopy(string $sourceDir, string $targetDir): bool
+    {
+        if (!is_dir($sourceDir)) {
+            return false;
+        }
+        if (!is_dir($targetDir) && !@mkdir($targetDir, 0755, true)) {
+            return false;
+        }
+
+        $entries = scandir($sourceDir);
+        if (!is_array($entries)) {
+            return false;
+        }
+
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $sourcePath = $sourceDir . DIRECTORY_SEPARATOR . $entry;
+            $targetPath = $targetDir . DIRECTORY_SEPARATOR . $entry;
+            if (is_dir($sourcePath)) {
+                if (!$this->recursiveCopy($sourcePath, $targetPath)) {
+                    return false;
+                }
+                continue;
+            }
+            if (!@copy($sourcePath, $targetPath)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function removeDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+        $entries = scandir($dir);
+        if (!is_array($entries)) {
+            return;
+        }
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $path = $dir . DIRECTORY_SEPARATOR . $entry;
+            if (is_dir($path)) {
+                $this->removeDirectory($path);
+            } else {
+                @unlink($path);
+            }
+        }
+        @rmdir($dir);
+    }
+
+    protected function redirectToModuleConfiguration(): void
+    {
+        $params = [
+            'configure' => $this->name,
+            'module_name' => $this->name,
+        ];
+        if ($this->tab) {
+            $params['tab_module'] = $this->tab;
+        }
+        $url = $this->context->link->getAdminLink('AdminModules', true, [], $params);
+        Tools::redirectAdmin($url);
     }
 
     protected function sanitizeModalFileName($originalName)
