@@ -37,7 +37,7 @@
           {assign var='heading_styles' value="{$heading_styles}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"}
         {/if}
         <div class="container">
-          <div class="row justify-content-center">
+          <div class="row justify-content-center text-center">
             <div class="col-auto">
               <{$block.settings.level|default:'h2'} id="{$block.id_prettyblocks}" class="everblock everblock-heading px-4 py-2 {$block.settings.css_class|escape:'htmlall':'UTF-8'}"{if $heading_styles|trim} style="{$heading_styles}"{/if}>{$block.settings.title|escape:'htmlall':'UTF-8'}</{$block.settings.level|default:'h2'}>
             </div>
