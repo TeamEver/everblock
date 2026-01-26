@@ -92,6 +92,16 @@
                         {/if}
                     </li>
                 </ul>
+                {if isset($everblock_update_available) && $everblock_update_available}
+                    <form method="post" action="{$everblock_update_action|escape:'htmlall':'UTF-8'}" class="everblock-config__update-form">
+                        <button type="submit" name="submitEverblockUpdate" class="btn btn-primary">
+                            <i class="icon-download"></i> {l s='Download and install the latest version' mod='everblock'}
+                        </button>
+                        <p class="help-block">
+                            {l s='The page will reload automatically once the update is installed.' mod='everblock'}
+                        </p>
+                    </form>
+                {/if}
                 {if isset($everblock_latest_release.published_at) && $everblock_latest_release.published_at}
                     <p class="everblock-config__card-meta">
                         {l s='Published on' mod='everblock'}:
