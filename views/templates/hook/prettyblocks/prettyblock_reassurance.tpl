@@ -60,7 +60,7 @@
       {assign var='sliderRowClass' value='ever-bootstrap-carousel'}
 
       {if $useDesktopSlider && !$useMobileSlider}
-        <div class="{$sliderRowClass} d-none d-md-flex"
+        <div class="{$sliderRowClass} d-none d-md-block"
              data-items-desktop="{$sliderItemsDesktop}"
              data-items-mobile="{$sliderItemsMobile}"
              data-row-class="{$rowClass}"
@@ -104,7 +104,7 @@
             </div>
           {/foreach}
         </div>
-        <div class="{$rowClass} d-flex d-md-none">
+        <div class="{$rowClass} d-block d-md-none">
           {foreach from=$block.states item=state key=key}
             {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
             {assign var="icon_url" value=false}
@@ -143,7 +143,7 @@
           {/foreach}
         </div>
       {elseif $useMobileSlider && !$useDesktopSlider}
-        <div class="{$rowClass} d-none d-md-flex">
+        <div class="{$rowClass} d-none d-md-block">
           {foreach from=$block.states item=state key=key}
             {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
             {assign var="icon_url" value=false}
@@ -181,7 +181,7 @@
             </div>
           {/foreach}
         </div>
-        <div class="{$sliderRowClass} d-flex d-md-none"
+        <div class="{$sliderRowClass} d-block d-md-none"
              data-items-desktop="{$sliderItemsDesktop}"
              data-items-mobile="{$sliderItemsMobile}"
              data-row-class="{$rowClass}"
