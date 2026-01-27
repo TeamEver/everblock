@@ -23,10 +23,10 @@
 {assign var='useDesktopSlider' value=($useSlider && ($sliderDevices == 'Desktop and mobile' || $sliderDevices == 'Desktop'))}
 {assign var='useMobileSlider' value=($useSlider && ($sliderDevices == 'Desktop and mobile' || $sliderDevices == 'Mobile only'))}
 {assign var='reassuranceColumnClass' value=''}
-{if $reassuranceColumns > 0 && !$useSlider}
+{if $reassuranceColumns > 0 && (!$useSlider || ($useSlider && !$useDesktopSlider))}
   {math assign="reassuranceColumnWidth" equation="12 / x" x=$reassuranceColumns format="%.0f"}
   {assign var='reassuranceColumnClass' value="col-12 col-md-"|cat:$reassuranceColumnWidth|cat:' '}
-{elseif $block.settings.default.display_inline && !$useSlider}
+{elseif $block.settings.default.display_inline && (!$useSlider || ($useSlider && !$useDesktopSlider))}
   {assign var='reassuranceColumnClass' value='col '}
 {elseif $useSlider}
   {assign var='reassuranceColumnClass' value='col-12 '}
