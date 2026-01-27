@@ -856,9 +856,24 @@
 }
 
 @media (max-width: 767px) {
+    .prettyblock-cover-item,
+    .prettyblock-cover-row > .col {
+        overflow: visible;
+    }
+
+    .prettyblock-cover-item img.prettyblock-cover-image,
+    .prettyblock-cover-row > .col img.prettyblock-cover-image {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        object-fit: cover;
+    }
+
     .prettyblock-cover-overlay {
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+        position: relative;
+        overflow-y: visible;
+        height: auto;
+        min-height: 100%;
     }
 
     .prettyblock-cover-overlay.position-mobile-top {
