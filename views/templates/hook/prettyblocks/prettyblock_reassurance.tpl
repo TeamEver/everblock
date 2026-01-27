@@ -18,16 +18,19 @@
 
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
 {assign var='reassuranceColumns' value=$block.settings.items_per_row|default:$block.settings.default.items_per_row|default:$block.settings.columns|default:$block.settings.default.columns|default:3|intval}
-{assign var='useSlider' value=(isset($block.settings.slider) && $block.settings.slider && $block.states|@count > 1)}
+{assign var='statesCount' value=$block.states|@count}
+{assign var='useSlider' value=(isset($block.settings.slider) && $block.settings.slider && $statesCount > 1)}
 {assign var='sliderDevices' value=$block.settings.slider_devices|default:'Desktop and mobile'}
 {assign var='useDesktopSlider' value=($useSlider && ($sliderDevices == 'Desktop and mobile' || $sliderDevices == 'Desktop'))}
 {assign var='useMobileSlider' value=($useSlider && ($sliderDevices == 'Desktop and mobile' || $sliderDevices == 'Mobile only'))}
+{assign var='sliderItemsDesktop' value=$block.settings.slider_items_desktop|default:3|intval}
+{assign var='sliderItemsMobile' value=$block.settings.slider_items_mobile|default:1|intval}
 {assign var='carouselIdBase' value='everblock-reassurance-carousel-'|cat:$block.id_prettyblocks}
 {assign var='reassuranceColumnClass' value=''}
-{if $reassuranceColumns > 0 && (!$useSlider || ($useSlider && !$useDesktopSlider))}
+{if $reassuranceColumns > 0 && (!$useSlider || ($useSlider && (!$useDesktopSlider || $statesCount <= $sliderItemsDesktop)))}
   {math assign="reassuranceColumnWidth" equation="12 / x" x=$reassuranceColumns format="%.0f"}
   {assign var='reassuranceColumnClass' value="col-12 col-md-"|cat:$reassuranceColumnWidth|cat:' '}
-{elseif $block.settings.default.display_inline && (!$useSlider || ($useSlider && !$useDesktopSlider))}
+{elseif $block.settings.default.display_inline && (!$useSlider || ($useSlider && (!$useDesktopSlider || $statesCount <= $sliderItemsDesktop)))}
   {assign var='reassuranceColumnClass' value='col '}
 {elseif $useSlider}
   {assign var='reassuranceColumnClass' value='col-12 '}
@@ -53,9 +56,6 @@
 
 <div id="block-{$block.id_prettyblocks}" class="{$wrapperClasses}"{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color} style="background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};"{/if}>
   {if isset($block.states) && $block.states}
-    {assign var='sliderItemsDesktop' value=$block.settings.slider_items_desktop|default:3|intval}
-    {assign var='sliderItemsMobile' value=$block.settings.slider_items_mobile|default:1|intval}
-
     {if $useSlider}
       {assign var='sliderRowClass' value='ever-bootstrap-carousel'}
 
