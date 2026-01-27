@@ -22,6 +22,7 @@
 {assign var='sliderDevices' value=$block.settings.slider_devices|default:'Desktop and mobile'}
 {assign var='useDesktopSlider' value=($useSlider && ($sliderDevices == 'Desktop and mobile' || $sliderDevices == 'Desktop'))}
 {assign var='useMobileSlider' value=($useSlider && ($sliderDevices == 'Desktop and mobile' || $sliderDevices == 'Mobile only'))}
+{assign var='carouselIdBase' value='everblock-reassurance-carousel-'|cat:$block.id_prettyblocks}
 {assign var='reassuranceColumnClass' value=''}
 {if $reassuranceColumns > 0 && (!$useSlider || ($useSlider && !$useDesktopSlider))}
   {math assign="reassuranceColumnWidth" equation="12 / x" x=$reassuranceColumns format="%.0f"}
@@ -59,7 +60,7 @@
       {assign var='sliderRowClass' value='ever-bootstrap-carousel'}
 
       {if $useDesktopSlider && !$useMobileSlider}
-        <div class="{$sliderRowClass} d-none d-md-block"
+        <div id="{$carouselIdBase}-desktop" class="{$sliderRowClass} d-none d-md-block"
              data-items-desktop="{$sliderItemsDesktop}"
              data-items-mobile="{$sliderItemsMobile}"
              data-row-class="{$rowClass}"
@@ -180,7 +181,7 @@
             </div>
           {/foreach}
         </div>
-        <div class="{$sliderRowClass} d-block d-md-none"
+        <div id="{$carouselIdBase}-mobile" class="{$sliderRowClass} d-block d-md-none"
              data-items-desktop="{$sliderItemsDesktop}"
              data-items-mobile="{$sliderItemsMobile}"
              data-row-class="{$rowClass}"
@@ -225,7 +226,7 @@
           {/foreach}
         </div>
       {else}
-        <div class="{$sliderRowClass}"
+        <div id="{$carouselIdBase}-all" class="{$sliderRowClass}"
              data-items-desktop="{$sliderItemsDesktop}"
              data-items-mobile="{$sliderItemsMobile}"
              data-row-class="{$rowClass}"
