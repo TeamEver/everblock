@@ -933,6 +933,12 @@
 }
 
 /* Cover block slider (Bootstrap carousel) */
+.ever-bootstrap-carousel .carousel-item img{
+    width: revert-layer;
+}
+.ever-bootstrap-carousel .carousel-indicators{
+    display: none;
+}
 .ever-cover-carousel.carousel .carousel-item {
     opacity: 0.5;
     transition: opacity 0.3s ease-in-out;

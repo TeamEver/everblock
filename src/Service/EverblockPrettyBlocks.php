@@ -754,7 +754,7 @@ class EverblockPrettyBlocks
                             'default' => '3',
                         ],
                         'slider' => [
-                            'type' => 'switch',
+                            'type' => 'checkbox',
                             'label' => $module->l('Enable slider'),
                             'default' => false,
                         ],

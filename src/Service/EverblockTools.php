@@ -5439,6 +5439,10 @@ class EverblockTools extends ObjectModel
                 continue;
             }
             $relativePath = str_replace('\\', '/', substr($fileInfo->getPathname(), strlen($moduleDir)));
+            // 🔒 Ignore generated WP posts templates
+            if (strpos($relativePath, 'views/templates/hook/generated_wp_posts/') === 0) {
+                continue;
+            }
             $extension = strtolower((string) pathinfo($relativePath, PATHINFO_EXTENSION));
             if (in_array($extension, $executableExtensions, true)) {
                 if (basename($relativePath) === 'index.php') {

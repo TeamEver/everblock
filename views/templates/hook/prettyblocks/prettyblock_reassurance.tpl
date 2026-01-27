@@ -17,12 +17,11 @@
 *}
 
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/visibility_class.tpl'}
-
 {assign var='reassuranceColumns' value=$block.settings.items_per_row|default:$block.settings.default.items_per_row|default:$block.settings.columns|default:$block.settings.default.columns|default:3|intval}
 {assign var='useSlider' value=(isset($block.settings.slider) && $block.settings.slider && $block.states|@count > 1)}
-{assign var='sliderDevices' value=$block.settings.slider_devices|default:'both'}
-{assign var='useDesktopSlider' value=($useSlider && ($sliderDevices == 'both' || $sliderDevices == 'desktop'))}
-{assign var='useMobileSlider' value=($useSlider && ($sliderDevices == 'both' || $sliderDevices == 'mobile'))}
+{assign var='sliderDevices' value=$block.settings.slider_devices|default:'Desktop and mobile'}
+{assign var='useDesktopSlider' value=($useSlider && ($sliderDevices == 'Desktop and mobile' || $sliderDevices == 'Desktop'))}
+{assign var='useMobileSlider' value=($useSlider && ($sliderDevices == 'Desktop and mobile' || $sliderDevices == 'Mobile only'))}
 {assign var='reassuranceColumnClass' value=''}
 {if $reassuranceColumns > 0 && !$useSlider}
   {math assign="reassuranceColumnWidth" equation="12 / x" x=$reassuranceColumns format="%.0f"}
