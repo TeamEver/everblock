@@ -856,6 +856,11 @@
 }
 
 @media (max-width: 767px) {
+    .prettyblock-cover-overlay {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .prettyblock-cover-overlay.position-mobile-top {
         justify-content: flex-start;
         align-items: center;
