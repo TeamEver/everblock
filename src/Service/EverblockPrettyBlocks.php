@@ -1529,11 +1529,6 @@ class EverblockPrettyBlocks
                                 'large' => $module->l('Large'),
                             ],
                         ],
-                        'slider' => [
-                            'type' => 'checkbox',
-                            'label' => $module->l('Enable slider'),
-                            'default' => 0,
-                        ],
                         'slider_autoplay' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Enable auto scroll'),
