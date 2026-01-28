@@ -41,6 +41,32 @@
     cursor: pointer;
 }
 
+/* Prettyblock link hover effect */
+.everblock-link-hover--text {
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.everblock-link-hover--text:hover,
+.everblock-link-hover--text:focus {
+    text-decoration-color: currentColor;
+}
+
+.everblock-link-hover--block {
+    display: inline-flex;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    will-change: transform;
+}
+
+.everblock-link-hover--block:hover,
+.everblock-link-hover--block:focus {
+    opacity: 0.85;
+    transform: scale(1.04);
+}
+
 /* Lookbook product markers */
 
 .lookbook-marker {

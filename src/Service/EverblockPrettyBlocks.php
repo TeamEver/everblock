@@ -2413,6 +2413,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Block title'),
                             'default' => $module->l('Links'),
                         ],
+                        'link_hover_effect' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable hover effect on links'),
+                            'default' => '0',
+                        ],
                     ], $module),
                 ],
                 'repeater' => [
@@ -2459,6 +2464,11 @@ class EverblockPrettyBlocks
                             'type' => 'text',
                             'label' => $module->l('Block title'),
                             'default' => $module->l('Downloads'),
+                        ],
+                        'link_hover_effect' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable hover effect on links'),
+                            'default' => '0',
                         ],
                     ], $module),
                 ],
@@ -2564,6 +2574,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Custom CSS class'),
                             'default' => '',
                         ],
+                        'link_hover_effect' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable hover effect on links'),
+                            'default' => '0',
+                        ],
                     ], $module),
                 ],
             ];
@@ -2583,6 +2598,11 @@ class EverblockPrettyBlocks
                             'type' => 'color',
                             'label' => $module->l('Icon color'),
                             'default' => '',
+                        ],
+                        'link_hover_effect' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable hover effect on links'),
+                            'default' => '0',
                         ],
                     ], $module),
                 ],
