@@ -3237,8 +3237,6 @@
 /* Heroe carousel */
 .everblock-heroe-carousel {
   position: relative;
-  background: #0b0b0b;
-  color: #fff;
   touch-action: pan-y;
 }
 
@@ -3289,7 +3287,6 @@
 .everblock-heroe-carousel .heroe-media {
   position: absolute;
   inset: 0;
-  background: #0b0b0b;
 }
 
 .everblock-heroe-carousel .heroe-media picture,
@@ -3304,7 +3301,6 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
   z-index: 1;
 }
 
@@ -3333,8 +3329,6 @@
   align-self: flex-start;
   padding: 12px 28px;
   border-radius: 999px;
-  background: #ffffff;
-  color: #111827;
   text-decoration: none;
   font-weight: 600;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -3353,7 +3347,6 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
   border: none;
   z-index: 10;
   cursor: pointer;
@@ -3365,8 +3358,8 @@
   content: '';
   width: 12px;
   height: 12px;
-  border-top: 2px solid #111827;
-  border-right: 2px solid #111827;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
   display: block;
   transform: rotate(225deg);
 }

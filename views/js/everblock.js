@@ -411,35 +411,73 @@ $(document).ready(function(){
             }
             var index = 0;
             var total = slides.length;
+            var loop = carousel.dataset.loop !== '0';
             var showArrows = carousel.dataset.showArrows !== '0';
             var prevButton = carousel.querySelector('.heroe-prev');
             var nextButton = carousel.querySelector('.heroe-next');
+            function updateNavState() {
+                if (!prevButton && !nextButton) {
+                    return;
+                }
+                if (loop || total < 2) {
+                    if (prevButton) {
+                        prevButton.disabled = false;
+                        prevButton.setAttribute('aria-disabled', 'false');
+                    }
+                    if (nextButton) {
+                        nextButton.disabled = false;
+                        nextButton.setAttribute('aria-disabled', 'false');
+                    }
+                    return;
+                }
+                if (prevButton) {
+                    var prevDisabled = index <= 0;
+                    prevButton.disabled = prevDisabled;
+                    prevButton.setAttribute('aria-disabled', prevDisabled ? 'true' : 'false');
+                }
+                if (nextButton) {
+                    var nextDisabled = index >= total - 1;
+                    nextButton.disabled = nextDisabled;
+                    nextButton.setAttribute('aria-disabled', nextDisabled ? 'true' : 'false');
+                }
+            }
             function updateSlides() {
                 var activeSlide = slides[index];
                 var offset = 0;
                 if (activeSlide && viewport) {
                     var viewportWidth = viewport.offsetWidth;
-                    var activeWidth = activeSlide.offsetWidth;
-                    offset = activeSlide.offsetLeft - (viewportWidth - activeWidth) / 2;
-                    offset = Math.max(0, offset);
+                    var maxOffset = Math.max(0, track.scrollWidth - viewportWidth);
+                    var slideWidth = activeSlide.offsetWidth;
+                    offset = Math.min(Math.max(0, index * slideWidth), maxOffset);
                 }
                 track.style.transform = 'translateX(-' + offset + 'px)';
                 slides.forEach(function (slide, i) {
                     slide.classList.remove('is-active', 'is-prev', 'is-next');
                     if (i === index) {
                         slide.classList.add('is-active');
-                    } else if (i === (index + 1) % total) {
+                    } else if (loop && i === (index + 1) % total) {
                         slide.classList.add('is-next');
-                    } else if (i === (index - 1 + total) % total) {
+                    } else if (loop && i === (index - 1 + total) % total) {
+                        slide.classList.add('is-prev');
+                    } else if (!loop && i === index + 1) {
+                        slide.classList.add('is-next');
+                    } else if (!loop && i === index - 1) {
                         slide.classList.add('is-prev');
                     }
                 });
+                updateNavState();
             }
             function goNext() {
+                if (!loop && index >= total - 1) {
+                    return;
+                }
                 index = (index + 1) % total;
                 updateSlides();
             }
             function goPrev() {
+                if (!loop && index <= 0) {
+                    return;
+                }
                 index = (index - 1 + total) % total;
                 updateSlides();
             }
