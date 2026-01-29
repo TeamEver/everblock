@@ -327,6 +327,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_guided_selector.tpl',
     'views/templates/hook/prettyblocks/prettyblock_guides_selection.tpl',
     'views/templates/hook/prettyblocks/prettyblock_heading.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_heroe_carousel.tpl',
     'views/templates/hook/prettyblocks/prettyblock_iframe.tpl',
     'views/templates/hook/prettyblocks/prettyblock_image_map.tpl',
     'views/templates/hook/prettyblocks/prettyblock_img.tpl',
