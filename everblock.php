@@ -5173,11 +5173,6 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/js/' . $this->name . '.js',
             ['position' => 'bottom', 'priority' => 200]
         );
-        $this->context->controller->registerJavascript(
-            'module-' . $this->name . '-slider-js',
-            'modules/' . $this->name . '/views/js/everblock-slider.js',
-            ['position' => 'bottom', 'priority' => 200]
-        );
         if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_OBF') === true) {
             $this->context->controller->registerJavascript(
                 'module-' . $this->name . '-obf-js',
