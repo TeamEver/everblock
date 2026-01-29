@@ -3236,6 +3236,8 @@
 
 /* Heroe carousel */
 .everblock-heroe-carousel {
+  --heroe-slide-width: 70%;
+  --heroe-slide-gap: 32px;
   position: relative;
   height: 560px;
   overflow: hidden;
@@ -3247,6 +3249,8 @@
 .everblock-heroe-carousel .heroe-carousel-track {
   position: relative;
   display: flex;
+  align-items: center;
+  gap: var(--heroe-slide-gap);
   height: 100%;
   width: 100%;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3255,8 +3259,9 @@
 
 .everblock-heroe-carousel .heroe-slide {
   position: relative;
-  flex: 0 0 100%;
-  min-width: 100%;
+  flex: 0 0 var(--heroe-slide-width);
+  min-width: var(--heroe-slide-width);
+  height: 100%;
   opacity: 0;
   transform: scale(0.92);
   transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
@@ -3278,6 +3283,15 @@
   opacity: 0.35;
   transform: scale(0.9);
   z-index: 2;
+}
+
+.everblock-heroe-carousel .heroe-slide.is-next {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+.everblock-heroe-carousel .heroe-slide.is-prev {
+  opacity: 0.45;
 }
 
 .everblock-heroe-carousel .heroe-media {
@@ -3369,11 +3383,13 @@
 }
 
 .everblock-heroe-carousel .heroe-prev {
-  left: 32px;
+  left: 50%;
+  transform: translate(calc(-50% - (var(--heroe-slide-width) * 0.5) - 24px), -50%);
 }
 
 .everblock-heroe-carousel .heroe-next {
-  right: 32px;
+  left: 50%;
+  transform: translate(calc(-50% + (var(--heroe-slide-width) * 0.5) + 24px), -50%);
 }
 
 @media (max-width: 1024px) {
@@ -3385,6 +3401,8 @@
 @media (max-width: 768px) {
   .everblock-heroe-carousel {
     height: 420px;
+    --heroe-slide-width: 100%;
+    --heroe-slide-gap: 0px;
   }
 
   .everblock-heroe-carousel .heroe-slide.is-next,
