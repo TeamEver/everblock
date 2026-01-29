@@ -414,8 +414,19 @@ $(document).ready(function(){
             var prevButton = carousel.querySelector('.heroe-prev');
             var nextButton = carousel.querySelector('.heroe-next');
             function updateSlides() {
-                var nextIndex = loop ? (index + 1) % slides.length : index + 1;
-                var prevIndex = loop ? (index - 1 + slides.length) % slides.length : index - 1;
+                var slideCount = slides.length;
+                var useWrappedDisplay = slideCount > 2;
+                var nextIndex = null;
+                var prevIndex = null;
+                if (slideCount > 1) {
+                    if (loop || useWrappedDisplay) {
+                        nextIndex = (index + 1) % slideCount;
+                        prevIndex = (index - 1 + slideCount) % slideCount;
+                    } else {
+                        nextIndex = index + 1 < slideCount ? index + 1 : null;
+                        prevIndex = index - 1 >= 0 ? index - 1 : null;
+                    }
+                }
                 var slideWidth = slides[0].getBoundingClientRect().width;
                 var carouselWidth = carousel.getBoundingClientRect().width;
                 var computedGap = 0;
@@ -432,9 +443,9 @@ $(document).ready(function(){
                     slide.classList.remove('is-active', 'is-next', 'is-prev');
                     if (i === index) {
                         slide.classList.add('is-active');
-                    } else if (nextIndex >= 0 && nextIndex < slides.length && i === nextIndex) {
+                    } else if (nextIndex !== null && i === nextIndex) {
                         slide.classList.add('is-next');
-                    } else if (prevIndex >= 0 && prevIndex < slides.length && i === prevIndex) {
+                    } else if (prevIndex !== null && i === prevIndex) {
                         slide.classList.add('is-prev');
                     }
                 });
@@ -546,6 +557,7 @@ $(document).ready(function(){
         everblockCarouselResizeTimeout = setTimeout(function () {
             initPrettyblocksImageSlider();
             initEverblockCarousels();
+            initHeroeCarousels();
         }, 200);
     });
     function padEverblockCarouselSlides($carousel) {
