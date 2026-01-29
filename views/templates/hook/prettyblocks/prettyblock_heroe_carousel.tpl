@@ -36,7 +36,7 @@
 
 {if $visibleStatesCount > 0}
   {assign var='lastVisibleIndex' value=$visibleStatesCount-1}
-  <section id="block-{$block.id_prettyblocks}" class="everblock-heroe-carousel{$prettyblock_visibility_class}" data-loop="{if $heroeLoop}1{else}0{/if}" data-show-arrows="{if $showArrows}1{else}0{/if}" style="{$prettyblock_spacing_style}{if isset($block.settings.default.bg_color) && $block.settings.default.bg_color}background-color:{$block.settings.default.bg_color|escape:'htmlall':'UTF-8'};{/if}">
+  <section id="block-{$block.id_prettyblocks}" class="everblock-heroe-carousel{$prettyblock_visibility_class}" data-loop="{if $heroeLoop}1{else}0{/if}" data-show-arrows="{if $showArrows}1{else}0{/if}" style="{$prettyblock_spacing_style}">
     <div class="heroe-carousel">
       <div class="heroe-viewport">
         <div class="heroe-track">
