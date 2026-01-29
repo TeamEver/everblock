@@ -69,7 +69,7 @@
         if (!state.track) {
             return;
         }
-        const containerWidth = state.containerWidth || state.slider.clientWidth || 0;
+        const containerWidth = state.contentWidth || state.containerWidth || state.slider.clientWidth || 0;
         const itemOffset = state.index * (state.itemWidth + state.gap);
         const offset = (containerWidth / 2) - (state.itemWidth / 2) - itemOffset;
         state.track.style.transform = `translateX(${offset}px)`;
@@ -90,10 +90,14 @@
         state.itemsPerView = getItemsPerView(state.slider);
         state.itemsPerView = Math.max(1, state.itemsPerView);
         state.gap = getGapValue(state.track);
+        const sliderStyles = window.getComputedStyle(state.slider);
+        const paddingLeft = parseFloat(sliderStyles.paddingLeft) || 0;
+        const paddingRight = parseFloat(sliderStyles.paddingRight) || 0;
         const containerWidth = state.slider.clientWidth || 0;
         state.containerWidth = containerWidth;
+        state.contentWidth = Math.max(0, containerWidth - paddingLeft - paddingRight);
         const totalGap = state.gap * Math.max(0, state.itemsPerView - 1);
-        state.itemWidth = state.itemsPerView > 0 ? (containerWidth - totalGap) / state.itemsPerView : 0;
+        state.itemWidth = state.itemsPerView > 0 ? (state.contentWidth - totalGap) / state.itemsPerView : 0;
         state.slider.style.setProperty('--ever-slider-active-width', `${state.itemWidth * 1.15}px`);
         state.items.forEach((item) => {
             item.style.width = `${state.itemWidth}px`;
