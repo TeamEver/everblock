@@ -1130,6 +1130,7 @@
 
 .everblock-simple-image.slider-active .ever-slider-track {
     align-items: center;
+    gap: 40px;
 }
 
 .everblock-simple-image.slider-active,
@@ -1138,25 +1139,28 @@
 }
 
 .everblock-simple-image.slider-active .ever-slider-item {
-    transition: transform 0.45s ease, opacity 0.45s ease;
+    transition: transform 0.5s cubic-bezier(.4,0,.2,1), opacity 0.5s ease, filter 0.5s ease;
     transform-origin: center center;
 }
 
 .everblock-simple-image.slider-active .ever-slider-item.is-active {
-    transform: scale(1.2);
+    transform: scale(1.18) translateZ(0);
     opacity: 1;
+    filter: none;
     z-index: 3;
 }
 
 .everblock-simple-image.slider-active .ever-slider-item.is-adjacent {
-    transform: scale(0.9);
-    opacity: 0.6;
+    transform: scale(0.88) translateX(20px);
+    opacity: 0.55;
+    filter: blur(0.5px);
     z-index: 2;
 }
 
 .everblock-simple-image.slider-active .ever-slider-item.is-inactive {
-    transform: scale(0.8);
-    opacity: 0.35;
+    transform: scale(0.75);
+    opacity: 0.25;
+    filter: blur(1px);
     z-index: 1;
 }
 
@@ -1169,17 +1173,24 @@
 .everblock-simple-image.slider-active .slider-arrow {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
+    opacity: 0.35;
+    transition: opacity 0.25s ease, transform 0.25s ease;
     z-index: 9999;
     pointer-events: auto;
 }
 
+.everblock-simple-image.slider-active:hover .slider-arrow {
+    opacity: 0.85;
+}
+
 .everblock-simple-image.slider-active .slider-arrow.prev {
     left: -48px;
+    transform: translate(-8px, -50%);
 }
 
 .everblock-simple-image.slider-active .slider-arrow.next {
     right: -48px;
+    transform: translate(8px, -50%);
 }
 
 .everblock-simple-image.slider-active {
