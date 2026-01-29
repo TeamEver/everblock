@@ -1145,11 +1145,18 @@
     display: inline-block;
 }
 
+.everblock-simple-image.slider-active img {
+    display: block;
+    pointer-events: none;
+    user-select: none;
+}
+
 .everblock-simple-image.slider-active .slider-arrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 10;
+    z-index: 20;
+    pointer-events: auto;
 }
 
 .everblock-simple-image.slider-active .slider-arrow.prev {
@@ -1158,6 +1165,10 @@
 
 .everblock-simple-image.slider-active .slider-arrow.next {
     right: -48px;
+}
+
+.everblock-simple-image.slider-active {
+    touch-action: pan-y;
 }
 
 /* Apple-like navigation: arrows centered on the active image */
