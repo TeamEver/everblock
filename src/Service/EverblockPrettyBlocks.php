@@ -182,6 +182,7 @@ class EverblockPrettyBlocks
             $layoutTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_layout.tpl';
             $featuredCategoryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl';
             $imgSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img_slider.tpl';
+            $heroeCarouselTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_heroe_carousel.tpl';
             $tabTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_tab.tpl';
             $categoryTabsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_tabs.tpl';
             $dividerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
@@ -2386,6 +2387,71 @@ class EverblockPrettyBlocks
                         'end_date' => [
                             'type' => 'text',
                             'label' => $module->l('End date (YYYY-MM-DD HH:MM:SS)'),
+                            'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Heroe Carousel'),
+                'description' => $module->l('Premium hero carousel with smooth transitions'),
+                'code' => 'everblock_heroe_carousel',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $heroeCarouselTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'loop' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Loop slides'),
+                            'default' => 1,
+                        ],
+                        'show_arrows' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Show navigation arrows'),
+                            'default' => 1,
+                        ],
+                    ], $module),
+                ],
+                'repeater' => [
+                    'name' => 'Slide',
+                    'nameFrom' => 'title',
+                    'groups' => static::appendSpacingFields([
+                        'image' => [
+                            'type' => 'fileupload',
+                            'label' => 'Hero image',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'image_mobile' => [
+                            'type' => 'fileupload',
+                            'label' => 'Mobile hero image',
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'title' => [
+                            'type' => 'text',
+                            'label' => 'Title',
+                            'default' => Configuration::get('PS_SHOP_NAME'),
+                        ],
+                        'content' => [
+                            'type' => 'textarea',
+                            'label' => 'Text',
+                            'default' => '',
+                        ],
+                        'cta_label' => [
+                            'type' => 'text',
+                            'label' => 'CTA label',
+                            'default' => '',
+                        ],
+                        'cta_link' => [
+                            'type' => 'text',
+                            'label' => 'CTA link',
                             'default' => '',
                         ],
                     ], $module),
