@@ -392,8 +392,102 @@ $(document).ready(function(){
             buildEverblockCarousel($carousel);
         });
     }
+
+    function initHeroeCarousels($context) {
+        var $scope = $context && $context.length ? $context : $(document);
+        $scope.find('.everblock-heroe-carousel').each(function () {
+            var carousel = this;
+            if (carousel.dataset.heroeInit === '1') {
+                return;
+            }
+            var slides = Array.prototype.slice.call(carousel.querySelectorAll('.heroe-slide'));
+            if (!slides.length) {
+                return;
+            }
+            var index = 0;
+            var loop = carousel.dataset.loop !== '0';
+            var showArrows = carousel.dataset.showArrows !== '0';
+            var prevButton = carousel.querySelector('.heroe-prev');
+            var nextButton = carousel.querySelector('.heroe-next');
+            function updateSlides() {
+                var nextIndex = loop ? (index + 1) % slides.length : index + 1;
+                var prevIndex = loop ? (index - 1 + slides.length) % slides.length : index - 1;
+                slides.forEach(function (slide, i) {
+                    slide.classList.remove('is-active', 'is-next', 'is-prev');
+                    if (i === index) {
+                        slide.classList.add('is-active');
+                    } else if (nextIndex >= 0 && nextIndex < slides.length && i === nextIndex) {
+                        slide.classList.add('is-next');
+                    } else if (prevIndex >= 0 && prevIndex < slides.length && i === prevIndex) {
+                        slide.classList.add('is-prev');
+                    }
+                });
+            }
+            function goNext() {
+                if (!loop && index >= slides.length - 1) {
+                    return;
+                }
+                index = loop ? (index + 1) % slides.length : Math.min(index + 1, slides.length - 1);
+                updateSlides();
+            }
+            function goPrev() {
+                if (!loop && index <= 0) {
+                    return;
+                }
+                index = loop ? (index - 1 + slides.length) % slides.length : Math.max(index - 1, 0);
+                updateSlides();
+            }
+
+            updateSlides();
+
+            if (!showArrows || slides.length < 2) {
+                if (prevButton) {
+                    prevButton.style.display = 'none';
+                }
+                if (nextButton) {
+                    nextButton.style.display = 'none';
+                }
+            } else {
+                if (nextButton) {
+                    nextButton.addEventListener('click', function () {
+                        goNext();
+                    });
+                }
+                if (prevButton) {
+                    prevButton.addEventListener('click', function () {
+                        goPrev();
+                    });
+                }
+            }
+
+            if (slides.length > 1) {
+                var touchStartX = 0;
+                var touchStartY = 0;
+                carousel.addEventListener('touchstart', function (event) {
+                    var touch = event.changedTouches[0];
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                }, { passive: true });
+                carousel.addEventListener('touchend', function (event) {
+                    var touch = event.changedTouches[0];
+                    var deltaX = touch.clientX - touchStartX;
+                    var deltaY = touch.clientY - touchStartY;
+                    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                        if (deltaX < 0) {
+                            goNext();
+                        } else {
+                            goPrev();
+                        }
+                    }
+                }, { passive: true });
+            }
+
+            carousel.dataset.heroeInit = '1';
+        });
+    }
     initPrettyblocksImageSlider();
     initEverblockCarousels();
+    initHeroeCarousels();
     var everblockCarouselResizeTimeout = null;
     $(window).on('resize', function () {
         if (everblockCarouselResizeTimeout) {
