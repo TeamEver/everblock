@@ -95,7 +95,7 @@
   {/foreach}
   {assign var='use_slider' value=($displayMode == 'Slider' && $visibleStatesCount > 1 && $maxSliderItems < $visibleStatesCount)}
   {if $use_slider}
-    <div class="ever-slider ever-slider--simple-image overflow-hidden position-relative"
+    <div class="ever-slider ever-slider--simple-image everblock-simple-image slider-active overflow-hidden position-relative"
          data-items="{$sliderItemsDesktop|escape:'htmlall':'UTF-8'}"
          data-items-mobile="{$sliderItemsMobile|escape:'htmlall':'UTF-8'}"
          data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
@@ -130,33 +130,37 @@
             {$prettyblock_state_spacing_style}
             {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
           ">
-            {if isset($state.url) && $state.url}
-              <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative" title="{if isset($state.alt)}{$state.alt|escape:'htmlall':'UTF-8'}{else}{$shop.name|escape:'htmlall':'UTF-8'}{/if}">
-            {/if}
-              <picture>
-                {if isset($state.banner_mobile.url) && $state.banner_mobile.url}
-                  <source media="(max-width: 767px)" srcset="{$state.banner_mobile.url|replace:'.webp':'.jpg'}">
-                {/if}
-                <source srcset="{$state.banner.url}" type="image/webp">
-                <source srcset="{$state.banner.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-                <img src="{$state.banner.url|replace:'.webp':'.jpg'}"
-                     {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
-                     {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
-                     {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
-                     class="img img-fluid lazyload" loading="lazy">
-              </picture>
+            <div class="image-wrapper">
+              {if isset($state.url) && $state.url}
+                <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative" title="{if isset($state.alt)}{$state.alt|escape:'htmlall':'UTF-8'}{else}{$shop.name|escape:'htmlall':'UTF-8'}{/if}">
+              {/if}
+                <picture>
+                  {if isset($state.banner_mobile.url) && $state.banner_mobile.url}
+                    <source media="(max-width: 767px)" srcset="{$state.banner_mobile.url|replace:'.webp':'.jpg'}">
+                  {/if}
+                  <source srcset="{$state.banner.url}" type="image/webp">
+                  <source srcset="{$state.banner.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                  <img src="{$state.banner.url|replace:'.webp':'.jpg'}"
+                       {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
+                       {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
+                       {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
+                       class="img img-fluid lazyload" loading="lazy">
+                </picture>
 
-              <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
-                {if $state.text_highlight_1}
-                  <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
-                {/if}
-                {if $state.text_highlight_2}
-                  <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
-                {/if}
-              </div>
-            {if isset($state.url) && $state.url}
-              </a>
-            {/if}
+                <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
+                  {if $state.text_highlight_1}
+                    <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
+                  {/if}
+                  {if $state.text_highlight_2}
+                    <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
+                  {/if}
+                </div>
+              {if isset($state.url) && $state.url}
+                </a>
+              {/if}
+              <button class="slider-arrow prev ever-slider-prev" type="button" aria-label="Previous"></button>
+              <button class="slider-arrow next ever-slider-next" type="button" aria-label="Next"></button>
+            </div>
           </div>
           {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
               (isset($state.margin_right_mobile) && $state.margin_right_mobile) ||
@@ -175,10 +179,6 @@
           {/if}
         {/if}
       {/foreach}
-      </div>
-      <div class="ever-slider-nav">
-        <button class="ever-slider-prev" type="button" aria-label="Previous"></button>
-        <button class="ever-slider-next" type="button" aria-label="Next"></button>
       </div>
     </div>
   {else}
