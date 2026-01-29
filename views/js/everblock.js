@@ -409,8 +409,12 @@ $(document).ready(function(){
             if (!track) {
                 return;
             }
-            var index = 0;
+            var index = parseInt(carousel.dataset.startIndex, 10);
             var total = slides.length;
+            if (isNaN(index)) {
+                index = 0;
+            }
+            index = Math.min(Math.max(index, 0), total - 1);
             var loop = carousel.dataset.loop !== '0';
             var showArrows = carousel.dataset.showArrows !== '0';
             var prevButton = carousel.querySelector('.heroe-prev');
