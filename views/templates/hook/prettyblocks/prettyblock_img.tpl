@@ -95,13 +95,14 @@
   {/foreach}
   {assign var='use_slider' value=($displayMode == 'Slider' && $visibleStatesCount > 1 && $maxSliderItems < $visibleStatesCount)}
   {if $use_slider}
-    <div class="ever-slider ever-slider--simple-image everblock-simple-image slider-active overflow-hidden position-relative"
-         data-items="{$sliderItemsDesktop|escape:'htmlall':'UTF-8'}"
-         data-items-mobile="{$sliderItemsMobile|escape:'htmlall':'UTF-8'}"
-         data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
-         data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}"
-         data-infinite="1">
-      <div class="ever-slider-track d-flex">
+    {assign var=carouselIndex value=0}
+    <div id="simpleImageCarousel-{$block.id_prettyblocks|escape:'htmlall':'UTF-8'}"
+         class="carousel slide everblock-simple-image"
+         data-ride="carousel"
+         data-bs-ride="carousel"
+         data-interval="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}{else}false{/if}"
+         data-bs-interval="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}{else}false{/if}">
+      <div class="carousel-inner">
       {foreach from=$block.states item=state key=key}
         {assign var=isStateVisible value=true}
         {assign var=startDateStr value=$state.start_date|default:''}
@@ -121,48 +122,45 @@
           {/if}
         {/if}
         {if $isStateVisible}
-          {assign var=itemClass value="{$baseItemClass} ever-slider-item flex-shrink-0"}
+          {assign var=itemClass value='carousel-item'}
+          {if $carouselIndex == 0}
+            {assign var=itemClass value='carousel-item active'}
+          {/if}
           {if $state.css_class}
-            {assign var=itemClass value="{$baseItemClass} ever-slider-item flex-shrink-0 {$state.css_class}"}
+            {assign var=itemClass value="{$itemClass} {$state.css_class}"}
           {/if}
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
           <div id="block-{$block.id_prettyblocks}-{$key}" class="{$itemClass|escape:'htmlall'}" style="
             {$prettyblock_state_spacing_style}
             {if isset($state.default.bg_color)}background-color:{$state.default.bg_color|escape:'htmlall':'UTF-8'};{/if}
           ">
-            <div class="slide-inner">
-              <div class="image-wrapper">
-                {if isset($state.url) && $state.url}
-                  <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative" title="{if isset($state.alt)}{$state.alt|escape:'htmlall':'UTF-8'}{else}{$shop.name|escape:'htmlall':'UTF-8'}{/if}">
+            {if isset($state.url) && $state.url}
+              <a href="{$state.url|escape:'htmlall':'UTF-8'}" class="d-block position-relative" title="{if isset($state.alt)}{$state.alt|escape:'htmlall':'UTF-8'}{else}{$shop.name|escape:'htmlall':'UTF-8'}{/if}">
+            {/if}
+              <picture>
+                {if isset($state.banner_mobile.url) && $state.banner_mobile.url}
+                  <source media="(max-width: 767px)" srcset="{$state.banner_mobile.url|replace:'.webp':'.jpg'}">
                 {/if}
-                  <picture>
-                    {if isset($state.banner_mobile.url) && $state.banner_mobile.url}
-                      <source media="(max-width: 767px)" srcset="{$state.banner_mobile.url|replace:'.webp':'.jpg'}">
-                    {/if}
-                    <source srcset="{$state.banner.url}" type="image/webp">
-                    <source srcset="{$state.banner.url|replace:'.webp':'.jpg'}" type="image/jpeg">
-                    <img src="{$state.banner.url|replace:'.webp':'.jpg'}"
-                         {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
-                         {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
-                         {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
-                         class="img img-fluid lazyload" loading="lazy" draggable="false">
-                  </picture>
+                <source srcset="{$state.banner.url}" type="image/webp">
+                <source srcset="{$state.banner.url|replace:'.webp':'.jpg'}" type="image/jpeg">
+                <img src="{$state.banner.url|replace:'.webp':'.jpg'}"
+                     {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
+                     {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
+                     {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
+                     class="d-block w-100 img img-fluid lazyload" loading="lazy" draggable="false">
+              </picture>
 
-                  <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
-                    {if $state.text_highlight_1}
-                      <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
-                    {/if}
-                    {if $state.text_highlight_2}
-                      <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
-                    {/if}
-                  </div>
-                {if isset($state.url) && $state.url}
-                  </a>
+              <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
+                {if $state.text_highlight_1}
+                  <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
+                {/if}
+                {if $state.text_highlight_2}
+                  <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
                 {/if}
               </div>
-            </div>
-            <button class="slider-arrow prev ever-slider-prev" type="button" aria-label="Previous"></button>
-            <button class="slider-arrow next ever-slider-next" type="button" aria-label="Next"></button>
+            {if isset($state.url) && $state.url}
+              </a>
+            {/if}
           </div>
           {if (isset($state.margin_left_mobile) && $state.margin_left_mobile) ||
               (isset($state.margin_right_mobile) && $state.margin_right_mobile) ||
@@ -179,9 +177,16 @@
               }
             </style>
           {/if}
+          {assign var=carouselIndex value=$carouselIndex+1}
         {/if}
       {/foreach}
       </div>
+      <a class="carousel-control-prev" href="#simpleImageCarousel-{$block.id_prettyblocks|escape:'htmlall':'UTF-8'}" role="button" data-slide="prev" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </a>
+      <a class="carousel-control-next" href="#simpleImageCarousel-{$block.id_prettyblocks|escape:'htmlall':'UTF-8'}" role="button" data-slide="next" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </a>
     </div>
   {else}
     {if $block.settings.default.force_full_width}
