@@ -3409,4 +3409,21 @@
   .everblock-heroe-carousel .heroe-cta {
     align-self: center;
   }
+
+  .everblock-heroe-carousel .heroe-nav {
+    top: auto;
+    bottom: 16px;
+    transform: none;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  }
+
+  .everblock-heroe-carousel .heroe-prev {
+    left: 16px;
+  }
+
+  .everblock-heroe-carousel .heroe-next {
+    left: auto;
+    right: 16px;
+  }
 }
