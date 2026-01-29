@@ -416,7 +416,18 @@ $(document).ready(function(){
             function updateSlides() {
                 var nextIndex = loop ? (index + 1) % slides.length : index + 1;
                 var prevIndex = loop ? (index - 1 + slides.length) % slides.length : index - 1;
-                track.style.transform = 'translateX(-' + (index * 100) + '%)';
+                var slideWidth = slides[0].getBoundingClientRect().width;
+                var carouselWidth = carousel.getBoundingClientRect().width;
+                var computedGap = 0;
+                if (window.getComputedStyle) {
+                    var trackStyle = window.getComputedStyle(track);
+                    computedGap = parseFloat(trackStyle.columnGap || trackStyle.gap || 0);
+                    if (isNaN(computedGap)) {
+                        computedGap = 0;
+                    }
+                }
+                var offset = index * (slideWidth + computedGap) - (carouselWidth - slideWidth) / 2;
+                track.style.transform = 'translateX(-' + offset + 'px)';
                 slides.forEach(function (slide, i) {
                     slide.classList.remove('is-active', 'is-next', 'is-prev');
                     if (i === index) {
@@ -516,6 +527,10 @@ $(document).ready(function(){
                     }
                 }, { passive: true });
             }
+
+            window.addEventListener('resize', function () {
+                updateSlides();
+            });
 
             carousel.dataset.heroeInit = '1';
         });
