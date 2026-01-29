@@ -36,8 +36,11 @@
 
 {if $visibleStatesCount > 0}
   {assign var='lastVisibleIndex' value=$visibleStatesCount-1}
-  {assign var='middleVisibleIndex' value=($visibleStatesCount/2)|floor}
-  <section id="block-{$block.id_prettyblocks}" class="everblock-heroe-carousel{$prettyblock_visibility_class}" data-loop="{if $heroeLoop}1{else}0{/if}" data-show-arrows="{if $showArrows}1{else}0{/if}" data-start-index="{$middleVisibleIndex}" style="{$prettyblock_spacing_style}">
+  {assign var='startVisibleIndex' value=0}
+  {if $visibleStatesCount > 1}
+    {assign var='startVisibleIndex' value=1}
+  {/if}
+  <section id="block-{$block.id_prettyblocks}" class="everblock-heroe-carousel{$prettyblock_visibility_class}" data-loop="{if $heroeLoop}1{else}0{/if}" data-show-arrows="{if $showArrows}1{else}0{/if}" data-start-index="{$startVisibleIndex}" style="{$prettyblock_spacing_style}">
     <div class="heroe-carousel">
       <div class="heroe-viewport">
         <div class="heroe-track">
@@ -70,7 +73,7 @@
               {elseif isset($state.image_mobile.height) && $state.image_mobile.height > 0}
                 {assign var='fallbackHeight' value=$state.image_mobile.height|intval}
               {/if}
-              <article class="heroe-slide{if $slideIndex == $middleVisibleIndex} is-active{/if}" data-slide-index="{$slideIndex}">
+              <article class="heroe-slide{if $slideIndex == $startVisibleIndex} is-active{/if}" data-slide-index="{$slideIndex}">
                 <div class="heroe-media">
                   <picture>
                     {if $mobileImageUrl ne ''}

@@ -452,7 +452,11 @@ $(document).ready(function(){
                     var viewportWidth = viewport.offsetWidth;
                     var maxOffset = Math.max(0, track.scrollWidth - viewportWidth);
                     var slideWidth = activeSlide.offsetWidth;
-                    offset = Math.min(Math.max(0, index * slideWidth), maxOffset);
+                    if (slideWidth > 0) {
+                        var slidesPerView = Math.max(1, Math.round(viewportWidth / slideWidth));
+                        var centerOffset = Math.floor(slidesPerView / 2);
+                        offset = Math.min(Math.max(0, (index - centerOffset) * slideWidth), maxOffset);
+                    }
                 }
                 track.style.transform = 'translateX(-' + offset + 'px)';
                 slides.forEach(function (slide, i) {
