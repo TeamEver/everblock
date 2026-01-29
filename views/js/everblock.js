@@ -404,6 +404,10 @@ $(document).ready(function(){
             if (!slides.length) {
                 return;
             }
+            var track = carousel.querySelector('.heroe-carousel-track');
+            if (!track) {
+                return;
+            }
             var index = 0;
             var loop = carousel.dataset.loop !== '0';
             var showArrows = carousel.dataset.showArrows !== '0';
@@ -412,6 +416,7 @@ $(document).ready(function(){
             function updateSlides() {
                 var nextIndex = loop ? (index + 1) % slides.length : index + 1;
                 var prevIndex = loop ? (index - 1 + slides.length) % slides.length : index - 1;
+                track.style.transform = 'translateX(-' + (index * 100) + '%)';
                 slides.forEach(function (slide, i) {
                     slide.classList.remove('is-active', 'is-next', 'is-prev');
                     if (i === index) {
@@ -474,6 +479,36 @@ $(document).ready(function(){
                     var deltaY = touch.clientY - touchStartY;
                     if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
                         if (deltaX < 0) {
+                            goNext();
+                        } else {
+                            goPrev();
+                        }
+                    }
+                }, { passive: true });
+                carousel.addEventListener('pointerdown', function (event) {
+                    if (event.pointerType === 'mouse') {
+                        return;
+                    }
+                    touchStartX = event.clientX;
+                    touchStartY = event.clientY;
+                }, { passive: true });
+                carousel.addEventListener('pointerup', function (event) {
+                    if (event.pointerType === 'mouse') {
+                        return;
+                    }
+                    var deltaXPointer = event.clientX - touchStartX;
+                    var deltaYPointer = event.clientY - touchStartY;
+                    if (Math.abs(deltaXPointer) > 50 && Math.abs(deltaXPointer) > Math.abs(deltaYPointer)) {
+                        if (deltaXPointer < 0) {
+                            goNext();
+                        } else {
+                            goPrev();
+                        }
+                    }
+                }, { passive: true });
+                carousel.addEventListener('wheel', function (event) {
+                    if (Math.abs(event.deltaX) > Math.abs(event.deltaY) && Math.abs(event.deltaX) > 20) {
+                        if (event.deltaX > 0) {
                             goNext();
                         } else {
                             goPrev();
