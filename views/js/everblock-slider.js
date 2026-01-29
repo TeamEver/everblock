@@ -70,7 +70,8 @@
             return;
         }
         const containerWidth = state.containerWidth || state.slider.clientWidth || 0;
-        const offset = (containerWidth / 2) - (state.itemWidth / 2) - (state.index * state.itemWidth);
+        const itemOffset = state.index * (state.itemWidth + state.gap);
+        const offset = (containerWidth / 2) - (state.itemWidth / 2) - itemOffset;
         state.track.style.transform = `translateX(${offset}px)`;
     }
 
