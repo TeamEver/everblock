@@ -3236,7 +3236,7 @@
 
 /* Heroe carousel */
 .everblock-heroe-carousel {
-  --heroe-slide-width: 70%;
+  --heroe-slide-width: 62%;
   --heroe-slide-gap: 32px;
   position: relative;
   height: 560px;
@@ -3263,7 +3263,7 @@
   min-width: var(--heroe-slide-width);
   height: 100%;
   opacity: 0;
-  transform: scale(0.92);
+  transform: scale(0.9);
   transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform, opacity;
@@ -3274,20 +3274,20 @@
 
 .everblock-heroe-carousel .heroe-slide.is-active {
   opacity: 1;
-  transform: scale(1);
+  transform: scale(1.03);
   z-index: 3;
 }
 
 .everblock-heroe-carousel .heroe-slide.is-next,
 .everblock-heroe-carousel .heroe-slide.is-prev {
-  opacity: 0.35;
-  transform: scale(0.9);
+  opacity: 0.45;
+  transform: scale(0.92);
   z-index: 2;
 }
 
 .everblock-heroe-carousel .heroe-slide.is-next {
   filter: grayscale(1);
-  opacity: 0.55;
+  opacity: 0.6;
 }
 
 .everblock-heroe-carousel .heroe-slide.is-prev {
@@ -3297,13 +3297,14 @@
 .everblock-heroe-carousel .heroe-media {
   position: absolute;
   inset: 0;
+  background: #0b0b0b;
 }
 
 .everblock-heroe-carousel .heroe-media picture,
 .everblock-heroe-carousel .heroe-media img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
