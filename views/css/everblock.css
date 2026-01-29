@@ -1157,27 +1157,23 @@
     justify-content: center;
     pointer-events: none;
     transition:
-        transform 0.6s cubic-bezier(.4,0,.2,1),
         opacity 0.6s ease,
         filter 0.6s ease;
 }
 
 .everblock-simple-image.slider-active .is-active .slide-inner {
-    transform: scale(1.25);
     opacity: 1;
     filter: none;
     z-index: 3;
 }
 
 .everblock-simple-image.slider-active .is-adjacent .slide-inner {
-    transform: scale(0.8);
     opacity: 0.35;
     filter: blur(1px);
     z-index: 2;
 }
 
 .everblock-simple-image.slider-active .is-inactive .slide-inner {
-    transform: scale(0.65);
     opacity: 0.15;
     filter: blur(2px);
     z-index: 1;
@@ -1191,10 +1187,11 @@
 
 .everblock-simple-image.slider-active .slider-arrow {
     position: absolute;
-    top: 50%;
+    top: var(--ever-slider-active-center-y);
+    transform: translateY(-50%);
     opacity: 0.35;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    z-index: 9999;
+    transition: opacity 0.25s ease;
+    z-index: 10;
     pointer-events: auto;
 }
 
@@ -1203,13 +1200,20 @@
 }
 
 .everblock-simple-image.slider-active .slider-arrow.prev {
-    left: -48px;
-    transform: translate(-8px, -50%);
+    left: calc(
+        var(--ever-slider-active-center-x)
+        - (var(--ever-slider-active-width) / 2)
+        - 56px
+    );
 }
 
 .everblock-simple-image.slider-active .slider-arrow.next {
-    right: -48px;
-    transform: translate(8px, -50%);
+    left: calc(
+        var(--ever-slider-active-center-x)
+        + (var(--ever-slider-active-width) / 2)
+        + 12px
+    );
+    right: auto;
 }
 
 .everblock-simple-image.slider-active {
@@ -1281,11 +1285,20 @@
 }
 
 .everblock-simple-image.slider-active .ever-slider-prev {
-    left: -48px;
+    left: calc(
+        var(--ever-slider-active-center-x)
+        - (var(--ever-slider-active-width) / 2)
+        - 56px
+    );
 }
 
 .everblock-simple-image.slider-active .ever-slider-next {
-    right: -48px;
+    left: calc(
+        var(--ever-slider-active-center-x)
+        + (var(--ever-slider-active-width) / 2)
+        + 12px
+    );
+    right: auto;
 }
 
 .ever-slider-prev:hover,
