@@ -228,6 +228,86 @@
         });
     }
 
+    function bindSwipe(state) {
+        if (!state.slider.classList.contains('everblock-simple-image') ||
+            !state.slider.classList.contains('slider-active')) {
+            return;
+        }
+
+        let startX = 0;
+        let startY = 0;
+        let pointerDown = false;
+        let dragging = false;
+        let suppressClick = false;
+
+        state.slider.addEventListener('prevSlide', () => {
+            goToIndex(state, state.index - 1, true);
+        });
+        state.slider.addEventListener('nextSlide', () => {
+            goToIndex(state, state.index + 1, true);
+        });
+
+        state.slider.addEventListener('pointerdown', (event) => {
+            if (event.button !== undefined && event.button !== 0) {
+                return;
+            }
+            if (event.target.closest('.slider-arrow')) {
+                return;
+            }
+            pointerDown = true;
+            dragging = false;
+            startX = event.clientX;
+            startY = event.clientY;
+            state.slider.setPointerCapture(event.pointerId);
+        });
+
+        state.slider.addEventListener('pointermove', (event) => {
+            if (!pointerDown) {
+                return;
+            }
+            const deltaX = event.clientX - startX;
+            const deltaY = event.clientY - startY;
+            if (!dragging && Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                dragging = true;
+            }
+            if (dragging) {
+                event.preventDefault();
+            }
+        });
+
+        state.slider.addEventListener('pointerup', (event) => {
+            if (!pointerDown) {
+                return;
+            }
+            const deltaX = event.clientX - startX;
+            pointerDown = false;
+            state.slider.releasePointerCapture(event.pointerId);
+            if (!dragging) {
+                return;
+            }
+            suppressClick = true;
+            if (Math.abs(deltaX) > 50) {
+                const eventName = deltaX < 0 ? 'nextSlide' : 'prevSlide';
+                state.slider.dispatchEvent(new CustomEvent(eventName));
+            }
+        });
+
+        state.slider.addEventListener('pointercancel', (event) => {
+            pointerDown = false;
+            dragging = false;
+            state.slider.releasePointerCapture(event.pointerId);
+        });
+
+        state.slider.addEventListener('click', (event) => {
+            if (!suppressClick) {
+                return;
+            }
+            suppressClick = false;
+            event.preventDefault();
+            event.stopPropagation();
+        }, true);
+    }
+
     function setupSlider(slider) {
         const track = slider.querySelector('.ever-slider-track');
         if (!track) {
@@ -267,6 +347,7 @@
 
         sliderStates.set(slider, state);
         bindControls(state);
+        bindSwipe(state);
         updateState(state);
         images.forEach((image) => {
             if (image.complete) {
