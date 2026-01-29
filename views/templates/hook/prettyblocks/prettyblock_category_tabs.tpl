@@ -176,6 +176,15 @@
                                             {assign var='carouselIdMobile' value="category-tabs-carousel-mobile-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
                                             <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-block d-md-none">
                                                 <div id="{$carouselIdMobile}" class="carousel slide prettyblocks-image-slider" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
+                                                    {assign var='mobileProductsCount' value=$block.extra.products[$key]|@count}
+                                                    {math equation="ceil(x / y)" x=$mobileProductsCount y=$mobileItems assign='mobileIndicatorsCount'}
+                                                    {if $mobileIndicatorsCount > 1}
+                                                        <ol class="carousel-indicators">
+                                                            {section name=mobileIndicator start=0 loop=$mobileIndicatorsCount}
+                                                                <li data-target="#{$carouselIdMobile}" data-slide-to="{$smarty.section.mobileIndicator.index}" data-bs-target="#{$carouselIdMobile}" data-bs-slide-to="{$smarty.section.mobileIndicator.index}" class="{if $smarty.section.mobileIndicator.first}active{/if}" aria-label="{l s='Slide' mod='everblock'} {$smarty.section.mobileIndicator.iteration}" aria-current="{if $smarty.section.mobileIndicator.first}true{else}false{/if}"></li>
+                                                            {/section}
+                                                        </ol>
+                                                    {/if}
                                                     <div class="carousel-inner products">
                                                         {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                                         {foreach from=$block.extra.products[$key] item=product name=mobileProducts}
@@ -191,14 +200,6 @@
                                                         {/foreach}
                                                         {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                                     </div>
-                                                    <button class="carousel-control-prev" type="button" data-target="#{$carouselIdMobile}" data-slide="prev" data-bs-target="#{$carouselIdMobile}" data-bs-slide="prev">
-                                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                                        <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
-                                                    </button>
-                                                    <button class="carousel-control-next" type="button" data-target="#{$carouselIdMobile}" data-slide="next" data-bs-target="#{$carouselIdMobile}" data-bs-slide="next">
-                                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                                        <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
-                                                    </button>
                                                 </div>
                                             </section>
                                         {else}
@@ -260,6 +261,15 @@
                                                 {assign var='carouselIdMobile' value="category-tabs-carousel-mobile-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
                                                 <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-block d-md-none">
                                                     <div id="{$carouselIdMobile}" class="carousel slide prettyblocks-image-slider" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true">
+                                                        {assign var='mobileProductsCount' value=$block.extra.products[$key]|@count}
+                                                        {math equation="ceil(x / y)" x=$mobileProductsCount y=$mobileItems assign='mobileIndicatorsCount'}
+                                                        {if $mobileIndicatorsCount > 1}
+                                                            <ol class="carousel-indicators">
+                                                                {section name=mobileIndicator start=0 loop=$mobileIndicatorsCount}
+                                                                    <li data-target="#{$carouselIdMobile}" data-slide-to="{$smarty.section.mobileIndicator.index}" data-bs-target="#{$carouselIdMobile}" data-bs-slide-to="{$smarty.section.mobileIndicator.index}" class="{if $smarty.section.mobileIndicator.first}active{/if}" aria-label="{l s='Slide' mod='everblock'} {$smarty.section.mobileIndicator.iteration}" aria-current="{if $smarty.section.mobileIndicator.first}true{else}false{/if}"></li>
+                                                                {/section}
+                                                            </ol>
+                                                        {/if}
                                                         <div class="carousel-inner products">
                                                             {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                                             {foreach from=$block.extra.products[$key] item=product name=mobileProducts}
@@ -275,14 +285,6 @@
                                                             {/foreach}
                                                             {hook h='displayAfterProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                                         </div>
-                                                        <button class="carousel-control-prev" type="button" data-target="#{$carouselIdMobile}" data-slide="prev" data-bs-target="#{$carouselIdMobile}" data-bs-slide="prev">
-                                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                                            <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
-                                                        </button>
-                                                        <button class="carousel-control-next" type="button" data-target="#{$carouselIdMobile}" data-slide="next" data-bs-target="#{$carouselIdMobile}" data-bs-slide="next">
-                                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                                            <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
-                                                        </button>
                                                     </div>
                                                 </section>
                                             {else}
