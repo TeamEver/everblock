@@ -437,8 +437,17 @@ $(document).ready(function(){
                         computedGap = 0;
                     }
                 }
+                if (!slideWidth || !carouselWidth) {
+                    track.style.transform = 'translateX(0px)';
+                    return;
+                }
                 var offset = index * (slideWidth + computedGap) - (carouselWidth - slideWidth) / 2;
-                track.style.transform = 'translateX(-' + offset + 'px)';
+                var translateX = -offset;
+                if (!isFinite(translateX)) {
+                    track.style.transform = 'translateX(0px)';
+                    return;
+                }
+                track.style.transform = 'translateX(' + translateX + 'px)';
                 slides.forEach(function (slide, i) {
                     slide.classList.remove('is-active', 'is-next', 'is-prev');
                     if (i === index) {
