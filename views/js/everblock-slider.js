@@ -85,6 +85,24 @@
         });
     }
 
+    function updateActiveWidth(state) {
+        const activeItem = state.items[state.index];
+        let activeWidth = 0;
+        if (activeItem) {
+            const activeImage = activeItem.querySelector('img');
+            if (activeImage) {
+                activeWidth = activeImage.getBoundingClientRect().width;
+            }
+            if (!activeWidth) {
+                activeWidth = activeItem.getBoundingClientRect().width;
+            }
+        }
+        if (!activeWidth) {
+            activeWidth = state.itemWidth * 1.15;
+        }
+        state.slider.style.setProperty('--ever-slider-active-width', `${activeWidth}px`);
+    }
+
     function updateState(state) {
         const totalItems = state.items.length;
         state.itemsPerView = getItemsPerView(state.slider);
@@ -98,7 +116,6 @@
         state.contentWidth = Math.max(0, containerWidth - paddingLeft - paddingRight);
         const totalGap = state.gap * Math.max(0, state.itemsPerView - 1);
         state.itemWidth = state.itemsPerView > 0 ? (state.contentWidth - totalGap) / state.itemsPerView : 0;
-        state.slider.style.setProperty('--ever-slider-active-width', `${state.itemWidth * 1.15}px`);
         state.items.forEach((item) => {
             item.style.width = `${state.itemWidth}px`;
         });
@@ -111,6 +128,7 @@
         state.pageIndex = Math.min(state.pageCount - 1, state.index);
         updateTrackPosition(state);
         updateItemStates(state);
+        updateActiveWidth(state);
         updateButtons(state);
     }
 
@@ -172,6 +190,9 @@
             return;
         }
         const items = Array.from(track.querySelectorAll('.ever-slider-item'));
+        const images = items
+            .map((item) => item.querySelector('img'))
+            .filter((image) => image);
         const prevButton = slider.querySelector('.ever-slider-prev');
         const nextButton = slider.querySelector('.ever-slider-next');
         const autoplay = parseNumber(slider.dataset.autoplay, 0) === 1;
@@ -201,6 +222,14 @@
         sliderStates.set(slider, state);
         bindControls(state);
         updateState(state);
+        images.forEach((image) => {
+            if (image.complete) {
+                return;
+            }
+            image.addEventListener('load', () => {
+                updateState(state);
+            });
+        });
         startAutoplay(state);
     }
 
