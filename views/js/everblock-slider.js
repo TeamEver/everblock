@@ -93,7 +93,7 @@
         state.containerWidth = containerWidth;
         const totalGap = state.gap * Math.max(0, state.itemsPerView - 1);
         state.itemWidth = state.itemsPerView > 0 ? (containerWidth - totalGap) / state.itemsPerView : 0;
-        state.slider.style.setProperty('--ever-slider-active-width', `${state.itemWidth * 1.08}px`);
+        state.slider.style.setProperty('--ever-slider-active-width', `${state.itemWidth * 1.15}px`);
         state.items.forEach((item) => {
             item.style.width = `${state.itemWidth}px`;
         });
