@@ -95,7 +95,7 @@
   {/foreach}
   {assign var='use_slider' value=($displayMode == 'Slider' && $visibleStatesCount > 1 && $maxSliderItems < $visibleStatesCount)}
   {if $use_slider}
-    <div class="ever-slider overflow-hidden position-relative"
+    <div class="ever-slider ever-slider--simple-image overflow-hidden position-relative"
          data-items="{$sliderItemsDesktop|escape:'htmlall':'UTF-8'}"
          data-items-mobile="{$sliderItemsMobile|escape:'htmlall':'UTF-8'}"
          data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
