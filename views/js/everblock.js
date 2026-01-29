@@ -405,32 +405,48 @@ $(document).ready(function(){
                 return;
             }
             var track = carousel.querySelector('.heroe-track');
+            var viewport = carousel.querySelector('.heroe-viewport');
             if (!track) {
                 return;
             }
             var index = 0;
+            var total = slides.length;
             var showArrows = carousel.dataset.showArrows !== '0';
             var prevButton = carousel.querySelector('.heroe-prev');
             var nextButton = carousel.querySelector('.heroe-next');
             function updateSlides() {
-                var offset = index * -100;
-                track.style.transform = 'translateX(' + offset + '%)';
+                var activeSlide = slides[index];
+                var offset = 0;
+                if (activeSlide && viewport) {
+                    var viewportWidth = viewport.offsetWidth;
+                    var activeWidth = activeSlide.offsetWidth;
+                    offset = activeSlide.offsetLeft - (viewportWidth - activeWidth) / 2;
+                    offset = Math.max(0, offset);
+                }
+                track.style.transform = 'translateX(-' + offset + 'px)';
                 slides.forEach(function (slide, i) {
-                    slide.classList.toggle('is-active', i === index);
+                    slide.classList.remove('is-active', 'is-prev', 'is-next');
+                    if (i === index) {
+                        slide.classList.add('is-active');
+                    } else if (i === (index + 1) % total) {
+                        slide.classList.add('is-next');
+                    } else if (i === (index - 1 + total) % total) {
+                        slide.classList.add('is-prev');
+                    }
                 });
             }
             function goNext() {
-                index = (index + 1) % slides.length;
+                index = (index + 1) % total;
                 updateSlides();
             }
             function goPrev() {
-                index = (index - 1 + slides.length) % slides.length;
+                index = (index - 1 + total) % total;
                 updateSlides();
             }
 
             updateSlides();
 
-            if (!showArrows || slides.length < 2) {
+            if (!showArrows || total < 2) {
                 if (prevButton) {
                     prevButton.style.display = 'none';
                 }
@@ -450,7 +466,7 @@ $(document).ready(function(){
                 }
             }
 
-            if (slides.length > 1) {
+            if (total > 1) {
                 var touchStartX = 0;
                 var touchStartY = 0;
                 carousel.addEventListener('touchstart', function (event) {

@@ -3263,10 +3263,10 @@
 
 .everblock-heroe-carousel .heroe-slide {
   position: relative;
-  flex: 0 0 80%;
-  margin: 0 10%;
+  flex: 0 0 33.333%;
+  margin: 0;
   height: 100%;
-  opacity: 0.35;
+  opacity: 1;
   transform: scale(0.9);
   transition: transform 0.8s ease, opacity 0.8s ease;
   will-change: transform, opacity;
@@ -3278,6 +3278,12 @@
 .everblock-heroe-carousel .heroe-slide.is-active {
   opacity: 1;
   transform: scale(1);
+  z-index: 2;
+}
+
+.everblock-heroe-carousel .heroe-slide.is-prev,
+.everblock-heroe-carousel .heroe-slide.is-next {
+  opacity: 0.35;
 }
 
 .everblock-heroe-carousel .heroe-media {
@@ -3362,19 +3368,22 @@
   border-top: 2px solid #111827;
   border-right: 2px solid #111827;
   display: block;
-  transform: rotate(135deg);
+  transform: rotate(225deg);
 }
 
 .everblock-heroe-carousel .heroe-next::before {
-  transform: rotate(-45deg);
+  transform: rotate(45deg);
 }
 
 .everblock-heroe-carousel .heroe-prev {
-  left: 8%;
+  left: calc(50% - 16.666% - 64px);
+  transform: translateY(-50%);
 }
 
 .everblock-heroe-carousel .heroe-next {
-  right: 8%;
+  left: calc(50% + 16.666% + 16px);
+  right: auto;
+  transform: translateY(-50%);
 }
 
 @media (max-width: 1024px) {
