@@ -46,23 +46,39 @@
     }
 
     function updateButtons(state) {
-        if (!state.prevButton || !state.nextButton) {
+        if (!state.prevButtons.length && !state.nextButtons.length) {
             return;
         }
-        state.prevButton.hidden = false;
-        state.nextButton.hidden = false;
+        state.prevButtons.forEach((button) => {
+            button.hidden = false;
+        });
+        state.nextButtons.forEach((button) => {
+            button.hidden = false;
+        });
         if (state.infinite) {
-            state.prevButton.disabled = false;
-            state.nextButton.disabled = false;
+            state.prevButtons.forEach((button) => {
+                button.disabled = false;
+            });
+            state.nextButtons.forEach((button) => {
+                button.disabled = false;
+            });
             return;
         }
         if (state.disabled) {
-            state.prevButton.disabled = true;
-            state.nextButton.disabled = true;
+            state.prevButtons.forEach((button) => {
+                button.disabled = true;
+            });
+            state.nextButtons.forEach((button) => {
+                button.disabled = true;
+            });
             return;
         }
-        state.prevButton.disabled = state.index <= 0;
-        state.nextButton.disabled = state.index >= state.maxIndex;
+        state.prevButtons.forEach((button) => {
+            button.disabled = state.index <= 0;
+        });
+        state.nextButtons.forEach((button) => {
+            button.disabled = state.index >= state.maxIndex;
+        });
     }
 
     function updateTrackPosition(state) {
@@ -200,16 +216,16 @@
     }
 
     function bindControls(state) {
-        if (state.prevButton) {
-            state.prevButton.addEventListener('click', () => {
+        state.prevButtons.forEach((button) => {
+            button.addEventListener('click', () => {
                 goToIndex(state, state.index - 1, true);
             });
-        }
-        if (state.nextButton) {
-            state.nextButton.addEventListener('click', () => {
+        });
+        state.nextButtons.forEach((button) => {
+            button.addEventListener('click', () => {
                 goToIndex(state, state.index + 1, true);
             });
-        }
+        });
     }
 
     function setupSlider(slider) {
@@ -222,8 +238,8 @@
             .map((item) => item.querySelector('img'))
             .filter((image) => image);
         const nav = slider.querySelector('.ever-slider-nav');
-        const prevButton = slider.querySelector('.ever-slider-prev');
-        const nextButton = slider.querySelector('.ever-slider-next');
+        const prevButtons = Array.from(slider.querySelectorAll('.ever-slider-prev'));
+        const nextButtons = Array.from(slider.querySelectorAll('.ever-slider-next'));
         const autoplay = parseNumber(slider.dataset.autoplay, 0) === 1;
         const autoplayDelay = parseNumber(slider.dataset.autoplayDelay, 5000);
         const infinite = parseNumber(slider.dataset.infinite, 0) === 1;
@@ -233,8 +249,8 @@
             track,
             items,
             nav,
-            prevButton,
-            nextButton,
+            prevButtons,
+            nextButtons,
             autoplay,
             autoplayDelay,
             infinite,
