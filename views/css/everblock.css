@@ -1129,6 +1129,17 @@
     filter: brightness(0.9);
 }
 
+.ever-slider--simple-image .ever-slider-item {
+    text-align: center;
+}
+
+.ever-slider--simple-image .ever-slider-item picture,
+.ever-slider--simple-image .ever-slider-item img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .ever-slider-prev,
 .ever-slider-next {
     position: absolute;
