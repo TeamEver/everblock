@@ -1096,11 +1096,14 @@
 /* Simple image slider (vanilla) */
 .ever-slider {
     width: 100%;
+    padding: 0 3.5rem;
 }
 
 .ever-slider-track {
     transition: transform 0.4s ease;
     will-change: transform;
+    column-gap: 1.5rem;
+    padding: 0.75rem 0;
 }
 
 .ever-slider-item {
@@ -1112,7 +1115,7 @@
 .ever-slider-item.is-active {
     opacity: 1;
     filter: none;
-    transform: scale(1.08);
+    transform: scale(1.15);
     z-index: 2;
 }
 
@@ -1145,6 +1148,24 @@
     transition: background-color 0.3s ease, opacity 0.3s ease;
 }
 
+.ever-slider-prev::before,
+.ever-slider-next::before {
+    content: "";
+    width: 0.65rem;
+    height: 0.65rem;
+    border-right: 3px solid #fff;
+    border-bottom: 3px solid #fff;
+    display: inline-block;
+}
+
+.ever-slider-prev::before {
+    transform: rotate(135deg);
+}
+
+.ever-slider-next::before {
+    transform: rotate(-45deg);
+}
+
 .ever-slider-prev {
     left: calc(50% - (var(--ever-slider-active-width, 0px) / 2) - 3.25rem);
 }
@@ -1156,6 +1177,28 @@
 .ever-slider-prev:hover,
 .ever-slider-next:hover {
     background-color: rgba(0, 0, 0, 0.65);
+}
+
+.ever-slider-prev:disabled,
+.ever-slider-next:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@media (max-width: 991.98px) {
+    .ever-slider {
+        padding: 0 2.5rem;
+    }
+
+    .ever-slider-track {
+        column-gap: 1rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .ever-slider {
+        padding: 0 1.5rem;
+    }
 }
 
 @media (max-width: 767.98px) {
