@@ -3478,7 +3478,7 @@
 .everblock-heroe-carousel {
   position: relative;
   height: 560px;
-  overflow: visible;
+  overflow: hidden;
   background: #0b0b0b;
   color: #fff;
   touch-action: pan-y;
@@ -3488,6 +3488,7 @@
   position: relative;
   display: flex;
   height: 100%;
+  width: 100%;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
 }
@@ -3495,6 +3496,7 @@
 .everblock-heroe-carousel .heroe-slide {
   position: relative;
   flex: 0 0 100%;
+  min-width: 100%;
   opacity: 0;
   transform: scale(0.92);
   transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
