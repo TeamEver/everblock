@@ -85,22 +85,49 @@
         });
     }
 
-    function updateActiveWidth(state) {
+    function updateActiveMetrics(state) {
         const activeItem = state.items[state.index];
+        const nav = state.nav;
         let activeWidth = 0;
+        let activeHeight = 0;
+        let activeCenterX = 0;
+        let activeCenterY = 0;
         if (activeItem) {
             const activeImage = activeItem.querySelector('img');
             if (activeImage) {
-                activeWidth = activeImage.getBoundingClientRect().width;
+                const rect = activeImage.getBoundingClientRect();
+                activeWidth = rect.width;
+                activeHeight = rect.height;
+                const sliderRect = state.slider.getBoundingClientRect();
+                activeCenterX = rect.left - sliderRect.left + rect.width / 2;
+                activeCenterY = rect.top - sliderRect.top + rect.height / 2;
             }
             if (!activeWidth) {
-                activeWidth = activeItem.getBoundingClientRect().width;
+                const rect = activeItem.getBoundingClientRect();
+                activeWidth = rect.width;
+                activeHeight = rect.height;
+                const sliderRect = state.slider.getBoundingClientRect();
+                activeCenterX = rect.left - sliderRect.left + rect.width / 2;
+                activeCenterY = rect.top - sliderRect.top + rect.height / 2;
             }
         }
         if (!activeWidth) {
             activeWidth = state.itemWidth * 1.15;
         }
+        if (!activeHeight) {
+            activeHeight = activeItem ? activeItem.getBoundingClientRect().height : 0;
+        }
+        if (!activeCenterX || !activeCenterY) {
+            activeCenterX = state.slider.clientWidth / 2;
+            activeCenterY = state.slider.clientHeight / 2;
+        }
         state.slider.style.setProperty('--ever-slider-active-width', `${activeWidth}px`);
+        state.slider.style.setProperty('--ever-slider-active-height', `${activeHeight}px`);
+        state.slider.style.setProperty('--ever-slider-active-center-x', `${activeCenterX}px`);
+        state.slider.style.setProperty('--ever-slider-active-center-y', `${activeCenterY}px`);
+        if (nav) {
+            nav.hidden = false;
+        }
     }
 
     function updateState(state) {
@@ -128,7 +155,7 @@
         state.pageIndex = Math.min(state.pageCount - 1, state.index);
         updateTrackPosition(state);
         updateItemStates(state);
-        updateActiveWidth(state);
+        updateActiveMetrics(state);
         updateButtons(state);
     }
 
@@ -165,6 +192,7 @@
         state.pageIndex = Math.min(state.pageCount - 1, state.index);
         updateTrackPosition(state);
         updateItemStates(state);
+        updateActiveMetrics(state);
         updateButtons(state);
         if (resetAutoplay) {
             startAutoplay(state);
@@ -193,6 +221,7 @@
         const images = items
             .map((item) => item.querySelector('img'))
             .filter((image) => image);
+        const nav = slider.querySelector('.ever-slider-nav');
         const prevButton = slider.querySelector('.ever-slider-prev');
         const nextButton = slider.querySelector('.ever-slider-next');
         const autoplay = parseNumber(slider.dataset.autoplay, 0) === 1;
@@ -203,6 +232,7 @@
             slider,
             track,
             items,
+            nav,
             prevButton,
             nextButton,
             autoplay,

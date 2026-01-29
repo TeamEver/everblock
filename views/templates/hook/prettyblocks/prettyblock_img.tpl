@@ -176,8 +176,10 @@
         {/if}
       {/foreach}
       </div>
-      <button class="ever-slider-prev" type="button" aria-label="Previous"></button>
-      <button class="ever-slider-next" type="button" aria-label="Next"></button>
+      <div class="ever-slider-nav">
+        <button class="ever-slider-prev" type="button" aria-label="Previous"></button>
+        <button class="ever-slider-next" type="button" aria-label="Next"></button>
+      </div>
     </div>
   {else}
     {if $block.settings.default.force_full_width}
