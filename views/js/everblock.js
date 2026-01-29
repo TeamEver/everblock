@@ -411,7 +411,7 @@ $(document).ready(function(){
             }
             var index = 0;
             var total = slides.length;
-            var loop = carousel.dataset.loop !== '0';
+            var loop = true;
             var showArrows = carousel.dataset.showArrows !== '0';
             var prevButton = carousel.querySelector('.heroe-prev');
             var nextButton = carousel.querySelector('.heroe-next');
@@ -446,9 +446,11 @@ $(document).ready(function(){
                 var offset = 0;
                 if (activeSlide && viewport) {
                     var viewportWidth = viewport.offsetWidth;
-                    var maxOffset = Math.max(0, track.scrollWidth - viewportWidth);
                     var slideWidth = activeSlide.offsetWidth;
-                    offset = Math.min(Math.max(0, index * slideWidth), maxOffset);
+                    var centerOffset = Math.max(0, (viewportWidth - slideWidth) / 2);
+                    track.style.paddingLeft = centerOffset + 'px';
+                    track.style.paddingRight = centerOffset + 'px';
+                    offset = index * slideWidth;
                 }
                 track.style.transform = 'translateX(-' + offset + 'px)';
                 slides.forEach(function (slide, i) {
