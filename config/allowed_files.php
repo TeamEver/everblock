@@ -335,6 +335,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_link_list.tpl',
     'views/templates/hook/prettyblocks/prettyblock_login.tpl',
     'views/templates/hook/prettyblocks/prettyblock_lookbook.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_llm_links.tpl',
     'views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl',
     'views/templates/hook/prettyblocks/prettyblock_modal.tpl',
     'views/templates/hook/prettyblocks/prettyblock_mystery_boxes.tpl',
