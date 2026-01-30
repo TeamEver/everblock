@@ -4584,6 +4584,7 @@ class EverblockTools extends ObjectModel
     public static function checkAndFixDatabase()
     {
         $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
+        $dbMaster = Db::getInstance();
         $tableNames = [
             _DB_PREFIX_ . 'everblock',
             _DB_PREFIX_ . 'everblock_lang',
@@ -4816,9 +4817,15 @@ class EverblockTools extends ObjectModel
             $columnsToAdd,
             'Unable to update Ever Block game play database'
         );
+        $pageTable = _DB_PREFIX_ . 'everblock_page';
+        $columnExists = $dbMaster->executeS('SHOW COLUMNS FROM `' . $pageTable . '` LIKE "id_employee"');
+        if (!$columnExists) {
+            $dbMaster->execute('ALTER TABLE `' . $pageTable . '` ADD `id_employee` int(10) unsigned DEFAULT NULL AFTER `id_shop`');
+        }
         // Ajoute les colonnes manquantes à la table everblock_page
         $columnsToAdd = [
             'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
+            'id_employee' => 'int(10) unsigned DEFAULT NULL',
             'groups' => 'text DEFAULT NULL',
             'cover_image' => 'varchar(255) DEFAULT NULL',
             'active' => 'int(10) unsigned NOT NULL DEFAULT 1',

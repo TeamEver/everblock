@@ -24,6 +24,14 @@
     <div class="everblock-page__content rte" itemprop="articleBody">
       {$everblock_page_content nofilter}
     </div>
+    {if !empty($everblock_page_author)}
+      <footer class="everblock-page__footer mt-4">
+        <p class="everblock-page__author small text-muted mb-0" itemprop="author" itemscope itemtype="https://schema.org/Person">
+          <span class="everblock-page__author-label">{l s='Author' mod='everblock' d='Modules.Everblock.Front'}:</span>
+          <span itemprop="name">{$everblock_page_author.name|escape:'htmlall':'UTF-8'}</span>
+        </p>
+      </footer>
+    {/if}
   </article>
 
   {if $everblock_prettyblocks_enabled}
