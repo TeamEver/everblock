@@ -178,6 +178,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_game_play` (
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_page` (
         `id_everblock_page` int(10) unsigned NOT NULL auto_increment,
         `id_shop` int(10) unsigned NOT NULL DEFAULT 1,
+        `id_employee` int(10) unsigned DEFAULT NULL,
         `groups` text DEFAULT NULL,
         `cover_image` varchar(255) DEFAULT NULL,
         `active` int(10) unsigned NOT NULL DEFAULT 1,

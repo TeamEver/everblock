@@ -28,6 +28,7 @@ class EverblockPage extends ObjectModel
 {
     public $id_everblock_page;
     public $id_shop;
+    public $id_employee;
     public $groups;
     public $active;
     public $cover_image;
@@ -52,6 +53,12 @@ class EverblockPage extends ObjectModel
                 'lang' => false,
                 'validate' => 'isUnsignedInt',
                 'required' => true,
+            ],
+            'id_employee' => [
+                'type' => self::TYPE_INT,
+                'lang' => false,
+                'validate' => 'isUnsignedInt',
+                'required' => false,
             ],
             'groups' => [
                 'type' => self::TYPE_STRING,
