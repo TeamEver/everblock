@@ -73,6 +73,7 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
 
         $structuredData = $this->buildItemListStructuredData($pages, $pageLinks);
         $isPrettyBlocksEnabled = $this->isPrettyBlocksEnabled();
+        $showPageOneBlocks = $isPrettyBlocksEnabled && $currentPage === 1;
         $pagination = $this->buildPagination(
             $currentPage,
             $totalPages,
@@ -84,9 +85,10 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             'everblock_pages' => $pages,
             'everblock_page_links' => $pageLinks,
             'everblock_structured_data' => $structuredData,
-            'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
-            'everblock_prettyblocks_top_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone_top' : '',
-            'everblock_prettyblocks_bottom_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone_bottom' : '',
+            'everblock_prettyblocks_enabled' => $showPageOneBlocks,
+            'everblock_prettyblocks_top_zone_name' => $showPageOneBlocks ? 'everblock_pages_listing_zone_top' : '',
+            'everblock_prettyblocks_bottom_zone_name' => $showPageOneBlocks ? 'everblock_pages_listing_zone_bottom' : '',
+            'everblock_is_first_page' => $currentPage === 1,
             'everblock_pagination' => $pagination,
         ]);
 
