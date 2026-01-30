@@ -199,6 +199,7 @@ class EverblockPrettyBlocks
             $ctaTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cta.tpl';
             $googleReviewsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_google_reviews.tpl';
             $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
+            $llmLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_llm_links.tpl';
             $linkListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_link_list.tpl';
             $downloadsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_downloads.tpl';
             $socialLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_social_links.tpl';
@@ -2639,6 +2640,69 @@ class EverblockPrettyBlocks
                             'type' => 'checkbox',
                             'label' => $module->l('Enable hover effect on links'),
                             'default' => '0',
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('LLM links'),
+                'description' => $module->l('Display a banner of links to AI assistants'),
+                'code' => 'everblock_llm_links',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $llmLinksTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'heading_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('Heading text'),
+                            'default' => $module->l('Résumer cet article avec :'),
+                        ],
+                        'link_hover_effect' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable hover effect on links'),
+                            'default' => '1',
+                        ],
+                    ], $module),
+                ],
+                'repeater' => [
+                    'name' => 'LLM link',
+                    'nameFrom' => 'label',
+                    'groups' => static::appendSpacingFields([
+                        'label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Label'),
+                            'default' => $module->l('ChatGPT'),
+                        ],
+                        'base_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Base URL (ends with the prompt parameter, e.g. https://chat.openai.com/?prompt=)'),
+                            'default' => 'https://chat.openai.com/?prompt=',
+                        ],
+                        'prompt_template' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Prompt template (use {{title}} and {{url}} placeholders)'),
+                            'default' => $module->l('Résume cet article de manière concise, en listant les points clés à retenir. Titre : {{title}} — URL : {{url}}'),
+                        ],
+                        'icon' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Icon image'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'icon_alt' => [
+                            'type' => 'text',
+                            'label' => $module->l('Icon alt text'),
+                            'default' => $module->l('Open in assistant'),
+                        ],
+                        'open_in_new_tab' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Open in a new tab'),
+                            'default' => '1',
                         ],
                     ], $module),
                 ],
