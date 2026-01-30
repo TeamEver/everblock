@@ -378,7 +378,9 @@ class AdminEverBlockPageController extends ModuleAdminController
                 if (!$rewrite) {
                     $rewrite = Tools::getValue('name_' . $langId);
                 }
-                $page->link_rewrite[$langId] = Tools::link_rewrite($rewrite);
+                $page->link_rewrite[$langId] = method_exists('Tools', 'str2url')
+                    ? Tools::str2url($rewrite)
+                    : Tools::link_rewrite($rewrite);
                 $page->content[$langId] = Tools::getValue('content_' . $langId, false);
             }
 

@@ -3197,7 +3197,9 @@ class Everblock extends Module
         }
         Configuration::updateValue(
             'EVERBLOCK_PAGES_BASE_URL',
-            Tools::link_rewrite($pagesBaseUrl)
+            method_exists('Tools', 'str2url')
+                ? Tools::str2url($pagesBaseUrl)
+                : Tools::link_rewrite($pagesBaseUrl)
         );
         $pagesPerPage = (int) Tools::getValue('EVERBLOCK_PAGES_PER_PAGE');
         if ($pagesPerPage <= 0) {
@@ -3213,7 +3215,9 @@ class Everblock extends Module
         }
         Configuration::updateValue(
             'EVERBLOCK_FAQ_BASE_URL',
-            Tools::link_rewrite($faqBaseUrl)
+            method_exists('Tools', 'str2url')
+                ? Tools::str2url($faqBaseUrl)
+                : Tools::link_rewrite($faqBaseUrl)
         );
         $faqPerPage = (int) Tools::getValue('EVERBLOCK_FAQ_PER_PAGE');
         if ($faqPerPage <= 0) {
@@ -6027,7 +6031,9 @@ class Everblock extends Module
         foreach ($states as &$state) {
             $question = isset($state['question']) ? trim($state['question']) : '';
             $state['question'] = $question;
-            $state['key'] = Tools::link_rewrite($question);
+            $state['key'] = method_exists('Tools', 'str2url')
+                ? Tools::str2url($question)
+                : Tools::link_rewrite($question);
 
             $answers = [];
             $lines = preg_split("/(\r\n|\r|\n)/", $state['answers'] ?? '');
@@ -6041,7 +6047,9 @@ class Everblock extends Module
                 $answers[] = [
                     'text' => $text,
                     'link' => $link,
-                    'value' => Tools::link_rewrite($text),
+                    'value' => method_exists('Tools', 'str2url')
+                        ? Tools::str2url($text)
+                        : Tools::link_rewrite($text),
                 ];
             }
             $state['answers'] = $answers;
@@ -6222,10 +6230,14 @@ class Everblock extends Module
     public function hookModuleRoutes($params)
     {
         $base = Configuration::get('EVERBLOCK_PAGES_BASE_URL') ?: 'guide';
-        $base = Tools::link_rewrite($base ? (string) $base : 'guide');
+        $base = method_exists('Tools', 'str2url')
+            ? Tools::str2url($base ? (string) $base : 'guide')
+            : Tools::link_rewrite($base ? (string) $base : 'guide');
 
         $faqBase = Configuration::get('EVERBLOCK_FAQ_BASE_URL') ?: 'faq';
-        $faqBase = Tools::link_rewrite($faqBase ? (string) $faqBase : 'faq');
+        $faqBase = method_exists('Tools', 'str2url')
+            ? Tools::str2url($faqBase ? (string) $faqBase : 'faq')
+            : Tools::link_rewrite($faqBase ? (string) $faqBase : 'faq');
 
         return [
             'module-everblock-pages' => [

@@ -579,7 +579,11 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         foreach ($symbols as $symbol) {
             $key = isset($symbol['symbol_key']) && $symbol['symbol_key'] !== ''
                 ? (string) $symbol['symbol_key']
-                : Tools::strtolower(Tools::link_rewrite((string) ($symbol['label'] ?? 'symbol')));
+                : Tools::strtolower(
+                    method_exists('Tools', 'str2url')
+                        ? Tools::str2url((string) ($symbol['label'] ?? 'symbol'))
+                        : Tools::link_rewrite((string) ($symbol['label'] ?? 'symbol'))
+                );
             $label = '';
             if (isset($symbol['label'])) {
                 if (is_array($symbol['label'])) {

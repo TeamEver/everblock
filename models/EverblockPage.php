@@ -353,7 +353,9 @@ class EverblockPage extends ObjectModel
             if (!$rewrite) {
                 $rewrite = $name;
             }
-            $this->link_rewrite[$langId] = Tools::link_rewrite((string) $rewrite);
+            $this->link_rewrite[$langId] = method_exists('Tools', 'str2url')
+                ? Tools::str2url((string) $rewrite)
+                : Tools::link_rewrite((string) $rewrite);
         }
     }
 

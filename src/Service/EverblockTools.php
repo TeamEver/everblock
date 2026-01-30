@@ -6029,7 +6029,10 @@ class EverblockTools extends ObjectModel
 
         $filenameBase = pathinfo($path, PATHINFO_FILENAME);
         if (!$filenameBase) {
-            $filenameBase = Tools::link_rewrite($title) ?: 'image';
+            $filenameBase = method_exists('Tools', 'str2url')
+                ? Tools::str2url($title)
+                : Tools::link_rewrite($title);
+            $filenameBase = $filenameBase ?: 'image';
         }
         $filenameBase = self::sanitizeFileName($filenameBase);
         if ($filenameBase === '') {
@@ -6080,7 +6083,9 @@ class EverblockTools extends ObjectModel
 
     private static function sanitizeFileName(string $fileName): string
     {
-        $normalized = Tools::link_rewrite($fileName);
+        $normalized = method_exists('Tools', 'str2url')
+            ? Tools::str2url($fileName)
+            : Tools::link_rewrite($fileName);
         $normalized = preg_replace('/[^a-z0-9\-]+/i', '-', (string) $normalized);
         $normalized = preg_replace('/-+/', '-', (string) $normalized);
 
