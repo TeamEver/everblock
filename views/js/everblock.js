@@ -3529,6 +3529,7 @@ $(document).ready(function(){
 
     initPrettyblockCategoryTabs();
     initPrettyblockToc();
+    initPrettyblockLlmLinks();
 
     function initPrettyblockCategoryTabs() {
         var $blocks = $('.prettyblock-category-tabs');
@@ -3681,6 +3682,29 @@ $(document).ready(function(){
                         $toggle.removeClass('is-open').attr('aria-expanded', 'false');
                     }
                 }, 200);
+            });
+        });
+    }
+
+    function initPrettyblockLlmLinks() {
+        $('.prettyblock-llm-links').each(function () {
+            var $block = $(this);
+            var pageTitle = $block.data('page-title') || document.title || '';
+            var pageUrl = $block.data('page-url') || window.location.href || '';
+
+            $block.find('.prettyblock-llm-links__item').each(function () {
+                var $link = $(this);
+                var baseUrl = $link.data('base-url') || '';
+                var promptTemplate = $link.data('prompt-template') || '';
+
+                if (!baseUrl || !promptTemplate) {
+                    return;
+                }
+
+                var promptText = promptTemplate
+                    .replace(/{{\s*title\s*}}/g, pageTitle)
+                    .replace(/{{\s*url\s*}}/g, pageUrl);
+                $link.attr('href', baseUrl + encodeURIComponent(promptText));
             });
         });
     }
