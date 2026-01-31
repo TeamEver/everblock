@@ -99,12 +99,13 @@ class EverblockPageModuleFrontController extends ModuleFrontController
 
         $this->everblockPage = $page;
 
+        $coverImageData = $page->getCoverImageData($this->context);
+
         $this->context->smarty->assign([
             'everblock_page' => $page,
             'everblock_page_content' => $renderedContent,
-            'everblock_page_image' => $page->cover_image
-                ? $this->context->link->getMediaLink(_PS_IMG_ . 'pages/' . $page->cover_image)
-                : '',
+            'everblock_page_image' => $coverImageData['url'] ?? '',
+            'everblock_page_image_data' => $coverImageData,
             'everblock_page_author' => $authorData,
             'everblock_structured_data' => $this->buildItemListStructuredData($pages, $pageLinks),
             'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,

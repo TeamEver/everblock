@@ -35,6 +35,8 @@
                 src="{$img.thumbnail|escape:'quotes':'UTF-8'}"
                 alt="{$img.caption|escape:'html':'UTF-8'}"
                 loading="lazy"
+                width="{$img.width|intval}"
+                height="{$img.height|intval}"
               />
             </picture>
           </a>

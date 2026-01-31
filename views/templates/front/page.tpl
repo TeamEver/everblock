@@ -4,9 +4,14 @@
   <article class="everblock-page" itemscope itemtype="https://schema.org/Article">
     <header class="everblock-page__header">
       <h1 itemprop="headline">{$everblock_page->title|default:''}</h1>
-      {if $everblock_page_image}
+      {if !empty($everblock_page_image_data.url)}
         <figure class="everblock-page__cover">
-            <img src="{$everblock_page_image}" alt="{$everblock_page->title|default:''|escape:'htmlall':'UTF-8'}" loading="lazy" itemprop="image">
+            <img src="{$everblock_page_image_data.url|escape:'htmlall':'UTF-8'}"
+                 alt="{$everblock_page->title|default:''|escape:'htmlall':'UTF-8'}"
+                 loading="lazy"
+                 itemprop="image"
+                 width="{$everblock_page_image_data.width|intval}"
+                 height="{$everblock_page_image_data.height|intval}">
         </figure>
       {/if}
       {if $everblock_page->short_description}
