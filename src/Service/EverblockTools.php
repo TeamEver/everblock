@@ -5507,6 +5507,21 @@ class EverblockTools extends ObjectModel
                         }
                     }
 
+                    $width = 0;
+                    $height = 0;
+                    if (is_file($filePath)) {
+                        $imageSize = @getimagesize($filePath);
+                        if ($imageSize) {
+                            $width = (int) $imageSize[0];
+                            $height = (int) $imageSize[1];
+                        }
+                    }
+
+                    if ($width <= 0 || $height <= 0) {
+                        $width = 320;
+                        $height = 320;
+                    }
+
                     $imgs[] = [
                         'id' => isset($post['id']) ? $post['id'] : $post['id'],
                         'permalink' => isset($post['permalink']) ? $post['permalink'] : '',
@@ -5515,6 +5530,8 @@ class EverblockTools extends ObjectModel
                         'standard_resolution' => $webPath,
                         'caption' => isset($post['caption']) ? $post['caption'] : '',
                         'is_video' => strpos($mediaUrl, '.mp4') !== false,
+                        'width' => $width,
+                        'height' => $height,
                     ];
                 }
             }
