@@ -21,6 +21,7 @@
 namespace Everblock\Tools\Service;
 
 use Address;
+use Cache;
 use Cart;
 use CartRule;
 use Category;
@@ -724,7 +725,7 @@ class EverblockTools extends ObjectModel
             }
 
             $cacheId = 'getCrossSellingShortcode_' . md5(json_encode([$cartIds, $limit, $orderBy, $orderWay]));
-            if (!EverblockCache::isCacheStored($cacheId)) {
+            if (!Cache::isStored($cacheId)) {
                 $sql = new DbQuery();
                 $sql->select('DISTINCT p.id_product');
                 $sql->from('accessory', 'a');
@@ -734,9 +735,9 @@ class EverblockTools extends ObjectModel
                 $sql->orderBy('p.' . pSQL($orderBy) . ' ' . pSQL($orderWay));
                 $sql->limit($limit * 2);
                 $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-                EverblockCache::cacheStore($cacheId, $productIds);
+                Cache::store($cacheId, $productIds);
             } else {
-                $productIds = EverblockCache::cacheRetrieve($cacheId);
+                $productIds = Cache::retrieve($cacheId);
             }
 
             $ids = [];
@@ -1414,7 +1415,7 @@ class EverblockTools extends ObjectModel
 
         $cacheId = 'everblock_google_reviews_' . md5($placeId . '|' . $limit . '|' . $minRating . '|' . $sort);
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $query = [
                 'place_id' => $placeId,
                 'fields' => 'name,rating,user_ratings_total,reviews,url,website',
@@ -1428,14 +1429,14 @@ class EverblockTools extends ObjectModel
 
             if ($response === false) {
                 PrestaShopLogger::addLog('Everblock Google Reviews: unable to contact Google Places API.', 2);
-                EverblockCache::cacheStore($cacheId, $empty);
+                Cache::store($cacheId, $empty);
             } else {
                 $payload = json_decode($response, true);
 
                 if (!is_array($payload) || ($payload['status'] ?? '') !== 'OK') {
                     $status = isset($payload['status']) ? (string) $payload['status'] : 'unknown';
                     PrestaShopLogger::addLog('Everblock Google Reviews: API status ' . $status, 2);
-                    EverblockCache::cacheStore($cacheId, $empty);
+                    Cache::store($cacheId, $empty);
                 } else {
                     $result = isset($payload['result']) && is_array($payload['result']) ? $payload['result'] : [];
                     $reviews = isset($result['reviews']) && is_array($result['reviews']) ? $result['reviews'] : [];
@@ -1470,12 +1471,12 @@ class EverblockTools extends ObjectModel
                         'reviews' => array_slice($filteredReviews, 0, $limit),
                     ];
 
-                    EverblockCache::cacheStore($cacheId, $data);
+                    Cache::store($cacheId, $data);
                 }
             }
         }
 
-        $cachedData = EverblockCache::cacheRetrieve($cacheId);
+        $cachedData = Cache::retrieve($cacheId);
 
         return is_array($cachedData) ? $cachedData : $empty;
     }
@@ -1660,7 +1661,7 @@ class EverblockTools extends ObjectModel
             . $featureId . '_' . $limit . '_' . $context->language->id
             . '_' . $orderBy . '_' . $orderWay;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $sql = new DbQuery();
             $sql->select('p.id_product');
             $sql->from('product', 'p');
@@ -1671,11 +1672,11 @@ class EverblockTools extends ObjectModel
             $sql->limit($limit);
 
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            EverblockCache::cacheStore($cacheId, $productIds);
+            Cache::store($cacheId, $productIds);
             return $productIds;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getBrandDataById(int $idBrand, Context $context): array
@@ -1684,10 +1685,10 @@ class EverblockTools extends ObjectModel
             . (int) $context->language->id . '_'
             . (int) $idBrand;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $manufacturer = new Manufacturer($idBrand, $context->language->id);
             if (!Validate::isLoadedObject($manufacturer)) {
-                EverblockCache::cacheStore($cacheId, []);
+                Cache::store($cacheId, []);
                 return [];
             }
 
@@ -1729,11 +1730,11 @@ class EverblockTools extends ObjectModel
                 'width' => $width,
                 'height' => $height,
             ];
-            EverblockCache::cacheStore($cacheId, $brandData);
+            Cache::store($cacheId, $brandData);
             return $brandData;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getFeatureValueProductShortcodes(string $txt, Context $context, Everblock $module): string
@@ -1781,7 +1782,7 @@ class EverblockTools extends ObjectModel
         . '_'
         . (int) $context->language->id
         . '_' . $orderBy . '_' . $orderWay;
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $sql = new DbQuery();
             $sql->select('p.id_product');
             $sql->from('product', 'p');
@@ -1792,10 +1793,10 @@ class EverblockTools extends ObjectModel
             $sql->limit($limit);
 
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            EverblockCache::cacheStore($cacheId, $productIds);
+            Cache::store($cacheId, $productIds);
             return $productIds;
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getCategoryShortcodes(string $txt, Context $context, Everblock $module): string
@@ -1850,7 +1851,7 @@ class EverblockTools extends ObjectModel
         $cacheId = 'everblock_getProductsByCategoryId_'
             . $categoryId . '_' . $limit . '_' . $orderBy . '_' . $orderWay . '_' . (int) $includeSubcategories;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $idLang = (int) Context::getContext()->language->id;
             $categoryIds = [$categoryId];
 
@@ -1895,11 +1896,11 @@ class EverblockTools extends ObjectModel
                 }
             }
 
-            EverblockCache::cacheStore($cacheId, $products);
+            Cache::store($cacheId, $products);
             return $products;
         }
 
-        $cachedProducts = EverblockCache::cacheRetrieve($cacheId);
+        $cachedProducts = Cache::retrieve($cacheId);
         return is_array($cachedProducts) ? $cachedProducts : [];
     }
 
@@ -1956,7 +1957,7 @@ class EverblockTools extends ObjectModel
         $cacheId = 'everblock_getProductsByManufacturerId_'
             . $manufacturerId . '_' . $limit . '_' . $orderBy . '_' . $orderWay;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $manufacturer = new Manufacturer($manufacturerId);
             $return = [];
 
@@ -1972,11 +1973,11 @@ class EverblockTools extends ObjectModel
                 $return = $products;
             }
 
-            EverblockCache::cacheStore($cacheId, $return);
+            Cache::store($cacheId, $return);
             return $return;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getBrandsShortcode(string $txt, Context $context, Everblock $module): string
@@ -2015,7 +2016,7 @@ class EverblockTools extends ObjectModel
             . '_'
             . (int) $limit;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $brands = Manufacturer::getLiteManufacturersList(
                 (int) $context->language->id
             );
@@ -2058,10 +2059,10 @@ class EverblockTools extends ObjectModel
                     ];
                 }
             }
-            EverblockCache::cacheStore($cacheId, $limitedBrands);
+            Cache::store($cacheId, $limitedBrands);
             return $limitedBrands;
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getBestSellingProductIdsForPrettyblock(int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
@@ -2089,7 +2090,7 @@ class EverblockTools extends ObjectModel
             . $orderBy . '_'
             . $orderWay;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
                 . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
                 . ' JOIN ' . _DB_PREFIX_ . 'orders o ON od.id_order = o.id_order'
@@ -2109,11 +2110,11 @@ class EverblockTools extends ObjectModel
             $ids = array_map(function ($row) {
                 return (int) $row['product_id'];
             }, $rows);
-            EverblockCache::cacheStore($cacheId, $ids);
+            Cache::store($cacheId, $ids);
             return $ids;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     protected static function getBestSellingProductIdsByCategory(int $categoryId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
@@ -2127,7 +2128,7 @@ class EverblockTools extends ObjectModel
             . $orderBy . '_'
             . $orderWay;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $shopId = (int) $context->shop->id;
             $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
                 . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
@@ -2152,11 +2153,11 @@ class EverblockTools extends ObjectModel
             $ids = array_map(function ($row) {
                 return (int) $row['product_id'];
             }, $rows);
-            EverblockCache::cacheStore($cacheId, $ids);
+            Cache::store($cacheId, $ids);
             return $ids;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     protected static function getBestSellingProductIdsByBrand(int $brandId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
@@ -2170,7 +2171,7 @@ class EverblockTools extends ObjectModel
             . $orderBy . '_'
             . $orderWay;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $shopId = (int) $context->shop->id;
             $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
                 . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
@@ -2195,11 +2196,11 @@ class EverblockTools extends ObjectModel
             $ids = array_map(function ($row) {
                 return (int) $row['product_id'];
             }, $rows);
-            EverblockCache::cacheStore($cacheId, $ids);
+            Cache::store($cacheId, $ids);
             return $ids;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     protected static function getBestSellingProductIdsByFeature(int $featureId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
@@ -2213,7 +2214,7 @@ class EverblockTools extends ObjectModel
             . $orderBy . '_'
             . $orderWay;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $shopId = (int) $context->shop->id;
             $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
                 . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
@@ -2238,11 +2239,11 @@ class EverblockTools extends ObjectModel
             $ids = array_map(function ($row) {
                 return (int) $row['product_id'];
             }, $rows);
-            EverblockCache::cacheStore($cacheId, $ids);
+            Cache::store($cacheId, $ids);
             return $ids;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     protected static function getBestSellingProductIdsByFeatureValue(int $featureValueId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
@@ -2256,7 +2257,7 @@ class EverblockTools extends ObjectModel
             . $orderBy . '_'
             . $orderWay;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $shopId = (int) $context->shop->id;
             $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
                 . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
@@ -2281,11 +2282,11 @@ class EverblockTools extends ObjectModel
             $ids = array_map(function ($row) {
                 return (int) $row['product_id'];
             }, $rows);
-            EverblockCache::cacheStore($cacheId, $ids);
+            Cache::store($cacheId, $ids);
             return $ids;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getWidgetShortcode($txt)
@@ -2824,7 +2825,7 @@ class EverblockTools extends ObjectModel
                 . ($days ?? 'all') 
                 . "_{$orderBy}_{$orderWay}";
 
-            if (!EverblockCache::isCacheStored($cacheId)) {
+            if (!Cache::isStored($cacheId)) {
                 $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity
                         FROM ' . _DB_PREFIX_ . 'order_detail od
                         JOIN ' . _DB_PREFIX_ . 'orders o ON od.id_order = o.id_order
@@ -2841,9 +2842,9 @@ class EverblockTools extends ObjectModel
                           LIMIT ' . (int)$limit;
 
                 $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-                EverblockCache::cacheStore($cacheId, $productIds);
+                Cache::store($cacheId, $productIds);
             } else {
-                $productIds = EverblockCache::cacheRetrieve($cacheId);
+                $productIds = Cache::retrieve($cacheId);
             }
             if (!empty($productIds)) {
                 $productIdsArray = array_map(function ($row) {
@@ -3133,7 +3134,7 @@ class EverblockTools extends ObjectModel
                 . (int) $context->shop->id . '_' . $productId . '_' . $limit
                 . '_' . $orderBy . '_' . $orderWay;
 
-            if (!EverblockCache::isCacheStored($cacheId)) {
+            if (!Cache::isStored($cacheId)) {
                 $sql = new DbQuery();
                 $sql->select('p.id_product');
                 $sql->from('product', 'p');
@@ -3144,9 +3145,9 @@ class EverblockTools extends ObjectModel
                 $sql->limit($limit);
 
                 $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-                EverblockCache::cacheStore($cacheId, $productIds);
+                Cache::store($cacheId, $productIds);
             } else {
-                $productIds = EverblockCache::cacheRetrieve($cacheId);
+                $productIds = Cache::retrieve($cacheId);
             }
 
             if (!empty($productIds)) {
@@ -3221,7 +3222,7 @@ class EverblockTools extends ObjectModel
                 . (int) $context->shop->id . '_' . $productId . '_' . $limit
                 . '_' . $orderBy . '_' . $orderWay;
 
-            if (!EverblockCache::isCacheStored($cacheId)) {
+            if (!Cache::isStored($cacheId)) {
                 $sql = new DbQuery();
                 $sql->select('p.id_product');
                 $sql->from('product', 'p');
@@ -3232,9 +3233,9 @@ class EverblockTools extends ObjectModel
                 $sql->limit($limit);
 
                 $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-                EverblockCache::cacheStore($cacheId, $productIds);
+                Cache::store($cacheId, $productIds);
             } else {
-                $productIds = EverblockCache::cacheRetrieve($cacheId);
+                $productIds = Cache::retrieve($cacheId);
             }
 
             if (!empty($productIds)) {
@@ -3624,7 +3625,7 @@ class EverblockTools extends ObjectModel
             $postErrors[] = $e->getMessage();
         }
 
-        if ((bool) EverblockCache::getModuleConfiguration('EVERPSCSS_CACHE') === true) {
+        if ((bool) Configuration::get('EVERPSCSS_CACHE') === true) {
             \Tools::clearAllCache();
         }
 
@@ -3890,19 +3891,19 @@ class EverblockTools extends ObjectModel
     public static function getStoreCoordinates(int $storeId): array
     {
         $cacheId = 'store_coordinates_' . (int) $storeId;
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $store = new Store((int) $storeId);
             if (Validate::isLoadedObject($store)) {
                 $coordinates = [
                     'latitude' => (float) $store->latitude,
                     'longitude' => (float) $store->longitude
                 ];
-                EverblockCache::cacheStore($cacheId, $coordinates);
+                Cache::store($cacheId, $coordinates);
             } else {
                 return [];
             }
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function generateGoogleMap(string $txt, Context $context, Everblock $module): string
@@ -4301,7 +4302,7 @@ class EverblockTools extends ObjectModel
     public static function getAllProducts(int $shopId, int $langId, $start = null, $limit = null, $orderBy = null, $orderWay = null): array
     {
         $cacheId = 'EverblockTools::getAllProducts_' . (int) $shopId . '_' . $langId;
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $sql = 'SELECT p.id_product, pl.name
                     FROM ' . _DB_PREFIX_ . 'product_shop AS p
                     LEFT JOIN ' . _DB_PREFIX_ . 'product_lang AS pl ON (p.id_product = pl.id_product AND pl.id_lang = ' . (int) $langId . ')
@@ -4316,16 +4317,16 @@ class EverblockTools extends ObjectModel
                     $products[$row['id_product']] = (int) $row['id_product'] . ' - ' . $row['name'];
                 }
             }
-            EverblockCache::cacheStore($cacheId, $products);
+            Cache::store($cacheId, $products);
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getAllManufacturers(int $shopId, int $langId): array
     {
         $cacheId = 'EverblockTools::getAllManufacturers_' . (int) $shopId . '_' . $langId;
         
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $sql = 'SELECT m.id_manufacturer, m.name
                     FROM ' . _DB_PREFIX_ . 'manufacturer AS m
                     LEFT JOIN ' . _DB_PREFIX_ . 'manufacturer_lang AS ml ON (m.id_manufacturer = ml.id_manufacturer AND ml.id_lang = ' . (int) $langId . ')
@@ -4348,15 +4349,15 @@ class EverblockTools extends ObjectModel
                     $manufacturers[$row['id_manufacturer']] = (int) $row['id_manufacturer'] . ' - ' . $row['name'];
                 }
             }
-            EverblockCache::cacheStore($cacheId, $manufacturers);
+            Cache::store($cacheId, $manufacturers);
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getAllSuppliers(int $shopId, int $langId): array
     {
         $cacheId = 'EverblockTools::getAllSuppliers_' . (int) $shopId . '_' . $langId;
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $sql = 'SELECT m.id_supplier, m.name
                     FROM ' . _DB_PREFIX_ . 'supplier AS m
                     LEFT JOIN ' . _DB_PREFIX_ . 'supplier_lang AS ml ON (m.id_supplier = ml.id_supplier AND ml.id_lang = ' . (int) $langId . ')
@@ -4379,9 +4380,9 @@ class EverblockTools extends ObjectModel
                     $suppliers[$row['id_supplier']] = (int) $row['id_supplier'] . ' - ' . $row['name'];
                 }
             }
-            EverblockCache::cacheStore($cacheId, $suppliers);
+            Cache::store($cacheId, $suppliers);
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getProductIdsBySupplier(int $supplierId, $start = null, $limit = null, $orderBy = null, $orderWay = null): array
@@ -4546,12 +4547,12 @@ class EverblockTools extends ObjectModel
     public static function generateLoremIpsum(string $txt, Context $context): string
     {
         $cacheId = 'generateLoremIpsum_' . (int) $context->shop->id;
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            $lloremParagraphNum = (int) EverblockCache::getModuleConfiguration('EVERPSCSS_P_LLOREM_NUMBER');
+        if (!Cache::isStored($cacheId)) {
+            $lloremParagraphNum = (int) Configuration::get('EVERPSCSS_P_LLOREM_NUMBER');
             if ($lloremParagraphNum <= 0) {
                 $lloremParagraphNum = 5;
             }
-            $lloremSentencesNum = (int) EverblockCache::getModuleConfiguration('EVERPSCSS_S_LLOREM_NUMBER');
+            $lloremSentencesNum = (int) Configuration::get('EVERPSCSS_S_LLOREM_NUMBER');
             if ($lloremSentencesNum <= 0) {
                 $lloremSentencesNum = 5;
             }
@@ -4573,9 +4574,9 @@ class EverblockTools extends ObjectModel
                 $paragraphs[] = $paragraph;
             }
             $llorem = implode("\n\n", $paragraphs);
-            EverblockCache::cacheStore($cacheId, $llorem);
+            Cache::store($cacheId, $llorem);
         } else{
-            $llorem = EverblockCache::cacheRetrieve($cacheId);
+            $llorem = Cache::retrieve($cacheId);
         }
         $txt = str_replace('[llorem]', $llorem, $txt);
         return $txt;
@@ -5480,7 +5481,7 @@ class EverblockTools extends ObjectModel
     public static function fetchInstagramImages()
     {
         $cacheId = 'fetchInstagramImages';
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $request = static::getInstagramRequest();
             // $request = Tools::file_get_contents('https://graph.instagram.com/me/media?access_token=IGQWRNTDdaUnFyaFNway14eTJ0NFpiSDlSZAlNNemV0U3hwNmlma3laMC01WUVxdVlucnJOM2JReF9Oblg2SmdHRlVwLXdPWXRPNVNLb1RZASjMtN0JHMW4zemNnYzZA6MVpYSGEwcHEtOG5MQQZDZD&fields=id,caption,media_type,media_url,permalink,thumbnail_url,username,timestamp');
             $result = json_decode($request, true);
@@ -5536,10 +5537,10 @@ class EverblockTools extends ObjectModel
                 }
             }
             static::refreshInstagramToken();
-            EverblockCache::cacheStore($cacheId, $imgs);
+            Cache::store($cacheId, $imgs);
             return $imgs;
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getInstagramRequest()

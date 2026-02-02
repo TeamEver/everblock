@@ -25,7 +25,6 @@ if (!defined('_PS_VERSION_')) {
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
 
 use Everblock\Tools\Service\EverblockTools;
-use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 
 class AdminEverBlockPageController extends ModuleAdminController
@@ -409,14 +408,14 @@ class AdminEverBlockPageController extends ModuleAdminController
                 if (!$page->save()) {
                     $this->errors[] = $this->l('Cannot save the page.');
                 } else {
-                    EverblockCache::cacheDropByPattern('EverblockPage_');
+                    Cache::clean('EverblockPage_');
                     Tools::clearAllCache();
                 }
             }
         }
 
         if (Tools::isSubmit('deleteeverblock_page') || Tools::isSubmit('submitBulkdeleteeverblock_page')) {
-            EverblockCache::cacheDropByPattern('EverblockPage_');
+            Cache::clean('EverblockPage_');
             Tools::clearAllCache();
         }
 
@@ -424,7 +423,7 @@ class AdminEverBlockPageController extends ModuleAdminController
             || Tools::isSubmit('submitBulkenableSelection')
             || Tools::isSubmit('submitBulkdisableSelection')
         ) {
-            EverblockCache::cacheDropByPattern('EverblockPage_');
+            Cache::clean('EverblockPage_');
             Tools::clearAllCache();
         }
     }

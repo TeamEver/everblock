@@ -17,7 +17,6 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-use Everblock\Tools\Service\EverblockCache;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -123,11 +122,11 @@ class EverblockFaq extends ObjectModel
         $faqIds = array_unique(array_filter(array_map('intval', $faqIds)));
 
         foreach ($productIds as $productId) {
-            EverblockCache::cacheDrop(static::getProductCacheKey($productId, $shopId));
+            Cache::clean(static::getProductCacheKey($productId, $shopId));
         }
 
         foreach ($faqIds as $faqId) {
-            EverblockCache::cacheDrop(static::getFaqCacheKey($faqId, $shopId));
+            Cache::clean(static::getFaqCacheKey($faqId, $shopId));
         }
     }
 
@@ -137,7 +136,7 @@ class EverblockFaq extends ObjectModel
         . (int) $shopId
         . '_'
         . (int) $langId;
-        if (!EverblockCache::isCacheStored($cache_id)) {
+        if (!Cache::isStored($cache_id)) {
             $sql = new DbQuery();
             $sql->select('*');
             $sql->from(self::$definition['table']);
@@ -153,10 +152,10 @@ class EverblockFaq extends ObjectModel
                     (int) $shopId
                 );
             }
-            EverblockCache::cacheStore($cache_id, $return);
+            Cache::store($cache_id, $return);
             return $return;
         }
-        return EverblockCache::cacheRetrieve($cache_id);
+        return Cache::retrieve($cache_id);
     }
 
     public static function getFaqByTagName(int $shopId, int $langId, string $tagName): array
@@ -167,7 +166,7 @@ class EverblockFaq extends ObjectModel
         . (int) $langId
         . '_'
         . trim($tagName);
-        if (!EverblockCache::isCacheStored($cache_id)) {
+        if (!Cache::isStored($cache_id)) {
             $sql = new DbQuery();
             $sql->select('*');
             $sql->from(self::$definition['table']);
@@ -184,10 +183,10 @@ class EverblockFaq extends ObjectModel
                     (int) $shopId
                 );
             }
-            EverblockCache::cacheStore($cache_id, $return);
+            Cache::store($cache_id, $return);
             return $return;
         }
-        return EverblockCache::cacheRetrieve($cache_id);
+        return Cache::retrieve($cache_id);
     }
 
     public static function countActiveByTagName(int $shopId, string $tagName): int
@@ -228,7 +227,7 @@ class EverblockFaq extends ObjectModel
         $shopId = self::resolveShopId($shopId);
         $cacheId = 'EverblockFaq_getFirstActiveTagName_' . (int) $shopId;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $sql = new DbQuery();
             $sql->select('tag_name');
             $sql->from(self::$definition['table']);
@@ -241,11 +240,11 @@ class EverblockFaq extends ObjectModel
                 $tagName = null;
             }
 
-            EverblockCache::cacheStore($cacheId, $tagName);
+            Cache::store($cacheId, $tagName);
             return $tagName;
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     public static function getFaqByTagNamePaginated(
@@ -333,8 +332,8 @@ class EverblockFaq extends ObjectModel
             . '_' . ($onlyActive ? '1' : '0')
             . '_' . implode('-', $faqIds);
 
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return (array) EverblockCache::cacheRetrieve($cacheId);
+        if (Cache::isStored($cacheId)) {
+            return (array) Cache::retrieve($cacheId);
         }
 
         $sql = new DbQuery();
@@ -353,7 +352,7 @@ class EverblockFaq extends ObjectModel
             $faqs[] = new self((int) $row['id_everblock_faq'], $langId, $shopId);
         }
 
-        EverblockCache::cacheStore($cacheId, $faqs);
+        Cache::store($cacheId, $faqs);
 
         return $faqs;
     }
@@ -368,8 +367,8 @@ class EverblockFaq extends ObjectModel
         }
 
         $cacheId = static::getProductCacheKey($productId, $shopId);
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return (array) EverblockCache::cacheRetrieve($cacheId);
+        if (Cache::isStored($cacheId)) {
+            return (array) Cache::retrieve($cacheId);
         }
 
         $sql = new DbQuery();
@@ -385,7 +384,7 @@ class EverblockFaq extends ObjectModel
             $faqIds[] = (int) $row['id_everblock_faq'];
         }
 
-        EverblockCache::cacheStore($cacheId, $faqIds);
+        Cache::store($cacheId, $faqIds);
 
         return $faqIds;
     }
@@ -400,8 +399,8 @@ class EverblockFaq extends ObjectModel
         }
 
         $cacheId = static::getFaqCacheKey($faqId, $shopId);
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return (array) EverblockCache::cacheRetrieve($cacheId);
+        if (Cache::isStored($cacheId)) {
+            return (array) Cache::retrieve($cacheId);
         }
 
         $sql = new DbQuery();
@@ -420,7 +419,7 @@ class EverblockFaq extends ObjectModel
             ];
         }
 
-        EverblockCache::cacheStore($cacheId, $products);
+        Cache::store($cacheId, $products);
 
         return $products;
     }

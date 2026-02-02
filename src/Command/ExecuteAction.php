@@ -24,12 +24,12 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Cache;
 use Configuration;
 use Currency;
 use Db;
 use DbQuery;
 use Everblock\Tools\Service\ImportFile;
-use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;
 use Language;
 use Module;
@@ -223,7 +223,7 @@ class ExecuteAction extends Command
             // Instagram
             $newToken = EverblockTools::refreshInstagramToken();
             if ($newToken) {
-                EverblockCache::cacheDropByPattern('fetchInstagramImages');
+                Cache::clean('fetchInstagramImages');
                 $output->writeln(
                     '<success>' . $newToken . '</success>'
                 );

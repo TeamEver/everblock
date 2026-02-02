@@ -34,7 +34,6 @@ use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockPrettyBlocksImportExport;
-use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\GithubReleaseChecker;
 use Everblock\Tools\Service\ImportFile;
@@ -804,7 +803,7 @@ class Everblock extends Module
         $idShop = (int) $this->context->shop->id;
         $cacheId = $this->name . 'NeedProductFlagsHook_' . $idShop;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $needHook = false;
 
             if (Configuration::get('EVERBLOCK_SOLDOUT_FLAG')) {
@@ -824,10 +823,10 @@ class Everblock extends Module
                 $needHook = true;
             }
 
-            EverblockCache::cacheStore($cacheId, $needHook);
+            Cache::store($cacheId, $needHook);
         }
 
-        $needHook = (bool) EverblockCache::cacheRetrieve($cacheId);
+        $needHook = (bool) Cache::retrieve($cacheId);
 
         if ($needHook) {
             $this->registerHook('actionProductFlagsModifier');
@@ -1822,26 +1821,6 @@ class Everblock extends Module
             ],
             [
                 'type' => 'switch',
-                'label' => $this->l('Use module cache system instead of Prestashop native cache ?'),
-                'desc' => $this->l('Set yes to use module cache, this will generate cache files on your server'),
-                'hint' => $this->l('Else Prestashop native cache will be used'),
-                'name' => 'EVERBLOCK_CACHE',
-                'is_bool' => true,
-                'values' => [
-                    [
-                        'id' => 'active_on',
-                        'value' => true,
-                        'label' => $this->l('Yes'),
-                    ],
-                    [
-                        'id' => 'active_off',
-                        'value' => false,
-                        'label' => $this->l('No'),
-                    ],
-                ],
-            ],
-            [
-                'type' => 'switch',
                 'label' => $this->l('Enable front-office script for obfuscation ?'),
                 'desc' => $this->l('Will load JS file to manage obfuscated links'),
                 'hint' => $this->l('Leave it to "No" if you already have a script that manages obfuscated links'),
@@ -2819,7 +2798,6 @@ class Everblock extends Module
             'EVERBLOCK_MARKER_ICON' => Configuration::get('EVERBLOCK_MARKER_ICON'),
             'EVERBLOCK_STORELOCATOR_TOGGLE' => Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
-            'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
             'EVERBLOCK_SOLDOUT_FLAG' => Configuration::get('EVERBLOCK_SOLDOUT_FLAG'),
             'EVER_SOLDOUT_COLOR' => Configuration::get('EVER_SOLDOUT_COLOR'),
@@ -3086,10 +3064,6 @@ class Everblock extends Module
             Tools::getValue('EVERPSCSS_CACHE')
         );
         Configuration::updateValue(
-            'EVERBLOCK_CACHE',
-            Tools::getValue('EVERBLOCK_CACHE')
-        );
-        Configuration::updateValue(
             'EVERBLOCK_USE_OBF',
             Tools::getValue('EVERBLOCK_USE_OBF')
         );
@@ -3294,7 +3268,7 @@ class Everblock extends Module
             'EVERBLOCK_GOOGLE_REVIEWS_CTA_URL',
             $googleReviewsCtaUrl
         );
-        EverblockCache::cacheDropByPattern('everblock_google_reviews_');
+        Cache::clean('everblock_google_reviews_');
         Configuration::updateValue(
             'EVERBLOCK_GMAP_KEY',
             Tools::getValue('EVERBLOCK_GMAP_KEY')
@@ -3407,7 +3381,7 @@ class Everblock extends Module
             Tools::getValue('EVERPS_FLAG_NB')
         );
         $cacheId = $this->name . 'NeedProductFlagsHook_' . $idShop;
-        EverblockCache::cacheDrop($cacheId);
+        Cache::clean($cacheId);
         $this->updateProductFlagsHook();
         if ((bool) Tools::getValue('EVERPSCSS_CACHE') === true) {
             $this->emptyAllCache();
@@ -4188,59 +4162,59 @@ class Everblock extends Module
     public function hookActionObjectEverBlockClassDeleteAfter($params)
     {
         $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverBlockClass_getBlocks_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'fetchInstagramImages';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
     }
 
     public function hookActionObjectEverBlockClassUpdateAfter($params)
     {
         $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverBlockClass_getBlocks_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'fetchInstagramImages';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
     }
 
     public function hookActionObjectEverBlockFlagsDeleteAfter($params)
     {
         $cachePattern = $this->name . 'EverblockFlagsClass_getByIdProduct_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverBlockFlags_getBlocks_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
-        EverblockCache::cacheDrop($cacheId);
+        Cache::clean($cacheId);
         $this->updateProductFlagsHook();
     }
 
     public function hookActionObjectEverBlockFlagsUpdateAfter($params)
     {
         $cachePattern = $this->name . 'EverblockFlagsClass_getByIdProduct_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cacheId = $this->name . 'NeedProductFlagsHook_' . (int) $this->context->shop->id;
-        EverblockCache::cacheDrop($cacheId);
+        Cache::clean($cacheId);
         $this->updateProductFlagsHook();
     }
 
     public function hookActionObjectEverblockFaqDeleteAfter($params)
     {
         $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getAllFaq_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getFaqByTagName_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getFaqIdsByProduct_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getProductsByFaq_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getByIds_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'fetchInstagramImages';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $productIds = [];
         if (!empty($params['object']->id)) {
             EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, (int) $params['object']->id_shop);
@@ -4257,17 +4231,17 @@ class Everblock extends Module
     public function hookActionObjectEverblockFaqUpdateAfter($params)
     {
         $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getAllFaq_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getFaqByTagName_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getFaqIdsByProduct_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getProductsByFaq_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $cachePattern = 'EverblockFaq_getByIds_';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        Cache::clean($cachePattern);
         $productIds = [];
         if (!empty($params['object']->id)) {
             EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, (int) $params['object']->id_shop);
@@ -4568,8 +4542,8 @@ class Everblock extends Module
                 $productId,
             ]);
 
-            if (EverblockCache::isCacheStored($cacheKey)) {
-                $additionalFlags = EverblockCache::cacheRetrieve($cacheKey);
+            if (Cache::isStored($cacheKey)) {
+                $additionalFlags = Cache::retrieve($cacheKey);
             } else {
                 $additionalFlags = [];
                 // Current product flags
@@ -4614,7 +4588,7 @@ class Everblock extends Module
                         ];
                     }
                 }
-                EverblockCache::cacheStore($cacheKey, $additionalFlags);
+                Cache::store($cacheKey, $additionalFlags);
             }
 
             if (!empty($additionalFlags)) {
@@ -4642,33 +4616,33 @@ class Everblock extends Module
     protected function getFeatures($productId)
     {
         $cacheId = $this->name . '_getFeatures_' . (int) $productId;
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $sql = 'SELECT fp.id_feature, fv.value
                     FROM ' . _DB_PREFIX_ . 'feature_product fp
                     JOIN ' . _DB_PREFIX_ . 'feature_value_lang fv ON fp.id_feature_value = fv.id_feature_value
                     WHERE fp.id_product = ' . (int) $productId . '
                     AND fv.id_lang = ' . (int) $this->context->language->id;
             $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            EverblockCache::cacheStore($cacheId, $result);
+            Cache::store($cacheId, $result);
             return $result;
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     protected function getFeaturesAsFlags()
     {
         $cacheId = $this->name . '_getFeaturesAsFlags_' . (int) $this->context->shop->id;
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $bannedFeatures = Configuration::get('EVERPS_FEATURES_AS_FLAGS');
             if (!$bannedFeatures) {
                 $bannedFeatures = [];
             } else {
                 $bannedFeatures = json_decode($bannedFeatures);
             }
-            EverblockCache::cacheStore($cacheId, $bannedFeatures);
+            Cache::store($cacheId, $bannedFeatures);
             return $bannedFeatures;
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     protected function getProductFaqTemplatePath(): string
@@ -4912,7 +4886,7 @@ class Everblock extends Module
         . $position;
         $isPreview = isset($args[0]['everblock_preview']) && (bool) $args[0]['everblock_preview'];
 
-        if ($isPreview || !EverblockCache::isCacheStored(str_replace('|', '-', $cacheId))) {
+        if ($isPreview || !Cache::isStored(str_replace('|', '-', $cacheId))) {
             if (isset($context->customer->id) && $context->customer->id) {
                 $id_entity = (int) $context->customer->id;
             } else {
@@ -5096,14 +5070,14 @@ class Everblock extends Module
             ]);
             $tpl = $this->display(__FILE__, $this->name . '.tpl');
             if (!$isPreview) {
-                EverblockCache::cacheStore(
+                Cache::store(
                     str_replace('|', '-', $cacheId),
                     $tpl
                 );
             }
             return $tpl;
         }
-        return EverblockCache::cacheRetrieve(
+        return Cache::retrieve(
             str_replace('|', '-', $cacheId)
         );
     }
@@ -5204,7 +5178,7 @@ class Everblock extends Module
             'modules/' . $this->name . '/views/js/' . $this->name . '.js',
             ['position' => 'bottom', 'priority' => 200]
         );
-        if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_OBF') === true) {
+        if ((bool) Configuration::get('EVERBLOCK_USE_OBF') === true) {
             $this->context->controller->registerJavascript(
                 'module-' . $this->name . '-obf-js',
                 'modules/' . $this->name . '/views/js/' . $this->name . '-obfuscation.js',
@@ -5227,7 +5201,7 @@ class Everblock extends Module
                 ['position' => 'bottom', 'priority' => 200]
             );
         }
-        $externalJs = EverblockCache::getModuleConfiguration('EVERPSJS_LINKS');
+        $externalJs = Configuration::get('EVERPSJS_LINKS');
         $jsLinksArray = [];
         if ($externalJs) {
             $jsLinksArray = explode("\n", $externalJs);
@@ -5239,7 +5213,7 @@ class Everblock extends Module
                 );
             }
         }
-        $externalCss = EverblockCache::getModuleConfiguration('EVERPSCSS_LINKS');
+        $externalCss = Configuration::get('EVERPSCSS_LINKS');
         $cssLinksArray = [];
         if ($externalCss) {
             $cssLinksArray = explode("\n", $externalCss);
@@ -5316,10 +5290,10 @@ class Everblock extends Module
         . (int) $this->context->language->id
         . '_'
         . (int) $this->context->shop->id;
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            EverblockCache::cacheStore($cacheId, EverblockPrettyBlocks::getEverPrettyBlocks($this->context));
+        if (!Cache::isStored($cacheId)) {
+            Cache::store($cacheId, EverblockPrettyBlocks::getEverPrettyBlocks($this->context));
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     protected function compressCSSCode($css)
@@ -5773,8 +5747,8 @@ class Everblock extends Module
                     $orderBy,
                     $orderWay,
                 ]);
-                if (EverblockCache::isCacheStored($cacheKey)) {
-                    $products[$key] = EverblockCache::cacheRetrieve($cacheKey);
+                if (Cache::isStored($cacheKey)) {
+                    $products[$key] = Cache::retrieve($cacheKey);
                     continue;
                 }
                 $rawProducts = EverblockTools::getProductsByCategoryId(
@@ -5787,7 +5761,7 @@ class Everblock extends Module
                     array_column($rawProducts, 'id_product'),
                     $this->context
                 );
-                EverblockCache::cacheStore($cacheKey, $presented);
+                Cache::store($cacheKey, $presented);
                 $products[$key] = $presented;
             }
         }
@@ -6066,8 +6040,8 @@ class Everblock extends Module
             $categoryId,
             $limit,
         ]);
-        if (EverblockCache::isCacheStored($cacheKey)) {
-            $cached = EverblockCache::cacheRetrieve($cacheKey);
+        if (Cache::isStored($cacheKey)) {
+            $cached = Cache::retrieve($cacheKey);
             return $cached;
         }
 
@@ -6084,7 +6058,7 @@ class Everblock extends Module
             'products' => $presentedProducts,
             'best_sales_url' => $this->context->link->getPageLink('best-sales'),
         ];
-        EverblockCache::cacheStore($cacheKey, $payload);
+        Cache::store($cacheKey, $payload);
 
         return $payload;
     }

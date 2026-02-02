@@ -17,7 +17,6 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-use Everblock\Tools\Service\EverblockCache;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -121,7 +120,7 @@ class EverblockFlagsClass extends ObjectModel
         . (int) $shopId
         . '_'
         . (int) $langId;
-        if (!EverblockCache::isCacheStored($cache_id)) {
+        if (!Cache::isStored($cache_id)) {
             $sql = new DbQuery();
             $sql->select(self::$definition['primary']);
             $sql->from(self::$definition['table']);
@@ -137,9 +136,9 @@ class EverblockFlagsClass extends ObjectModel
                     (int) $shopId
                 );
             }
-            EverblockCache::cacheStore($cache_id, $return);
+            Cache::store($cache_id, $return);
             return $return;
         }
-        return EverblockCache::cacheRetrieve($cache_id);
+        return Cache::retrieve($cache_id);
     }
 }

@@ -20,10 +20,10 @@
 
 namespace Everblock\Tools\Service;
 
+use Cache;
 use Configuration;
 use Context;
 use EverBlockClass;
-use Everblock\Tools\Service\EverblockCache;
 use EverblockShortcode;
 use Everblock\Tools\Service\EverblockTools;
 use Group;
@@ -166,7 +166,7 @@ class EverblockPrettyBlocks
             $shopName = (string) $context->shop->name;
         }
         $module = Module::getInstanceByName('everblock');
-        if (!EverblockCache::isCacheStored($cacheId)) {
+        if (!Cache::isStored($cacheId)) {
             $defaultTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_' . $module->name . '.tpl';
             $modalTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_modal.tpl';
             $alertTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_alert.tpl';
@@ -4988,10 +4988,10 @@ class EverblockPrettyBlocks
             $blocks = self::addDisplaySettings($blocks, $module, $context);
             $blocks = self::applyShopNameDefaults($blocks, $shopName);
             $blocks = self::applyFileUploadPath($blocks);
-            EverblockCache::cacheStore($cacheId, $blocks);
+            Cache::store($cacheId, $blocks);
             return $blocks;
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+        return Cache::retrieve($cacheId);
     }
 
     private static function addDisplaySettings(array $blocks, Module $module, Context $context): array

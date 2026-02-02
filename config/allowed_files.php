@@ -100,7 +100,6 @@ return [
     'src/Command/PrettyBlocksCommand.php',
     'src/Command/SearchReplaceCommand.php',
     'src/Command/index.php',
-    'src/Service/EverblockCache.php',
     'src/Service/EverblockPrettyBlocks.php',
     'src/Service/EverblockPreviewBuilder.php',
     'src/Service/EverblockTools.php',

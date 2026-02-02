@@ -18,7 +18,6 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-use Everblock\Tools\Service\EverblockCache;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -190,8 +189,8 @@ class EverblockPage extends ObjectModel
             . (int) $page . '_'
             . (int) $perPage;
 
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return EverblockCache::cacheRetrieve($cacheId);
+        if (Cache::isStored($cacheId)) {
+            return Cache::retrieve($cacheId);
         }
 
         $sql = new DbQuery();
@@ -220,7 +219,7 @@ class EverblockPage extends ObjectModel
             $pages[] = $page;
         }
 
-        EverblockCache::cacheStore($cacheId, $pages);
+        Cache::store($cacheId, $pages);
 
         return $pages;
     }
@@ -234,8 +233,8 @@ class EverblockPage extends ObjectModel
             . (int) $onlyActive . '_'
             . md5(json_encode($allowedGroups));
 
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return (int) EverblockCache::cacheRetrieve($cacheId);
+        if (Cache::isStored($cacheId)) {
+            return (int) Cache::retrieve($cacheId);
         }
 
         $sql = new DbQuery();
@@ -263,7 +262,7 @@ class EverblockPage extends ObjectModel
             ++$count;
         }
 
-        EverblockCache::cacheStore($cacheId, $count);
+        Cache::store($cacheId, $count);
 
         return $count;
     }
@@ -314,18 +313,18 @@ class EverblockPage extends ObjectModel
         $shopId = static::resolveShopId($shopId);
         $cacheId = 'EverblockPage_getById_' . (int) $pageId . '_' . (int) $langId . '_' . (int) $shopId;
 
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return EverblockCache::cacheRetrieve($cacheId);
+        if (Cache::isStored($cacheId)) {
+            return Cache::retrieve($cacheId);
         }
 
         $page = new self($pageId, $langId, $shopId);
         if (!Validate::isLoadedObject($page)) {
-            EverblockCache::cacheStore($cacheId, null);
+            Cache::store($cacheId, null);
 
             return null;
         }
 
-        EverblockCache::cacheStore($cacheId, $page);
+        Cache::store($cacheId, $page);
 
         return $page;
     }

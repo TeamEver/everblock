@@ -390,14 +390,12 @@ display it using Bootstrap.
 
 ## Cache & logs
 
-The module uses its own cache system in addition to the PrestaShop one.
-
-The cache directory is located in /var/cache/dev?prod/everblock/
+The module relies on the native PrestaShop cache system.
 
 The logs directory is located in /var/logs/
 Log files are created only when there is content to log.
 
-Clearing the native PrestaShop cache will also clear the module cache, but the module will clear its own cache on a block expiry automatically.
+Clearing the PrestaShop cache will refresh the Ever Block data.
 
 ---
 
@@ -617,14 +615,12 @@ Vous pouvez également afficher le contenu d'une page CMS en utilisant l'attribu
 Lors du clic, le module chargera le contenu de la modal via AJAX et l'affichera avec Bootstrap.
 
 ## Cache et logs
-Le module utilise son propre système de cache en plus de celui de PrestaShop.
-
-Le dossier du cache se situe dans /var/cache/dev?prod/everblock/
+Le module s'appuie sur le système de cache natif de PrestaShop.
 
 Le dossier des logs se situe dans /var/logs/
 Les fichiers de log ne sont créés que s'il y a un message à enregistrer.
 
-Vider le cache natif de PrestaShop videra également le cache du module, mais ce dernier vide automatiquement son cache lorsqu'un bloc expire.
+Vider le cache de PrestaShop rafraîchira les données d'Ever Block.
 
 ---
 
@@ -1069,13 +1065,11 @@ Puoi anche mostrare il contenuto di una pagina CMS usando l'attributo `data-ever
 Al clic, il modulo caricherà il contenuto della modale tramite AJAX e lo mostrerà con Bootstrap.
 
 ## Cache e log
-Il modulo utilizza un proprio sistema di cache oltre a quello di PrestaShop.
-
-La cartella cache si trova in /var/cache/dev?prod/everblock/
+Il modulo si basa sul sistema di cache nativo di PrestaShop.
 
 La cartella log si trova in /var/logs/
 I file di log vengono creati solo se contengono dei messaggi.
 
-Cancellare la cache nativa di PrestaShop cancellerà anche quella del modulo, ma quest'ultimo la pulisce automaticamente alla scadenza di un blocco.
+Cancellare la cache di PrestaShop aggiornerà i dati di Ever Block.
 ## Continuous Integration
 A GitHub Actions workflow checks PHP and Smarty template syntax on every push or pull request. The `vendor` directory is skipped during these checks to avoid issues with third-party code.

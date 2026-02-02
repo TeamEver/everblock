@@ -30,7 +30,7 @@
             <li>{l s='Obfuscation prevents bots from crawling the links inside the block by wrapping them with JavaScript.' mod='everblock'}</li>
         </ul>
         <p class="mt-3">
-            {l s='Remember to clear the module cache after heavy layout changes to make sure your visitors see the latest version.' mod='everblock'}
+            {l s='Remember to clear the PrestaShop cache after heavy layout changes to make sure your visitors see the latest version.' mod='everblock'}
         </p>
     </div>
 </div>

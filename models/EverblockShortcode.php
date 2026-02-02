@@ -17,7 +17,6 @@
  *  @copyright 2019-2025 Team Ever
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-use Everblock\Tools\Service\EverblockCache;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -70,7 +69,7 @@ class EverblockShortcode extends ObjectModel
         . (int) $idShop
         . '_'
         . (int) $langId;
-        if (!EverblockCache::isCacheStored($cache_id)) {
+        if (!Cache::isStored($cache_id)) {
             $sql = new DbQuery();
             $sql->select('*');
             $sql->from('everblock_shortcode');
@@ -84,26 +83,26 @@ class EverblockShortcode extends ObjectModel
                 );
                 $return[] = $shortcode;
             }
-            EverblockCache::cacheStore($cache_id, $return);
+            Cache::store($cache_id, $return);
             return $return;
         }
-        return EverblockCache::cacheRetrieve($cache_id);
+        return Cache::retrieve($cache_id);
     }
 
     public static function getAllShortcodeIds(int $idShop): array
     {
         $cache_id = 'EverblockShortcode_getAllShortcodeIds_'
         . (int) $idShop;
-        if (!EverblockCache::isCacheStored($cache_id)) {
+        if (!Cache::isStored($cache_id)) {
             $sql = new DbQuery();
             $sql->select('*');
             $sql->from('everblock_shortcode');
             $sql->where('id_shop = ' . (int) $idShop);
             $return = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            EverblockCache::cacheStore($cache_id, $return);
+            Cache::store($cache_id, $return);
             return $return;
         }
-        return EverblockCache::cacheRetrieve($cache_id);
+        return Cache::retrieve($cache_id);
     }
 
     public static function getEverShortcode(string $shortcode, int $shopId, int $langId): string
@@ -114,7 +113,7 @@ class EverblockShortcode extends ObjectModel
         . (int) $shopId
         . '_'
         . (int) $langId;
-        if (!EverblockCache::isCacheStored($cache_id)) {
+        if (!Cache::isStored($cache_id)) {
             $sql = new DbQuery();
             $sql->select('*');
             $sql->from('everblock_shortcode');
@@ -133,9 +132,9 @@ class EverblockShortcode extends ObjectModel
                 (int) $shopId
             );
             $return = $shortcode->content;
-            EverblockCache::cacheStore($cache_id, $return);
+            Cache::store($cache_id, $return);
             return $return;
         }
-        return EverblockCache::cacheRetrieve($cache_id);
+        return Cache::retrieve($cache_id);
     }
 }

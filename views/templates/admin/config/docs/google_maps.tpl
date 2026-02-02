@@ -24,7 +24,7 @@
         <ul>
             <li>{l s='Generate an API key with Places and Maps JavaScript enabled so the autocomplete widget can work on CMS pages.' mod='everblock'}</li>
             <li>{l s='Upload your own SVG marker to match your branding. Leave it empty to keep the default pin.' mod='everblock'}</li>
-            <li>{l s='Remember to clear the module cache after changing the marker if the old icon is still displayed.' mod='everblock'}</li>
+            <li>{l s='Remember to clear the PrestaShop cache after changing the marker if the old icon is still displayed.' mod='everblock'}</li>
             <li>{l s='Paste the Google Places API key into the dedicated field and save the settings each time you rotate or restrict the key.' mod='everblock'}</li>
             <li>{l s='Store your Google Place ID in the provided field so the reviews shortcode knows which location to display.' mod='everblock'}</li>
             <li>{l s='Use the review settings to adjust sorting, visibility of the global rating, avatars and call-to-action button.' mod='everblock'}</li>
