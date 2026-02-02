@@ -4880,6 +4880,26 @@ class EverblockTools extends ObjectModel
     public static function everPresentProducts(array $result, Context $context): array
     {
         $products = [];
+        $cacheEnabled = (bool) EverblockCache::getModuleConfiguration('EVERBLOCK_EVER_PRESENT_CACHE');
+        $cacheKey = '';
+
+        if ($cacheEnabled) {
+            $productIds = array_values(array_map('intval', $result));
+            $cacheContext = [
+                'products' => $productIds,
+                'lang' => (int) $context->language->id,
+                'shop' => (int) $context->shop->id,
+                'currency' => isset($context->currency) ? (int) $context->currency->id : 0,
+                'customer' => isset($context->customer) ? (int) $context->customer->id : 0,
+                'customer_group' => isset($context->customer) ? (int) $context->customer->id_default_group : 0,
+                'country' => isset($context->country) ? (int) $context->country->id : 0,
+            ];
+            $cacheKey = 'everblock_everPresentProducts_' . md5(json_encode($cacheContext));
+            if (EverblockCache::isCacheStored($cacheKey)) {
+                $cachedProducts = EverblockCache::cacheRetrieve($cacheKey);
+                return is_array($cachedProducts) ? $cachedProducts : [];
+            }
+        }
 
         if (!empty($result)) {
             $assembler = new \ProductAssembler($context);
@@ -4934,6 +4954,10 @@ class EverblockTools extends ObjectModel
                     );
                 }
             }
+        }
+
+        if ($cacheEnabled && $cacheKey !== '') {
+            EverblockCache::cacheStore($cacheKey, $products);
         }
 
         return $products;
