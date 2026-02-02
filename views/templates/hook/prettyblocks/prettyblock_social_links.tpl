@@ -65,7 +65,7 @@
               {assign var='prettyblock_social_link_style_attr' value=$smarty.capture.prettyblock_social_link_style_attr|trim}
               <span class="everblock-social-link{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}"{if $prettyblock_social_link_style_attr} style="{$prettyblock_social_link_style_attr}"{/if}>
                 <a href="{$state.url|escape:'htmlall'}"
-                   class="{if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect}everblock-link-hover--block{/if}"
+                   class="obfme{if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect} everblock-link-hover--block{/if}"
                    title="{$state.url|escape:'htmlall'}"
                    target="_blank"
                    style="{if isset($block.settings.icon_color) && $block.settings.icon_color}color:{$block.settings.icon_color|escape:'htmlall'};{/if}">
