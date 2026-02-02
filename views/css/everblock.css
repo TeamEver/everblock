@@ -414,6 +414,18 @@
     align-items: center;
 }
 
+.everblock-social-links--left {
+    justify-content: flex-start;
+}
+
+.everblock-social-links--center {
+    justify-content: center;
+}
+
+.everblock-social-links--right {
+    justify-content: flex-end;
+}
+
 .everblock-social-links a,
 .everblock-social-links span {
     display: inline-flex;
