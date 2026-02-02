@@ -1928,52 +1928,81 @@ class EverblockTools extends ObjectModel
             return [];
         }
 
+        $idLang = (int) Context::getContext()->language->id;
         $cacheId = 'everblock_getProductsByCategoryId_'
-            . $categoryId . '_' . $limit . '_' . $orderBy . '_' . $orderWay . '_' . (int) $includeSubcategories;
+            . $categoryId . '_' . $idLang . '_' . $limit . '_' . $orderBy . '_' . $orderWay . '_' . (int) $includeSubcategories;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $idLang = (int) Context::getContext()->language->id;
+            $context = Context::getContext();
             $categoryIds = [$categoryId];
 
             if ($includeSubcategories) {
-                $toProcess = [$categoryId];
-                while (!empty($toProcess)) {
-                    $current = array_pop($toProcess);
-                    $children = Category::getChildren($current, $idLang);
-                    foreach ($children as $child) {
-                        $childId = (int) $child['id_category'];
-                        if (!in_array($childId, $categoryIds)) {
-                            $categoryIds[] = $childId;
-                            $toProcess[] = $childId;
-                        }
-                    }
+                $treeQuery = new DbQuery();
+                $treeQuery->select('c_desc.id_category');
+                $treeQuery->from('category', 'c');
+                $treeQuery->innerJoin(
+                    'category',
+                    'c_desc',
+                    'c_desc.nleft >= c.nleft AND c_desc.nright <= c.nright'
+                );
+                $treeQuery->where('c.id_category = ' . (int) $categoryId);
+                $treeQuery->where('c_desc.active = 1 OR c_desc.id_category = ' . (int) $categoryId);
+                $treeResult = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($treeQuery);
+                if (!empty($treeResult)) {
+                    $categoryIds = array_values(array_unique(array_map('intval', array_column($treeResult, 'id_category'))));
                 }
             }
 
+            if (empty($categoryIds)) {
+                EverblockCache::cacheStore($cacheId, []);
+                return [];
+            }
+
+            $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
+            $allowedOrderWay = ['ASC', 'DESC'];
+            if (!in_array($orderBy, $allowedOrderBy, true)) {
+                $orderBy = 'id_product';
+            }
+            if (!in_array($orderWay, $allowedOrderWay, true)) {
+                $orderWay = 'ASC';
+            }
+
+            $orderByMap = [
+                'id_product' => 'p.id_product',
+                'price' => 'p.price',
+                'name' => 'pl.name',
+                'date_add' => 'p.date_add',
+                'position' => 'position',
+            ];
+            $orderColumn = $orderByMap[$orderBy] ?? 'p.id_product';
+
+            $productQuery = new DbQuery();
+            $productQuery->select('p.id_product, MIN(cp.position) AS position');
+            $productQuery->from('category_product', 'cp');
+            $productQuery->innerJoin('product', 'p', 'p.id_product = cp.id_product');
+            $productQuery->innerJoin(
+                'product_lang',
+                'pl',
+                'pl.id_product = p.id_product'
+                . ' AND pl.id_lang = ' . (int) $idLang
+                . ' AND pl.id_shop = ' . (int) $context->shop->id
+            );
+            $productQuery->where('p.active = 1');
+            $productQuery->where('cp.id_category IN (' . implode(', ', array_map('intval', $categoryIds)) . ')');
+            $productQuery->groupBy('p.id_product');
+            $productQuery->orderBy($orderColumn . ' ' . pSQL($orderWay));
+            $productQuery->limit($limit);
+
+            $rawProducts = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($productQuery);
             $products = [];
-            $ids = [];
-            foreach ($categoryIds as $cid) {
-                $category = new Category($cid);
-                if (!Validate::isLoadedObject($category)) {
+            $seen = [];
+            foreach ($rawProducts as $product) {
+                $pid = (int) ($product['id_product'] ?? 0);
+                if ($pid <= 0 || isset($seen[$pid])) {
                     continue;
                 }
-                $catProducts = $category->getProducts(
-                    $idLang,
-                    1,
-                    $limit,
-                    $orderBy,
-                    $orderWay
-                );
-                foreach ($catProducts as $product) {
-                    $pid = (int) $product['id_product'];
-                    if (!in_array($pid, $ids)) {
-                        $products[] = $product;
-                        $ids[] = $pid;
-                    }
-                    if (count($products) >= $limit) {
-                        break 2;
-                    }
-                }
+                $products[] = $product;
+                $seen[$pid] = true;
             }
 
             EverblockCache::cacheStore($cacheId, $products);
