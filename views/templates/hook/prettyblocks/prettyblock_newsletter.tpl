@@ -42,7 +42,7 @@
         Native newsletter flow: submit to ps_emailsubscription controller via AJAX.
         The JS uses psemailsubscription_subscription injected by the module.
       *}
-      <form class="prettyblock-newsletter__form" data-newsletter-form>
+      <form class="prettyblock-newsletter__form" data-newsletter-form method="post" action="{$link->getModuleLink('ps_emailsubscription', 'subscription')|escape:'htmlall':'UTF-8'}">
         <div class="prettyblock-newsletter__input-group">
           <label class="sr-only" for="prettyblock-newsletter-email-{$block.id_prettyblocks}">
             {l s='Email address' mod='everblock'}
@@ -57,6 +57,8 @@
             placeholder="{if $block.settings.default.placeholder}{$block.settings.default.placeholder|escape:'htmlall':'UTF-8'}{else}{l s='Your email' mod='everblock'}{/if}"
           >
           <input type="hidden" name="action" value="0">
+          <input type="hidden" name="submitNewsletter" value="1">
+          <input type="hidden" name="ajax" value="1">
           <input type="hidden" name="blockHookName" value="{if $block.settings.default.block_hook_name}{$block.settings.default.block_hook_name|escape:'htmlall':'UTF-8'}{else}displayFooterBefore{/if}">
           <button class="btn prettyblock-newsletter__submit" type="submit">
             {if $block.settings.default.button_label}{$block.settings.default.button_label|escape:'htmlall':'UTF-8'}{else}{l s='OK' mod='everblock'}{/if}
