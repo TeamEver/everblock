@@ -19,74 +19,74 @@
 {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$block.settings assign='prettyblock_spacing_style'}
 {capture name='prettyblock_newsletter_wrapper_style'}
   {$prettyblock_spacing_style}
-  {if isset($block.settings.default.background_gradient) && $block.settings.default.background_gradient}
-    background:{$block.settings.default.background_gradient|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.background_gradient) && $block.settings.background_gradient}
+    background:{$block.settings.background_gradient|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.text_color) && $block.settings.default.text_color}
-    color:{$block.settings.default.text_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.text_color) && $block.settings.text_color}
+    color:{$block.settings.text_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.subtitle_color) && $block.settings.default.subtitle_color}
-    --prettyblock-newsletter-subtitle-color:{$block.settings.default.subtitle_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.subtitle_color) && $block.settings.subtitle_color}
+    --prettyblock-newsletter-subtitle-color:{$block.settings.subtitle_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.legal_text_color) && $block.settings.default.legal_text_color}
-    --prettyblock-newsletter-legal-color:{$block.settings.default.legal_text_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.legal_text_color) && $block.settings.legal_text_color}
+    --prettyblock-newsletter-legal-color:{$block.settings.legal_text_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.message_color) && $block.settings.default.message_color}
-    --prettyblock-newsletter-message-color:{$block.settings.default.message_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.message_color) && $block.settings.message_color}
+    --prettyblock-newsletter-message-color:{$block.settings.message_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.message_success_color) && $block.settings.default.message_success_color}
-    --prettyblock-newsletter-success-color:{$block.settings.default.message_success_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.message_success_color) && $block.settings.message_success_color}
+    --prettyblock-newsletter-success-color:{$block.settings.message_success_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.message_error_color) && $block.settings.default.message_error_color}
-    --prettyblock-newsletter-error-color:{$block.settings.default.message_error_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.message_error_color) && $block.settings.message_error_color}
+    --prettyblock-newsletter-error-color:{$block.settings.message_error_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.input_background_color) && $block.settings.default.input_background_color}
-    --prettyblock-newsletter-input-bg:{$block.settings.default.input_background_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.input_background_color) && $block.settings.input_background_color}
+    --prettyblock-newsletter-input-bg:{$block.settings.input_background_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.input_border_color) && $block.settings.default.input_border_color}
-    --prettyblock-newsletter-input-border:{$block.settings.default.input_border_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.input_border_color) && $block.settings.input_border_color}
+    --prettyblock-newsletter-input-border:{$block.settings.input_border_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.input_text_color) && $block.settings.default.input_text_color}
-    --prettyblock-newsletter-input-color:{$block.settings.default.input_text_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.input_text_color) && $block.settings.input_text_color}
+    --prettyblock-newsletter-input-color:{$block.settings.input_text_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.input_placeholder_color) && $block.settings.default.input_placeholder_color}
-    --prettyblock-newsletter-placeholder-color:{$block.settings.default.input_placeholder_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.input_placeholder_color) && $block.settings.input_placeholder_color}
+    --prettyblock-newsletter-placeholder-color:{$block.settings.input_placeholder_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.input_focus_background_color) && $block.settings.default.input_focus_background_color}
-    --prettyblock-newsletter-input-focus-bg:{$block.settings.default.input_focus_background_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.input_focus_background_color) && $block.settings.input_focus_background_color}
+    --prettyblock-newsletter-input-focus-bg:{$block.settings.input_focus_background_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.input_focus_border_color) && $block.settings.default.input_focus_border_color}
-    --prettyblock-newsletter-input-focus-border:{$block.settings.default.input_focus_border_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.input_focus_border_color) && $block.settings.input_focus_border_color}
+    --prettyblock-newsletter-input-focus-border:{$block.settings.input_focus_border_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.input_focus_shadow_color) && $block.settings.default.input_focus_shadow_color}
-    --prettyblock-newsletter-input-focus-shadow:{$block.settings.default.input_focus_shadow_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.input_focus_shadow_color) && $block.settings.input_focus_shadow_color}
+    --prettyblock-newsletter-input-focus-shadow:{$block.settings.input_focus_shadow_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.button_background_color) && $block.settings.default.button_background_color}
-    --prettyblock-newsletter-button-bg:{$block.settings.default.button_background_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.button_background_color) && $block.settings.button_background_color}
+    --prettyblock-newsletter-button-bg:{$block.settings.button_background_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.button_text_color) && $block.settings.default.button_text_color}
-    --prettyblock-newsletter-button-color:{$block.settings.default.button_text_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.button_text_color) && $block.settings.button_text_color}
+    --prettyblock-newsletter-button-color:{$block.settings.button_text_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.button_border_color) && $block.settings.default.button_border_color}
-    --prettyblock-newsletter-button-border:1px solid {$block.settings.default.button_border_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.button_border_color) && $block.settings.button_border_color}
+    --prettyblock-newsletter-button-border:1px solid {$block.settings.button_border_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.button_hover_background_color) && $block.settings.default.button_hover_background_color}
-    --prettyblock-newsletter-button-hover-bg:{$block.settings.default.button_hover_background_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.button_hover_background_color) && $block.settings.button_hover_background_color}
+    --prettyblock-newsletter-button-hover-bg:{$block.settings.button_hover_background_color|escape:'htmlall':'UTF-8'};
   {/if}
-  {if isset($block.settings.default.button_hover_text_color) && $block.settings.default.button_hover_text_color}
-    --prettyblock-newsletter-button-hover-color:{$block.settings.default.button_hover_text_color|escape:'htmlall':'UTF-8'};
+  {if isset($block.settings.button_hover_text_color) && $block.settings.button_hover_text_color}
+    --prettyblock-newsletter-button-hover-color:{$block.settings.button_hover_text_color|escape:'htmlall':'UTF-8'};
   {/if}
 {/capture}
 {assign var='prettyblock_newsletter_wrapper_style' value=$smarty.capture.prettyblock_newsletter_wrapper_style|trim}
 
-<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}">
-  <div class="prettyblock-newsletter{if $block.settings.default.css_class} {$block.settings.default.css_class|escape:'htmlall':'UTF-8'}{/if}"{if $prettyblock_newsletter_wrapper_style} style="{$prettyblock_newsletter_wrapper_style}"{/if}>
+<div id="block-{$block.id_prettyblocks}" class="{if $block.settings.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.container}container{/if}{$prettyblock_visibility_class}">
+  <div class="prettyblock-newsletter{if $block.settings.css_class} {$block.settings.css_class|escape:'htmlall':'UTF-8'}{/if}"{if $prettyblock_newsletter_wrapper_style} style="{$prettyblock_newsletter_wrapper_style}"{/if}>
     <div class="prettyblock-newsletter__inner">
-      {if $block.settings.default.title}
-        <h2 class="prettyblock-newsletter__title">{$block.settings.default.title|escape:'htmlall':'UTF-8'}</h2>
+      {if $block.settings.title}
+        <h2 class="prettyblock-newsletter__title">{$block.settings.title|escape:'htmlall':'UTF-8'}</h2>
       {/if}
-      {if $block.settings.default.subtitle}
-        <p class="prettyblock-newsletter__subtitle">{$block.settings.default.subtitle|escape:'htmlall':'UTF-8'}</p>
+      {if $block.settings.subtitle}
+        <p class="prettyblock-newsletter__subtitle">{$block.settings.subtitle|escape:'htmlall':'UTF-8'}</p>
       {/if}
 
       {*
@@ -105,18 +105,18 @@
             name="email"
             required
             autocomplete="email"
-            placeholder="{if $block.settings.default.placeholder}{$block.settings.default.placeholder|escape:'htmlall':'UTF-8'}{else}{l s='Your email' mod='everblock'}{/if}"
+            placeholder="{if $block.settings.placeholder}{$block.settings.placeholder|escape:'htmlall':'UTF-8'}{else}{l s='Your email' mod='everblock'}{/if}"
           >
           <input type="hidden" name="action" value="0">
           <input type="hidden" name="submitNewsletter" value="1">
           <input type="hidden" name="ajax" value="1">
-          <input type="hidden" name="blockHookName" value="{if $block.settings.default.block_hook_name}{$block.settings.default.block_hook_name|escape:'htmlall':'UTF-8'}{else}displayFooterBefore{/if}">
+          <input type="hidden" name="blockHookName" value="{if $block.settings.block_hook_name}{$block.settings.block_hook_name|escape:'htmlall':'UTF-8'}{else}displayFooterBefore{/if}">
           <button class="btn prettyblock-newsletter__submit" type="submit">
-            {if $block.settings.default.button_label}{$block.settings.default.button_label|escape:'htmlall':'UTF-8'}{else}{l s='OK' mod='everblock'}{/if}
+            {if $block.settings.button_label}{$block.settings.button_label|escape:'htmlall':'UTF-8'}{else}{l s='OK' mod='everblock'}{/if}
           </button>
         </div>
-        {if $block.settings.default.legal_text}
-          <p class="prettyblock-newsletter__legal">{$block.settings.default.legal_text nofilter}</p>
+        {if $block.settings.legal_text}
+          <p class="prettyblock-newsletter__legal">{$block.settings.legal_text nofilter}</p>
         {/if}
         <p class="prettyblock-newsletter__message" data-newsletter-message role="status" aria-live="polite"></p>
       </form>
