@@ -5285,7 +5285,14 @@ class Everblock extends Module
     public function hookActionRegisterBlock($params)
     {
         EverblockTools::checkAndFixDatabase();
-        return EverblockPrettyBlocks::getEverPrettyBlocks($this->context);
+        $cacheId = $this->name . '_ActionRegisterBlock_'
+        . (int) $this->context->language->id
+        . '_'
+        . (int) $this->context->shop->id;
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            EverblockCache::cacheStore($cacheId, EverblockPrettyBlocks::getEverPrettyBlocks($this->context));
+        }
+        return EverblockCache::cacheRetrieve($cacheId);
     }
 
     protected function compressCSSCode($css)
