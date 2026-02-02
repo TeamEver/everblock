@@ -2151,18 +2151,21 @@ class EverblockTools extends ObjectModel
 
         $sql = '
             SELECT od.product_id, SUM(od.product_quantity) AS total_quantity
-            FROM ' . _DB_PREFIX_ . 'order_detail od
-            INNER JOIN ' . _DB_PREFIX_ . 'orders o
+            FROM ' . _DB_PREFIX_ . 'orders o
+            INNER JOIN ' . _DB_PREFIX_ . 'order_detail od
                 ON o.id_order = od.id_order
-            INNER JOIN ' . _DB_PREFIX_ . 'product_shop ps
-                ON ps.id_product = od.product_id
-            INNER JOIN ' . _DB_PREFIX_ . 'category_product cp
-                ON cp.id_product = od.product_id
+            INNER JOIN (
+                SELECT ps.id_product
+                FROM ' . _DB_PREFIX_ . 'product_shop ps
+                INNER JOIN ' . _DB_PREFIX_ . 'category_product cp
+                    ON cp.id_product = ps.id_product
+                WHERE ps.id_shop = ' . $shopId . '
+                  AND ps.active = 1
+                  AND cp.id_category = ' . (int) $categoryId . '
+            ) filtered_products
+                ON filtered_products.id_product = od.product_id
             WHERE o.id_shop = ' . $shopId . '
-              AND o.valid = 1
-              AND ps.id_shop = ' . $shopId . '
-              AND ps.active = 1
-              AND cp.id_category = ' . (int) $categoryId;
+              AND o.valid = 1';
 
         if ($days !== null) {
             $dateFrom = date('Y-m-d H:i:s', strtotime('-' . (int) $days . ' days'));
