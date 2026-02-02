@@ -95,7 +95,7 @@
       *}
       <form class="prettyblock-newsletter__form" data-newsletter-form method="post" action="{$link->getModuleLink('ps_emailsubscription', 'subscription')|escape:'htmlall':'UTF-8'}">
         <div class="prettyblock-newsletter__input-group">
-          <label class="sr-only" for="prettyblock-newsletter-email-{$block.id_prettyblocks}">
+          <label class="sr-only d-none" for="prettyblock-newsletter-email-{$block.id_prettyblocks}">
             {l s='Email address' mod='everblock'}
           </label>
           <input
