@@ -179,6 +179,7 @@ class EverblockPrettyBlocks
             $scrollVideoTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_scroll_video.tpl';
             $loginTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_login.tpl';
             $contactTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_contact.tpl';
+            $newsletterTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_newsletter.tpl';
             $shoppingCartTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl';
             $accordeonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_accordeon.tpl';
             $faqTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_faq.tpl';
@@ -346,6 +347,69 @@ class EverblockPrettyBlocks
                             'type' => 'text',
                             'label' => 'Block title',
                             'default' => $module->l('Login'),
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('Newsletter subscription'),
+                'description' => $module->l('Add a native newsletter subscription form'),
+                'code' => 'everblock_newsletter',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $newsletterTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title'),
+                            'default' => $module->l('Stay connected'),
+                        ],
+                        'subtitle' => [
+                            'type' => 'text',
+                            'label' => $module->l('Subtitle'),
+                            'default' => $module->l('Subscribe to receive the latest news and offers.'),
+                        ],
+                        'placeholder' => [
+                            'type' => 'text',
+                            'label' => $module->l('Email placeholder'),
+                            'default' => $module->l('Your email'),
+                        ],
+                        'button_label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Button label'),
+                            'default' => $module->l('OK'),
+                        ],
+                        'legal_text' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Legal text'),
+                            'default' => $module->l('You can unsubscribe at any time.'),
+                        ],
+                        'block_hook_name' => [
+                            'type' => 'select',
+                            'label' => $module->l('Hook name'),
+                            'choices' => $prettyBlocksHooks,
+                            'default' => 'displayFooterBefore',
+                        ],
+                        'background_gradient' => [
+                            'tab' => 'design',
+                            'type' => 'text',
+                            'label' => $module->l('Background gradient'),
+                            'default' => 'linear-gradient(135deg, #1c1f2b 0%, #0f1118 100%)',
+                        ],
+                        'text_color' => [
+                            'tab' => 'design',
+                            'type' => 'color',
+                            'label' => $module->l('Text color'),
+                            'default' => '#ffffff',
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
                         ],
                     ], $module),
                 ],
