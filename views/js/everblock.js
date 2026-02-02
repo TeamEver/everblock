@@ -3864,7 +3864,11 @@ $(document).ready(function(){
                             message = data;
                         } else {
                             message = data.message || data.msg || data.error || '';
-                            isSuccess = data.success === true || data.status === true || data.status === 'success';
+                            if (typeof data.nw_error !== 'undefined') {
+                                isSuccess = data.nw_error === false;
+                            } else {
+                                isSuccess = data.success === true || data.status === true || data.status === 'success';
+                            }
                         }
 
                         setMessage(message, isSuccess);
