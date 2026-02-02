@@ -2116,47 +2116,71 @@ class EverblockTools extends ObjectModel
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
-    protected static function getBestSellingProductIdsByCategory(int $categoryId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
-    {
+    protected static function getBestSellingProductIdsByCategory(
+        int $categoryId,
+        int $limit,
+        string $orderBy = 'total_quantity',
+        string $orderWay = 'DESC',
+        ?int $days = null
+    ): array {
         $context = Context::getContext();
+        $shopId = (int) $context->shop->id;
+
+        // Sécurisation orderBy / orderWay (important)
+        $allowedOrderBy = ['total_quantity'];
+        $allowedOrderWay = ['ASC', 'DESC'];
+
+        if (!in_array($orderBy, $allowedOrderBy, true)) {
+            $orderBy = 'total_quantity';
+        }
+        if (!in_array(strtoupper($orderWay), $allowedOrderWay, true)) {
+            $orderWay = 'DESC';
+        }
+
         $cacheId = 'everblock_bestSellingProductIds_category_'
-            . (int) $context->shop->id . '_'
-            . $categoryId . '_'
-            . $limit . '_'
+            . $shopId . '_'
+            . (int) $categoryId . '_'
+            . (int) $limit . '_'
             . ($days ?? 'all') . '_'
             . $orderBy . '_'
             . $orderWay;
 
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            $shopId = (int) $context->shop->id;
-            $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
-                . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
-                . ' JOIN ' . _DB_PREFIX_ . 'orders o ON od.id_order = o.id_order'
-                . ' JOIN ' . _DB_PREFIX_ . 'product_shop ps ON od.product_id = ps.id_product'
-                . ' JOIN ' . _DB_PREFIX_ . 'category_product cp ON od.product_id = cp.id_product'
-                . ' WHERE ps.active = 1'
-                . ' AND ps.id_shop = ' . $shopId
-                . ' AND o.id_shop = ' . $shopId
-                . ' AND cp.id_category = ' . (int) $categoryId;
-
-            if ($days !== null) {
-                $dateFrom = date('Y-m-d H:i:s', strtotime("-$days days"));
-                $sql .= ' AND o.date_add >= "' . pSQL($dateFrom) . '"';
-            }
-
-            $sql .= ' GROUP BY od.product_id'
-                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
-                . ' LIMIT ' . (int) $limit;
-
-            $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-            $ids = array_map(function ($row) {
-                return (int) $row['product_id'];
-            }, $rows);
-            EverblockCache::cacheStore($cacheId, $ids);
-            return $ids;
+        if (EverblockCache::isCacheStored($cacheId)) {
+            return EverblockCache::cacheRetrieve($cacheId);
         }
 
-        return EverblockCache::cacheRetrieve($cacheId);
+        $sql = '
+            SELECT od.product_id, SUM(od.product_quantity) AS total_quantity
+            FROM ' . _DB_PREFIX_ . 'order_detail od
+            INNER JOIN ' . _DB_PREFIX_ . 'orders o
+                ON o.id_order = od.id_order
+            INNER JOIN ' . _DB_PREFIX_ . 'category_product cp
+                ON cp.id_product = od.product_id
+            WHERE o.id_shop = ' . $shopId . '
+              AND o.valid = 1
+              AND cp.id_category = ' . (int) $categoryId;
+
+        if ($days !== null) {
+            $dateFrom = date('Y-m-d H:i:s', strtotime('-' . (int) $days . ' days'));
+            $sql .= ' AND o.date_add >= "' . pSQL($dateFrom) . '"';
+        }
+
+        $sql .= '
+            GROUP BY od.product_id
+            ORDER BY ' . $orderBy . ' ' . $orderWay . '
+            LIMIT ' . (int) $limit;
+
+        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+
+        $ids = [];
+        foreach ($rows as $row) {
+            $ids[] = (int) $row['product_id'];
+        }
+
+        // Cache long (best-seller ≠ temps réel)
+        EverblockCache::cacheStore($cacheId, $ids, 86400); // 24h
+
+        return $ids;
     }
 
     protected static function getBestSellingProductIdsByBrand(int $brandId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
