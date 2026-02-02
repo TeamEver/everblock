@@ -75,6 +75,28 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockTools extends ObjectModel
 {
+    public static function isPrettyblocksAvailable(?Context $context = null, bool $assignSmarty = true): bool
+    {
+        static $isAvailable = null;
+
+        if ($isAvailable === null) {
+            $isAvailable = (bool) Module::isInstalled('prettyblocks') === true
+                && (bool) Module::isEnabled('prettyblocks') === true
+                && (bool) static::moduleDirectoryExists('prettyblocks') === true;
+        }
+
+        if ($assignSmarty) {
+            $context = $context ?: Context::getContext();
+            if ($context && isset($context->smarty)) {
+                $context->smarty->assign([
+                    'everblock_prettyblocks_available' => $isAvailable,
+                ]);
+            }
+        }
+
+        return $isAvailable;
+    }
+
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
         Hook::exec('displayBeforeRenderingShortcodes', ['html' => &$txt]);
