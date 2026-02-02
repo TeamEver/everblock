@@ -106,6 +106,58 @@ class EverblockShortcode extends ObjectModel
         return EverblockCache::cacheRetrieve($cache_id);
     }
 
+    /**
+     * @param array<int, string> $shortcodes
+     *
+     * @return array<int, self>
+     */
+    public static function getShortcodesByList(array $shortcodes, int $idShop, int $langId): array
+    {
+        $shortcodes = array_values(array_unique(array_filter(array_map('trim', $shortcodes))));
+        if (empty($shortcodes)) {
+            return [];
+        }
+
+        $cacheId = 'EverblockShortcode_getShortcodesByList_'
+            . (int) $idShop
+            . '_'
+            . (int) $langId
+            . '_'
+            . md5(implode('|', $shortcodes));
+        if (EverblockCache::isCacheStored($cacheId)) {
+            return EverblockCache::cacheRetrieve($cacheId);
+        }
+
+        $escaped = array_map('pSQL', $shortcodes);
+        $quoted = array_map(function (string $shortcode): string {
+            return '"' . $shortcode . '"';
+        }, $escaped);
+
+        $sql = new DbQuery();
+        $sql->select('id_everblock_shortcode');
+        $sql->from('everblock_shortcode');
+        $sql->where('id_shop = ' . (int) $idShop);
+        $sql->where('shortcode IN (' . implode(',', $quoted) . ')');
+
+        $ids = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        if (empty($ids)) {
+            EverblockCache::cacheStore($cacheId, []);
+            return [];
+        }
+
+        $return = [];
+        foreach ($ids as $row) {
+            $return[] = new self(
+                (int) $row['id_everblock_shortcode'],
+                (int) $langId,
+                (int) $idShop
+            );
+        }
+        EverblockCache::cacheStore($cacheId, $return);
+
+        return $return;
+    }
+
     public static function getEverShortcode(string $shortcode, int $shopId, int $langId): string
     {
         $cache_id = 'EverblockShortcode_getEverShortcode_'
