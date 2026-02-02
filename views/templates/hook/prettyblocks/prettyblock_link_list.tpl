@@ -36,7 +36,7 @@
             {foreach from=$block.states item=state key=key}
               {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
               <li class="{if $state.css_class}{$state.css_class|escape:'htmlall'}{/if}" style="{$prettyblock_state_spacing_style}">
-                <a href="{$state.url|escape:'htmlall'}" class="text-decoration-none link-secondary{if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect} everblock-link-hover--text{/if}" title="{$state.name|escape:'htmlall'}"{if $state.target_blank} target="_blank"{/if}>{$state.name|escape:'htmlall'}</a>
+                <a href="{$state.url|escape:'htmlall'}" class="text-decoration-none link-secondary{if !isset($page.page_name) || $page.page_name != 'index'} obfme{/if}{if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect} everblock-link-hover--text{/if}" title="{$state.name|escape:'htmlall'}"{if $state.target_blank} target="_blank"{/if}>{$state.name|escape:'htmlall'}</a>
               </li>
             {/foreach}
           </ul>
