@@ -161,6 +161,10 @@ class EverblockPrettyBlocks
         . (int) $context->language->id
         . '_'
         . (int) $context->shop->id;
+        $shopName = (string) Configuration::get('PS_SHOP_NAME');
+        if ($shopName === '' && isset($context->shop->name)) {
+            $shopName = (string) $context->shop->name;
+        }
         $module = Module::getInstanceByName('everblock');
         if (!EverblockCache::isCacheStored($cacheId)) {
             $defaultTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_' . $module->name . '.tpl';
@@ -4811,6 +4815,7 @@ class EverblockPrettyBlocks
                 ],
             ];
             $blocks = self::addDisplaySettings($blocks, $module, $context);
+            $blocks = self::applyShopNameDefaults($blocks, $shopName);
             $blocks = self::applyFileUploadPath($blocks);
             EverblockCache::cacheStore($cacheId, $blocks);
             return $blocks;
@@ -4892,6 +4897,34 @@ class EverblockPrettyBlocks
         }
 
         return $blocks;
+    }
+
+    private static function applyShopNameDefaults(array $blocks, string $shopName): array
+    {
+        foreach ($blocks as &$block) {
+            if (is_array($block)) {
+                $block = self::setShopNameDefaultsRecursive($block, $shopName);
+            }
+        }
+
+        return $blocks;
+    }
+
+    private static function setShopNameDefaultsRecursive(array $fields, string $shopName): array
+    {
+        foreach ($fields as $key => &$field) {
+            if (!is_array($field)) {
+                continue;
+            }
+
+            if (in_array($key, ['alt', 'title'], true) && array_key_exists('type', $field)) {
+                $field['default'] = $shopName;
+            }
+
+            $field = self::setShopNameDefaultsRecursive($field, $shopName);
+        }
+
+        return $fields;
     }
 
     private static function setPathRecursive(array $fields): array
