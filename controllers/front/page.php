@@ -174,9 +174,7 @@ class EverblockPageModuleFrontController extends ModuleFrontController
 
     protected function isPrettyBlocksEnabled(): bool
     {
-        return (bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) Everblock\Tools\Service\EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+        return (bool) Everblock\Tools\Service\EverblockTools::isPrettyblocksAvailable($this->context);
     }
 
     protected function ensureEverblockPage(array $customerGroups = []): ?EverblockPage

@@ -508,9 +508,7 @@ class Everblock extends Module
 
     private function hasPrettyblocksModule(): bool
     {
-        return (bool) Module::isInstalled('prettyblocks')
-            && (bool) Module::isEnabled('prettyblocks')
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks');
+        return (bool) EverblockTools::isPrettyblocksAvailable($this->context);
     }
 
     public function checkHooks()
@@ -1640,9 +1638,7 @@ class Everblock extends Module
             'pages' => $this->l('Pages'),
         ];
 
-        $isPrettyBlocksEnabled = (bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+        $isPrettyBlocksEnabled = $this->hasPrettyblocksModule();
 
         if ($isPrettyBlocksEnabled) {
             $tabs['prettyblock'] = $this->l('Prettyblock');
@@ -3717,10 +3713,7 @@ class Everblock extends Module
 
     public function hookDisplayWrapperTop()
     {
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
+        if ($this->hasPrettyblocksModule()) {
             if (Tools::getValue('id_product')) {
                 $idObj = (int) Tools::getValue('id_product');
                 $objectName = 'Product';
@@ -3754,10 +3747,7 @@ class Everblock extends Module
 
     public function hookDisplayWrapperBottom()
     {
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
+        if ($this->hasPrettyblocksModule()) {
             if (Tools::getValue('id_product')) {
                 $idObj = (int) Tools::getValue('id_product');
                 $objectName = 'Product';
@@ -5108,14 +5098,11 @@ class Everblock extends Module
                     'args' => $args,
                 ]
             );
-            if ((bool) Module::isInstalled('prettyblocks') === true
-                && (bool) Module::isEnabled('prettyblocks') === true
-                && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-            ) {
+            if ($this->hasPrettyblocksModule()) {
                 $context->smarty->assign([
                     'prettyblocks_installed' => true,
                 ]);
-            }   
+            }
             $context->smarty->assign([
                 'everhook' => trim($method),
                 $this->name => $currentBlock,

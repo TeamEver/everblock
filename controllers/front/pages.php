@@ -183,9 +183,7 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
 
     protected function isPrettyBlocksEnabled(): bool
     {
-        return (bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) Everblock\Tools\Service\EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+        return (bool) Everblock\Tools\Service\EverblockTools::isPrettyblocksAvailable($this->context);
     }
 
     protected function setTemplateMeta(string $title, string $description): void
