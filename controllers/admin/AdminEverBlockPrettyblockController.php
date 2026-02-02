@@ -21,6 +21,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 
@@ -369,6 +370,10 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
         if (Tools::getValue('cachecleared')) {
             $this->confirmations[] = $this->l('Cache has been cleared');
         }
+
+        if ($this->shouldInvalidatePrettyblocksCache()) {
+            $this->invalidatePrettyblocksCache();
+        }
     }
 
     public function renderList()
@@ -625,6 +630,7 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             $this->l('%d PrettyBlocks updated with the selected hook.'),
             count($ids)
         );
+        $this->invalidatePrettyblocksCache();
     }
 
     private function processDuplicateShop(): void
@@ -679,6 +685,7 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             $this->l('%d PrettyBlocks duplicated to the selected shop.'),
             $inserted
         );
+        $this->invalidatePrettyblocksCache();
     }
 
     private function processDuplicateLang(): void
@@ -733,6 +740,7 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             $this->l('%d PrettyBlocks duplicated to the selected language.'),
             $inserted
         );
+        $this->invalidatePrettyblocksCache();
     }
 
     protected function processBulkDelete()
@@ -743,6 +751,8 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
                 $this->errors[] = $this->l('An error has occurred: Can\'t delete the current object');
             }
         }
+
+        $this->invalidatePrettyblocksCache();
     }
 
     private function duplicatePrettyblock(int $id): void
@@ -773,6 +783,34 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
 
         if (!$db->insert('prettyblocks', $block)) {
             $this->errors[] = $this->l('An error has occurred: Can\'t duplicate the current object');
+            return;
         }
+
+        $this->invalidatePrettyblocksCache();
+    }
+
+    private function shouldInvalidatePrettyblocksCache(): bool
+    {
+        if (Tools::getIsset('duplicate' . $this->table)) {
+            return true;
+        }
+
+        if (Tools::isSubmit('submitAdd' . $this->table)
+            || Tools::isSubmit('submitAdd' . $this->table . 'AndStay')
+            || Tools::isSubmit('submitAdd' . $this->table . 'AndPreview')
+            || Tools::isSubmit('submitUpdate' . $this->table)
+            || Tools::isSubmit('submitUpdate' . $this->table . 'AndStay')
+            || Tools::isSubmit('delete' . $this->table)
+            || Tools::isSubmit('submitDel' . $this->table)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function invalidatePrettyblocksCache(): void
+    {
+        EverblockPrettyBlocks::clearRenderCache();
     }
 }

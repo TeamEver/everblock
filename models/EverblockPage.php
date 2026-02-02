@@ -19,6 +19,7 @@
  */
 
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Service\EverblockPrettyBlocks;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -157,7 +158,12 @@ class EverblockPage extends ObjectModel
         }
         $this->sanitizeLinkRewrite();
 
-        return parent::save($nullValues, $autoDate, $useCache);
+        $saved = parent::save($nullValues, $autoDate, $useCache);
+        if ($saved) {
+            EverblockPrettyBlocks::clearRenderCache();
+        }
+
+        return $saved;
     }
 
     public static function getPages(
