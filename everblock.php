@@ -4560,46 +4560,73 @@ class Everblock extends Module
             $productId = (int) $params['product']['id_product'];
             $shopId = (int) Context::getContext()->shop->id;
             $languageId = (int) Context::getContext()->language->id;
-            // Current product flags
-            $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
-            if ($everpsflags && !empty($everpsflags)) {
-                foreach ($everpsflags as $everpsflag) {
-                    if (Validate::isLoadedObject($everpsflag) && $everpsflag->title && $everpsflag->content) {
-                        $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
-                            'type' => 'custom-flag ' . $everpsflag->id_flag,
-                            'label' => strip_tags($everpsflag->content),
+            $cacheKey = implode('_', [
+                $this->name,
+                'product_flags',
+                $shopId,
+                $languageId,
+                $productId,
+            ]);
+
+            if (EverblockCache::isCacheStored($cacheKey)) {
+                $additionalFlags = EverblockCache::cacheRetrieve($cacheKey);
+            } else {
+                $additionalFlags = [];
+                // Current product flags
+                $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
+                if ($everpsflags && !empty($everpsflags)) {
+                    foreach ($everpsflags as $everpsflag) {
+                        if (Validate::isLoadedObject($everpsflag) && $everpsflag->title && $everpsflag->content) {
+                            $additionalFlags['custom-flag-' . $everpsflag->id_flag] = [
+                                'type' => 'custom-flag ' . $everpsflag->id_flag,
+                                'label' => strip_tags($everpsflag->content),
+                                'module' => $this->name,
+                            ];
+                        }
+                    }
+                }
+                // Product features as flags
+                $bannedFeatures = $this->getFeaturesAsFlags();
+                $features = $this->getFeatures($productId);
+                if (!empty($features) && !empty($bannedFeatures)) {
+                    foreach ($features as $feature) {
+                        if (in_array($feature['id_feature'], $bannedFeatures)) {
+                            $additionalFlags[] = array(
+                                'type' => 'ever_feature_flag_' . $feature['id_feature'],
+                                'label' => $feature['value'],
+                                'module' => $this->name,
+                                'style' => 'style="background-color:' . Configuration::get('EVERPS_FEATURE_COLOR_' . $feature['id_feature']) . ';color:#fff;"'
+                            );
+                        }
+                    }
+                }
+                if (Configuration::get('EVERBLOCK_SOLDOUT_FLAG')) {
+                    $qty = StockAvailable::getQuantityAvailableByProduct($productId, 0, $shopId);
+                    $allowOos = StockAvailable::outOfStock($productId, $shopId);
+                    if ($allowOos == 2) {
+                        $allowOos = (int) Configuration::get('PS_ORDER_OUT_OF_STOCK');
+                    }
+                    if ($qty <= 0 && !$allowOos) {
+                        $additionalFlags['everblock_soldout'] = [
+                            'type' => 'out_of_stock',
+                            'label' => $this->l('Sold out'),
                             'module' => $this->name,
                         ];
                     }
                 }
+                EverblockCache::cacheStore($cacheKey, $additionalFlags);
             }
-            // Product features as flags
-            $bannedFeatures = $this->getFeaturesAsFlags();
-            $features = $this->getFeatures($productId);
-            if (!empty($features) && !empty($bannedFeatures)) {
-                foreach ($features as $feature) {
-                    if (in_array($feature['id_feature'], $bannedFeatures)) {
-                        $params['flags'][] = array(
-                            'type' => 'ever_feature_flag_' . $feature['id_feature'],
-                            'label' => $feature['value'],
-                            'module' => $this->name,
-                            'style' => 'style="background-color:' . Configuration::get('EVERPS_FEATURE_COLOR_' . $feature['id_feature']) . ';color:#fff;"'
-                        );
+
+            if (!empty($additionalFlags)) {
+                if (!isset($params['flags']) || !is_array($params['flags'])) {
+                    $params['flags'] = [];
+                }
+                foreach ($additionalFlags as $key => $flag) {
+                    if (is_int($key)) {
+                        $params['flags'][] = $flag;
+                    } else {
+                        $params['flags'][$key] = $flag;
                     }
-                }
-            }
-            if (Configuration::get('EVERBLOCK_SOLDOUT_FLAG')) {
-                $qty = StockAvailable::getQuantityAvailableByProduct($productId, 0, $shopId);
-                $allowOos = StockAvailable::outOfStock($productId, $shopId);
-                if ($allowOos == 2) {
-                    $allowOos = (int) Configuration::get('PS_ORDER_OUT_OF_STOCK');
-                }
-                if ($qty <= 0 && !$allowOos) {
-                    $params['flags']['everblock_soldout'] = [
-                        'type' => 'out_of_stock',
-                        'label' => $this->l('Sold out'),
-                        'module' => $this->name,
-                    ];
                 }
             }
         } catch (Exception $e) {
@@ -5735,8 +5762,23 @@ class Everblock extends Module
                 if (!in_array($orderWay, $allowedOrderWay, true)) {
                     $orderWay = 'ASC';
                 }
+                $categoryId = (int) $state['id_categories']['id'];
+                $cacheKey = implode('_', [
+                    $this->name,
+                    'category_tabs',
+                    (int) $this->context->shop->id,
+                    (int) $this->context->language->id,
+                    $categoryId,
+                    $limit,
+                    $orderBy,
+                    $orderWay,
+                ]);
+                if (EverblockCache::isCacheStored($cacheKey)) {
+                    $products[$key] = EverblockCache::cacheRetrieve($cacheKey);
+                    continue;
+                }
                 $rawProducts = EverblockTools::getProductsByCategoryId(
-                    (int) $state['id_categories']['id'],
+                    $categoryId,
                     $limit,
                     $orderBy,
                     $orderWay
@@ -5745,6 +5787,7 @@ class Everblock extends Module
                     array_column($rawProducts, 'id_product'),
                     $this->context
                 );
+                EverblockCache::cacheStore($cacheKey, $presented);
                 $products[$key] = $presented;
             }
         }
@@ -6015,6 +6058,19 @@ class Everblock extends Module
             $categoryId = (int) $settings['best_sales_category']['id'];
         }
 
+        $cacheKey = implode('_', [
+            $this->name,
+            'best_sales',
+            (int) $this->context->shop->id,
+            (int) $this->context->language->id,
+            $categoryId,
+            $limit,
+        ]);
+        if (EverblockCache::isCacheStored($cacheKey)) {
+            $cached = EverblockCache::cacheRetrieve($cacheKey);
+            return $cached;
+        }
+
         if ($categoryId > 0) {
             $productIds = EverblockTools::getBestSellingProductIdsForCategoryPrettyblock($categoryId, $limit);
         } else {
@@ -6024,11 +6080,13 @@ class Everblock extends Module
         if (!empty($productIds)) {
             $presentedProducts = EverblockTools::everPresentProducts($productIds, $this->context);
         }
-
-        return [
+        $payload = [
             'products' => $presentedProducts,
             'best_sales_url' => $this->context->link->getPageLink('best-sales'),
         ];
+        EverblockCache::cacheStore($cacheKey, $payload);
+
+        return $payload;
     }
 
     public function hookBeforeRenderingEverblockGuidedSelector($params)
