@@ -67,6 +67,64 @@
     transform: scale(1.04);
 }
 
+/* Prettyblock link list */
+.prettyblock-link-list__details {
+    border: 0;
+}
+
+.prettyblock-link-list__summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.prettyblock-link-list__summary::-webkit-details-marker {
+    display: none;
+}
+
+.prettyblock-link-list__list {
+    margin: 0;
+    padding: 0;
+}
+
+.prettyblock-link-list__list li {
+    padding: 0.35rem 0;
+}
+
+.prettyblock-link-list__icon {
+    display: inline-flex;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+}
+
+.prettyblock-link-list__details[open] .prettyblock-link-list__icon {
+    transform: rotate(-135deg);
+}
+
+@media (max-width: 991.98px) {
+    .prettyblock-link-list__summary {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid currentColor;
+    }
+
+    .prettyblock-link-list__details[open] .prettyblock-link-list__summary {
+        border-bottom-color: transparent;
+    }
+}
+
+@media (min-width: 992px) {
+    .prettyblock-link-list__icon {
+        display: none;
+    }
+}
+
 /* Prettyblock LLM links */
 .prettyblock-llm-links__inner {
     display: flex;
