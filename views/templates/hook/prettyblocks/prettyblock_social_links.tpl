@@ -24,6 +24,13 @@
   {/if}
 {/capture}
 {assign var='prettyblock_social_links_wrapper_style' value=$smarty.capture.prettyblock_social_links_wrapper_style|trim}
+{assign var='prettyblock_social_links_alignment' value=$block.settings.alignment|default:'left'}
+{assign var='prettyblock_social_links_alignment_class' value='everblock-social-links--left'}
+{if $prettyblock_social_links_alignment == 'center'}
+  {assign var='prettyblock_social_links_alignment_class' value='everblock-social-links--center'}
+{elseif $prettyblock_social_links_alignment == 'right'}
+  {assign var='prettyblock_social_links_alignment_class' value='everblock-social-links--right'}
+{/if}
 
 <!-- Module Ever Block -->
 <div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if $prettyblock_social_links_wrapper_style} style="{$prettyblock_social_links_wrapper_style}"{/if}>
@@ -32,7 +39,7 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-    <div class="everblock-social-links d-flex flex-row flex-wrap">
+    <div class="everblock-social-links {$prettyblock_social_links_alignment_class} d-flex flex-row flex-wrap">
         {foreach from=$block.states item=state}
           {if isset($state.url) && $state.url}
             {assign var="icon_url" value=false}

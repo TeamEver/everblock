@@ -433,7 +433,7 @@ class EverblockPrettyBlocks
                                 'center' => $module->l('Center'),
                                 'right' => $module->l('Right'),
                             ],
-                            'default' => 'left',
+                            'default' => 'center',
                         ],
                         'text_color' => [
                             'type' => 'color',
@@ -2758,6 +2758,16 @@ class EverblockPrettyBlocks
                 ],
                 'config' => [
                     'fields' => static::appendSpacingFields([
+                        'alignment' => [
+                            'type' => 'select',
+                            'label' => $module->l('Links alignment'),
+                            'choices' => [
+                                'left' => $module->l('Left'),
+                                'center' => $module->l('Center'),
+                                'right' => $module->l('Right'),
+                            ],
+                            'default' => 'center',
+                        ],
                         'icon_color' => [
                             'type' => 'color',
                             'label' => $module->l('Icon color'),
