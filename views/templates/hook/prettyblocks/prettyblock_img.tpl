@@ -147,7 +147,7 @@
                      {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
                      {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
                      {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
-                     class="d-block w-100 img img-fluid lazyload" loading="lazy" draggable="false">
+                     class="d-block w-100 img img-fluid lazyload mx-auto" loading="lazy" draggable="false">
               </picture>
 
               <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
@@ -236,7 +236,7 @@
                      {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
                      {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
                      {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
-                     class="img img-fluid lazyload" loading="lazy">
+                     class="img img-fluid lazyload d-block mx-auto" loading="lazy">
               </picture>
 
               <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
