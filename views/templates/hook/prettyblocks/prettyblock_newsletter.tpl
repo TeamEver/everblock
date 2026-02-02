@@ -25,6 +25,57 @@
   {if isset($block.settings.default.text_color) && $block.settings.default.text_color}
     color:{$block.settings.default.text_color|escape:'htmlall':'UTF-8'};
   {/if}
+  {if isset($block.settings.default.subtitle_color) && $block.settings.default.subtitle_color}
+    --prettyblock-newsletter-subtitle-color:{$block.settings.default.subtitle_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.legal_text_color) && $block.settings.default.legal_text_color}
+    --prettyblock-newsletter-legal-color:{$block.settings.default.legal_text_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.message_color) && $block.settings.default.message_color}
+    --prettyblock-newsletter-message-color:{$block.settings.default.message_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.message_success_color) && $block.settings.default.message_success_color}
+    --prettyblock-newsletter-success-color:{$block.settings.default.message_success_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.message_error_color) && $block.settings.default.message_error_color}
+    --prettyblock-newsletter-error-color:{$block.settings.default.message_error_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.input_background_color) && $block.settings.default.input_background_color}
+    --prettyblock-newsletter-input-bg:{$block.settings.default.input_background_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.input_border_color) && $block.settings.default.input_border_color}
+    --prettyblock-newsletter-input-border:{$block.settings.default.input_border_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.input_text_color) && $block.settings.default.input_text_color}
+    --prettyblock-newsletter-input-color:{$block.settings.default.input_text_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.input_placeholder_color) && $block.settings.default.input_placeholder_color}
+    --prettyblock-newsletter-placeholder-color:{$block.settings.default.input_placeholder_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.input_focus_background_color) && $block.settings.default.input_focus_background_color}
+    --prettyblock-newsletter-input-focus-bg:{$block.settings.default.input_focus_background_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.input_focus_border_color) && $block.settings.default.input_focus_border_color}
+    --prettyblock-newsletter-input-focus-border:{$block.settings.default.input_focus_border_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.input_focus_shadow_color) && $block.settings.default.input_focus_shadow_color}
+    --prettyblock-newsletter-input-focus-shadow:{$block.settings.default.input_focus_shadow_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.button_background_color) && $block.settings.default.button_background_color}
+    --prettyblock-newsletter-button-bg:{$block.settings.default.button_background_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.button_text_color) && $block.settings.default.button_text_color}
+    --prettyblock-newsletter-button-color:{$block.settings.default.button_text_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.button_border_color) && $block.settings.default.button_border_color}
+    --prettyblock-newsletter-button-border:1px solid {$block.settings.default.button_border_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.button_hover_background_color) && $block.settings.default.button_hover_background_color}
+    --prettyblock-newsletter-button-hover-bg:{$block.settings.default.button_hover_background_color|escape:'htmlall':'UTF-8'};
+  {/if}
+  {if isset($block.settings.default.button_hover_text_color) && $block.settings.default.button_hover_text_color}
+    --prettyblock-newsletter-button-hover-color:{$block.settings.default.button_hover_text_color|escape:'htmlall':'UTF-8'};
+  {/if}
 {/capture}
 {assign var='prettyblock_newsletter_wrapper_style' value=$smarty.capture.prettyblock_newsletter_wrapper_style|trim}
 

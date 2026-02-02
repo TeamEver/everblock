@@ -3545,53 +3545,60 @@
 }
 
 .prettyblock-newsletter {
-  border-radius: 28px;
-  padding: 32px 28px;
+  border-radius: var(--prettyblock-newsletter-radius, 28px);
+  padding: var(--prettyblock-newsletter-padding, 40px 32px);
 }
 
 .prettyblock-newsletter__inner {
-  max-width: 560px;
+  max-width: 720px;
   margin: 0 auto;
-  text-align: left;
+  text-align: center;
 }
 
 .prettyblock-newsletter__title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
   color: inherit;
 }
 
 .prettyblock-newsletter__subtitle {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 1.5rem;
+  color: var(--prettyblock-newsletter-subtitle-color, currentColor);
+  margin-bottom: 1.25rem;
+}
+
+.prettyblock-newsletter__form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .prettyblock-newsletter__input-group {
   position: relative;
   display: flex;
   align-items: center;
+  width: min(100%, 560px);
 }
 
 .prettyblock-newsletter__input {
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background-color: rgba(255, 255, 255, 0.08);
-  color: inherit;
-  padding: 0.85rem 4.5rem 0.85rem 1.25rem;
+  border: 1px solid var(--prettyblock-newsletter-input-border, currentColor);
+  background-color: var(--prettyblock-newsletter-input-bg, transparent);
+  color: var(--prettyblock-newsletter-input-color, inherit);
+  padding: 0.85rem 4.75rem 0.85rem 1.5rem;
   height: auto;
 }
 
 .prettyblock-newsletter__input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--prettyblock-newsletter-placeholder-color, currentColor);
 }
 
 .prettyblock-newsletter__input:focus {
-  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.4);
-  background-color: rgba(255, 255, 255, 0.12);
-  color: inherit;
+  box-shadow: 0 0 0 0.2rem var(--prettyblock-newsletter-input-focus-shadow, transparent);
+  border-color: var(--prettyblock-newsletter-input-focus-border, var(--prettyblock-newsletter-input-border));
+  background-color: var(--prettyblock-newsletter-input-focus-bg, var(--prettyblock-newsletter-input-bg));
+  color: var(--prettyblock-newsletter-input-color, inherit);
 }
 
 .prettyblock-newsletter__submit {
@@ -3600,51 +3607,48 @@
   top: 50%;
   transform: translateY(-50%);
   border-radius: 999px;
-  padding: 0.4rem 1.2rem;
-  font-weight: 600;
-  background: #ffffff;
-  color: #111;
-  border: none;
+  padding: 0.4rem 1.25rem;
+  font-weight: 700;
+  background: var(--prettyblock-newsletter-button-bg, transparent);
+  color: var(--prettyblock-newsletter-button-color);
+  border: var(--prettyblock-newsletter-button-border, none);
 }
 
 .prettyblock-newsletter__submit:hover,
 .prettyblock-newsletter__submit:focus {
-  background: #e7e7e7;
-  color: #111;
+  background: var(--prettyblock-newsletter-button-hover-bg, var(--prettyblock-newsletter-button-bg, transparent));
+  color: var(--prettyblock-newsletter-button-hover-color, var(--prettyblock-newsletter-button-color));
 }
 
 .prettyblock-newsletter__legal {
   margin-top: 0.75rem;
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--prettyblock-newsletter-legal-color, currentColor);
+  max-width: 720px;
 }
 
 .prettyblock-newsletter__message {
   margin-top: 0.75rem;
   font-size: 0.9rem;
   min-height: 1.2rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--prettyblock-newsletter-message-color, currentColor);
 }
 
 .prettyblock-newsletter__message.is-success {
-  color: #7ee081;
+  color: var(--prettyblock-newsletter-success-color, currentColor);
 }
 
 .prettyblock-newsletter__message.is-error {
-  color: #ff8c8c;
+  color: var(--prettyblock-newsletter-error-color, currentColor);
 }
 
 @media (max-width: 767.98px) {
   .prettyblock-newsletter {
-    padding: 24px 20px;
-    border-radius: 20px;
-  }
-
-  .prettyblock-newsletter__inner {
-    text-align: center;
+    padding: var(--prettyblock-newsletter-padding-mobile, 28px 20px);
+    border-radius: var(--prettyblock-newsletter-radius-mobile, 20px);
   }
 
   .prettyblock-newsletter__input {
-    padding-right: 4rem;
+    padding-right: 4.25rem;
   }
 }
