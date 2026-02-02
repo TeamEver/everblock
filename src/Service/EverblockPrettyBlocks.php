@@ -2779,6 +2779,13 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Link URL'),
                             'default' => '#',
                         ],
+                        'media' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Media (replaces SVG icon)'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
                         'icon' => [
                             'type' => 'select',
                             'label' => $module->l('Select an icon'),

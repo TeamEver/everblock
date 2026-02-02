@@ -45,11 +45,10 @@
                 {assign var="icon_url" value=$smarty.const._PS_MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
               {/if}
             {/if}
-            {if $icon_url}
-              {assign var="svg_content" value=$icon_url|@file_get_contents}
-              {if isset($block.settings.icon_color) && $block.settings.icon_color}
-                {assign var="svg_content" value=$svg_content|regex_replace:'/fill="[^"]+"/':'fill="currentColor"'}
-              {/if}
+            {assign var="media_url" value=''}
+            {if (is_array($state.media) || is_object($state.media)) && isset($state.media.url) && $state.media.url}
+              {assign var="media_url" value=$state.media.url}
+            {/if}
 
               {* ✅ Chaque icône dans un wrapper séparé *}
               {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_social_link_style'}
@@ -63,11 +62,18 @@
                    title="{$state.url|escape:'htmlall'}"
                    target="_blank"
                    style="{if isset($block.settings.icon_color) && $block.settings.icon_color}color:{$block.settings.icon_color|escape:'htmlall'};{/if}">
-                  {$svg_content nofilter}
+                  {if $media_url}
+                    <img src="{$media_url|escape:'htmlall':'UTF-8'}" alt="{$state.url|escape:'htmlall':'UTF-8'}" loading="lazy">
+                  {elseif $icon_url}
+                    {assign var="svg_content" value=$icon_url|@file_get_contents}
+                    {if isset($block.settings.icon_color) && $block.settings.icon_color}
+                      {assign var="svg_content" value=$svg_content|regex_replace:'/fill="[^"]+"/':'fill="currentColor"'}
+                    {/if}
+                    {$svg_content nofilter}
+                  {/if}
                 </a>
               </span>
 
-            {/if}
           {/if}
         {/foreach}
       </div>
