@@ -3598,6 +3598,7 @@ $(document).ready(function(){
     initPrettyblockToc();
     initPrettyblockLlmLinks();
     initPrettyblockLinkList();
+    initPrettyblockNewsletter();
 
     function initPrettyblockCategoryTabs() {
         var $blocks = $('.prettyblock-category-tabs');
@@ -3802,6 +3803,77 @@ $(document).ready(function(){
         } else if (typeof mediaQuery.addListener === 'function') {
             mediaQuery.addListener(syncState);
         }
+    }
+
+    function initPrettyblockNewsletter() {
+        var $forms = $('.prettyblock-newsletter__form');
+        if (!$forms.length) {
+            return;
+        }
+
+        $forms.each(function () {
+            var $form = $(this);
+            var $message = $form.find('[data-newsletter-message]');
+
+            function setMessage(text, isSuccess) {
+                if (!$message.length) {
+                    return;
+                }
+                $message
+                    .text(text || '')
+                    .toggleClass('is-success', Boolean(isSuccess))
+                    .toggleClass('is-error', !isSuccess);
+            }
+
+            $form.on('submit', function (event) {
+                event.preventDefault();
+                var endpoint = typeof psemailsubscription_subscription !== 'undefined'
+                    ? psemailsubscription_subscription
+                    : $form.attr('action');
+
+                if (!endpoint) {
+                    setMessage('Service indisponible.', false);
+                    return;
+                }
+
+                var formData = new FormData($form.get(0));
+
+                fetch(endpoint, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(function (response) {
+                        return response.json().catch(function () {
+                            return response.text();
+                        });
+                    })
+                    .then(function (data) {
+                        if (!data) {
+                            setMessage('', false);
+                            return;
+                        }
+
+                        var message = '';
+                        var isSuccess = false;
+
+                        if (typeof data === 'string') {
+                            message = data;
+                        } else {
+                            message = data.message || data.msg || data.error || '';
+                            isSuccess = data.success === true || data.status === true || data.status === 'success';
+                        }
+
+                        setMessage(message, isSuccess);
+                    })
+                    .catch(function () {
+                        setMessage('Une erreur est survenue.', false);
+                    });
+            });
+        });
     }
 
     var $everblockImageModal = $('#everblockImageModal');
