@@ -2870,6 +2870,11 @@ class EverblockPrettyBlocks
                             'choices' => EverblockTools::getAvailableSvgIcons(),
                             'default' => 'facebook.svg',
                         ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
                     ], $module),
                 ],
             ];
