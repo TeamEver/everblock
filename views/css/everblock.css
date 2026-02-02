@@ -123,6 +123,11 @@
     .prettyblock-link-list__icon {
         display: none;
     }
+
+    .prettyblock-link-list__summary {
+        cursor: default;
+        pointer-events: none;
+    }
 }
 
 /* Prettyblock LLM links */
