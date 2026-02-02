@@ -178,6 +178,7 @@ class EverblockPrettyBlocks
             $shoppingCartTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl';
             $accordeonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_accordeon.tpl';
             $faqTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_faq.tpl';
+            $faqSelectionTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_faq_selection.tpl';
             $textAndImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_text_and_image.tpl';
             $layoutTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_layout.tpl';
             $featuredCategoryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl';
@@ -668,6 +669,44 @@ class EverblockPrettyBlocks
                             'tab' => 'design',
                             'type' => 'color',
                             'label' => $module->l('Badge text color'),
+                            'default' => '',
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('FAQ selection'),
+                'description' => $module->l('Display selected registered FAQs as an accordion list.'),
+                'code' => 'everblock_faq_selection',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $faqSelectionTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Section title'),
+                            'default' => $module->l('Frequently asked questions'),
+                        ],
+                    ], $module),
+                ],
+                'repeater' => [
+                    'name' => 'FAQ',
+                    'nameFrom' => 'faq',
+                    'groups' => static::appendSpacingFields([
+                        'faq' => [
+                            'type' => 'selector',
+                            'label' => $module->l('FAQ entry'),
+                            'collection' => 'EverblockFaq',
+                            'selector' => '{id} - {title}',
                             'default' => '',
                         ],
                         'css_class' => [
