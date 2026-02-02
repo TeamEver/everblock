@@ -82,7 +82,12 @@ class EverblockTools extends ObjectModel
             'front',
             'modulefront',
         ];
-        $txt = static::getEverShortcodes($txt, $context);
+        if (static::textHasPotentialShortcode($txt) && static::hasCustomShortcodes($context)) {
+            $shortcodeCandidates = static::extractShortcodeCandidates($txt);
+            if (!empty($shortcodeCandidates)) {
+                $txt = static::getEverShortcodes($txt, $context, $shortcodeCandidates);
+            }
+        }
         $shortcodeHandlers = [
             '[alert' => 'getAlertShortcode',
             '[everfaq_product' => ['method' => 'getProductFaqShortcodes', 'args' => ['context', 'module']],
@@ -159,6 +164,60 @@ class EverblockTools extends ObjectModel
         $txt = static::renderSmartyVars($txt, $context);
         Hook::exec('displayAfterRenderingShortcodes', ['html' => &$txt]);
         return $txt;
+    }
+
+    protected static function textHasPotentialShortcode(string $txt): bool
+    {
+        if (strpos($txt, '[') === false) {
+            return false;
+        }
+
+        return (bool) preg_match('/\[[^\[\]]+]/', $txt);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected static function extractShortcodeCandidates(string $txt): array
+    {
+        $candidates = [];
+        preg_match_all('/\[[^\[\]]+]/', $txt, $matches);
+        foreach ($matches[0] as $match) {
+            $token = trim($match);
+            if ($token === '') {
+                continue;
+            }
+            $candidates[] = $token;
+            if (preg_match('/^\[([^\s\]]+)/', $token, $tokenMatch)) {
+                $candidates[] = '[' . $tokenMatch[1] . ']';
+            }
+        }
+
+        return array_values(array_unique($candidates));
+    }
+
+    protected static function hasCustomShortcodes(Context $context): bool
+    {
+        $cacheId = 'EverblockTools_has_shortcodes_' . (int) $context->shop->id . '_' . (int) $context->language->id;
+        if (EverblockCache::isCacheStored($cacheId)) {
+            return (bool) EverblockCache::cacheRetrieve($cacheId);
+        }
+
+        $sql = new DbQuery();
+        $sql->select('1');
+        $sql->from('everblock_shortcode', 'es');
+        $sql->innerJoin(
+            'everblock_shortcode_lang',
+            'esl',
+            'esl.id_everblock_shortcode = es.id_everblock_shortcode'
+            . ' AND esl.id_lang = ' . (int) $context->language->id
+        );
+        $sql->where('es.id_shop = ' . (int) $context->shop->id);
+        $sql->limit(1);
+        $hasShortcodes = (bool) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
+        EverblockCache::cacheStore($cacheId, $hasShortcodes);
+
+        return $hasShortcodes;
     }
 
     /**
@@ -4560,13 +4619,20 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    public static function getEverShortcodes(string $txt, Context $context): string
+    /**
+     * @param array<int, string> $shortcodeCandidates
+     */
+    public static function getEverShortcodes(string $txt, Context $context, array $shortcodeCandidates = []): string
     {
-        $customShortcodes = EverblockShortcode::getAllShortcodes(
+        if (empty($shortcodeCandidates)) {
+            return $txt;
+        }
+
+        $customShortcodes = EverblockShortcode::getShortcodesByList(
+            $shortcodeCandidates,
             $context->shop->id,
             $context->language->id
         );
-        $returnedShortcodes = [];
         foreach ($customShortcodes as $sc) {
             $content = $sc->content ?? '';
             $txt = str_replace($sc->shortcode, (string) $content, $txt);
