@@ -39,6 +39,7 @@ if (!defined('_PS_VERSION_')) {
 class EverblockPrettyBlocks
 {
     private const MEDIA_PATH = '$/img/cms/prettyblocks/';
+    private const RENDER_CACHE_PREFIX = 'EverblockPrettyBlocks_render_';
     private const BEFORE_RENDERING_HOOKS = [
         'beforeRenderingEverblockEverblock',
         'beforeRenderingEverblockCategoryTabs',
@@ -57,6 +58,48 @@ class EverblockPrettyBlocks
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
     {
         return PrettyBlocksModel::registerBlockToZone($zone_name, $code, $id_lang, $id_shop);
+    }
+
+    public static function renderZoneWithCache(string $zoneName, Context $context, Module $module): string
+    {
+        if ($zoneName === '') {
+            return '';
+        }
+
+        $shopId = (int) $context->shop->id;
+        $langId = (int) $context->language->id;
+        $customerGroupId = 0;
+        if (isset($context->customer) && isset($context->customer->id_default_group)) {
+            $customerGroupId = (int) $context->customer->id_default_group;
+        }
+        if ($customerGroupId <= 0) {
+            $currentGroup = Group::getCurrent();
+            $customerGroupId = $currentGroup ? (int) $currentGroup->id : 0;
+        }
+
+        $safeZone = preg_replace('/[^A-Za-z0-9_-]/', '_', $zoneName);
+        $cacheId = self::RENDER_CACHE_PREFIX
+            . $safeZone . '_'
+            . $shopId . '_'
+            . $langId . '_'
+            . $customerGroupId;
+
+        if (EverblockCache::isCacheStored($cacheId)) {
+            return (string) EverblockCache::cacheRetrieve($cacheId);
+        }
+
+        $templatePath = EverblockTools::getTemplatePath('hook/prettyblocks.tpl', $module);
+        $context->smarty->assign('zone_name', $zoneName);
+        $html = (string) $context->smarty->fetch($templatePath);
+
+        EverblockCache::cacheStore($cacheId, $html);
+
+        return $html;
+    }
+
+    public static function clearRenderCache(): void
+    {
+        EverblockCache::cacheDropByPattern(self::RENDER_CACHE_PREFIX);
     }
 
     public static function ensureBeforeRenderingHooksRegistered(Module $module): void

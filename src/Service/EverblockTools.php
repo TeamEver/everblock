@@ -2427,21 +2427,15 @@ class EverblockTools extends ObjectModel
             && (bool) static::moduleDirectoryExists('prettyblocks') === true
         ) {
             try {
-                // Définir le chemin vers le template
-                $templatePath = static::getTemplatePath('hook/prettyblocks.tpl', $module);
                 // Regex pour trouver les shortcodes de type [prettyblocks name="mon_nom"]
                 $pattern = '/\[prettyblocks name="([^"]+)"\]/';
 
                 // Fonction de remplacement pour traiter chaque shortcode trouvé
-                $replacementFunction = function ($matches) use ($context, $templatePath) {
+                $replacementFunction = function ($matches) use ($context, $module) {
                     $zoneName = $matches[1];
 
                     try {
-                        // Assigner le nom de la zone à Smarty
-                        $context->smarty->assign('zone_name', $zoneName);
-
-                        // Récupérer le rendu du template avec Smarty
-                        return $context->smarty->fetch($templatePath);
+                        return EverblockPrettyBlocks::renderZoneWithCache($zoneName, $context, $module);
                     } catch (\Throwable $e) {
                         PrestaShopLogger::addLog(
                             sprintf('Prettyblocks shortcode rendering failed for zone "%s": %s', $zoneName, $e->getMessage()),
