@@ -3597,6 +3597,7 @@ $(document).ready(function(){
     initPrettyblockCategoryTabs();
     initPrettyblockToc();
     initPrettyblockLlmLinks();
+    initPrettyblockLinkList();
 
     function initPrettyblockCategoryTabs() {
         var $blocks = $('.prettyblock-category-tabs');
@@ -3774,6 +3775,33 @@ $(document).ready(function(){
                 $link.attr('href', baseUrl + encodeURIComponent(promptText));
             });
         });
+    }
+
+    function initPrettyblockLinkList() {
+        var $details = $('.prettyblock-link-list__details');
+        if (!$details.length || typeof window.matchMedia !== 'function') {
+            return;
+        }
+
+        var mediaQuery = window.matchMedia('(max-width: 991.98px)');
+        var syncState = function () {
+            $details.each(function () {
+                var $detail = $(this);
+                if (mediaQuery.matches) {
+                    $detail.removeAttr('open');
+                } else {
+                    $detail.attr('open', 'open');
+                }
+            });
+        };
+
+        syncState();
+
+        if (typeof mediaQuery.addEventListener === 'function') {
+            mediaQuery.addEventListener('change', syncState);
+        } else if (typeof mediaQuery.addListener === 'function') {
+            mediaQuery.addListener(syncState);
+        }
     }
 
     var $everblockImageModal = $('#everblockImageModal');
