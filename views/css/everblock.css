@@ -110,8 +110,17 @@
 
 @media (max-width: 991.98px) {
     .prettyblock-link-list__summary {
-        padding: 0.75rem 0;
+        padding: 0.5rem 0;
         border-bottom: 1px solid currentColor;
+        align-items: flex-start;
+    }
+
+    .prettyblock-link-list__list li {
+        padding: 0.2rem 0;
+    }
+
+    .prettyblock-link-list__icon {
+        margin-top: 0.25rem;
     }
 
     .prettyblock-link-list__details[open] .prettyblock-link-list__summary {
