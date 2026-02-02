@@ -319,6 +319,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_everblock.tpl',
     'views/templates/hook/prettyblocks/prettyblock_exit_intent.tpl',
     'views/templates/hook/prettyblocks/prettyblock_faq.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_faq_selection.tpl',
     'views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl',
     'views/templates/hook/prettyblocks/prettyblock_gallery.tpl',
     'views/templates/hook/prettyblocks/prettyblock_gmap.tpl',
