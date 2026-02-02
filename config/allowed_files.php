@@ -341,6 +341,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_modal.tpl',
     'views/templates/hook/prettyblocks/prettyblock_mystery_boxes.tpl',
     'views/templates/hook/prettyblocks/prettyblock_latest_guides.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_newsletter.tpl',
     'views/templates/hook/prettyblocks/prettyblock_podcasts.tpl',
     'views/templates/hook/prettyblocks/prettyblock_pricing_table.tpl',
     'views/templates/hook/prettyblocks/prettyblock_pages_guide.tpl',
