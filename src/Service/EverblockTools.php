@@ -2154,10 +2154,14 @@ class EverblockTools extends ObjectModel
             FROM ' . _DB_PREFIX_ . 'order_detail od
             INNER JOIN ' . _DB_PREFIX_ . 'orders o
                 ON o.id_order = od.id_order
+            INNER JOIN ' . _DB_PREFIX_ . 'product_shop ps
+                ON ps.id_product = od.product_id
             INNER JOIN ' . _DB_PREFIX_ . 'category_product cp
                 ON cp.id_product = od.product_id
             WHERE o.id_shop = ' . $shopId . '
               AND o.valid = 1
+              AND ps.id_shop = ' . $shopId . '
+              AND ps.active = 1
               AND cp.id_category = ' . (int) $categoryId;
 
         if ($days !== null) {
@@ -2167,7 +2171,7 @@ class EverblockTools extends ObjectModel
 
         $sql .= '
             GROUP BY od.product_id
-            ORDER BY ' . $orderBy . ' ' . $orderWay . '
+            ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay) . '
             LIMIT ' . (int) $limit;
 
         $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
