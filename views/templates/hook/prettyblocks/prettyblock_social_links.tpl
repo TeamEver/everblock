@@ -39,7 +39,7 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-    <div class="everblock-social-links {$prettyblock_social_links_alignment_class} d-flex flex-row flex-wrap">
+    <div class="everblock-social-links {$prettyblock_social_links_alignment_class} d-flex flex-row flex-wrap{if $prettyblock_social_links_alignment == 'Center'} justify-content-center{/if}">
         {foreach from=$block.states item=state}
           {if isset($state.url) && $state.url}
             {assign var="icon_url" value=false}
