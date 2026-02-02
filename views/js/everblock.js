@@ -404,6 +404,7 @@ $(document).ready(function(){
             if (!slides.length) {
                 return;
             }
+            var originalSlides = slides.slice();
             var track = carousel.querySelector('.heroe-track');
             var viewport = carousel.querySelector('.heroe-viewport');
             if (!track) {
@@ -419,6 +420,62 @@ $(document).ready(function(){
             var showArrows = carousel.dataset.showArrows !== '0';
             var prevButton = carousel.querySelector('.heroe-prev');
             var nextButton = carousel.querySelector('.heroe-next');
+            var cloneCount = 0;
+
+            function getSlideWidth() {
+                var referenceSlide = originalSlides[0];
+                if (!referenceSlide) {
+                    return 0;
+                }
+                return referenceSlide.offsetWidth;
+            }
+
+            function ensureLoopClones() {
+                if (!loop || total < 2 || !viewport) {
+                    return;
+                }
+                var slideWidth = getSlideWidth();
+                if (!slideWidth) {
+                    return;
+                }
+                var viewportWidth = viewport.offsetWidth;
+                var slidesPerView = Math.max(1, Math.round(viewportWidth / slideWidth));
+                var neededClones = Math.max(1, Math.floor(slidesPerView / 2));
+                if (neededClones === cloneCount) {
+                    return;
+                }
+                slides.forEach(function (slide) {
+                    if (slide.dataset.cloned === '1') {
+                        slide.remove();
+                    }
+                });
+                originalSlides.forEach(function (slide) {
+                    if (!slide.parentNode) {
+                        track.appendChild(slide);
+                    }
+                });
+
+                var beforeFragment = document.createDocumentFragment();
+                var startIndex = (total - neededClones + total) % total;
+                for (var i = 0; i < neededClones; i++) {
+                    var beforeIndex = (startIndex + i) % total;
+                    var beforeClone = originalSlides[beforeIndex].cloneNode(true);
+                    beforeClone.dataset.cloned = '1';
+                    beforeFragment.appendChild(beforeClone);
+                }
+                track.insertBefore(beforeFragment, track.firstChild);
+
+                var afterFragment = document.createDocumentFragment();
+                for (var j = 0; j < neededClones; j++) {
+                    var afterClone = originalSlides[j % total].cloneNode(true);
+                    afterClone.dataset.cloned = '1';
+                    afterFragment.appendChild(afterClone);
+                }
+                track.appendChild(afterFragment);
+
+                slides = Array.prototype.slice.call(track.querySelectorAll('.heroe-slide'));
+                cloneCount = neededClones;
+            }
             function updateNavState() {
                 if (!prevButton && !nextButton) {
                     return;
@@ -446,30 +503,40 @@ $(document).ready(function(){
                 }
             }
             function updateSlides() {
-                var activeSlide = slides[index];
+                ensureLoopClones();
+                var slideWidth = getSlideWidth();
+                var viewportWidth = viewport ? viewport.offsetWidth : 0;
+                var slidesPerView = slideWidth > 0 ? Math.max(1, Math.round(viewportWidth / slideWidth)) : 1;
+                var centerOffset = Math.max(0, Math.floor(slidesPerView / 2));
+                var activePosition = loop && total > 1 ? cloneCount + index : index;
+                var activeSlide = slides[activePosition];
                 var offset = 0;
                 if (activeSlide && viewport) {
-                    var viewportWidth = viewport.offsetWidth;
                     var maxOffset = Math.max(0, track.scrollWidth - viewportWidth);
-                    var slideWidth = activeSlide.offsetWidth;
                     if (slideWidth > 0) {
-                        var slidesPerView = Math.max(1, Math.round(viewportWidth / slideWidth));
-                        var centerOffset = Math.floor(slidesPerView / 2);
-                        offset = Math.min(Math.max(0, (index - centerOffset) * slideWidth), maxOffset);
+                        offset = Math.min(Math.max(0, (activePosition - centerOffset) * slideWidth), maxOffset);
                     }
                 }
                 track.style.transform = 'translateX(-' + offset + 'px)';
                 slides.forEach(function (slide, i) {
                     slide.classList.remove('is-active', 'is-prev', 'is-next');
-                    if (i === index) {
+                    if (i === activePosition) {
                         slide.classList.add('is-active');
-                    } else if (loop && i === (index + 1) % total) {
+                        return;
+                    }
+                    if (loop && total > 1) {
+                        var nextPosition = (activePosition + 1) % slides.length;
+                        var prevPosition = (activePosition - 1 + slides.length) % slides.length;
+                        if (i === nextPosition) {
+                            slide.classList.add('is-next');
+                        } else if (i === prevPosition) {
+                            slide.classList.add('is-prev');
+                        }
+                        return;
+                    }
+                    if (!loop && i === activePosition + 1) {
                         slide.classList.add('is-next');
-                    } else if (loop && i === (index - 1 + total) % total) {
-                        slide.classList.add('is-prev');
-                    } else if (!loop && i === index + 1) {
-                        slide.classList.add('is-next');
-                    } else if (!loop && i === index - 1) {
+                    } else if (!loop && i === activePosition - 1) {
                         slide.classList.add('is-prev');
                     }
                 });
