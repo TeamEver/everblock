@@ -151,6 +151,7 @@ class Everblock extends Module
         Configuration::updateValue('EVERBLOCK_PAGES_PER_PAGE', 9);
         Configuration::updateValue('EVERBLOCK_FAQ_BASE_URL', 'faq');
         Configuration::updateValue('EVERBLOCK_FAQ_PER_PAGE', 10);
+        Configuration::updateValue('EVERBLOCK_EVER_PRESENT_CACHE', 0);
         // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
@@ -1842,6 +1843,26 @@ class Everblock extends Module
             ],
             [
                 'type' => 'switch',
+                'label' => $this->l('Enable cache for everPresentProducts?'),
+                'desc' => $this->l('Cache presented products to speed up repeated renderings.'),
+                'hint' => $this->l('Disable if you need real-time updates of presented products.'),
+                'name' => 'EVERBLOCK_EVER_PRESENT_CACHE',
+                'is_bool' => true,
+                'values' => [
+                    [
+                        'id' => 'everblock_ever_present_cache_on',
+                        'value' => 1,
+                        'label' => $this->l('Enabled'),
+                    ],
+                    [
+                        'id' => 'everblock_ever_present_cache_off',
+                        'value' => 0,
+                        'label' => $this->l('Disabled'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'switch',
                 'label' => $this->l('Enable front-office script for obfuscation ?'),
                 'desc' => $this->l('Will load JS file to manage obfuscated links'),
                 'hint' => $this->l('Leave it to "No" if you already have a script that manages obfuscated links'),
@@ -2820,6 +2841,7 @@ class Everblock extends Module
             'EVERBLOCK_STORELOCATOR_TOGGLE' => Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
+            'EVERBLOCK_EVER_PRESENT_CACHE' => Configuration::get('EVERBLOCK_EVER_PRESENT_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
             'EVERBLOCK_SOLDOUT_FLAG' => Configuration::get('EVERBLOCK_SOLDOUT_FLAG'),
             'EVER_SOLDOUT_COLOR' => Configuration::get('EVER_SOLDOUT_COLOR'),
@@ -2998,6 +3020,7 @@ class Everblock extends Module
                 'EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR',
                 'EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA',
                 'EVERWP_POSTS_SLIDER_ENABLED',
+                'EVERBLOCK_EVER_PRESENT_CACHE',
             ];
             foreach ($boolFields as $boolField) {
                 $value = Tools::getValue($boolField);
@@ -3088,6 +3111,10 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_CACHE',
             Tools::getValue('EVERBLOCK_CACHE')
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_EVER_PRESENT_CACHE',
+            Tools::getValue('EVERBLOCK_EVER_PRESENT_CACHE')
         );
         Configuration::updateValue(
             'EVERBLOCK_USE_OBF',
