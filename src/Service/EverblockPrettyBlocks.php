@@ -30,6 +30,7 @@ use Group;
 use Hook;
 use Module;
 use PrettyBlocksModel;
+use PrestaShopLogger;
 use Tools;
 
 if (!defined('_PS_VERSION_')) {
@@ -157,139 +158,156 @@ class EverblockPrettyBlocks
 
     public static function getEverPrettyBlocks($context)
     {
-        $cacheId = 'EverblockPrettyBlocks_getEverPrettyBlocks_'
-        . (int) $context->language->id
-        . '_'
-        . (int) $context->shop->id;
         $module = Module::getInstanceByName('everblock');
-        if (!EverblockCache::isCacheStored($cacheId)) {
-            $defaultTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_' . $module->name . '.tpl';
-            $modalTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_modal.tpl';
-            $alertTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_alert.tpl';
-            $buttonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_button.tpl';
-            $gmapTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gmap.tpl';
-            $customIframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_custom_iframe.tpl';
-            $customCodeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_custom_code.tpl';
-            $shortcodeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shortcode.tpl';
-            $iframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_iframe.tpl';
-            $scrollVideoTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_scroll_video.tpl';
-            $loginTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_login.tpl';
-            $contactTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_contact.tpl';
-            $shoppingCartTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl';
-            $accordeonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_accordeon.tpl';
-            $faqTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_faq.tpl';
-            $textAndImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_text_and_image.tpl';
-            $layoutTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_layout.tpl';
-            $featuredCategoryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl';
-            $imgSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img_slider.tpl';
-            $tabTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_tab.tpl';
-            $categoryTabsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_tabs.tpl';
-            $dividerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
-            $spacerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_spacer.tpl';
-            $galleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gallery.tpl';
-            $masonryGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl';
-            $videoGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_video_gallery.tpl';
-            $videoProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_video_products.tpl';
-            $testimonialTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial.tpl';
-            $testimonialSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial_slider.tpl';
-            $imgTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img.tpl';
-            $rowTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/row.tpl';
-            $reassuranceTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_reassurance.tpl';
-            $ctaTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cta.tpl';
-            $googleReviewsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_google_reviews.tpl';
-            $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
-            $linkListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_link_list.tpl';
-            $downloadsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_downloads.tpl';
-            $socialLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_social_links.tpl';
-            $brandListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_brands.tpl';
-            $productHighlightTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl';
-            $productSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_selector.tpl';
-            $guidedSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guided_selector.tpl';
-            $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
-            $bestSalesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_best_sales.tpl';
-            $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
-            $countersTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_counters.tpl';
-            $countdownTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_countdown.tpl';
-            $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
-            $coverTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cover.tpl';
-            $headingTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_heading.tpl';
-            $categoryPriceTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_price.tpl';
-            $tocTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_toc.tpl';
-            $imageMapTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_image_map.tpl';
-            $everblockTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_everblock.tpl';
-            $lookbookTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_lookbook.tpl';
-            $pricingTableTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pricing_table.tpl';
-            $podcastsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_podcasts.tpl';
-            $exitIntentTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_exit_intent.tpl';
-            $specialEventTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_special_event.tpl';
-            $wheelTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_wheel_of_fortune.tpl';
-            $mysteryBoxesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_mystery_boxes.tpl';
-            $slotMachineTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_slot_machine.tpl';
-            $pagesGuideTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pages_guide.tpl';
-            $guidesSelectionTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guides_selection.tpl';
-            $latestGuidesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_latest_guides.tpl';
-            $slotMachineDefaultStartDate = date('Y-m-d 00:00:00');
-            $slotMachineDefaultEndDate = date('Y-m-d 23:59:59', strtotime('+30 days'));
-            $slotMachineDefaultWinningCombinations = json_encode(
-                [
-                    [
-                        'pattern' => ['cherry', 'cherry', 'cherry'],
-                        'label' => [
-                            (string) $context->language->id => $module->l('Cherry jackpot'),
-                        ],
-                        'message' => [
-                            (string) $context->language->id => $module->l('Congratulations! Enjoy 15% off your next order.'),
-                        ],
-                        'isWinning' => true,
-                        'coupon_type' => 'percent',
-                        'discount' => 15,
-                        'coupon_validity' => 30,
-                    ],
-                    [
-                        'pattern' => ['lemon', 'lemon', 'lemon'],
-                        'label' => [
-                            (string) $context->language->id => $module->l('Citrus prize'),
-                        ],
-                        'message' => [
-                            (string) $context->language->id => $module->l('You win a 10 reward voucher to brighten your day.'),
-                        ],
-                        'isWinning' => true,
-                        'coupon_type' => 'amount',
-                        'discount' => 10,
-                        'minimum_purchase' => 50,
-                        'coupon_validity' => 15,
-                    ],
-                ],
-                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
-            );
-            if (false === $slotMachineDefaultWinningCombinations) {
-                $slotMachineDefaultWinningCombinations = '[]';
+        $blockIds = self::getPrettyBlockIds($module);
+        $cachedBlocks = [];
+        $missingBlockIds = [];
+        foreach ($blockIds as $blockId) {
+            $cachedBlock = self::fetchPrettyBlockFromCache($blockId, $context);
+            if (is_array($cachedBlock)) {
+                $cachedBlocks[$blockId] = $cachedBlock;
+            } else {
+                $missingBlockIds[] = $blockId;
             }
-            $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
+        }
+
+        if (empty($missingBlockIds)) {
             $blocks = [];
-            $allShortcodes = EverblockShortcode::getAllShortcodes(
-                (int) $context->language->id,
-                (int) $context->shop->id
-            );
-            $everblocks = EverBlockClass::getAllBlocks(
-                (int) $context->language->id,
-                (int) $context->shop->id
-            );
-            $everblockChoices = [];
-            foreach ($everblocks as $eblock) {
-                $everblockChoices[$eblock['id_everblock']] = $eblock['id_everblock'] . ' - ' . $eblock['name'];
+            foreach ($blockIds as $blockId) {
+                if (isset($cachedBlocks[$blockId])) {
+                    $blocks[] = $cachedBlocks[$blockId];
+                }
             }
-            $everblockPageChoices = self::getEverblockPageChoices($context, $module);
-            $allHooks = Hook::getHooks(false, true);
-            $prettyBlocksHooks = [];
-            foreach ($allHooks as $hook) {
-                $prettyBlocksHooks[$hook['name']] = $hook['name'];
-            }
-            $prettyBlocksShortcodes = [];
-            foreach ($allShortcodes as $shortcode) {
-                $prettyBlocksShortcodes[$shortcode->shortcode] = $shortcode->shortcode;
-            }
-            $blocks[] = [
+            return $blocks;
+        }
+
+        $defaultTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_' . $module->name . '.tpl';
+        $modalTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_modal.tpl';
+        $alertTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_alert.tpl';
+        $buttonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_button.tpl';
+        $gmapTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gmap.tpl';
+        $customIframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_custom_iframe.tpl';
+        $customCodeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_custom_code.tpl';
+        $shortcodeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shortcode.tpl';
+        $iframeTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_iframe.tpl';
+        $scrollVideoTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_scroll_video.tpl';
+        $loginTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_login.tpl';
+        $contactTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_contact.tpl';
+        $shoppingCartTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl';
+        $accordeonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_accordeon.tpl';
+        $faqTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_faq.tpl';
+        $textAndImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_text_and_image.tpl';
+        $layoutTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_layout.tpl';
+        $featuredCategoryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl';
+        $imgSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img_slider.tpl';
+        $tabTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_tab.tpl';
+        $categoryTabsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_tabs.tpl';
+        $dividerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
+        $spacerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_spacer.tpl';
+        $galleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_gallery.tpl';
+        $masonryGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl';
+        $videoGalleryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_video_gallery.tpl';
+        $videoProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_video_products.tpl';
+        $testimonialTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial.tpl';
+        $testimonialSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_testimonial_slider.tpl';
+        $imgTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img.tpl';
+        $rowTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/row.tpl';
+        $reassuranceTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_reassurance.tpl';
+        $ctaTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cta.tpl';
+        $googleReviewsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_google_reviews.tpl';
+        $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
+        $linkListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_link_list.tpl';
+        $downloadsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_downloads.tpl';
+        $socialLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_social_links.tpl';
+        $brandListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_brands.tpl';
+        $productHighlightTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_highlight.tpl';
+        $productSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_product_selector.tpl';
+        $guidedSelectorTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guided_selector.tpl';
+        $flashDealsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_flash_deals.tpl';
+        $bestSalesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_best_sales.tpl';
+        $categoryProductsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_products.tpl';
+        $countersTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_counters.tpl';
+        $countdownTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_countdown.tpl';
+        $cardTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_card.tpl';
+        $coverTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cover.tpl';
+        $headingTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_heading.tpl';
+        $categoryPriceTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_price.tpl';
+        $tocTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_toc.tpl';
+        $imageMapTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_image_map.tpl';
+        $everblockTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_everblock.tpl';
+        $lookbookTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_lookbook.tpl';
+        $pricingTableTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pricing_table.tpl';
+        $podcastsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_podcasts.tpl';
+        $exitIntentTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_exit_intent.tpl';
+        $specialEventTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_special_event.tpl';
+        $wheelTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_wheel_of_fortune.tpl';
+        $mysteryBoxesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_mystery_boxes.tpl';
+        $slotMachineTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_slot_machine.tpl';
+        $pagesGuideTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_pages_guide.tpl';
+        $guidesSelectionTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_guides_selection.tpl';
+        $latestGuidesTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_latest_guides.tpl';
+        $slotMachineDefaultStartDate = date('Y-m-d 00:00:00');
+        $slotMachineDefaultEndDate = date('Y-m-d 23:59:59', strtotime('+30 days'));
+        $slotMachineDefaultWinningCombinations = json_encode(
+            [
+                [
+                    'pattern' => ['cherry', 'cherry', 'cherry'],
+                    'label' => [
+                        (string) $context->language->id => $module->l('Cherry jackpot'),
+                    ],
+                    'message' => [
+                        (string) $context->language->id => $module->l('Congratulations! Enjoy 15% off your next order.'),
+                    ],
+                    'isWinning' => true,
+                    'coupon_type' => 'percent',
+                    'discount' => 15,
+                    'coupon_validity' => 30,
+                ],
+                [
+                    'pattern' => ['lemon', 'lemon', 'lemon'],
+                    'label' => [
+                        (string) $context->language->id => $module->l('Citrus prize'),
+                    ],
+                    'message' => [
+                        (string) $context->language->id => $module->l('You win a 10 reward voucher to brighten your day.'),
+                    ],
+                    'isWinning' => true,
+                    'coupon_type' => 'amount',
+                    'discount' => 10,
+                    'minimum_purchase' => 50,
+                    'coupon_validity' => 15,
+                ],
+            ],
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+        );
+        if (false === $slotMachineDefaultWinningCombinations) {
+            $slotMachineDefaultWinningCombinations = '[]';
+        }
+        $defaultLogo = Tools::getHttpHost(true) . __PS_BASE_URI__ . 'modules/' . $module->name . '/logo.png';
+        $blocks = [];
+        $allShortcodes = EverblockShortcode::getAllShortcodes(
+            (int) $context->language->id,
+            (int) $context->shop->id
+        );
+        $everblocks = EverBlockClass::getAllBlocks(
+            (int) $context->language->id,
+            (int) $context->shop->id
+        );
+        $everblockChoices = [];
+        foreach ($everblocks as $eblock) {
+            $everblockChoices[$eblock['id_everblock']] = $eblock['id_everblock'] . ' - ' . $eblock['name'];
+        }
+        $everblockPageChoices = self::getEverblockPageChoices($context, $module);
+        $allHooks = Hook::getHooks(false, true);
+        $prettyBlocksHooks = [];
+        foreach ($allHooks as $hook) {
+            $prettyBlocksHooks[$hook['name']] = $hook['name'];
+        }
+        $prettyBlocksShortcodes = [];
+        foreach ($allShortcodes as $shortcode) {
+            $prettyBlocksShortcodes[$shortcode->shortcode] = $shortcode->shortcode;
+        }
+        $blocks[] = [
                 'name' => $module->l('Shopping cart'),
                 'description' => $module->l('Add dropdown shopping cart'),
                 'code' => 'everblock_shopping_cart',
@@ -4624,12 +4642,148 @@ class EverblockPrettyBlocks
                     ], $module),
                 ],
             ];
-            $blocks = self::addDisplaySettings($blocks, $module, $context);
-            $blocks = self::applyFileUploadPath($blocks);
-            EverblockCache::cacheStore($cacheId, $blocks);
-            return $blocks;
+        $blocks = self::addDisplaySettings($blocks, $module, $context);
+        $blocks = self::applyFileUploadPath($blocks);
+
+        $blocksByCode = [];
+        foreach ($blocks as $block) {
+            if (isset($block['code'])) {
+                $blocksByCode[(string) $block['code']] = $block;
+            }
         }
-        return EverblockCache::cacheRetrieve($cacheId);
+
+        $finalBlocks = [];
+        foreach ($blockIds as $blockId) {
+            if (isset($cachedBlocks[$blockId])) {
+                $finalBlocks[] = $cachedBlocks[$blockId];
+                continue;
+            }
+
+            if (isset($blocksByCode[$blockId])) {
+                $block = $blocksByCode[$blockId];
+                self::storePrettyBlockInCache($blockId, $block, $context);
+                $finalBlocks[] = $block;
+            }
+        }
+
+        return $finalBlocks;
+    }
+
+    private static function getPrettyBlockIds(Module $module): array
+    {
+        return [
+            'everblock_shopping_cart',
+            'everblock_login',
+            'everblock_contact',
+            'everblock_divider',
+            'everblock_spacer',
+            'everblock_heading',
+            'everblock_everblock',
+            'everblock_tab',
+            'everblock_accordeon',
+            'everblock_faq',
+            $module->name,
+            'everblock_reassurance',
+            'everblock_cta',
+            'everblock_iframe',
+            'everblock_scroll_video',
+            'everblock_layout',
+            'everblock_category_highlight',
+            'everblock_category_price',
+            'everblock_modal',
+            'everblock_exit_intent',
+            'everblock_shortcode',
+            'everblock_img',
+            'everblock_row',
+            'everblock_text_and_image',
+            'everblock_gallery',
+            'everblock_masonry_gallery',
+            'everblock_video_gallery',
+            'everblock_video_products',
+            'everblock_alert',
+            'everblock_google_reviews',
+            'everblock_testimonial',
+            'everblock_testimonial_slider',
+            'everblock_button',
+            'everblock_gmap',
+            'everblock_custom_iframe',
+            'everblock_custom_code',
+            'everblock_img_slider',
+            'everblock_link_list',
+            'everblock_downloads',
+            'everblock_podcasts',
+            'everblock_sharer',
+            'everblock_social_links',
+            'everblock_brands',
+            'everblock_product_highlight',
+            'everblock_category_tabs',
+            'everblock_counters',
+            'everblock_countdown',
+            'everblock_card',
+            'everblock_cover',
+            'everblock_toc',
+            'everblock_image_map',
+            'everblock_product_selector',
+            'everblock_guided_selector',
+            'everblock_guides_selection',
+            'everblock_latest_guides',
+            'everblock_pages_guide',
+            'everblock_special_event',
+            'everblock_flash_deals',
+            'everblock_best_sales',
+            'everblock_category_products',
+            'everblock_pricing_table',
+            'everblock_lookbook',
+            'everblock_wheel_of_fortune',
+            'everblock_mystery_boxes',
+            'everblock_slot_machine',
+            'everblock_advent_calendar',
+            'everblock_scratch_card',
+        ];
+    }
+
+    private static function fetchPrettyBlockFromCache(string $blockId, Context $context): ?array
+    {
+        $cacheKey = self::getPrettyBlockCacheKey($blockId, $context);
+        try {
+            if (EverblockCache::isCacheStored($cacheKey)) {
+                $cachedBlock = EverblockCache::cacheRetrieve($cacheKey);
+                if (is_array($cachedBlock)) {
+                    return $cachedBlock;
+                }
+            }
+        } catch (\Throwable $exception) {
+            self::logCacheFailure('read', $cacheKey, $exception);
+        }
+
+        return null;
+    }
+
+    private static function storePrettyBlockInCache(string $blockId, array $block, Context $context): void
+    {
+        $cacheKey = self::getPrettyBlockCacheKey($blockId, $context);
+        try {
+            EverblockCache::cacheStore($cacheKey, $block);
+        } catch (\Throwable $exception) {
+            self::logCacheFailure('write', $cacheKey, $exception);
+        }
+    }
+
+    private static function getPrettyBlockCacheKey(string $blockId, Context $context): string
+    {
+        return 'EverblockPrettyBlock_'
+            . $blockId
+            . '_'
+            . (int) $context->language->id
+            . '_'
+            . (int) $context->shop->id;
+    }
+
+    private static function logCacheFailure(string $action, string $cacheKey, \Throwable $exception): void
+    {
+        if (defined('EVERBLOCK_DEBUG') && EVERBLOCK_DEBUG) {
+            PrestaShopLogger::addLog(sprintf('Everblock cache %s failed for %s: %s', $action, $cacheKey, $exception->getMessage()));
+        }
     }
 
     private static function addDisplaySettings(array $blocks, Module $module, Context $context): array
