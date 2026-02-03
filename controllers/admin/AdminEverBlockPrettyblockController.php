@@ -21,6 +21,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 
@@ -348,6 +349,7 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             $this->duplicatePrettyblock(
                 (int) Tools::getValue($this->identifier)
             );
+            $this->invalidatePrettyblocksCache();
         }
 
         if (Tools::isSubmit('submitConvertPrettyblocksShop')) {
@@ -360,10 +362,19 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
 
         if (Tools::isSubmit('submitBulkchangeHook' . $this->table)) {
             $this->processBulkHookChange();
+            $this->invalidatePrettyblocksCache();
+        }
+
+        if (Tools::isSubmit('submitAdd' . $this->table)
+            || Tools::isSubmit('submitAdd' . $this->table . 'AndStay')
+            || Tools::isSubmit('submitUpdate' . $this->table)
+        ) {
+            $this->invalidatePrettyblocksCache();
         }
 
         if (Tools::getValue('clearcache')) {
             Tools::clearAllCache();
+            $this->invalidatePrettyblocksCache();
             Tools::redirectAdmin(self::$currentIndex . '&cachecleared=1&token=' . $this->token);
         }
         if (Tools::getValue('cachecleared')) {
@@ -379,6 +390,7 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
 
         if (Tools::isSubmit('submitBulkdelete' . $this->table)) {
             $this->processBulkDelete();
+            $this->invalidatePrettyblocksCache();
         }
 
         $lists = parent::renderList();
@@ -675,6 +687,18 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             return;
         }
 
+        $langIds = [];
+        if ($this->hasLangColumn) {
+            $langIds = array_unique(array_map('intval', array_column($blocks, 'id_lang')));
+        }
+        if (!$langIds) {
+            $langIds = [(int) $this->context->language->id];
+        }
+        foreach ($langIds as $langId) {
+            $this->invalidatePrettyblocksCache($fromShop, (int) $langId);
+            $this->invalidatePrettyblocksCache($toShop, (int) $langId);
+        }
+
         $this->confirmations[] = sprintf(
             $this->l('%d PrettyBlocks duplicated to the selected shop.'),
             $inserted
@@ -729,6 +753,18 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
             return;
         }
 
+        $shopIds = [];
+        if ($this->hasShopColumn) {
+            $shopIds = array_unique(array_map('intval', array_column($blocks, 'id_shop')));
+        }
+        if (!$shopIds) {
+            $shopIds = [(int) $this->context->shop->id];
+        }
+        foreach ($shopIds as $shopId) {
+            $this->invalidatePrettyblocksCache((int) $shopId, $fromLang);
+            $this->invalidatePrettyblocksCache((int) $shopId, $toLang);
+        }
+
         $this->confirmations[] = sprintf(
             $this->l('%d PrettyBlocks duplicated to the selected language.'),
             $inserted
@@ -743,6 +779,8 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
                 $this->errors[] = $this->l('An error has occurred: Can\'t delete the current object');
             }
         }
+
+        $this->invalidatePrettyblocksCache();
     }
 
     private function duplicatePrettyblock(int $id): void
@@ -774,5 +812,12 @@ class AdminEverBlockPrettyblockController extends ModuleAdminController
         if (!$db->insert('prettyblocks', $block)) {
             $this->errors[] = $this->l('An error has occurred: Can\'t duplicate the current object');
         }
+    }
+
+    private function invalidatePrettyblocksCache(?int $shopId = null, ?int $langId = null): void
+    {
+        $shopId = $shopId ?? (int) $this->context->shop->id;
+        $langId = $langId ?? (int) $this->context->language->id;
+        EverblockCache::invalidatePrettyBlocks($shopId, $langId);
     }
 }
