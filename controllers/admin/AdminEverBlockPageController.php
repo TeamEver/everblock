@@ -256,8 +256,6 @@ class AdminEverBlockPageController extends ModuleAdminController
             $coverImage = _PS_IMG_ . 'pages/' . $obj->cover_image;
         }
 
-        $employeeChoices = $this->getEmployeeChoices();
-
         $this->fields_form = [
             'legend' => [
                 'title' => $this->l('Page'),
@@ -300,18 +298,6 @@ class AdminEverBlockPageController extends ModuleAdminController
                     'label' => $this->l('Meta description'),
                     'name' => 'meta_description',
                     'lang' => true,
-                ],
-                [
-                    'type' => 'select',
-                    'label' => $this->l('Author'),
-                    'name' => 'id_employee',
-                    'required' => false,
-                    'options' => [
-                        'query' => $employeeChoices,
-                        'id' => 'id_employee',
-                        'name' => 'name',
-                    ],
-                    'desc' => $this->l('Select a PrestaShop employee to display as the guide author.'),
                 ],
                 [
                     'type' => 'textarea',
@@ -375,8 +361,6 @@ class AdminEverBlockPageController extends ModuleAdminController
         if (Tools::isSubmit('submitAdd' . $this->table) || Tools::isSubmit('submitAdd' . $this->table . 'AndStay')) {
             $page = new EverblockPage((int) Tools::getValue($this->identifier));
             $page->id_shop = (int) $this->context->shop->id;
-            $authorId = (int) Tools::getValue('id_employee');
-            $page->id_employee = $authorId > 0 ? $authorId : null;
             $page->active = (int) Tools::getValue('active');
             $page->groups = json_encode($this->getSelectedGroups());
             $positionInput = Tools::getValue('position');
@@ -394,9 +378,7 @@ class AdminEverBlockPageController extends ModuleAdminController
                 if (!$rewrite) {
                     $rewrite = Tools::getValue('name_' . $langId);
                 }
-                $page->link_rewrite[$langId] = method_exists('Tools', 'str2url')
-                    ? Tools::str2url($rewrite)
-                    : Tools::link_rewrite($rewrite);
+                $page->link_rewrite[$langId] = Tools::link_rewrite($rewrite);
                 $page->content[$langId] = Tools::getValue('content_' . $langId, false);
             }
 
@@ -437,26 +419,6 @@ class AdminEverBlockPageController extends ModuleAdminController
         }
 
         return array_values(array_unique(array_map('intval', $groups)));
-    }
-
-    protected function getEmployeeChoices(): array
-    {
-        $choices = [
-            [
-                'id_employee' => 0,
-                'name' => $this->l('No author'),
-            ],
-        ];
-
-        $employees = Employee::getEmployees((int) $this->context->language->id, true);
-        foreach ($employees as $employee) {
-            $choices[] = [
-                'id_employee' => (int) $employee['id_employee'],
-                'name' => trim($employee['firstname'] . ' ' . $employee['lastname']),
-            ];
-        }
-
-        return $choices;
     }
 
     protected function handleImageUpload()

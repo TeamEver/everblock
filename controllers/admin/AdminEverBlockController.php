@@ -276,7 +276,7 @@ class AdminEverBlockController extends ModuleAdminController
                 $updated = $db->execute(
                     'UPDATE `' . _DB_PREFIX_ . 'everblock`
                     SET `active` = (1 - `active`)
-                    WHERE `' . $this->identifier . '` = ' . (int) $idObj
+                    WHERE `' . $this->identifier . '` = ' . (int) $idObj .' LIMIT 1'
                 );
             }
             if (isset($updated) && $updated) {

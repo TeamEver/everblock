@@ -24,13 +24,6 @@
   {/if}
 {/capture}
 {assign var='prettyblock_social_links_wrapper_style' value=$smarty.capture.prettyblock_social_links_wrapper_style|trim}
-{assign var='prettyblock_social_links_alignment' value=$block.settings.alignment|default:'left'}
-{assign var='prettyblock_social_links_alignment_class' value='everblock-social-links--left'}
-{if $prettyblock_social_links_alignment == 'center'}
-  {assign var='prettyblock_social_links_alignment_class' value='everblock-social-links--center'}
-{elseif $prettyblock_social_links_alignment == 'right'}
-  {assign var='prettyblock_social_links_alignment_class' value='everblock-social-links--right'}
-{/if}
 
 <!-- Module Ever Block -->
 <div id="block-{$block.id_prettyblocks}" class="{if $block.settings.default.force_full_width}container-fluid px-0 mx-0{elseif $block.settings.default.container}container{/if}{$prettyblock_visibility_class}"{if $prettyblock_social_links_wrapper_style} style="{$prettyblock_social_links_wrapper_style}"{/if}>
@@ -39,7 +32,7 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-    <div class="everblock-social-links {$prettyblock_social_links_alignment_class} d-flex flex-row flex-wrap{if $prettyblock_social_links_alignment == 'Center'} justify-content-center{/if}">
+    <div class="everblock-social-links d-flex flex-row flex-wrap">
         {foreach from=$block.states item=state}
           {if isset($state.url) && $state.url}
             {assign var="icon_url" value=false}
@@ -52,10 +45,11 @@
                 {assign var="icon_url" value=$smarty.const._PS_MODULE_DIR_|cat:'everblock/views/img/svg/'|cat:$state.icon|cat:'.svg'}
               {/if}
             {/if}
-            {assign var="media_url" value=''}
-            {if (is_array($state.media) || is_object($state.media)) && isset($state.media.url) && $state.media.url}
-              {assign var="media_url" value=$state.media.url}
-            {/if}
+            {if $icon_url}
+              {assign var="svg_content" value=$icon_url|@file_get_contents}
+              {if isset($block.settings.icon_color) && $block.settings.icon_color}
+                {assign var="svg_content" value=$svg_content|regex_replace:'/fill="[^"]+"/':'fill="currentColor"'}
+              {/if}
 
               {* ✅ Chaque icône dans un wrapper séparé *}
               {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_social_link_style'}
@@ -63,24 +57,17 @@
                 {$prettyblock_social_link_style}
               {/capture}
               {assign var='prettyblock_social_link_style_attr' value=$smarty.capture.prettyblock_social_link_style_attr|trim}
-              <span class="everblock-social-link{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}"{if $prettyblock_social_link_style_attr} style="{$prettyblock_social_link_style_attr}"{/if}>
+              <span class="everblock-social-link"{if $prettyblock_social_link_style_attr} style="{$prettyblock_social_link_style_attr}"{/if}>
                 <a href="{$state.url|escape:'htmlall'}"
-                   class="obfme{if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect} everblock-link-hover--block{/if}"
+                   class="{if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect}everblock-link-hover--block{/if}"
                    title="{$state.url|escape:'htmlall'}"
                    target="_blank"
                    style="{if isset($block.settings.icon_color) && $block.settings.icon_color}color:{$block.settings.icon_color|escape:'htmlall'};{/if}">
-                  {if $media_url}
-                    <img src="{$media_url|escape:'htmlall':'UTF-8'}" alt="{$state.url|escape:'htmlall':'UTF-8'}" loading="lazy">
-                  {elseif $icon_url}
-                    {assign var="svg_content" value=$icon_url|@file_get_contents}
-                    {if isset($block.settings.icon_color) && $block.settings.icon_color}
-                      {assign var="svg_content" value=$svg_content|regex_replace:'/fill="[^"]+"/':'fill="currentColor"'}
-                    {/if}
-                    {$svg_content nofilter}
-                  {/if}
+                  {$svg_content nofilter}
                 </a>
               </span>
 
+            {/if}
           {/if}
         {/foreach}
       </div>

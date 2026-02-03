@@ -75,28 +75,6 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockTools extends ObjectModel
 {
-    public static function isPrettyblocksAvailable(?Context $context = null, bool $assignSmarty = true): bool
-    {
-        static $isAvailable = null;
-
-        if ($isAvailable === null) {
-            $isAvailable = (bool) Module::isInstalled('prettyblocks') === true
-                && (bool) Module::isEnabled('prettyblocks') === true
-                && (bool) static::moduleDirectoryExists('prettyblocks') === true;
-        }
-
-        if ($assignSmarty) {
-            $context = $context ?: Context::getContext();
-            if ($context && isset($context->smarty)) {
-                $context->smarty->assign([
-                    'everblock_prettyblocks_available' => $isAvailable,
-                ]);
-            }
-        }
-
-        return $isAvailable;
-    }
-
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
         Hook::exec('displayBeforeRenderingShortcodes', ['html' => &$txt]);
@@ -104,12 +82,7 @@ class EverblockTools extends ObjectModel
             'front',
             'modulefront',
         ];
-        if (static::textHasPotentialShortcode($txt) && static::hasCustomShortcodes($context)) {
-            $shortcodeCandidates = static::extractShortcodeCandidates($txt);
-            if (!empty($shortcodeCandidates)) {
-                $txt = static::getEverShortcodes($txt, $context, $shortcodeCandidates);
-            }
-        }
+        $txt = static::getEverShortcodes($txt, $context);
         $shortcodeHandlers = [
             '[alert' => 'getAlertShortcode',
             '[everfaq_product' => ['method' => 'getProductFaqShortcodes', 'args' => ['context', 'module']],
@@ -186,60 +159,6 @@ class EverblockTools extends ObjectModel
         $txt = static::renderSmartyVars($txt, $context);
         Hook::exec('displayAfterRenderingShortcodes', ['html' => &$txt]);
         return $txt;
-    }
-
-    protected static function textHasPotentialShortcode(string $txt): bool
-    {
-        if (strpos($txt, '[') === false) {
-            return false;
-        }
-
-        return (bool) preg_match('/\[[^\[\]]+]/', $txt);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected static function extractShortcodeCandidates(string $txt): array
-    {
-        $candidates = [];
-        preg_match_all('/\[[^\[\]]+]/', $txt, $matches);
-        foreach ($matches[0] as $match) {
-            $token = trim($match);
-            if ($token === '') {
-                continue;
-            }
-            $candidates[] = $token;
-            if (preg_match('/^\[([^\s\]]+)/', $token, $tokenMatch)) {
-                $candidates[] = '[' . $tokenMatch[1] . ']';
-            }
-        }
-
-        return array_values(array_unique($candidates));
-    }
-
-    protected static function hasCustomShortcodes(Context $context): bool
-    {
-        $cacheId = 'EverblockTools_has_shortcodes_' . (int) $context->shop->id . '_' . (int) $context->language->id;
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return (bool) EverblockCache::cacheRetrieve($cacheId);
-        }
-
-        $sql = new DbQuery();
-        $sql->select('1');
-        $sql->from('everblock_shortcode', 'es');
-        $sql->innerJoin(
-            'everblock_shortcode_lang',
-            'esl',
-            'esl.id_everblock_shortcode = es.id_everblock_shortcode'
-            . ' AND esl.id_lang = ' . (int) $context->language->id
-        );
-        $sql->where('es.id_shop = ' . (int) $context->shop->id);
-        $sql->limit(1);
-        $hasShortcodes = (bool) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
-        EverblockCache::cacheStore($cacheId, $hasShortcodes);
-
-        return $hasShortcodes;
     }
 
     /**
@@ -558,6 +477,8 @@ class EverblockTools extends ObjectModel
                     'id_shop_group' => $idShopGroup,
                     'id_lang' => $idLang,
                     'threshold' => $threshold,
+                    'offset' => $offset,
+                    'limit' => $limit,
                 ];
 
                 $visPlaceholders = [];
@@ -654,7 +575,7 @@ class EverblockTools extends ObjectModel
                     $sql .= ' ORDER BY ' . $fieldMap[$order] . ' ' . strtoupper($way);
                 }
 
-                $sql .= ' LIMIT ' . (int) $offset . ', ' . (int) $limit;
+                $sql .= ' LIMIT :offset, :limit';
 
                 $rows = $db->executeS($sql, $params);
 
@@ -1926,81 +1847,52 @@ class EverblockTools extends ObjectModel
             return [];
         }
 
-        $idLang = (int) Context::getContext()->language->id;
         $cacheId = 'everblock_getProductsByCategoryId_'
-            . $categoryId . '_' . $idLang . '_' . $limit . '_' . $orderBy . '_' . $orderWay . '_' . (int) $includeSubcategories;
+            . $categoryId . '_' . $limit . '_' . $orderBy . '_' . $orderWay . '_' . (int) $includeSubcategories;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $context = Context::getContext();
+            $idLang = (int) Context::getContext()->language->id;
             $categoryIds = [$categoryId];
 
             if ($includeSubcategories) {
-                $treeQuery = new DbQuery();
-                $treeQuery->select('c_desc.id_category');
-                $treeQuery->from('category', 'c');
-                $treeQuery->innerJoin(
-                    'category',
-                    'c_desc',
-                    'c_desc.nleft >= c.nleft AND c_desc.nright <= c.nright'
-                );
-                $treeQuery->where('c.id_category = ' . (int) $categoryId);
-                $treeQuery->where('c_desc.active = 1 OR c_desc.id_category = ' . (int) $categoryId);
-                $treeResult = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($treeQuery);
-                if (!empty($treeResult)) {
-                    $categoryIds = array_values(array_unique(array_map('intval', array_column($treeResult, 'id_category'))));
+                $toProcess = [$categoryId];
+                while (!empty($toProcess)) {
+                    $current = array_pop($toProcess);
+                    $children = Category::getChildren($current, $idLang);
+                    foreach ($children as $child) {
+                        $childId = (int) $child['id_category'];
+                        if (!in_array($childId, $categoryIds)) {
+                            $categoryIds[] = $childId;
+                            $toProcess[] = $childId;
+                        }
+                    }
                 }
             }
 
-            if (empty($categoryIds)) {
-                EverblockCache::cacheStore($cacheId, []);
-                return [];
-            }
-
-            $allowedOrderBy = ['id_product', 'price', 'name', 'date_add', 'position'];
-            $allowedOrderWay = ['ASC', 'DESC'];
-            if (!in_array($orderBy, $allowedOrderBy, true)) {
-                $orderBy = 'id_product';
-            }
-            if (!in_array($orderWay, $allowedOrderWay, true)) {
-                $orderWay = 'ASC';
-            }
-
-            $orderByMap = [
-                'id_product' => 'p.id_product',
-                'price' => 'p.price',
-                'name' => 'pl.name',
-                'date_add' => 'p.date_add',
-                'position' => 'position',
-            ];
-            $orderColumn = $orderByMap[$orderBy] ?? 'p.id_product';
-
-            $productQuery = new DbQuery();
-            $productQuery->select('p.id_product, MIN(cp.position) AS position');
-            $productQuery->from('category_product', 'cp');
-            $productQuery->innerJoin('product', 'p', 'p.id_product = cp.id_product');
-            $productQuery->innerJoin(
-                'product_lang',
-                'pl',
-                'pl.id_product = p.id_product'
-                . ' AND pl.id_lang = ' . (int) $idLang
-                . ' AND pl.id_shop = ' . (int) $context->shop->id
-            );
-            $productQuery->where('p.active = 1');
-            $productQuery->where('cp.id_category IN (' . implode(', ', array_map('intval', $categoryIds)) . ')');
-            $productQuery->groupBy('p.id_product');
-            $productQuery->orderBy($orderColumn . ' ' . pSQL($orderWay));
-            $productQuery->limit($limit);
-
-            $rawProducts = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($productQuery);
             $products = [];
-            $seen = [];
-            foreach ($rawProducts as $product) {
-                $pid = (int) ($product['id_product'] ?? 0);
-                if ($pid <= 0 || isset($seen[$pid])) {
+            $ids = [];
+            foreach ($categoryIds as $cid) {
+                $category = new Category($cid);
+                if (!Validate::isLoadedObject($category)) {
                     continue;
                 }
-                $products[] = $product;
-                $seen[$pid] = true;
+                $catProducts = $category->getProducts(
+                    $idLang,
+                    1,
+                    $limit,
+                    $orderBy,
+                    $orderWay
+                );
+                foreach ($catProducts as $product) {
+                    $pid = (int) $product['id_product'];
+                    if (!in_array($pid, $ids)) {
+                        $products[] = $product;
+                        $ids[] = $pid;
+                    }
+                    if (count($products) >= $limit) {
+                        break 2;
+                    }
+                }
             }
 
             EverblockCache::cacheStore($cacheId, $products);
@@ -2190,21 +2082,11 @@ class EverblockTools extends ObjectModel
     protected static function getBestSellingProductIds(int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
     {
         $context = Context::getContext();
-        $orderBy = strtolower($orderBy);
-        $allowedOrderBy = [
-            'total_quantity' => 'total_quantity',
-            'product_id' => 'od.product_id',
-        ];
-        $orderColumn = $allowedOrderBy[$orderBy] ?? 'total_quantity';
-        $orderWay = strtoupper($orderWay);
-        if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
-            $orderWay = 'DESC';
-        }
         $cacheId = 'everblock_bestSellingProductIds_'
             . (int) $context->shop->id . '_'
             . $limit . '_'
             . ($days ?? 'all') . '_'
-            . $orderColumn . '_'
+            . $orderBy . '_'
             . $orderWay;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
@@ -2220,7 +2102,7 @@ class EverblockTools extends ObjectModel
             }
 
             $sql .= ' GROUP BY od.product_id'
-                . ' ORDER BY ' . pSQL($orderColumn) . ' ' . pSQL($orderWay)
+                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -2234,99 +2116,58 @@ class EverblockTools extends ObjectModel
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
-    protected static function getBestSellingProductIdsByCategory(
-        int $categoryId,
-        int $limit,
-        string $orderBy = 'total_quantity',
-        string $orderWay = 'DESC',
-        ?int $days = null
-    ): array {
+    protected static function getBestSellingProductIdsByCategory(int $categoryId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
+    {
         $context = Context::getContext();
-        $shopId = (int) $context->shop->id;
-
-        // Sécurisation orderBy / orderWay (important)
-        $allowedOrderBy = ['total_quantity'];
-        $allowedOrderWay = ['ASC', 'DESC'];
-
-        if (!in_array($orderBy, $allowedOrderBy, true)) {
-            $orderBy = 'total_quantity';
-        }
-        if (!in_array(strtoupper($orderWay), $allowedOrderWay, true)) {
-            $orderWay = 'DESC';
-        }
-
         $cacheId = 'everblock_bestSellingProductIds_category_'
-            . $shopId . '_'
-            . (int) $categoryId . '_'
-            . (int) $limit . '_'
+            . (int) $context->shop->id . '_'
+            . $categoryId . '_'
+            . $limit . '_'
             . ($days ?? 'all') . '_'
             . $orderBy . '_'
             . $orderWay;
 
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return EverblockCache::cacheRetrieve($cacheId);
+        if (!EverblockCache::isCacheStored($cacheId)) {
+            $shopId = (int) $context->shop->id;
+            $sql = 'SELECT od.product_id, SUM(od.product_quantity) AS total_quantity'
+                . ' FROM ' . _DB_PREFIX_ . 'order_detail od'
+                . ' JOIN ' . _DB_PREFIX_ . 'orders o ON od.id_order = o.id_order'
+                . ' JOIN ' . _DB_PREFIX_ . 'product_shop ps ON od.product_id = ps.id_product'
+                . ' JOIN ' . _DB_PREFIX_ . 'category_product cp ON od.product_id = cp.id_product'
+                . ' WHERE ps.active = 1'
+                . ' AND ps.id_shop = ' . $shopId
+                . ' AND o.id_shop = ' . $shopId
+                . ' AND cp.id_category = ' . (int) $categoryId;
+
+            if ($days !== null) {
+                $dateFrom = date('Y-m-d H:i:s', strtotime("-$days days"));
+                $sql .= ' AND o.date_add >= "' . pSQL($dateFrom) . '"';
+            }
+
+            $sql .= ' GROUP BY od.product_id'
+                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
+                . ' LIMIT ' . (int) $limit;
+
+            $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+            $ids = array_map(function ($row) {
+                return (int) $row['product_id'];
+            }, $rows);
+            EverblockCache::cacheStore($cacheId, $ids);
+            return $ids;
         }
 
-        $sql = '
-            SELECT od.product_id, SUM(od.product_quantity) AS total_quantity
-            FROM ' . _DB_PREFIX_ . 'orders o
-            INNER JOIN ' . _DB_PREFIX_ . 'order_detail od
-                ON o.id_order = od.id_order
-            INNER JOIN (
-                SELECT ps.id_product
-                FROM ' . _DB_PREFIX_ . 'product_shop ps
-                INNER JOIN ' . _DB_PREFIX_ . 'category_product cp
-                    ON cp.id_product = ps.id_product
-                WHERE ps.id_shop = ' . $shopId . '
-                  AND ps.active = 1
-                  AND cp.id_category = ' . (int) $categoryId . '
-            ) filtered_products
-                ON filtered_products.id_product = od.product_id
-            WHERE o.id_shop = ' . $shopId . '
-              AND o.valid = 1';
-
-        if ($days !== null) {
-            $dateFrom = date('Y-m-d H:i:s', strtotime('-' . (int) $days . ' days'));
-            $sql .= ' AND o.date_add >= "' . pSQL($dateFrom) . '"';
-        }
-
-        $sql .= '
-            GROUP BY od.product_id
-            ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay) . '
-            LIMIT ' . (int) $limit;
-
-        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-
-        $ids = [];
-        foreach ($rows as $row) {
-            $ids[] = (int) $row['product_id'];
-        }
-
-        // Cache long (best-seller ≠ temps réel)
-        EverblockCache::cacheStore($cacheId, $ids, 86400); // 24h
-
-        return $ids;
+        return EverblockCache::cacheRetrieve($cacheId);
     }
 
     protected static function getBestSellingProductIdsByBrand(int $brandId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
     {
         $context = Context::getContext();
-        $orderBy = strtolower($orderBy);
-        $allowedOrderBy = [
-            'total_quantity' => 'total_quantity',
-            'product_id' => 'od.product_id',
-        ];
-        $orderColumn = $allowedOrderBy[$orderBy] ?? 'total_quantity';
-        $orderWay = strtoupper($orderWay);
-        if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
-            $orderWay = 'DESC';
-        }
         $cacheId = 'everblock_bestSellingProductIds_brand_'
             . (int) $context->shop->id . '_'
             . $brandId . '_'
             . $limit . '_'
             . ($days ?? 'all') . '_'
-            . $orderColumn . '_'
+            . $orderBy . '_'
             . $orderWay;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
@@ -2347,7 +2188,7 @@ class EverblockTools extends ObjectModel
             }
 
             $sql .= ' GROUP BY od.product_id'
-                . ' ORDER BY ' . pSQL($orderColumn) . ' ' . pSQL($orderWay)
+                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -2364,22 +2205,12 @@ class EverblockTools extends ObjectModel
     protected static function getBestSellingProductIdsByFeature(int $featureId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
     {
         $context = Context::getContext();
-        $orderBy = strtolower($orderBy);
-        $allowedOrderBy = [
-            'total_quantity' => 'total_quantity',
-            'product_id' => 'od.product_id',
-        ];
-        $orderColumn = $allowedOrderBy[$orderBy] ?? 'total_quantity';
-        $orderWay = strtoupper($orderWay);
-        if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
-            $orderWay = 'DESC';
-        }
         $cacheId = 'everblock_bestSellingProductIds_feature_'
             . (int) $context->shop->id . '_'
             . $featureId . '_'
             . $limit . '_'
             . ($days ?? 'all') . '_'
-            . $orderColumn . '_'
+            . $orderBy . '_'
             . $orderWay;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
@@ -2400,7 +2231,7 @@ class EverblockTools extends ObjectModel
             }
 
             $sql .= ' GROUP BY od.product_id'
-                . ' ORDER BY ' . pSQL($orderColumn) . ' ' . pSQL($orderWay)
+                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -2417,22 +2248,12 @@ class EverblockTools extends ObjectModel
     protected static function getBestSellingProductIdsByFeatureValue(int $featureValueId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
     {
         $context = Context::getContext();
-        $orderBy = strtolower($orderBy);
-        $allowedOrderBy = [
-            'total_quantity' => 'total_quantity',
-            'product_id' => 'od.product_id',
-        ];
-        $orderColumn = $allowedOrderBy[$orderBy] ?? 'total_quantity';
-        $orderWay = strtoupper($orderWay);
-        if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
-            $orderWay = 'DESC';
-        }
         $cacheId = 'everblock_bestSellingProductIds_feature_value_'
             . (int) $context->shop->id . '_'
             . $featureValueId . '_'
             . $limit . '_'
             . ($days ?? 'all') . '_'
-            . $orderColumn . '_'
+            . $orderBy . '_'
             . $orderWay;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
@@ -2453,7 +2274,7 @@ class EverblockTools extends ObjectModel
             }
 
             $sql .= ' GROUP BY od.product_id'
-                . ' ORDER BY ' . pSQL($orderColumn) . ' ' . pSQL($orderWay)
+                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -2494,15 +2315,21 @@ class EverblockTools extends ObjectModel
             && (bool) static::moduleDirectoryExists('prettyblocks') === true
         ) {
             try {
+                // Définir le chemin vers le template
+                $templatePath = static::getTemplatePath('hook/prettyblocks.tpl', $module);
                 // Regex pour trouver les shortcodes de type [prettyblocks name="mon_nom"]
                 $pattern = '/\[prettyblocks name="([^"]+)"\]/';
 
                 // Fonction de remplacement pour traiter chaque shortcode trouvé
-                $replacementFunction = function ($matches) use ($context, $module) {
+                $replacementFunction = function ($matches) use ($context, $templatePath) {
                     $zoneName = $matches[1];
 
                     try {
-                        return EverblockPrettyBlocks::renderZoneWithCache($zoneName, $context, $module);
+                        // Assigner le nom de la zone à Smarty
+                        $context->smarty->assign('zone_name', $zoneName);
+
+                        // Récupérer le rendu du template avec Smarty
+                        return $context->smarty->fetch($templatePath);
                     } catch (\Throwable $e) {
                         PrestaShopLogger::addLog(
                             sprintf('Prettyblocks shortcode rendering failed for zone "%s": %s', $zoneName, $e->getMessage()),
@@ -2779,22 +2606,14 @@ class EverblockTools extends ObjectModel
             $orderBy = isset($match[4]) ? strtolower($match[4]) : '';
             $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'ASC';
 
-            $allowedOrderBy = ['id_product', 'price', 'date_add', 'rand'];
-            if (!in_array($orderBy, $allowedOrderBy, true)) {
-                $orderBy = '';
-            }
-            if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
-                $orderWay = 'ASC';
-            }
-
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
                     ';
-            if ($orderBy === 'rand' || $orderBy === '') {
-                $sql .= 'ORDER BY RAND()';
-            } else {
+            if ($orderBy) {
                 $sql .= 'ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay);
+            } else {
+                $sql .= 'ORDER BY RAND()';
             }
             $sql .= ' LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -2843,19 +2662,11 @@ class EverblockTools extends ObjectModel
             $orderBy = isset($match[5]) ? strtolower($match[5]) : 'date_add';
             $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
-            $allowedOrderBy = ['id_product', 'price', 'date_add', 'rand'];
-            if (!in_array($orderBy, $allowedOrderBy, true)) {
-                $orderBy = 'date_add';
-            }
-            if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
-                $orderWay = 'DESC';
-            }
-
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
                     AND p.active = 1
-                    ORDER BY ' . ($orderBy === 'rand' ? 'RAND()' : 'p.' . pSQL($orderBy) . ' ' . pSQL($orderWay)) . '
+                    ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay) . '
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
@@ -2938,20 +2749,12 @@ class EverblockTools extends ObjectModel
             $orderBy = isset($match[5]) ? strtolower($match[5]) : 'date_add';
             $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
-            $allowedOrderBy = ['id_product', 'price', 'date_add', 'rand'];
-            if (!in_array($orderBy, $allowedOrderBy, true)) {
-                $orderBy = 'date_add';
-            }
-            if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
-                $orderWay = 'DESC';
-            }
-
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
                     AND p.active = 1
                     AND p.on_sale = 1
-                    ORDER BY ' . ($orderBy === 'rand' ? 'RAND()' : 'p.' . pSQL($orderBy) . ' ' . pSQL($orderWay)) . '
+                    ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay) . '
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
@@ -4726,20 +4529,13 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * @param array<int, string> $shortcodeCandidates
-     */
-    public static function getEverShortcodes(string $txt, Context $context, array $shortcodeCandidates = []): string
+    public static function getEverShortcodes(string $txt, Context $context): string
     {
-        if (empty($shortcodeCandidates)) {
-            return $txt;
-        }
-
-        $customShortcodes = EverblockShortcode::getShortcodesByList(
-            $shortcodeCandidates,
+        $customShortcodes = EverblockShortcode::getAllShortcodes(
             $context->shop->id,
             $context->language->id
         );
+        $returnedShortcodes = [];
         foreach ($customShortcodes as $sc) {
             $content = $sc->content ?? '';
             $txt = str_replace($sc->shortcode, (string) $content, $txt);
@@ -4788,7 +4584,6 @@ class EverblockTools extends ObjectModel
     public static function checkAndFixDatabase()
     {
         $db = Db::getInstance(_PS_USE_SQL_SLAVE_);
-        $dbMaster = Db::getInstance();
         $tableNames = [
             _DB_PREFIX_ . 'everblock',
             _DB_PREFIX_ . 'everblock_lang',
@@ -5021,15 +4816,9 @@ class EverblockTools extends ObjectModel
             $columnsToAdd,
             'Unable to update Ever Block game play database'
         );
-        $pageTable = _DB_PREFIX_ . 'everblock_page';
-        $columnExists = $dbMaster->executeS('SHOW COLUMNS FROM `' . $pageTable . '` LIKE "id_employee"');
-        if (!$columnExists) {
-            $dbMaster->execute('ALTER TABLE `' . $pageTable . '` ADD `id_employee` int(10) unsigned DEFAULT NULL AFTER `id_shop`');
-        }
         // Ajoute les colonnes manquantes à la table everblock_page
         $columnsToAdd = [
             'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
-            'id_employee' => 'int(10) unsigned DEFAULT NULL',
             'groups' => 'text DEFAULT NULL',
             'cover_image' => 'varchar(255) DEFAULT NULL',
             'active' => 'int(10) unsigned NOT NULL DEFAULT 1',
@@ -5084,26 +4873,6 @@ class EverblockTools extends ObjectModel
     public static function everPresentProducts(array $result, Context $context): array
     {
         $products = [];
-        $cacheEnabled = (bool) EverblockCache::getModuleConfiguration('EVERBLOCK_EVER_PRESENT_CACHE');
-        $cacheKey = '';
-
-        if ($cacheEnabled) {
-            $productIds = array_values(array_map('intval', $result));
-            $cacheContext = [
-                'products' => $productIds,
-                'lang' => (int) $context->language->id,
-                'shop' => (int) $context->shop->id,
-                'currency' => isset($context->currency) ? (int) $context->currency->id : 0,
-                'customer' => isset($context->customer) ? (int) $context->customer->id : 0,
-                'customer_group' => isset($context->customer) ? (int) $context->customer->id_default_group : 0,
-                'country' => isset($context->country) ? (int) $context->country->id : 0,
-            ];
-            $cacheKey = 'everblock_everPresentProducts_' . md5(json_encode($cacheContext));
-            if (EverblockCache::isCacheStored($cacheKey)) {
-                $cachedProducts = EverblockCache::cacheRetrieve($cacheKey);
-                return is_array($cachedProducts) ? $cachedProducts : [];
-            }
-        }
 
         if (!empty($result)) {
             $assembler = new \ProductAssembler($context);
@@ -5158,10 +4927,6 @@ class EverblockTools extends ObjectModel
                     );
                 }
             }
-        }
-
-        if ($cacheEnabled && $cacheKey !== '') {
-            EverblockCache::cacheStore($cacheKey, $products);
         }
 
         return $products;
@@ -5735,21 +5500,6 @@ class EverblockTools extends ObjectModel
                         }
                     }
 
-                    $width = 0;
-                    $height = 0;
-                    if (is_file($filePath)) {
-                        $imageSize = @getimagesize($filePath);
-                        if ($imageSize) {
-                            $width = (int) $imageSize[0];
-                            $height = (int) $imageSize[1];
-                        }
-                    }
-
-                    if ($width <= 0 || $height <= 0) {
-                        $width = 320;
-                        $height = 320;
-                    }
-
                     $imgs[] = [
                         'id' => isset($post['id']) ? $post['id'] : $post['id'],
                         'permalink' => isset($post['permalink']) ? $post['permalink'] : '',
@@ -5758,8 +5508,6 @@ class EverblockTools extends ObjectModel
                         'standard_resolution' => $webPath,
                         'caption' => isset($post['caption']) ? $post['caption'] : '',
                         'is_video' => strpos($mediaUrl, '.mp4') !== false,
-                        'width' => $width,
-                        'height' => $height,
                     ];
                 }
             }
@@ -6281,10 +6029,7 @@ class EverblockTools extends ObjectModel
 
         $filenameBase = pathinfo($path, PATHINFO_FILENAME);
         if (!$filenameBase) {
-            $filenameBase = method_exists('Tools', 'str2url')
-                ? Tools::str2url($title)
-                : Tools::link_rewrite($title);
-            $filenameBase = $filenameBase ?: 'image';
+            $filenameBase = Tools::link_rewrite($title) ?: 'image';
         }
         $filenameBase = self::sanitizeFileName($filenameBase);
         if ($filenameBase === '') {
@@ -6335,9 +6080,7 @@ class EverblockTools extends ObjectModel
 
     private static function sanitizeFileName(string $fileName): string
     {
-        $normalized = method_exists('Tools', 'str2url')
-            ? Tools::str2url($fileName)
-            : Tools::link_rewrite($fileName);
+        $normalized = Tools::link_rewrite($fileName);
         $normalized = preg_replace('/[^a-z0-9\-]+/i', '-', (string) $normalized);
         $normalized = preg_replace('/-+/', '-', (string) $normalized);
 

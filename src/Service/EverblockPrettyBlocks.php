@@ -39,7 +39,6 @@ if (!defined('_PS_VERSION_')) {
 class EverblockPrettyBlocks
 {
     private const MEDIA_PATH = '$/img/cms/prettyblocks/';
-    private const RENDER_CACHE_PREFIX = 'EverblockPrettyBlocks_render_';
     private const BEFORE_RENDERING_HOOKS = [
         'beforeRenderingEverblockEverblock',
         'beforeRenderingEverblockCategoryTabs',
@@ -58,48 +57,6 @@ class EverblockPrettyBlocks
     public function registerBlockToZone($zone_name, $code, $id_lang, $id_shop)
     {
         return PrettyBlocksModel::registerBlockToZone($zone_name, $code, $id_lang, $id_shop);
-    }
-
-    public static function renderZoneWithCache(string $zoneName, Context $context, Module $module): string
-    {
-        if ($zoneName === '') {
-            return '';
-        }
-
-        $shopId = (int) $context->shop->id;
-        $langId = (int) $context->language->id;
-        $customerGroupId = 0;
-        if (isset($context->customer) && isset($context->customer->id_default_group)) {
-            $customerGroupId = (int) $context->customer->id_default_group;
-        }
-        if ($customerGroupId <= 0) {
-            $currentGroup = Group::getCurrent();
-            $customerGroupId = $currentGroup ? (int) $currentGroup->id : 0;
-        }
-
-        $safeZone = preg_replace('/[^A-Za-z0-9_-]/', '_', $zoneName);
-        $cacheId = self::RENDER_CACHE_PREFIX
-            . $safeZone . '_'
-            . $shopId . '_'
-            . $langId . '_'
-            . $customerGroupId;
-
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return (string) EverblockCache::cacheRetrieve($cacheId);
-        }
-
-        $templatePath = EverblockTools::getTemplatePath('hook/prettyblocks.tpl', $module);
-        $context->smarty->assign('zone_name', $zoneName);
-        $html = (string) $context->smarty->fetch($templatePath);
-
-        EverblockCache::cacheStore($cacheId, $html);
-
-        return $html;
-    }
-
-    public static function clearRenderCache(): void
-    {
-        EverblockCache::cacheDropByPattern(self::RENDER_CACHE_PREFIX);
     }
 
     public static function ensureBeforeRenderingHooksRegistered(Module $module): void
@@ -204,10 +161,6 @@ class EverblockPrettyBlocks
         . (int) $context->language->id
         . '_'
         . (int) $context->shop->id;
-        $shopName = (string) Configuration::get('PS_SHOP_NAME');
-        if ($shopName === '' && isset($context->shop->name)) {
-            $shopName = (string) $context->shop->name;
-        }
         $module = Module::getInstanceByName('everblock');
         if (!EverblockCache::isCacheStored($cacheId)) {
             $defaultTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_' . $module->name . '.tpl';
@@ -222,16 +175,13 @@ class EverblockPrettyBlocks
             $scrollVideoTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_scroll_video.tpl';
             $loginTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_login.tpl';
             $contactTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_contact.tpl';
-            $newsletterTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_newsletter.tpl';
             $shoppingCartTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_shopping_cart.tpl';
             $accordeonTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_accordeon.tpl';
             $faqTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_faq.tpl';
-            $faqSelectionTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_faq_selection.tpl';
             $textAndImageTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_text_and_image.tpl';
             $layoutTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_layout.tpl';
             $featuredCategoryTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_highlight.tpl';
             $imgSliderTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_img_slider.tpl';
-            $heroeCarouselTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_heroe_carousel.tpl';
             $tabTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_tab.tpl';
             $categoryTabsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_category_tabs.tpl';
             $dividerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_divider.tpl';
@@ -248,7 +198,6 @@ class EverblockPrettyBlocks
             $ctaTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_cta.tpl';
             $googleReviewsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_google_reviews.tpl';
             $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
-            $llmLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_llm_links.tpl';
             $linkListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_link_list.tpl';
             $downloadsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_downloads.tpl';
             $socialLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_social_links.tpl';
@@ -395,171 +344,6 @@ class EverblockPrettyBlocks
                 ],
             ];
             $blocks[] = [
-                'name' => $module->l('Newsletter subscription'),
-                'description' => $module->l('Add a native newsletter subscription form'),
-                'code' => 'everblock_newsletter',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $newsletterTemplate,
-                ],
-                'config' => [
-                    'fields' => static::appendSpacingFields([
-                        'title' => [
-                            'type' => 'text',
-                            'label' => $module->l('Title'),
-                            'default' => $module->l('Stay connected'),
-                        ],
-                        'subtitle' => [
-                            'type' => 'text',
-                            'label' => $module->l('Subtitle'),
-                            'default' => $module->l('Subscribe to receive the latest news and offers.'),
-                        ],
-                        'placeholder' => [
-                            'type' => 'text',
-                            'label' => $module->l('Email placeholder'),
-                            'default' => $module->l('Your email'),
-                        ],
-                        'button_label' => [
-                            'type' => 'text',
-                            'label' => $module->l('Button label'),
-                            'default' => $module->l('OK'),
-                        ],
-                        'legal_text' => [
-                            'type' => 'textarea',
-                            'label' => $module->l('Legal text'),
-                            'default' => $module->l('You can unsubscribe at any time.'),
-                        ],
-                        'block_hook_name' => [
-                            'type' => 'select',
-                            'label' => $module->l('Hook name'),
-                            'choices' => $prettyBlocksHooks,
-                            'default' => 'displayFooterBefore',
-                        ],
-                        'background_gradient' => [
-                            'tab' => 'design',
-                            'type' => 'text',
-                            'label' => $module->l('Background gradient'),
-                            'default' => 'linear-gradient(135deg, #1c1f2b 0%, #0f1118 100%)',
-                        ],
-                        'text_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Text color'),
-                            'default' => '#ffffff',
-                        ],
-                        'subtitle_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Subtitle color'),
-                            'default' => '#cbd1e4',
-                        ],
-                        'legal_text_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Legal text color'),
-                            'default' => '#cbd1e4',
-                        ],
-                        'message_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Message color'),
-                            'default' => '#e0e4f2',
-                        ],
-                        'message_success_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Success message color'),
-                            'default' => '#7ee081',
-                        ],
-                        'message_error_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Error message color'),
-                            'default' => '#ff8c8c',
-                        ],
-                        'input_background_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Input background color'),
-                            'default' => '#ffffff',
-                        ],
-                        'input_border_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Input border color'),
-                            'default' => '#ffffff',
-                        ],
-                        'input_text_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Input text color'),
-                            'default' => '#1c1f2b',
-                        ],
-                        'input_placeholder_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Input placeholder color'),
-                            'default' => '#6b7280',
-                        ],
-                        'input_focus_background_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Input focus background color'),
-                            'default' => '#ffffff',
-                        ],
-                        'input_focus_border_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Input focus border color'),
-                            'default' => '#ffffff',
-                        ],
-                        'input_focus_shadow_color' => [
-                            'tab' => 'design',
-                            'type' => 'text',
-                            'label' => $module->l('Input focus shadow color'),
-                            'default' => 'rgba(0, 0, 0, 0.12)',
-                        ],
-                        'button_background_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Button background color'),
-                            'default' => '#ffffff',
-                        ],
-                        'button_text_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Button text color'),
-                            'default' => '#1d4ed8',
-                        ],
-                        'button_border_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Button border color'),
-                            'default' => '#1d4ed8',
-                        ],
-                        'button_hover_background_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Button hover background color'),
-                            'default' => '#eff6ff',
-                        ],
-                        'button_hover_text_color' => [
-                            'tab' => 'design',
-                            'type' => 'color',
-                            'label' => $module->l('Button hover text color'),
-                            'default' => '#1d4ed8',
-                        ],
-                        'css_class' => [
-                            'type' => 'text',
-                            'label' => $module->l('Custom CSS class'),
-                            'default' => '',
-                        ],
-                    ], $module),
-                ],
-            ];
-            $blocks[] = [
                 'name' => $module->l('Divider'),
                 'description' => $module->l('Show divider'),
                 'code' => 'everblock_divider',
@@ -646,7 +430,7 @@ class EverblockPrettyBlocks
                                 'center' => $module->l('Center'),
                                 'right' => $module->l('Right'),
                             ],
-                            'default' => 'center',
+                            'default' => 'left',
                         ],
                         'text_color' => [
                             'type' => 'color',
@@ -882,44 +666,6 @@ class EverblockPrettyBlocks
                             'tab' => 'design',
                             'type' => 'color',
                             'label' => $module->l('Badge text color'),
-                            'default' => '',
-                        ],
-                        'css_class' => [
-                            'type' => 'text',
-                            'label' => $module->l('Custom CSS class'),
-                            'default' => '',
-                        ],
-                    ], $module),
-                ],
-            ];
-            $blocks[] = [
-                'name' => $module->l('FAQ selection'),
-                'description' => $module->l('Display selected registered FAQs as an accordion list.'),
-                'code' => 'everblock_faq_selection',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $faqSelectionTemplate,
-                ],
-                'config' => [
-                    'fields' => static::appendSpacingFields([
-                        'title' => [
-                            'type' => 'text',
-                            'label' => $module->l('Section title'),
-                            'default' => $module->l('Frequently asked questions'),
-                        ],
-                    ], $module),
-                ],
-                'repeater' => [
-                    'name' => 'FAQ',
-                    'nameFrom' => 'faq',
-                    'groups' => static::appendSpacingFields([
-                        'faq' => [
-                            'type' => 'selector',
-                            'label' => $module->l('FAQ entry'),
-                            'collection' => 'EverblockFaq',
-                            'selector' => '{id} - {title}',
                             'default' => '',
                         ],
                         'css_class' => [
@@ -2646,71 +2392,6 @@ class EverblockPrettyBlocks
                 ],
             ];
             $blocks[] = [
-                'name' => $module->l('Heroe Carousel'),
-                'description' => $module->l('Premium hero carousel with smooth transitions'),
-                'code' => 'everblock_heroe_carousel',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $heroeCarouselTemplate,
-                ],
-                'config' => [
-                    'fields' => static::appendSpacingFields([
-                        'loop' => [
-                            'type' => 'checkbox',
-                            'label' => $module->l('Loop slides'),
-                            'default' => 1,
-                        ],
-                        'show_arrows' => [
-                            'type' => 'checkbox',
-                            'label' => $module->l('Show navigation arrows'),
-                            'default' => 1,
-                        ],
-                    ], $module),
-                ],
-                'repeater' => [
-                    'name' => 'Slide',
-                    'nameFrom' => 'title',
-                    'groups' => static::appendSpacingFields([
-                        'image' => [
-                            'type' => 'fileupload',
-                            'label' => 'Hero image',
-                            'default' => [
-                                'url' => '',
-                            ],
-                        ],
-                        'image_mobile' => [
-                            'type' => 'fileupload',
-                            'label' => 'Mobile hero image',
-                            'default' => [
-                                'url' => '',
-                            ],
-                        ],
-                        'title' => [
-                            'type' => 'text',
-                            'label' => 'Title',
-                            'default' => Configuration::get('PS_SHOP_NAME'),
-                        ],
-                        'content' => [
-                            'type' => 'textarea',
-                            'label' => 'Text',
-                            'default' => '',
-                        ],
-                        'cta_label' => [
-                            'type' => 'text',
-                            'label' => 'CTA label',
-                            'default' => '',
-                        ],
-                        'cta_link' => [
-                            'type' => 'text',
-                            'label' => 'CTA link',
-                            'default' => '',
-                        ],
-                    ], $module),
-                ],
-            ];
-            $blocks[] = [
                 'name' => $module->l('Links list'),
                 'description' => $module->l('Display a list of links'),
                 'code' => 'everblock_link_list',
@@ -2897,69 +2578,6 @@ class EverblockPrettyBlocks
                 ],
             ];
             $blocks[] = [
-                'name' => $module->l('LLM links'),
-                'description' => $module->l('Display a banner of links to AI assistants'),
-                'code' => 'everblock_llm_links',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $llmLinksTemplate,
-                ],
-                'config' => [
-                    'fields' => static::appendSpacingFields([
-                        'heading_text' => [
-                            'type' => 'text',
-                            'label' => $module->l('Heading text'),
-                            'default' => $module->l('Résumer cet article avec :'),
-                        ],
-                        'link_hover_effect' => [
-                            'type' => 'checkbox',
-                            'label' => $module->l('Enable hover effect on links'),
-                            'default' => '1',
-                        ],
-                    ], $module),
-                ],
-                'repeater' => [
-                    'name' => 'LLM link',
-                    'nameFrom' => 'label',
-                    'groups' => static::appendSpacingFields([
-                        'label' => [
-                            'type' => 'text',
-                            'label' => $module->l('Label'),
-                            'default' => $module->l('ChatGPT'),
-                        ],
-                        'base_url' => [
-                            'type' => 'text',
-                            'label' => $module->l('Base URL (ends with the prompt parameter, e.g. https://chat.openai.com/?prompt=)'),
-                            'default' => 'https://chat.openai.com/?prompt=',
-                        ],
-                        'prompt_template' => [
-                            'type' => 'textarea',
-                            'label' => $module->l('Prompt template (use {{title}} and {{url}} placeholders)'),
-                            'default' => $module->l('Résume cet article de manière concise, en listant les points clés à retenir. Titre : {{title}} — URL : {{url}}'),
-                        ],
-                        'icon' => [
-                            'type' => 'fileupload',
-                            'label' => $module->l('Icon image'),
-                            'default' => [
-                                'url' => '',
-                            ],
-                        ],
-                        'icon_alt' => [
-                            'type' => 'text',
-                            'label' => $module->l('Icon alt text'),
-                            'default' => $module->l('Open in assistant'),
-                        ],
-                        'open_in_new_tab' => [
-                            'type' => 'checkbox',
-                            'label' => $module->l('Open in a new tab'),
-                            'default' => '1',
-                        ],
-                    ], $module),
-                ],
-            ];
-            $blocks[] = [
                 'name' => $module->l('Social links'),
                 'description' => $module->l('Display custom links to social networks'),
                 'code' => 'everblock_social_links',
@@ -2971,16 +2589,6 @@ class EverblockPrettyBlocks
                 ],
                 'config' => [
                     'fields' => static::appendSpacingFields([
-                        'alignment' => [
-                            'type' => 'select',
-                            'label' => $module->l('Links alignment'),
-                            'choices' => [
-                                'left' => $module->l('Left'),
-                                'center' => $module->l('Center'),
-                                'right' => $module->l('Right'),
-                            ],
-                            'default' => 'center',
-                        ],
                         'icon_color' => [
                             'type' => 'color',
                             'label' => $module->l('Icon color'),
@@ -3002,23 +2610,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Link URL'),
                             'default' => '#',
                         ],
-                        'media' => [
-                            'type' => 'fileupload',
-                            'label' => $module->l('Media (replaces SVG icon)'),
-                            'default' => [
-                                'url' => '',
-                            ],
-                        ],
                         'icon' => [
                             'type' => 'select',
                             'label' => $module->l('Select an icon'),
                             'choices' => EverblockTools::getAvailableSvgIcons(),
                             'default' => 'facebook.svg',
-                        ],
-                        'css_class' => [
-                            'type' => 'text',
-                            'label' => $module->l('Custom CSS class'),
-                            'default' => '',
                         ],
                     ], $module),
                 ],
@@ -5029,7 +4625,6 @@ class EverblockPrettyBlocks
                 ],
             ];
             $blocks = self::addDisplaySettings($blocks, $module, $context);
-            $blocks = self::applyShopNameDefaults($blocks, $shopName);
             $blocks = self::applyFileUploadPath($blocks);
             EverblockCache::cacheStore($cacheId, $blocks);
             return $blocks;
@@ -5111,34 +4706,6 @@ class EverblockPrettyBlocks
         }
 
         return $blocks;
-    }
-
-    private static function applyShopNameDefaults(array $blocks, string $shopName): array
-    {
-        foreach ($blocks as &$block) {
-            if (is_array($block)) {
-                $block = self::setShopNameDefaultsRecursive($block, $shopName);
-            }
-        }
-
-        return $blocks;
-    }
-
-    private static function setShopNameDefaultsRecursive(array $fields, string $shopName): array
-    {
-        foreach ($fields as $key => &$field) {
-            if (!is_array($field)) {
-                continue;
-            }
-
-            if (in_array($key, ['alt', 'title'], true) && array_key_exists('type', $field)) {
-                $field['default'] = $shopName;
-            }
-
-            $field = self::setShopNameDefaultsRecursive($field, $shopName);
-        }
-
-        return $fields;
     }
 
     private static function setPathRecursive(array $fields): array

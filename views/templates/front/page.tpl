@@ -4,14 +4,9 @@
   <article class="everblock-page" itemscope itemtype="https://schema.org/Article">
     <header class="everblock-page__header">
       <h1 itemprop="headline">{$everblock_page->title|default:''}</h1>
-      {if !empty($everblock_page_image_data.url)}
+      {if $everblock_page_image}
         <figure class="everblock-page__cover">
-            <img src="{$everblock_page_image_data.url|escape:'htmlall':'UTF-8'}"
-                 alt="{$everblock_page->title|default:''|escape:'htmlall':'UTF-8'}"
-                 loading="lazy"
-                 itemprop="image"
-                 width="{$everblock_page_image_data.width|intval}"
-                 height="{$everblock_page_image_data.height|intval}">
+            <img src="{$everblock_page_image}" alt="{$everblock_page->title|default:''|escape:'htmlall':'UTF-8'}" loading="lazy" itemprop="image">
         </figure>
       {/if}
       {if $everblock_page->short_description}
@@ -29,14 +24,6 @@
     <div class="everblock-page__content rte" itemprop="articleBody">
       {$everblock_page_content nofilter}
     </div>
-    {if !empty($everblock_page_author)}
-      <footer class="everblock-page__footer mt-4">
-        <p class="everblock-page__author small text-muted mb-0" itemprop="author" itemscope itemtype="https://schema.org/Person">
-          <span class="everblock-page__author-label">{l s='Author' mod='everblock' d='Modules.Everblock.Front'}:</span>
-          <span itemprop="name">{$everblock_page_author.name|escape:'htmlall':'UTF-8'}</span>
-        </p>
-      </footer>
-    {/if}
   </article>
 
   {if $everblock_prettyblocks_enabled}

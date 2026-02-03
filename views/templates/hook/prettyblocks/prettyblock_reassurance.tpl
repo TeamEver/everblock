@@ -48,9 +48,9 @@
 {assign var='rowClass' value=''}
 {if $shouldRenderRow}
   {if $block.settings.default.force_full_width}
-    {assign var='rowClass' value='row g-10px justify-content-center'}
+    {assign var='rowClass' value='row g-10px'}
   {else}
-    {assign var='rowClass' value='row justify-content-center'}
+    {assign var='rowClass' value='row'}
   {/if}
 {/if}
 

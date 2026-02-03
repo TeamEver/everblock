@@ -23,26 +23,19 @@
   {elseif $block.settings.default.container}
     <div class="row">
   {/if}
-    <div class="prettyblock-link-list">
-      <details class="prettyblock-link-list__details" open>
-        <summary class="prettyblock-link-list__summary">
-          {if isset($block.settings.title) && $block.settings.title}
-            <span class="h2 pb-link-list-title">{$block.settings.title|escape:'htmlall'}</span>
-          {/if}
-          <span class="prettyblock-link-list__icon" aria-hidden="true"></span>
-        </summary>
-        {if isset($block.states) && $block.states}
-          <ul class="list-unstyled prettyblock-link-list__list">
-            {foreach from=$block.states item=state key=key}
-              {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
-              <li class="{if $state.css_class}{$state.css_class|escape:'htmlall'}{/if}" style="{$prettyblock_state_spacing_style}">
-                <a href="{$state.url|escape:'htmlall'}" class="text-decoration-none link-secondary{if !isset($page.page_name) || $page.page_name != 'index'} obfme{/if}{if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect} everblock-link-hover--text{/if}" title="{$state.name|escape:'htmlall'}"{if $state.target_blank} target="_blank"{/if}>{$state.name|escape:'htmlall'}</a>
-              </li>
-            {/foreach}
-          </ul>
-        {/if}
-      </details>
-    </div>
+  {if isset($block.settings.title) && $block.settings.title}
+    <span class="h2 pb-link-list-title">{$block.settings.title|escape:'htmlall'}</span>
+  {/if}
+  {if isset($block.states) && $block.states}
+    <ul class="list-unstyled">
+      {foreach from=$block.states item=state key=key}
+        {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
+        <li class="{if $state.css_class}{$state.css_class|escape:'htmlall'}{/if}" style="{$prettyblock_state_spacing_style}">
+          <a href="{$state.url|escape:'htmlall'}" class="text-decoration-none link-secondary{if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect} everblock-link-hover--text{/if}" title="{$state.name|escape:'htmlall'}"{if $state.target_blank} target="_blank"{/if}>{$state.name|escape:'htmlall'}</a>
+        </li>
+      {/foreach}
+    </ul>
+  {/if}
   {if $block.settings.default.force_full_width || $block.settings.default.container}
     </div>
   {/if}

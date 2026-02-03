@@ -19,7 +19,6 @@
  */
 
 use Everblock\Tools\Service\EverblockCache;
-use Everblock\Tools\Service\EverblockPrettyBlocks;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -29,7 +28,6 @@ class EverblockPage extends ObjectModel
 {
     public $id_everblock_page;
     public $id_shop;
-    public $id_employee;
     public $groups;
     public $active;
     public $cover_image;
@@ -54,12 +52,6 @@ class EverblockPage extends ObjectModel
                 'lang' => false,
                 'validate' => 'isUnsignedInt',
                 'required' => true,
-            ],
-            'id_employee' => [
-                'type' => self::TYPE_INT,
-                'lang' => false,
-                'validate' => 'isUnsignedInt',
-                'required' => false,
             ],
             'groups' => [
                 'type' => self::TYPE_STRING,
@@ -147,7 +139,17 @@ class EverblockPage extends ObjectModel
 
     public function getAllowedGroups(): array
     {
-        return static::decodeGroupList($this->groups);
+        if (!$this->groups) {
+            return [];
+        }
+
+        $decoded = json_decode($this->groups, true);
+
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        return array_values(array_unique(array_map('intval', $decoded)));
     }
 
     public function save($nullValues = false, $autoDate = true, $useCache = true)
@@ -158,12 +160,7 @@ class EverblockPage extends ObjectModel
         }
         $this->sanitizeLinkRewrite();
 
-        $saved = parent::save($nullValues, $autoDate, $useCache);
-        if ($saved) {
-            EverblockPrettyBlocks::clearRenderCache();
-        }
-
-        return $saved;
+        return parent::save($nullValues, $autoDate, $useCache);
     }
 
     public static function getPages(
@@ -200,16 +197,6 @@ class EverblockPage extends ObjectModel
             $sql->where('p.active = 1');
         }
 
-        $filteredIds = static::getGroupFilteredPageIds((int) $langId, (int) $shopId, $onlyActive, $allowedGroups);
-        if (is_array($filteredIds)) {
-            if (empty($filteredIds)) {
-                EverblockCache::cacheStore($cacheId, []);
-
-                return [];
-            }
-            $sql->where('p.id_everblock_page IN (' . implode(',', array_map('intval', $filteredIds)) . ')');
-        }
-
         $sql->orderBy('p.position ASC, p.date_add DESC');
 
         if ($perPage !== null && $perPage > 0) {
@@ -217,7 +204,14 @@ class EverblockPage extends ObjectModel
         }
 
         $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-        $pages = ObjectModel::hydrateCollection(self::class, $rows, (int) $langId);
+        $pages = [];
+        foreach ($rows as $row) {
+            $page = new self((int) $row[self::$definition['primary']], (int) $langId, (int) $shopId);
+            if (!static::isGroupAllowed($page, $allowedGroups)) {
+                continue;
+            }
+            $pages[] = $page;
+        }
 
         EverblockCache::cacheStore($cacheId, $pages);
 
@@ -238,7 +232,7 @@ class EverblockPage extends ObjectModel
         }
 
         $sql = new DbQuery();
-        $sql->select('COUNT(*)');
+        $sql->select('p.id_everblock_page, p.groups');
         $sql->from(self::$definition['table'], 'p');
         $sql->innerJoin(
             self::$definition['table'] . '_lang',
@@ -251,17 +245,16 @@ class EverblockPage extends ObjectModel
             $sql->where('p.active = 1');
         }
 
-        $filteredIds = static::getGroupFilteredPageIds((int) $langId, (int) $shopId, $onlyActive, $allowedGroups);
-        if (is_array($filteredIds)) {
-            if (empty($filteredIds)) {
-                EverblockCache::cacheStore($cacheId, 0);
+        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
+        $count = 0;
 
-                return 0;
+        foreach ($rows as $row) {
+            $page = new self((int) $row['id_everblock_page'], (int) $langId, (int) $shopId);
+            if (!static::isGroupAllowed($page, $allowedGroups)) {
+                continue;
             }
-            $sql->where('p.id_everblock_page IN (' . implode(',', array_map('intval', $filteredIds)) . ')');
+            ++$count;
         }
-
-        $count = (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
 
         EverblockCache::cacheStore($cacheId, $count);
 
@@ -340,71 +333,6 @@ class EverblockPage extends ObjectModel
         return !empty(array_intersect($allowed, $customerGroups));
     }
 
-    protected static function getGroupFilteredPageIds(
-        int $langId,
-        int $shopId,
-        bool $onlyActive,
-        array $allowedGroups
-    ): ?array
-    {
-        if (empty($allowedGroups)) {
-            return null;
-        }
-
-        $cacheId = 'EverblockPage_groupFilter_'
-            . (int) $langId . '_'
-            . (int) $shopId . '_'
-            . (int) $onlyActive . '_'
-            . md5(json_encode($allowedGroups));
-
-        if (EverblockCache::isCacheStored($cacheId)) {
-            return EverblockCache::cacheRetrieve($cacheId);
-        }
-
-        $sql = new DbQuery();
-        $sql->select('p.id_everblock_page, p.groups');
-        $sql->from(self::$definition['table'], 'p');
-        $sql->innerJoin(
-            self::$definition['table'] . '_lang',
-            'pl',
-            'p.id_everblock_page = pl.id_everblock_page AND pl.id_lang = ' . (int) $langId
-        );
-        $sql->where('p.id_shop = ' . (int) $shopId);
-
-        if ($onlyActive) {
-            $sql->where('p.active = 1');
-        }
-
-        $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
-        $allowedIds = [];
-
-        foreach ($rows as $row) {
-            $groups = static::decodeGroupList($row['groups'] ?? null);
-            if (empty($groups) || !empty(array_intersect($groups, $allowedGroups))) {
-                $allowedIds[] = (int) $row['id_everblock_page'];
-            }
-        }
-
-        EverblockCache::cacheStore($cacheId, $allowedIds);
-
-        return $allowedIds;
-    }
-
-    protected static function decodeGroupList(?string $groups): array
-    {
-        if (!$groups) {
-            return [];
-        }
-
-        $decoded = json_decode($groups, true);
-
-        if (!is_array($decoded)) {
-            return [];
-        }
-
-        return array_values(array_unique(array_map('intval', $decoded)));
-    }
-
     public static function getNextPosition(int $shopId): int
     {
         $shopId = static::resolveShopId($shopId);
@@ -425,9 +353,7 @@ class EverblockPage extends ObjectModel
             if (!$rewrite) {
                 $rewrite = $name;
             }
-            $this->link_rewrite[$langId] = method_exists('Tools', 'str2url')
-                ? Tools::str2url((string) $rewrite)
-                : Tools::link_rewrite((string) $rewrite);
+            $this->link_rewrite[$langId] = Tools::link_rewrite((string) $rewrite);
         }
     }
 

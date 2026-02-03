@@ -86,27 +86,14 @@ class EverblockPageModuleFrontController extends ModuleFrontController
             );
         }
 
-        $authorData = null;
-        if (!empty($page->id_employee)) {
-            $employee = new Employee((int) $page->id_employee);
-            if (Validate::isLoadedObject($employee)) {
-                $authorData = [
-                    'name' => trim($employee->firstname . ' ' . $employee->lastname),
-                    'email' => (string) $employee->email,
-                ];
-            }
-        }
-
         $this->everblockPage = $page;
-
-        $coverImageData = $page->getCoverImageData($this->context);
 
         $this->context->smarty->assign([
             'everblock_page' => $page,
             'everblock_page_content' => $renderedContent,
-            'everblock_page_image' => $coverImageData['url'] ?? '',
-            'everblock_page_image_data' => $coverImageData,
-            'everblock_page_author' => $authorData,
+            'everblock_page_image' => $page->cover_image
+                ? $this->context->link->getMediaLink(_PS_IMG_ . 'pages/' . $page->cover_image)
+                : '',
             'everblock_structured_data' => $this->buildItemListStructuredData($pages, $pageLinks),
             'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
             'everblock_prettyblocks_zone_name' => $isPrettyBlocksEnabled ? 'everblock_page_zone_' . (int) $page->id : '',
@@ -174,7 +161,9 @@ class EverblockPageModuleFrontController extends ModuleFrontController
 
     protected function isPrettyBlocksEnabled(): bool
     {
-        return (bool) Everblock\Tools\Service\EverblockTools::isPrettyblocksAvailable($this->context);
+        return (bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) Everblock\Tools\Service\EverblockTools::moduleDirectoryExists('prettyblocks') === true;
     }
 
     protected function ensureEverblockPage(array $customerGroups = []): ?EverblockPage

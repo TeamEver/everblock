@@ -95,14 +95,13 @@
   {/foreach}
   {assign var='use_slider' value=($displayMode == 'Slider' && $visibleStatesCount > 1 && $maxSliderItems < $visibleStatesCount)}
   {if $use_slider}
-    {assign var=carouselIndex value=0}
-    <div id="simpleImageCarousel-{$block.id_prettyblocks|escape:'htmlall':'UTF-8'}"
-         class="carousel slide everblock-simple-image"
-         data-ride="carousel"
-         data-bs-ride="carousel"
-         data-interval="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}{else}false{/if}"
-         data-bs-interval="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}{else}false{/if}">
-      <div class="carousel-inner">
+    <div class="ever-slider overflow-hidden position-relative"
+         data-items="{$sliderItemsDesktop|escape:'htmlall':'UTF-8'}"
+         data-items-mobile="{$sliderItemsMobile|escape:'htmlall':'UTF-8'}"
+         data-autoplay="{if isset($block.settings.slider_autoplay) && $block.settings.slider_autoplay}1{else}0{/if}"
+         data-autoplay-delay="{$block.settings.slider_autoplay_delay|default:5000|escape:'htmlall':'UTF-8'}"
+         data-infinite="1">
+      <div class="ever-slider-track d-flex">
       {foreach from=$block.states item=state key=key}
         {assign var=isStateVisible value=true}
         {assign var=startDateStr value=$state.start_date|default:''}
@@ -122,12 +121,9 @@
           {/if}
         {/if}
         {if $isStateVisible}
-          {assign var=itemClass value='carousel-item'}
-          {if $carouselIndex == 0}
-            {assign var=itemClass value='carousel-item active'}
-          {/if}
+          {assign var=itemClass value="{$baseItemClass} ever-slider-item flex-shrink-0"}
           {if $state.css_class}
-            {assign var=itemClass value="{$itemClass} {$state.css_class}"}
+            {assign var=itemClass value="{$baseItemClass} ever-slider-item flex-shrink-0 {$state.css_class}"}
           {/if}
           {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_state_spacing_style'}
           <div id="block-{$block.id_prettyblocks}-{$key}" class="{$itemClass|escape:'htmlall'}" style="
@@ -147,7 +143,7 @@
                      {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
                      {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
                      {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
-                     class="d-block w-100 img img-fluid lazyload mx-auto" loading="lazy" draggable="false">
+                     class="img img-fluid lazyload" loading="lazy">
               </picture>
 
               <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
@@ -177,16 +173,11 @@
               }
             </style>
           {/if}
-          {assign var=carouselIndex value=$carouselIndex+1}
         {/if}
       {/foreach}
       </div>
-      <a class="carousel-control-prev" href="#simpleImageCarousel-{$block.id_prettyblocks|escape:'htmlall':'UTF-8'}" role="button" data-slide="prev" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-      </a>
-      <a class="carousel-control-next" href="#simpleImageCarousel-{$block.id_prettyblocks|escape:'htmlall':'UTF-8'}" role="button" data-slide="next" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-      </a>
+      <button class="ever-slider-prev" type="button" aria-label="Previous"></button>
+      <button class="ever-slider-next" type="button" aria-label="Next"></button>
     </div>
   {else}
     {if $block.settings.default.force_full_width}
@@ -236,7 +227,7 @@
                      {if isset($state.alt)}alt="{$state.alt}"{else}alt="{$shop.name}"{/if}
                      {if $state.image_width} width="{$state.image_width|escape:'htmlall':'UTF-8'}"{/if}
                      {if $state.image_height} height="{$state.image_height|escape:'htmlall':'UTF-8'}"{/if}
-                     class="img img-fluid lazyload d-block mx-auto" loading="lazy">
+                     class="img img-fluid lazyload" loading="lazy">
               </picture>
 
               <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
