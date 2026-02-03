@@ -217,6 +217,7 @@ class EverblockPrettyBlocks
         $googleReviewsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_google_reviews.tpl';
         $sharerTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_sharer.tpl';
         $linkListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_link_list.tpl';
+        $llmLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_llm_links.tpl';
         $downloadsTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_downloads.tpl';
         $socialLinksTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_social_links.tpl';
         $brandListTemplate = 'module:' . $module->name . '/views/templates/hook/prettyblocks/prettyblock_brands.tpl';
@@ -2451,6 +2452,74 @@ class EverblockPrettyBlocks
                             'type' => 'checkbox',
                             'label' => $module->l('Open in new tab'),
                             'default' => '0',
+                        ],
+                        'css_class' => [
+                            'type' => 'text',
+                            'label' => $module->l('Custom CSS class'),
+                            'default' => '',
+                        ],
+                    ], $module),
+                ],
+            ];
+            $blocks[] = [
+                'name' => $module->l('LLM links'),
+                'description' => $module->l('Display AI assistant links with a prefilled prompt'),
+                'code' => 'everblock_llm_links',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $llmLinksTemplate,
+                ],
+                'config' => [
+                    'fields' => static::appendSpacingFields([
+                        'heading_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('Heading text'),
+                            'default' => $module->l('Summarize this article with:'),
+                        ],
+                        'link_hover_effect' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Enable hover effect on links'),
+                            'default' => '1',
+                        ],
+                    ], $module),
+                ],
+                'repeater' => [
+                    'name' => 'LLM link',
+                    'nameFrom' => 'label',
+                    'groups' => static::appendSpacingFields([
+                        'label' => [
+                            'type' => 'text',
+                            'label' => $module->l('Link label'),
+                            'default' => $module->l('ChatGPT'),
+                        ],
+                        'base_url' => [
+                            'type' => 'text',
+                            'label' => $module->l('Base URL'),
+                            'default' => 'https://chat.openai.com/?prompt=',
+                        ],
+                        'prompt_template' => [
+                            'type' => 'textarea',
+                            'label' => $module->l('Prompt template'),
+                            'default' => $module->l('Summarize this article in a concise way. Title: {{title}} — URL: {{url}}'),
+                        ],
+                        'icon' => [
+                            'type' => 'fileupload',
+                            'label' => $module->l('Icon'),
+                            'default' => [
+                                'url' => '',
+                            ],
+                        ],
+                        'icon_alt' => [
+                            'type' => 'text',
+                            'label' => $module->l('Icon alt text'),
+                            'default' => '',
+                        ],
+                        'open_in_new_tab' => [
+                            'type' => 'checkbox',
+                            'label' => $module->l('Open in new tab'),
+                            'default' => '1',
                         ],
                         'css_class' => [
                             'type' => 'text',
@@ -4710,6 +4779,7 @@ class EverblockPrettyBlocks
             'everblock_custom_code',
             'everblock_img_slider',
             'everblock_link_list',
+            'everblock_llm_links',
             'everblock_downloads',
             'everblock_podcasts',
             'everblock_sharer',
