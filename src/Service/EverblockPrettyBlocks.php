@@ -22,6 +22,7 @@ namespace Everblock\Tools\Service;
 
 use Configuration;
 use Context;
+use Db;
 use EverBlockClass;
 use Everblock\Tools\Service\EverblockCache;
 use EverblockShortcode;
@@ -158,6 +159,10 @@ class EverblockPrettyBlocks
 
     public static function getEverPrettyBlocks($context)
     {
+        if (self::shouldUsePrettyBlocksHtmlCache($context)) {
+            return self::getPrettyBlocksHtml($context);
+        }
+
         $module = Module::getInstanceByName('everblock');
         $blockIds = self::getPrettyBlockIds($module);
         $cachedBlocks = [];
@@ -4669,6 +4674,361 @@ class EverblockPrettyBlocks
         return $finalBlocks;
     }
 
+    private static function shouldUsePrettyBlocksHtmlCache(Context $context): bool
+    {
+        if (!isset($context->controller)) {
+            return true;
+        }
+
+        $controllerType = $context->controller->controller_type ?? '';
+        return $controllerType !== 'admin' && $controllerType !== 'moduleadmin';
+    }
+
+    private static function getPrettyBlocksHtml(Context $context): array
+    {
+        $startTime = microtime(true);
+        $structureStart = microtime(true);
+        $structure = self::getPrettyBlocksStructure($context);
+        self::logDebug(sprintf(
+            'Everblock PrettyBlocks structure loaded in %.2fms',
+            (microtime(true) - $structureStart) * 1000
+        ));
+
+        if (!$structure) {
+            self::logDebug('Everblock PrettyBlocks structure empty (no blocks).');
+            return [];
+        }
+
+        $blocks = [];
+        foreach ($structure as $block) {
+            $active = isset($block['active']) ? (int) $block['active'] : 1;
+            if ($active === 0) {
+                continue;
+            }
+
+            $idBlock = (int) $block['id_block'];
+            $cacheKey = self::getPrettyBlockHtmlCacheKey($idBlock, $context);
+            $html = '';
+            $cacheHit = false;
+
+            try {
+                if (EverblockCache::isCacheStored($cacheKey)) {
+                    $cachedHtml = EverblockCache::cacheRetrieve($cacheKey);
+                    if (is_string($cachedHtml)) {
+                        $html = $cachedHtml;
+                        $cacheHit = true;
+                    }
+                }
+            } catch (\Throwable $exception) {
+                self::logCacheFailure('read', $cacheKey, $exception);
+            }
+
+            if (!$cacheHit) {
+                $renderStart = microtime(true);
+                $html = self::renderPrettyBlockHtml($block, $context);
+                self::logDebug(sprintf(
+                    'Everblock PrettyBlocks render for #%d in %.2fms',
+                    $idBlock,
+                    (microtime(true) - $renderStart) * 1000
+                ));
+
+                try {
+                    EverblockCache::cacheStore($cacheKey, $html);
+                } catch (\Throwable $exception) {
+                    self::logCacheFailure('write', $cacheKey, $exception);
+                }
+            }
+
+            self::logDebug(sprintf(
+                'Everblock PrettyBlocks HTML cache %s for %s',
+                $cacheHit ? 'HIT' : 'MISS',
+                $cacheKey
+            ));
+
+            $blocks[] = [
+                'id_block' => $idBlock,
+                'hook' => (string) ($block['hook'] ?? ''),
+                'position' => (int) ($block['position'] ?? 0),
+                'active' => $active,
+                'type' => (string) ($block['type'] ?? ''),
+                'id_lang' => (int) ($block['id_lang'] ?? $context->language->id),
+                'id_shop' => (int) ($block['id_shop'] ?? $context->shop->id),
+                'html' => $html,
+            ];
+        }
+
+        self::logDebug(sprintf(
+            'Everblock PrettyBlocks HTML built in %.2fms',
+            (microtime(true) - $startTime) * 1000
+        ));
+
+        return $blocks;
+    }
+
+    private static function getPrettyBlocksStructure(Context $context): array
+    {
+        $cacheKey = self::getPrettyBlocksStructureCacheKey($context);
+        try {
+            if (EverblockCache::isCacheStored($cacheKey)) {
+                $cachedStructure = EverblockCache::cacheRetrieve($cacheKey);
+                if (is_array($cachedStructure)) {
+                    self::logDebug('Everblock PrettyBlocks structure cache HIT.');
+                    return $cachedStructure;
+                }
+            }
+        } catch (\Throwable $exception) {
+            self::logCacheFailure('read', $cacheKey, $exception);
+        }
+
+        self::logDebug('Everblock PrettyBlocks structure cache MISS.');
+        $structure = self::buildPrettyBlocksStructure($context);
+
+        try {
+            EverblockCache::cacheStore($cacheKey, $structure);
+        } catch (\Throwable $exception) {
+            self::logCacheFailure('write', $cacheKey, $exception);
+        }
+
+        return $structure;
+    }
+
+    private static function buildPrettyBlocksStructure(Context $context): array
+    {
+        $db = Db::getInstance();
+        $columns = self::getPrettyblocksTableColumns($db);
+        if (!$columns) {
+            return [];
+        }
+
+        $hookField = self::resolvePrettyblocksHookField($db, $columns);
+        if ($hookField === null) {
+            return [];
+        }
+
+        $select = [
+            'a.id_prettyblocks AS id_block',
+            'a.type AS type',
+        ];
+        $joins = '';
+
+        if ($hookField === 'id_hook') {
+            $select[] = 'h.name AS hook';
+            $joins = 'LEFT JOIN `' . _DB_PREFIX_ . 'hook` h ON (h.`id_hook` = a.`id_hook`)';
+        } else {
+            $select[] = 'a.' . bqSQL($hookField) . ' AS hook';
+        }
+
+        if (in_array('position', $columns, true)) {
+            $select[] = 'a.position AS position';
+        }
+        if (in_array('active', $columns, true)) {
+            $select[] = 'a.active AS active';
+        }
+        if (in_array('id_lang', $columns, true)) {
+            $select[] = 'a.id_lang AS id_lang';
+        }
+        if (in_array('id_shop', $columns, true)) {
+            $select[] = 'a.id_shop AS id_shop';
+        }
+
+        $where = [];
+        if (in_array('id_lang', $columns, true)) {
+            $where[] = 'a.id_lang = ' . (int) $context->language->id;
+        }
+        if (in_array('id_shop', $columns, true)) {
+            $where[] = 'a.id_shop = ' . (int) $context->shop->id;
+        }
+
+        $query = 'SELECT ' . implode(', ', $select)
+            . ' FROM `' . _DB_PREFIX_ . 'prettyblocks` a '
+            . $joins;
+        if ($where) {
+            $query .= ' WHERE ' . implode(' AND ', $where);
+        }
+        if (in_array('position', $columns, true)) {
+            $query .= ' ORDER BY a.position ASC';
+        }
+
+        $rows = $db->executeS($query) ?: [];
+        $structure = [];
+        foreach ($rows as $row) {
+            $structure[] = [
+                'id_block' => (int) ($row['id_block'] ?? 0),
+                'hook' => (string) ($row['hook'] ?? ''),
+                'position' => (int) ($row['position'] ?? 0),
+                'active' => (int) ($row['active'] ?? 1),
+                'type' => (string) ($row['type'] ?? ''),
+                'id_lang' => (int) ($row['id_lang'] ?? $context->language->id),
+                'id_shop' => (int) ($row['id_shop'] ?? $context->shop->id),
+            ];
+        }
+
+        return $structure;
+    }
+
+    private static function resolvePrettyblocksHookField(Db $db, array $columns): ?string
+    {
+        $hasIdHook = in_array('id_hook', $columns, true);
+        $hasHook = in_array('hook', $columns, true);
+        $hasZoneName = in_array('zone_name', $columns, true);
+
+        if ($hasIdHook) {
+            $idHookCount = (int) $db->getValue(
+                'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'prettyblocks`'
+                . ' WHERE id_hook IS NOT NULL AND id_hook != 0'
+            );
+            if ($idHookCount > 0) {
+                return 'id_hook';
+            }
+        }
+
+        if ($hasZoneName) {
+            $zoneCount = (int) $db->getValue(
+                'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'prettyblocks`'
+                . ' WHERE zone_name IS NOT NULL AND zone_name != ""'
+            );
+            if ($zoneCount > 0) {
+                return 'zone_name';
+            }
+        }
+
+        if ($hasHook) {
+            $hookCount = (int) $db->getValue(
+                'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'prettyblocks`'
+                . ' WHERE hook IS NOT NULL AND hook != ""'
+            );
+            if ($hookCount > 0) {
+                return 'hook';
+            }
+        }
+
+        if ($hasIdHook) {
+            return 'id_hook';
+        }
+        if ($hasZoneName) {
+            return 'zone_name';
+        }
+        if ($hasHook) {
+            return 'hook';
+        }
+
+        return null;
+    }
+
+    private static function getPrettyblocksTableColumns(Db $db): array
+    {
+        try {
+            $columns = $db->executeS('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'prettyblocks`');
+        } catch (\Throwable $exception) {
+            return [];
+        }
+
+        $fields = [];
+        foreach ($columns as $column) {
+            if (!empty($column['Field'])) {
+                $fields[] = $column['Field'];
+            }
+        }
+
+        return $fields;
+    }
+
+    private static function renderPrettyBlockHtml(array $block, Context $context): string
+    {
+        if (!Module::isInstalled('prettyblocks') || !Module::isEnabled('prettyblocks')) {
+            return '';
+        }
+
+        $prettyBlocksModule = Module::getInstanceByName('prettyblocks');
+        if (!$prettyBlocksModule) {
+            return '';
+        }
+
+        $payload = [
+            'id_prettyblocks' => (int) ($block['id_block'] ?? 0),
+            'id_block' => (int) ($block['id_block'] ?? 0),
+            'hook' => (string) ($block['hook'] ?? ''),
+            'position' => (int) ($block['position'] ?? 0),
+            'active' => (int) ($block['active'] ?? 1),
+            'type' => (string) ($block['type'] ?? ''),
+            'id_lang' => (int) ($block['id_lang'] ?? $context->language->id),
+            'id_shop' => (int) ($block['id_shop'] ?? $context->shop->id),
+        ];
+
+        $renderers = [
+            ['method' => 'renderBlock', 'args' => [$payload['id_prettyblocks'], $context, $payload]],
+            ['method' => 'renderBlockById', 'args' => [$payload['id_prettyblocks'], $context, $payload]],
+            ['method' => 'renderPrettyBlock', 'args' => [$payload, $context]],
+            ['method' => 'renderWidget', 'args' => [$payload['hook'], $payload]],
+        ];
+
+        foreach ($renderers as $renderer) {
+            $method = $renderer['method'];
+            if (!method_exists($prettyBlocksModule, $method)) {
+                continue;
+            }
+            $html = self::invokeRenderer($prettyBlocksModule, $method, $renderer['args']);
+            if ($html !== null && $html !== '') {
+                return $html;
+            }
+        }
+
+        if ($payload['hook'] !== '') {
+            try {
+                return (string) Hook::exec($payload['hook'], $payload, $prettyBlocksModule->id);
+            } catch (\Throwable $exception) {
+                self::logRenderFailure('hook', $payload['hook'], $exception);
+            }
+        }
+
+        return '';
+    }
+
+    private static function invokeRenderer(Module $module, string $method, array $args): ?string
+    {
+        try {
+            $reflection = new \ReflectionMethod($module, $method);
+            $required = $reflection->getNumberOfRequiredParameters();
+            $max = $reflection->getNumberOfParameters();
+
+            if ($required > count($args)) {
+                return null;
+            }
+
+            $args = array_slice($args, 0, $max);
+            $result = $reflection->invokeArgs($module, $args);
+
+            if (is_string($result)) {
+                return $result;
+            }
+            if (is_scalar($result)) {
+                return (string) $result;
+            }
+        } catch (\Throwable $exception) {
+            self::logRenderFailure($method, $method, $exception);
+        }
+
+        return null;
+    }
+
+    private static function getPrettyBlocksStructureCacheKey(Context $context): string
+    {
+        return 'EverblockPrettyBlocks_structure_'
+            . (int) $context->language->id
+            . '_'
+            . (int) $context->shop->id;
+    }
+
+    private static function getPrettyBlockHtmlCacheKey(int $blockId, Context $context): string
+    {
+        return 'EverblockPrettyBlock_html_'
+            . $blockId
+            . '_'
+            . (int) $context->language->id
+            . '_'
+            . (int) $context->shop->id;
+    }
+
     private static function getPrettyBlockIds(Module $module): array
     {
         return [
@@ -4783,6 +5143,20 @@ class EverblockPrettyBlocks
     {
         if (defined('EVERBLOCK_DEBUG') && EVERBLOCK_DEBUG) {
             PrestaShopLogger::addLog(sprintf('Everblock cache %s failed for %s: %s', $action, $cacheKey, $exception->getMessage()));
+        }
+    }
+
+    private static function logRenderFailure(string $action, string $target, \Throwable $exception): void
+    {
+        if (defined('EVERBLOCK_DEBUG') && EVERBLOCK_DEBUG) {
+            PrestaShopLogger::addLog(sprintf('Everblock render %s failed for %s: %s', $action, $target, $exception->getMessage()));
+        }
+    }
+
+    private static function logDebug(string $message): void
+    {
+        if (defined('EVERBLOCK_DEBUG') && EVERBLOCK_DEBUG) {
+            PrestaShopLogger::addLog($message);
         }
     }
 
