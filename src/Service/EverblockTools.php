@@ -558,8 +558,6 @@ class EverblockTools extends ObjectModel
                     'id_shop_group' => $idShopGroup,
                     'id_lang' => $idLang,
                     'threshold' => $threshold,
-                    'offset' => $offset,
-                    'limit' => $limit,
                 ];
 
                 $visPlaceholders = [];
@@ -656,7 +654,7 @@ class EverblockTools extends ObjectModel
                     $sql .= ' ORDER BY ' . $fieldMap[$order] . ' ' . strtoupper($way);
                 }
 
-                $sql .= ' LIMIT :offset, :limit';
+                $sql .= ' LIMIT ' . (int) $offset . ', ' . (int) $limit;
 
                 $rows = $db->executeS($sql, $params);
 
