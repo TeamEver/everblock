@@ -2190,11 +2190,21 @@ class EverblockTools extends ObjectModel
     protected static function getBestSellingProductIds(int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
     {
         $context = Context::getContext();
+        $orderBy = strtolower($orderBy);
+        $allowedOrderBy = [
+            'total_quantity' => 'total_quantity',
+            'product_id' => 'od.product_id',
+        ];
+        $orderColumn = $allowedOrderBy[$orderBy] ?? 'total_quantity';
+        $orderWay = strtoupper($orderWay);
+        if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
+            $orderWay = 'DESC';
+        }
         $cacheId = 'everblock_bestSellingProductIds_'
             . (int) $context->shop->id . '_'
             . $limit . '_'
             . ($days ?? 'all') . '_'
-            . $orderBy . '_'
+            . $orderColumn . '_'
             . $orderWay;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
@@ -2210,7 +2220,7 @@ class EverblockTools extends ObjectModel
             }
 
             $sql .= ' GROUP BY od.product_id'
-                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
+                . ' ORDER BY ' . pSQL($orderColumn) . ' ' . pSQL($orderWay)
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -2301,12 +2311,22 @@ class EverblockTools extends ObjectModel
     protected static function getBestSellingProductIdsByBrand(int $brandId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
     {
         $context = Context::getContext();
+        $orderBy = strtolower($orderBy);
+        $allowedOrderBy = [
+            'total_quantity' => 'total_quantity',
+            'product_id' => 'od.product_id',
+        ];
+        $orderColumn = $allowedOrderBy[$orderBy] ?? 'total_quantity';
+        $orderWay = strtoupper($orderWay);
+        if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
+            $orderWay = 'DESC';
+        }
         $cacheId = 'everblock_bestSellingProductIds_brand_'
             . (int) $context->shop->id . '_'
             . $brandId . '_'
             . $limit . '_'
             . ($days ?? 'all') . '_'
-            . $orderBy . '_'
+            . $orderColumn . '_'
             . $orderWay;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
@@ -2327,7 +2347,7 @@ class EverblockTools extends ObjectModel
             }
 
             $sql .= ' GROUP BY od.product_id'
-                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
+                . ' ORDER BY ' . pSQL($orderColumn) . ' ' . pSQL($orderWay)
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -2344,12 +2364,22 @@ class EverblockTools extends ObjectModel
     protected static function getBestSellingProductIdsByFeature(int $featureId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
     {
         $context = Context::getContext();
+        $orderBy = strtolower($orderBy);
+        $allowedOrderBy = [
+            'total_quantity' => 'total_quantity',
+            'product_id' => 'od.product_id',
+        ];
+        $orderColumn = $allowedOrderBy[$orderBy] ?? 'total_quantity';
+        $orderWay = strtoupper($orderWay);
+        if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
+            $orderWay = 'DESC';
+        }
         $cacheId = 'everblock_bestSellingProductIds_feature_'
             . (int) $context->shop->id . '_'
             . $featureId . '_'
             . $limit . '_'
             . ($days ?? 'all') . '_'
-            . $orderBy . '_'
+            . $orderColumn . '_'
             . $orderWay;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
@@ -2370,7 +2400,7 @@ class EverblockTools extends ObjectModel
             }
 
             $sql .= ' GROUP BY od.product_id'
-                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
+                . ' ORDER BY ' . pSQL($orderColumn) . ' ' . pSQL($orderWay)
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -2387,12 +2417,22 @@ class EverblockTools extends ObjectModel
     protected static function getBestSellingProductIdsByFeatureValue(int $featureValueId, int $limit, string $orderBy = 'total_quantity', string $orderWay = 'DESC', ?int $days = null): array
     {
         $context = Context::getContext();
+        $orderBy = strtolower($orderBy);
+        $allowedOrderBy = [
+            'total_quantity' => 'total_quantity',
+            'product_id' => 'od.product_id',
+        ];
+        $orderColumn = $allowedOrderBy[$orderBy] ?? 'total_quantity';
+        $orderWay = strtoupper($orderWay);
+        if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
+            $orderWay = 'DESC';
+        }
         $cacheId = 'everblock_bestSellingProductIds_feature_value_'
             . (int) $context->shop->id . '_'
             . $featureValueId . '_'
             . $limit . '_'
             . ($days ?? 'all') . '_'
-            . $orderBy . '_'
+            . $orderColumn . '_'
             . $orderWay;
 
         if (!EverblockCache::isCacheStored($cacheId)) {
@@ -2413,7 +2453,7 @@ class EverblockTools extends ObjectModel
             }
 
             $sql .= ' GROUP BY od.product_id'
-                . ' ORDER BY ' . pSQL($orderBy) . ' ' . pSQL($orderWay)
+                . ' ORDER BY ' . pSQL($orderColumn) . ' ' . pSQL($orderWay)
                 . ' LIMIT ' . (int) $limit;
 
             $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
