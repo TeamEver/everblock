@@ -2739,14 +2739,22 @@ class EverblockTools extends ObjectModel
             $orderBy = isset($match[4]) ? strtolower($match[4]) : '';
             $orderWay = isset($match[5]) ? strtoupper($match[5]) : 'ASC';
 
+            $allowedOrderBy = ['id_product', 'price', 'date_add', 'rand'];
+            if (!in_array($orderBy, $allowedOrderBy, true)) {
+                $orderBy = '';
+            }
+            if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
+                $orderWay = 'ASC';
+            }
+
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
                     ';
-            if ($orderBy) {
-                $sql .= 'ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay);
-            } else {
+            if ($orderBy === 'rand' || $orderBy === '') {
                 $sql .= 'ORDER BY RAND()';
+            } else {
+                $sql .= 'ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay);
             }
             $sql .= ' LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
@@ -2795,11 +2803,19 @@ class EverblockTools extends ObjectModel
             $orderBy = isset($match[5]) ? strtolower($match[5]) : 'date_add';
             $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
+            $allowedOrderBy = ['id_product', 'price', 'date_add', 'rand'];
+            if (!in_array($orderBy, $allowedOrderBy, true)) {
+                $orderBy = 'date_add';
+            }
+            if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
+                $orderWay = 'DESC';
+            }
+
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
                     AND p.active = 1
-                    ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay) . '
+                    ORDER BY ' . ($orderBy === 'rand' ? 'RAND()' : 'p.' . pSQL($orderBy) . ' ' . pSQL($orderWay)) . '
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
@@ -2882,12 +2898,20 @@ class EverblockTools extends ObjectModel
             $orderBy = isset($match[5]) ? strtolower($match[5]) : 'date_add';
             $orderWay = isset($match[6]) ? strtoupper($match[6]) : 'DESC';
 
+            $allowedOrderBy = ['id_product', 'price', 'date_add', 'rand'];
+            if (!in_array($orderBy, $allowedOrderBy, true)) {
+                $orderBy = 'date_add';
+            }
+            if (!in_array($orderWay, ['ASC', 'DESC'], true)) {
+                $orderWay = 'DESC';
+            }
+
             $sql = 'SELECT p.id_product
                     FROM ' . _DB_PREFIX_ . 'product_shop p
                     WHERE p.id_shop = ' . (int) $context->shop->id . '
                     AND p.active = 1
                     AND p.on_sale = 1
-                    ORDER BY p.' . pSQL($orderBy) . ' ' . pSQL($orderWay) . '
+                    ORDER BY ' . ($orderBy === 'rand' ? 'RAND()' : 'p.' . pSQL($orderBy) . ' ' . pSQL($orderWay)) . '
                     LIMIT ' . (int) $limit;
             $productIds = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
