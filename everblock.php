@@ -114,7 +114,6 @@ class Everblock extends Module
         Configuration::updateValue('EVERWP_BLOG_URL', '/blog');
         Configuration::updateValue('EVERWP_POST_NBR', 3);
         Configuration::updateValue('EVERWP_POSTS_BG_IMAGE', '');
-        Configuration::updateValue('EVERWP_POSTS_SLIDER_ENABLED', 1);
         Configuration::updateValue('EVER_SOLDOUT_COLOR', '#ff0000');
         Configuration::updateValue('EVER_SOLDOUT_TEXTCOLOR', '#ffffff');
         Configuration::updateValue('EVERINSTA_SHOW_CAPTION', 0);
@@ -255,7 +254,6 @@ class Everblock extends Module
         Configuration::deleteByName('EVERWP_BLOG_URL');
         Configuration::deleteByName('EVERWP_POST_NBR');
         Configuration::deleteByName('EVERWP_POSTS_BG_IMAGE');
-        Configuration::deleteByName('EVERWP_POSTS_SLIDER_ENABLED');
         Configuration::deleteByName('EVER_SOLDOUT_COLOR');
         Configuration::deleteByName('EVER_SOLDOUT_TEXTCOLOR');
         Configuration::deleteByName('EVERBLOCK_SOLDOUT_FLAG');
@@ -1990,25 +1988,6 @@ class Everblock extends Module
                 'name' => 'EVERWP_POST_NBR',
             ],
             [
-                'type' => 'switch',
-                'label' => $this->l('Enable WordPress posts slider'),
-                'desc' => $this->l('Enable the carousel for WordPress posts on mobile.'),
-                'name' => 'EVERWP_POSTS_SLIDER_ENABLED',
-                'is_bool' => true,
-                'values' => [
-                    [
-                        'id' => 'everwp_posts_slider_enabled_on',
-                        'value' => 1,
-                        'label' => $this->l('Enabled'),
-                    ],
-                    [
-                        'id' => 'everwp_posts_slider_enabled_off',
-                        'value' => 0,
-                        'label' => $this->l('Disabled'),
-                    ],
-                ],
-            ],
-            [
                 'type' => 'file',
                 'label' => $this->l('Background image for WordPress posts'),
                 'desc' => $this->l('Optional background image for the latest WordPress posts section.'),
@@ -2804,7 +2783,6 @@ class Everblock extends Module
             'EVERWP_BLOG_URL' => Configuration::get('EVERWP_BLOG_URL'),
             'EVERWP_POST_NBR' => Configuration::get('EVERWP_POST_NBR'),
             'EVERWP_POSTS_BG_IMAGE' => Configuration::get('EVERWP_POSTS_BG_IMAGE'),
-            'EVERWP_POSTS_SLIDER_ENABLED' => Configuration::get('EVERWP_POSTS_SLIDER_ENABLED'),
             'EVERBLOCK_GOOGLE_API_KEY' => Configuration::get('EVERBLOCK_GOOGLE_API_KEY'),
             'EVERBLOCK_GOOGLE_PLACE_ID' => Configuration::get('EVERBLOCK_GOOGLE_PLACE_ID'),
             'EVERBLOCK_GOOGLE_REVIEWS_LIMIT' => Configuration::get('EVERBLOCK_GOOGLE_REVIEWS_LIMIT'),
@@ -2997,7 +2975,6 @@ class Everblock extends Module
                 'EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING',
                 'EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR',
                 'EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA',
-                'EVERWP_POSTS_SLIDER_ENABLED',
             ];
             foreach ($boolFields as $boolField) {
                 $value = Tools::getValue($boolField);
@@ -3184,12 +3161,6 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERWP_POST_NBR',
             Tools::getValue('EVERWP_POST_NBR')
-        );
-        $wpPostsSliderEnabled = Tools::getValue('EVERWP_POSTS_SLIDER_ENABLED');
-        $wpPostsSliderEnabled = in_array((string) $wpPostsSliderEnabled, ['1', 'true', 'on'], true) ? 1 : 0;
-        Configuration::updateValue(
-            'EVERWP_POSTS_SLIDER_ENABLED',
-            $wpPostsSliderEnabled
         );
         $pagesBaseUrl = trim((string) Tools::getValue('EVERBLOCK_PAGES_BASE_URL'));
         if ($pagesBaseUrl === '') {

@@ -1140,15 +1140,10 @@ class EverblockTools extends ObjectModel
             $backgroundUrl = $context->link->getBaseLink(null, null)
                 . 'modules/' . $module->name . '/views/img/' . $backgroundImage;
         }
-        $sliderEnabled = Configuration::get('EVERWP_POSTS_SLIDER_ENABLED');
-        if ($sliderEnabled === false) {
-            $sliderEnabled = true;
-        }
         $context->smarty->assign([
             'everblock_wp_posts' => $storedPosts,
             'everblock_wp_blog_url' => Configuration::get('EVERWP_BLOG_URL') ?: '/blog',
             'everblock_wp_background_image' => $backgroundUrl,
-            'everblock_wp_posts_slider_enabled' => (bool) $sliderEnabled,
         ]);
 
         foreach ($matches as $match) {
