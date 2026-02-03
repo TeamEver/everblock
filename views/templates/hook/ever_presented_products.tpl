@@ -89,7 +89,7 @@
     {/if}
   </section>
   {if isset($carousel) && $carousel}
-  <section class="ever-featured-products featured-products mx-2 d-block d-md-none">
+  <section class="ever-featured-products featured-products mx-2 d-block d-md-none{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     {assign var="mobileCarouselId" value="ever-presented-carousel-mobile-"|cat:mt_rand(1000,999999)}
     {assign var="mobileNumProductsPerSlide" value=$mobileItems}
     <div id="{$mobileCarouselId}" class="carousel slide" data-ride="false" data-bs-ride="false" data-bs-wrap="true" data-ever-mobile-carousel="1" data-ever-infinite-carousel="1">

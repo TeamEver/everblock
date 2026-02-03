@@ -309,6 +309,19 @@
 .ever-featured-products .carousel-control-next {
     right: -1.5rem;
 }
+
+.ever-featured-products.crosselling .thumbnail-container,
+.ever-featured-products.crosselling .product-thumbnail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ever-featured-products.crosselling .product-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
 /* Style pour les boutons de partage */
 
 .everblock-sharer {
