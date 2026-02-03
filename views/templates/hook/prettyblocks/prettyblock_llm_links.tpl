@@ -51,7 +51,7 @@
                 {assign var='link_target' value='_blank'}
               {/if}
               <div class="col-6 col-md-4 col-lg-3" style="{$prettyblock_state_spacing_style}">
-                <a class="prettyblock-llm-links__item {if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect}everblock-link-hover--block{/if}" href="{$base_url}{$prompt_text|escape:'url'}" data-base-url="{$base_url|escape:'htmlall':'UTF-8'}" data-prompt-template="{$state.prompt_template|escape:'htmlall':'UTF-8'}" target="{$link_target}"{if $link_target === '_blank'} rel="noopener noreferrer"{/if}>
+                <a class="prettyblock-llm-links__item{if isset($block.settings.link_hover_effect) && $block.settings.link_hover_effect} everblock-link-hover--block{/if}{if isset($state.css_class) && $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}" href="{$base_url}{$prompt_text|escape:'url'}" data-base-url="{$base_url|escape:'htmlall':'UTF-8'}" data-prompt-template="{$state.prompt_template|escape:'htmlall':'UTF-8'}" target="{$link_target}"{if $link_target === '_blank'} rel="noopener noreferrer"{/if}>
                   {if isset($state.icon.url) && $state.icon.url}
                     <img class="prettyblock-llm-links__icon" src="{$state.icon.url|escape:'htmlall':'UTF-8'}" alt="{$state.icon_alt|default:$state.label|default:''|escape:'htmlall':'UTF-8'}" loading="lazy" width="92" height="92">
                   {/if}
