@@ -178,41 +178,4 @@ class EverblockCache
             }
         }
     }
-
-    public static function invalidatePrettyBlocks(int $idShop, int $idLang): void
-    {
-        $structureKey = 'EverblockPrettyBlocks_structure_' . $idLang . '_' . $idShop;
-        $structure = null;
-
-        try {
-            if (static::isCacheStored($structureKey)) {
-                $structure = static::cacheRetrieve($structureKey);
-            }
-        } catch (Exception $e) {
-            $structure = null;
-        }
-
-        if (is_array($structure)) {
-            foreach ($structure as $block) {
-                if (!isset($block['id_block'])) {
-                    continue;
-                }
-                $htmlKey = 'EverblockPrettyBlock_html_'
-                    . (int) $block['id_block']
-                    . '_'
-                    . $idLang
-                    . '_'
-                    . $idShop;
-                static::cacheDrop($htmlKey);
-            }
-        } else {
-            if (static::useNativeCache()) {
-                Cache::clean('EverblockPrettyBlock_html_');
-            } else {
-                static::cacheDropByPattern('EverblockPrettyBlock_html_');
-            }
-        }
-
-        static::cacheDrop($structureKey);
-    }
 }
