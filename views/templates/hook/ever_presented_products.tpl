@@ -26,6 +26,9 @@
   {if $mobileItems < 1}
     {assign var='mobileItems' value=1}
   {/if}
+  {if isset($carousel) && $carousel && $mobileItems < 2}
+    {assign var='mobileItems' value=2}
+  {/if}
   {assign var='tabletItems' value=$carouselTabletItems|default:2|intval}
   {if $tabletItems < 1}
     {assign var='tabletItems' value=1}
