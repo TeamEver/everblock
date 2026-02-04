@@ -5119,6 +5119,11 @@ class Everblock extends Module
             ['media' => 'all', 'priority' => 200]
         );
         $this->context->controller->registerStylesheet(
+            'module-' . $this->name . '-prettyblock-faq-css',
+            'modules/' . $this->name . '/views/css/prettyblock-faq.css',
+            ['media' => 'all', 'priority' => 200]
+        );
+        $this->context->controller->registerStylesheet(
             'module-' . $this->name . '-quill-css',
             'modules/' . $this->name . '/views/css/quill.css',
             ['media' => 'all', 'priority' => 200]

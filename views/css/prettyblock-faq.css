@@ -1,0 +1,90 @@
+.prettyblock-faq {
+  color: #1f2937;
+}
+
+.prettyblock-faq-title {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.prettyblock-faq-subtitle {
+  color: #6b7280;
+  margin: 0;
+}
+
+.prettyblock-faq-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.prettyblock-faq-item {
+  padding: 0.5rem 0 1.5rem;
+}
+
+.prettyblock-faq .h2,
+.prettyblock-faq-question {
+  display: block;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: 0.75rem;
+}
+
+.prettyblock-faq .highlight,
+.prettyblock-faq .question-mark {
+  color: var(--bs-primary);
+}
+
+.prettyblock-faq-answer {
+  color: #4b5563;
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+}
+
+.prettyblock-faq-answer p {
+  margin-bottom: 0.75rem;
+}
+
+.prettyblock-faq-answer p:last-child {
+  margin-bottom: 0;
+}
+
+.prettyblock-faq-link {
+  color: #1f2937;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prettyblock-faq-link:hover {
+  color: var(--bs-primary);
+}
+
+.prettyblock-faq-separator {
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  margin: 0;
+}
+
+.prettyblock-faq-cta-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.prettyblock-faq-cta {
+  align-items: center;
+  border: 1px solid #111827;
+  border-radius: 999px;
+  color: #111827;
+  display: inline-flex;
+  font-weight: 600;
+  gap: 0.5rem;
+  padding: 0.65rem 1.5rem;
+  text-decoration: none;
+}
+
+.prettyblock-faq-cta:hover {
+  color: #111827;
+  border-color: var(--bs-primary);
+}

@@ -670,6 +670,11 @@ class EverblockPrettyBlocks
                             'label' => $module->l('Link URL'),
                             'default' => '#',
                         ],
+                        'highlight_words' => [
+                            'type' => 'text',
+                            'label' => $module->l('Highlight words (comma-separated)'),
+                            'default' => '',
+                        ],
                         'badge_label' => [
                             'type' => 'text',
                             'label' => $module->l('Badge text'),
