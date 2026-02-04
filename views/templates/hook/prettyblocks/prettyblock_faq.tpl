@@ -37,89 +37,65 @@
       {if $block.settings.title || $block.settings.subtitle}
         <div class="prettyblock-faq-header mb-4">
           {if $block.settings.title}
-            <span class="h3 fw-bold mb-2">{$block.settings.title|escape:'htmlall':'UTF-8'}</span>
+            <span class="prettyblock-faq-title">{$block.settings.title|escape:'htmlall':'UTF-8'}</span>
           {/if}
           {if $block.settings.subtitle}
-            <p class="text-muted mb-0">{$block.settings.subtitle|escape:'htmlall':'UTF-8'}</p>
+            <p class="prettyblock-faq-subtitle">{$block.settings.subtitle|escape:'htmlall':'UTF-8'}</p>
           {/if}
         </div>
       {/if}
 
       {if isset($block.states) && $block.states}
-        <div class="prettyblock-faq-list d-flex flex-column gap-3">
-          {foreach from=$block.states item=state}
+        <div class="prettyblock-faq-list">
+          {foreach from=$block.states item=state name=faq_items}
             {include file='module:everblock/views/templates/hook/prettyblocks/_partials/spacing_style.tpl' spacing=$state assign='prettyblock_faq_state_spacing_style'}
-            {capture name='prettyblock_faq_badge_style'}
-              {if $state.badge_background}
-                background-color:{$state.badge_background|escape:'htmlall':'UTF-8'};
-              {elseif $block.settings.badge_background}
-                background-color:{$block.settings.badge_background|escape:'htmlall':'UTF-8'};
-              {/if}
-              {if $state.badge_text_color}
-                color:{$state.badge_text_color|escape:'htmlall':'UTF-8'};
-              {elseif $block.settings.badge_text_color}
-                color:{$block.settings.badge_text_color|escape:'htmlall':'UTF-8'};
-              {/if}
-            {/capture}
-            {assign var='prettyblock_faq_badge_style' value=$smarty.capture.prettyblock_faq_badge_style|trim}
-            {assign var='prettyblock_faq_badge_text' value=$state.badge_label|default:($state.question|substr:0:1)}
             {assign var='prettyblock_faq_state_style' value=$prettyblock_faq_state_spacing_style|trim}
+            {assign var='prettyblock_faq_question' value=$state.question|default:''}
+            {assign var='prettyblock_faq_question' value=$prettyblock_faq_question|regex_replace:"/\\?\\s*$/" : ""}
+            {assign var='prettyblock_faq_question' value=$prettyblock_faq_question|escape:'htmlall':'UTF-8'}
+            {assign var='prettyblock_faq_highlight_words' value=''}
+            {if $state.highlight_words}
+              {assign var='prettyblock_faq_highlight_words' value=","|explode:$state.highlight_words}
+            {/if}
+            {if $prettyblock_faq_highlight_words}
+              {foreach from=$prettyblock_faq_highlight_words item=highlight_word}
+                {assign var='highlight_word' value=$highlight_word|trim|escape:'htmlall':'UTF-8'}
+                {if $highlight_word}
+                  {assign var='prettyblock_faq_question' value=$prettyblock_faq_question|replace:$highlight_word:"<span class=\"highlight\">`$highlight_word`</span>"}
+                {/if}
+              {/foreach}
+            {/if}
 
-            <article class="prettyblock-faq-item border border-light-subtle rounded-4 shadow-sm bg-white p-4 p-md-5 d-flex align-items-start gap-3{if $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}"{if $prettyblock_faq_state_style} style="{$prettyblock_faq_state_style}"{/if}>
-              <div class="prettyblock-faq-badge flex-shrink-0"{if $prettyblock_faq_badge_style} style="{$prettyblock_faq_badge_style}"{/if} aria-hidden="true">
-                {$prettyblock_faq_badge_text|escape:'htmlall':'UTF-8'}
-              </div>
-              <div class="prettyblock-faq-content">
-                {if $state.question}
-                  <span class="prettyblock-faq-question h4 fw-semibold mb-3">{$state.question|escape:'htmlall':'UTF-8'}</span>
-                {/if}
-                {if $state.answer}
-                  <div class="prettyblock-faq-answer text-body-secondary mb-3">{$state.answer nofilter}</div>
-                {/if}
-                {if $state.link_url}
-                  <a class="prettyblock-faq-link d-inline-flex align-items-center fw-semibold" href="{$state.link_url|escape:'htmlall':'UTF-8'}" title="{$state.link_label|default:$module->l('Learn more')|escape:'htmlall':'UTF-8'}">
-                    <span>{$state.link_label|default:$module->l('Learn more')|escape:'htmlall':'UTF-8'}</span>
-                    <span class="ms-2" aria-hidden="true">&rarr;</span>
-                  </a>
-                {/if}
-              </div>
+            <article class="prettyblock-faq-item{if $state.css_class} {$state.css_class|escape:'htmlall':'UTF-8'}{/if}"{if $prettyblock_faq_state_style} style="{$prettyblock_faq_state_style}"{/if}>
+              {if $state.question}
+                <span class="h2 prettyblock-faq-question">
+                  {$prettyblock_faq_question nofilter}
+                  <span class="question-mark" aria-hidden="true">?</span>
+                </span>
+              {/if}
+              {if $state.answer}
+                <div class="prettyblock-faq-answer">{$state.answer nofilter}</div>
+              {/if}
+              {if $state.link_url}
+                <a class="prettyblock-faq-link" href="{$state.link_url|escape:'htmlall':'UTF-8'}" title="{$state.link_label|default:$module->l('Learn more')|escape:'htmlall':'UTF-8'}">
+                  {$state.link_label|default:$module->l('Learn more')|escape:'htmlall':'UTF-8'}
+                </a>
+              {/if}
             </article>
+            {if !$smarty.foreach.faq_items.last}
+              <hr class="prettyblock-faq-separator" />
+            {/if}
           {/foreach}
         </div>
       {/if}
 
       {if $block.settings.cta_link}
-        <div class="mt-4 text-center">
-          <a class="btn btn-dark rounded-pill px-4 py-3 prettyblock-faq-cta" href="{$block.settings.cta_link|escape:'htmlall':'UTF-8'}" title="{$block.settings.cta_text|escape:'htmlall':'UTF-8'}">
-            {$block.settings.cta_text|escape:'htmlall':'UTF-8'}
+        <div class="prettyblock-faq-cta-wrapper">
+          <a class="prettyblock-faq-cta" href="{$block.settings.cta_link|escape:'htmlall':'UTF-8'}" title="{$block.settings.cta_text|escape:'htmlall':'UTF-8'}">
+            <span class="prettyblock-faq-cta-text">{$block.settings.cta_text|escape:'htmlall':'UTF-8'}</span>
+            <span class="prettyblock-faq-cta-icon" aria-hidden="true">&rarr;</span>
           </a>
         </div>
-      {/if}
-
-      {if isset($block.states) && $block.states}
-        <script type="application/ld+json">
-          {
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            "mainEntity": [
-              {assign var='faq_entity_index' value=0}
-              {foreach from=$block.states item=state}
-                {if $state.question && $state.answer}
-                  {if $faq_entity_index gt 0},{/if}
-                  {
-                    "@type": "Question",
-                    "name": "{$state.question|escape:'javascript'}",
-                    "acceptedAnswer": {
-                      "@type": "Answer",
-                      "text": "{$state.answer|strip_tags|escape:'javascript'}"
-                    }
-                  }
-                  {assign var='faq_entity_index' value=$faq_entity_index+1}
-                {/if}
-              {/foreach}
-            ]
-          }
-        </script>
       {/if}
     </div>
   </div>

@@ -3260,77 +3260,7 @@
   border: 0;
 }
 
-/* Prettyblock FAQ */
-.everblock-prettyblock-iframe {
-  display: block;
-  border: 0;
-  overflow: hidden;
-  max-width: 100%;
-  scrollbar-width: none;
-}
-
-.everblock-prettyblock-iframe::-webkit-scrollbar {
-  display: none;
-}
-.prettyblock-faq {
-  gap: 1rem;
-}
-
-.prettyblock-faq-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.prettyblock-faq-item {
-  border-radius: 18px;
-  box-shadow: 0 16px 48px rgba(49, 63, 105, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.prettyblock-faq-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 56px rgba(49, 63, 105, 0.12);
-  border-color: #d7deea;
-}
-
-.prettyblock-faq-badge {
-  width: 56px;
-  height: 56px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 18px;
-  background-color: #f3f0ff;
-  color: #5b35c3;
-  font-weight: 700;
-  font-size: 1.25rem;
-}
-
-.prettyblock-faq-question {
-  color: #111827;
-  line-height: 1.35;
-}
-
-.prettyblock-faq-answer {
-  color: #4b5563;
-  line-height: 1.6;
-}
-
-.prettyblock-faq-link {
-  color: #111827;
-  text-decoration: none;
-}
-
-.prettyblock-faq-link:hover {
-  color: #0d6efd;
-  text-decoration: underline;
-}
-
-.prettyblock-faq-cta {
-  min-width: 240px;
-}
-
+/* Prettyblock FAQ styles moved to prettyblock-faq.css */
 /* Prettyblock Google reviews */
 .everblock-google-reviews__col {
   display: flex;
