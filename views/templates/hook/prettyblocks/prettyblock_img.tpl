@@ -146,14 +146,6 @@
                      class="img img-fluid lazyload" loading="lazy">
               </picture>
 
-              <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
-                {if $state.text_highlight_1}
-                  <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
-                {/if}
-                {if $state.text_highlight_2}
-                  <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
-                {/if}
-              </div>
             {if isset($state.url) && $state.url}
               </a>
             {/if}
@@ -230,14 +222,6 @@
                      class="img img-fluid lazyload" loading="lazy">
               </picture>
 
-              <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
-                {if $state.text_highlight_1}
-                  <div class="fw-bold small">{$state.text_highlight_1 nofilter}</div>
-                {/if}
-                {if $state.text_highlight_2}
-                  <div class="fw-bold small mb-2">{$state.text_highlight_2 nofilter}</div>
-                {/if}
-              </div>
             {if isset($state.url) && $state.url}
               </a>
             {/if}
