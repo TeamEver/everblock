@@ -33,8 +33,10 @@
       ">
         {$state.content nofilter}
         {if isset($block.extra.states) && $block.extra.states}
-        {foreach $block.extra.states as $state}
-          {$state.content nofilter}
+        {foreach $block.extra.states as $extra_state}
+          {if isset($extra_state.content)}
+            {$extra_state.content nofilter}
+          {/if}
         {/foreach}
         {/if}
     </div>
