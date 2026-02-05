@@ -31,7 +31,9 @@
         {if isset($state.background_color) && $state.background_color}background-color:{$state.background_color};{/if}
         {if isset($state.text_color) && $state.text_color}color:{$state.text_color};{/if}
       ">
-        {$state.content nofilter}
+        {if isset($state.content)}
+          {$state.content nofilter}
+        {/if}
         {if isset($block.extra.states) && $block.extra.states}
         {foreach $block.extra.states as $extra_state}
           {if isset($extra_state.content)}
