@@ -30,7 +30,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
 
-use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverblockPrettyBlocks;
 use Everblock\Tools\Service\EverblockPrettyBlocksImportExport;
@@ -4788,13 +4788,23 @@ class Everblock extends Module
                     'ever_id_cart' => Cart::lastNoneOrderedCart($order->id_customer),
                 ]
             );
-            /** @var \PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButtonsCollection $bar */
-            $bar = $params['actions_bar_buttons_collection'];
-            $bar->add(
-                new \PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButton(
-                    'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
-                )
-            );
+            if (version_compare(_PS_VERSION_, '8.0', '<')) {
+                /** @var PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButtonsCollection $bar */
+                $bar = $params['actions_bar_buttons_collection'];
+                $bar->add(
+                    new PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButton(
+                        'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
+                    )
+                );
+            } else {
+                /** @var PrestaShop\PrestaShop\Core\Action\ActionsBarButtonsCollection $bar */
+                $bar = $params['actions_bar_buttons_collection'];
+                $bar->add(
+                    new PrestaShop\PrestaShop\Core\Action\ActionsBarButton(
+                        'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
+                    )
+                );
+            }
         }
     }
 
