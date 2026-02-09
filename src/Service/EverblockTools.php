@@ -3846,7 +3846,7 @@ class EverblockTools extends ObjectModel
 
     public static function getFrenchHolidays($year)
     {
-        $easterDate = easter_date($year);
+        $easterDate = \easter_date($year);
         $holidays = [
             // Jours fixes
             sprintf('%s-01-01', $year), // Jour de l'an
