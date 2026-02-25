@@ -857,7 +857,6 @@ class Everblock extends Module
     {
         $defaultLogo = 'modules/' . $this->name . '/views/img/login.svg';
         $loginTemplate = 'views/templates/front/blocks/everblock_login.tpl';
-        $instagramTemplate = 'views/templates/hook/instagram.tpl';
 
         return [
             [
@@ -879,17 +878,6 @@ class Everblock extends Module
                             'default' => $this->l('Login'),
                         ],
                     ],
-                ],
-            ],
-            [
-                'name' => $this->l('Instagram feed'),
-                'description' => $this->l('Display Instagram feed block'),
-                'code' => 'everblock_instagram',
-                'tab' => 'general',
-                'icon_path' => $defaultLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $instagramTemplate,
                 ],
             ],
         ];
