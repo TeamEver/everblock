@@ -736,6 +736,7 @@ class Everblock extends Module
         $this->registerHook('displayWrapperTop');
         $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
         $this->registerHook('filterQcdPageBuilderDeclarativeBlocks');
+        $this->registerHook('filterQcdPageBuilderThirdPartyBlockFrontRender');
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
     }
@@ -962,6 +963,66 @@ class Everblock extends Module
                 ],
             ],
         ];
+    }
+
+    public function hookFilterQcdPageBuilderThirdPartyBlockFrontRender(array $params)
+    {
+        if (!isset($params['context']) || !is_array($params['context'])) {
+            return;
+        }
+
+        $context =& $params['context'];
+        $blockType = isset($context['block_type']) ? (string) $context['block_type'] : '';
+
+        if ($blockType !== 'everblock_latest_pages') {
+            return;
+        }
+
+        $context['owner_module'] = $this->name;
+        $context['template'] = 'views/templates/front/pages-alt.tpl';
+
+        if (!isset($context['normalized']) || !is_array($context['normalized'])) {
+            $context['normalized'] = [];
+        }
+        if (!isset($context['normalized']['attributes']) || !is_array($context['normalized']['attributes'])) {
+            $context['normalized']['attributes'] = [];
+        }
+
+        $limit = (int) ($context['normalized']['attributes']['limit'] ?? $context['attributes']['limit'] ?? 10);
+        if ($limit <= 0) {
+            $limit = 10;
+        }
+        $limit = min($limit, 50);
+        $context['normalized']['attributes']['limit'] = $limit;
+
+        $customerGroups = EverblockPage::getCustomerGroups($this->context);
+        $pages = EverblockPage::getPages(
+            (int) $this->context->language->id,
+            (int) $this->context->shop->id,
+            true,
+            $customerGroups,
+            1,
+            $limit
+        );
+
+        $pageLinks = [];
+        foreach ($pages as $page) {
+            $pageLinks[(int) $page->id] = $this->context->link->getModuleLink(
+                $this->name,
+                'page',
+                [
+                    'id_everblock_page' => (int) $page->id,
+                    'rewrite' => $page->link_rewrite,
+                ]
+            );
+
+            $page->cover_image_data = $page->getCoverImageData($this->context);
+        }
+
+        $this->context->smarty->assign([
+            'everblock_pages' => $pages,
+            'everblock_page_links' => $pageLinks,
+        ]);
     }
 
     public function getContent()
