@@ -3846,7 +3846,7 @@ class EverblockTools extends ObjectModel
 
     public static function getFrenchHolidays($year)
     {
-        $easterDate = \easter_date($year);
+        $easterDate = self::getEasterDate((int) $year);
         $holidays = [
             // Jours fixes
             sprintf('%s-01-01', $year), // Jour de l'an
@@ -3859,13 +3859,33 @@ class EverblockTools extends ObjectModel
             sprintf('%s-12-25', $year), // Noël
 
             // Jours mobiles (basés sur Pâques)
-            date('Y-m-d', $easterDate), // Pâques
-            date('Y-m-d', strtotime('+39 days', $easterDate)), // Ascension
-            date('Y-m-d', strtotime('+49 days', $easterDate)), // Pentecôte
-            date('Y-m-d', strtotime('+50 days', $easterDate)), // Lundi de Pentecôte
+            $easterDate, // Pâques
+            date('Y-m-d', strtotime($easterDate . ' +39 days')), // Ascension
+            date('Y-m-d', strtotime($easterDate . ' +49 days')), // Pentecôte
+            date('Y-m-d', strtotime($easterDate . ' +50 days')), // Lundi de Pentecôte
         ];
 
         return $holidays;
+    }
+
+    protected static function getEasterDate(int $year): string
+    {
+        $goldenNumber = $year % 19;
+        $century = intdiv($year, 100);
+        $centuryRemainder = $year % 100;
+        $leapCorrection = intdiv($century, 4);
+        $centuryMod = $century % 4;
+        $moonCorrection = intdiv($century + 8, 25);
+        $epactCorrection = intdiv($century - $moonCorrection + 1, 3);
+        $epact = (19 * $goldenNumber + $century - $leapCorrection - $epactCorrection + 15) % 30;
+        $yearRemainder = intdiv($centuryRemainder, 4);
+        $weekdayRemainder = $centuryRemainder % 4;
+        $weekday = (32 + (2 * $centuryMod) + (2 * $yearRemainder) - $epact - $weekdayRemainder) % 7;
+        $monthOffset = intdiv($goldenNumber + (11 * $epact) + (22 * $weekday), 451);
+        $month = intdiv($epact + $weekday - (7 * $monthOffset) + 114, 31);
+        $day = (($epact + $weekday - (7 * $monthOffset) + 114) % 31) + 1;
+
+        return sprintf('%04d-%02d-%02d', $year, $month, $day);
     }
 
     protected static function getStoreHolidayHoursConfig(int $storeId): array
