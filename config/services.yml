@@ -27,12 +27,6 @@ services:
         tags:
             - { name: 'console.command' }
 
-    everblock.tools.prettyblocks:
-        class: Everblock\Tools\Command\PrettyBlocksCommand
-        public: true
-        tags:
-            - { name: 'console.command' }
-
     everblock.tools.search_replace:
         class: Everblock\Tools\Command\SearchReplaceCommand
         public: true
@@ -44,4 +38,3 @@ services:
         public: true
         tags:
             - { name: 'console.command' }
-
