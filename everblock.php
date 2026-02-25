@@ -277,13 +277,13 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_FAQ_BASE_URL');
         Configuration::deleteByName('EVERBLOCK_FAQ_PER_PAGE');
         $uninstalled = (parent::uninstall()
-            && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
             && $this->uninstallModuleTab('AdminEverBlock')
             && $this->uninstallModuleTab('AdminEverBlockHook')
             && $this->uninstallModuleTab('AdminEverBlockShortcode')
             && $this->uninstallModuleTab('AdminEverBlockFaq')
-            && $this->uninstallModuleTab('AdminEverBlockPage'));
+            && $this->uninstallModuleTab('AdminEverBlockPage')
+            && $this->uninstallModuleTab('AdminEverBlockParent'));
 
         if (Tab::getIdFromClassName('AdminEverBlockPrettyblock')) {
             $uninstalled = $uninstalled && $this->uninstallModuleTab('AdminEverBlockPrettyblock');
