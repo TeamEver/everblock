@@ -854,50 +854,109 @@ class Everblock extends Module
 
     public function hookFilterQcdPageBuilderDeclarativeBlocks(array $params)
     {
-        $defaultLogo = 'modules/' . $this->name . '/views/img/login.svg';
-        $cartLogo = 'modules/' . $this->name . '/views/img/svg/cart.svg';
-        $loginTemplate = 'views/templates/front/blocks/everblock_login.tpl';
-        $cartTemplate = 'views/templates/hook/cart.tpl';
+        $everblockLogo = 'modules/' . $this->name . '/views/img/svg/grid.svg';
+        $shortcodeLogo = 'modules/' . $this->name . '/views/img/svg/copy.svg';
+        $faqLogo = 'modules/' . $this->name . '/views/img/svg/help.svg';
+        $pagesLogo = 'modules/' . $this->name . '/views/img/svg/list.svg';
+
+        $everblockTemplate = 'views/templates/hook/everblock.tpl';
+        $shortcodeTemplate = 'views/templates/hook/everblock.tpl';
+        $faqTemplate = 'views/templates/hook/faq.tpl';
+        $pagesTemplate = 'views/templates/front/pages.tpl';
 
         return [
             [
-                'name' => $this->l('Login form'),
-                'description' => $this->l('Add login form'),
-                'code' => 'everblock_login',
+                'name' => $this->l('Everblock selection'),
+                'description' => $this->l('Display a selected Everblock'),
+                'code' => 'everblock_select',
                 'tab' => 'general',
-                'icon_path' => $defaultLogo,
+                'icon_path' => $everblockLogo,
                 'need_reload' => true,
                 'templates' => [
-                    'default' => $loginTemplate,
+                    'default' => $everblockTemplate,
                 ],
                 'config' => [
                     'fields' => [
                         [
-                            'name' => 'title',
-                            'type' => 'text',
-                            'label' => 'Block title',
-                            'default' => $this->l('Login'),
+                            'name' => 'id_everblock',
+                            'type' => 'select',
+                            'label' => $this->l('Everblock'),
+                            'collection' => [
+                                'class' => \EverBlockClass::class,
+                                'label_field' => 'name',
+                            ],
                         ],
                     ],
                 ],
             ],
             [
-                'name' => $this->l('Cart'),
-                'description' => $this->l('Display cart'),
-                'code' => 'everblock_cart',
+                'name' => $this->l('Shortcode selection'),
+                'description' => $this->l('Display a selected shortcode entry'),
+                'code' => 'everblock_shortcode',
                 'tab' => 'general',
-                'icon_path' => $cartLogo,
+                'icon_path' => $shortcodeLogo,
                 'need_reload' => true,
                 'templates' => [
-                    'default' => $cartTemplate,
+                    'default' => $shortcodeTemplate,
                 ],
                 'config' => [
                     'fields' => [
                         [
-                            'name' => 'title',
-                            'type' => 'text',
-                            'label' => 'Block title',
-                            'default' => $this->l('Cart'),
+                            'name' => 'id_everblock_shortcode',
+                            'type' => 'select',
+                            'label' => $this->l('Shortcode'),
+                            'collection' => [
+                                'class' => \EverblockShortcode::class,
+                                'label_field' => 'title',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'name' => $this->l('FAQ selection'),
+                'description' => $this->l('Display selected FAQ entries'),
+                'code' => 'everblock_faq',
+                'tab' => 'general',
+                'icon_path' => $faqLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $faqTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        [
+                            'name' => 'faq_ids',
+                            'type' => 'array',
+                            'input' => 'multiselect',
+                            'label' => $this->l('FAQs'),
+                            'collection' => [
+                                'class' => \EverblockFaq::class,
+                                'label_field' => 'title',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'name' => $this->l('Latest pages'),
+                'description' => $this->l('Display latest published pages'),
+                'code' => 'everblock_latest_pages',
+                'tab' => 'general',
+                'icon_path' => $pagesLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $pagesTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        [
+                            'name' => 'limit',
+                            'type' => 'number',
+                            'label' => $this->l('Number of pages'),
+                            'default' => 5,
+                            'min' => 1,
+                            'max' => 50,
                         ],
                     ],
                 ],
