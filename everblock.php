@@ -210,6 +210,7 @@ class Everblock extends Module
             'actionAdminControllerSetMedia',
             'actionRegisterBlock',
             'moduleRoutes',
+            'filterQcdPageBuilderDeclarativeBlocks',
         ];
 
         foreach ($hooksToRegister as $hookName) {
@@ -734,6 +735,7 @@ class Everblock extends Module
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
         $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
+        $this->registerHook('filterQcdPageBuilderDeclarativeBlocks');
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
     }
@@ -848,6 +850,37 @@ class Everblock extends Module
         ];
 
         return $params;
+    }
+
+
+    public function hookFilterQcdPageBuilderDeclarativeBlocks(array $params)
+    {
+        $defaultLogo = 'modules/' . $this->name . '/views/img/login.svg';
+        $loginTemplate = 'views/templates/front/blocks/everblock_login.tpl';
+
+        return [
+            [
+                'name' => $this->l('Login form'),
+                'description' => $this->l('Add login form'),
+                'code' => 'everblock_login',
+                'tab' => 'general',
+                'icon_path' => $defaultLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $loginTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        [
+                            'name' => 'title',
+                            'type' => 'text',
+                            'label' => 'Block title',
+                            'default' => $this->l('Login'),
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     public function getContent()
