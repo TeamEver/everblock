@@ -5184,12 +5184,6 @@ class Everblock extends Module
         return $this->display(__FILE__, 'views/templates/hook/displayEverModel.tpl');
     }
 
-    public function hookActionRegisterBlock($params)
-    {
-        EverblockTools::checkAndFixDatabase();
-        return [];
-    }
-
     protected function compressCSSCode($css)
     {
         // Supprime les commentaires
