@@ -213,6 +213,7 @@ class Everblock extends Module
             && $this->registerHook('actionRegisterBlock')
             && $this->registerHook('moduleRoutes')
             && $this->registerHook('beforeRenderingEverblockSpecialEvent')
+            && $this->registerQcdPageBuilderBackOfficeTargetsHook()
             && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
             && $this->installModuleTab('AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'))
             && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
@@ -290,6 +291,18 @@ class Everblock extends Module
 
         return $uninstalled;
     }
+
+
+    private function registerQcdPageBuilderBackOfficeTargetsHook(): bool
+    {
+        if (!Hook::getIdByName('filterQcdPageBuilderBackOfficeTargets')) {
+            return true;
+        }
+
+        return $this->isRegisteredInHook('filterQcdPageBuilderBackOfficeTargets')
+            || $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
+    }
+
 
     public function l($string, $specific = null, $idLang = null)
     {
@@ -662,6 +675,9 @@ class Everblock extends Module
             $this->unregisterHook('beforeRenderingEverblockSpecialEvent');
             $this->unregisterHook('beforeRenderingEverblockEverblock');
         }
+
+        $this->registerQcdPageBuilderBackOfficeTargetsHook();
+
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
         if (!$id_tab) {
@@ -784,6 +800,7 @@ class Everblock extends Module
         $this->registerHook('actionObjectEverBlockFlagsDeleteAfter');
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
+        $this->registerQcdPageBuilderBackOfficeTargetsHook();
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
         if ($this->hasPrettyblocksModule()) {
@@ -831,6 +848,83 @@ class Everblock extends Module
             $this->unregisterHook('actionProductFlagsModifier');
         }
     }
+
+
+    public function hookFilterQcdPageBuilderBackOfficeTargets(array $params)
+    {
+        if (!isset($params['targets']) || !is_array($params['targets'])) {
+            $params['targets'] = [];
+        }
+
+        $params['targets'][] = [
+            // Identifiants techniques obligatoires [a-z0-9_]{2,64}
+            'target_type' => 'everblock',
+            'target_field' => 'content',
+
+            // Le nom de contrôleur est comparé en minuscule côté registry
+            'controllers' => [
+                'admineverblock',
+                'admineverblockcontroller',
+                'admineverblockconfiguration',
+                'admineverblockfaq',
+                'admineverblockhook',
+                'admineverblockpage',
+                'admineverblockshortcode',
+                'admineverblockprettyblock',
+            ],
+
+            // Sélecteurs du textarea réel (pas l'iframe TinyMCE)
+            'selectors' => [
+                'body.admineverblock textarea[name="content_2"]',
+                'body.admineverblockcontroller textarea[name="content_2"]',
+                'body[class*="admin"] textarea[name="content_2"]',
+                'textarea[name="content_2"]',
+            ],
+
+            // Stratégie de résolution de l'ID objet
+            'id_resolver' => [
+                // 1) hidden/input ID (source principale)
+                'input_selectors' => [
+                    'input[name="id_everblock"]',
+                    'input[name="everblock[id_everblock]"]',
+                    'input[name="everblock[id]"]',
+                ],
+
+                // 2) fallback data-* si votre template les expose
+                'data_attributes' => [
+                    'data-id-everblock',
+                    'data-everblock-id',
+                    'data-id-object',
+                    'data-id',
+                ],
+
+                // 3) fallback meta optionnel
+                'meta_selectors' => [
+                    'meta[name="qcdpb:id_everblock"]',
+                    'meta[name="everblock:id"]',
+                ],
+
+                // 4) fallback querystring et action du formulaire
+                'query_params' => ['id_everblock', 'everblockId', 'id'],
+                'custom_extractors' => ['closest_form_action_query'],
+
+                // 5) draft optionnel: autorise un ID pseudo-stable avant 1er save
+                // Recommandation: conserver la règle "enregistrer d'abord" pour un rattachement définitif
+                'draft_key' => [
+                    'enabled' => true,
+                    'input_selectors' => ['input[name="title_2"]', 'input[name="name"]'],
+                    'data_attributes' => ['data-draft-key'],
+                    'query_params' => ['draft_key', 'draft'],
+                ],
+
+                // 6) fallback final sur segments d'URL (legacy utile)
+                'path_fallback' => true,
+            ],
+        ];
+
+        return $params;
+    }
+
 
     public function getContent()
     {
