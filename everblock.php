@@ -103,7 +103,6 @@ class Everblock extends Module
 
     public function install()
     {
-        $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
         Configuration::updateValue('EVERBLOCK_TINYMCE', 1);
         Configuration::updateValue('EVERPSCSS_P_LLOREM_NUMBER', 5);
         Configuration::updateValue('EVERPSCSS_S_LLOREM_NUMBER', 5);
