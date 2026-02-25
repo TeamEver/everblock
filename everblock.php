@@ -483,11 +483,14 @@ class Everblock extends Module
 
     protected function installModuleTab($tabClass, $parent, $tabName)
     {
-        $tab = new Tab();
+        $existingTabId = (int) Tab::getIdFromClassName($tabClass);
+        $tab = $existingTabId ? new Tab($existingTabId) : new Tab();
         $tab->active = 1;
         $tab->class_name = $tabClass;
         $tab->id_parent = (int) Tab::getIdFromClassName($parent);
-        $tab->position = Tab::getNewLastPosition($tab->id_parent);
+        if (!$existingTabId) {
+            $tab->position = Tab::getNewLastPosition($tab->id_parent);
+        }
         $tab->module = $this->name;
         if ($tabClass == 'AdminEverBlockParent') {
             $tab->icon = 'icon-team-ever';
@@ -495,12 +498,21 @@ class Everblock extends Module
         foreach (Language::getLanguages(false) as $lang) {
             $tab->name[(int) $lang['id_lang']] = $tabName;
         }
+        if ($existingTabId) {
+            return $tab->update();
+        }
+
         return $tab->add();
     }
 
     protected function uninstallModuleTab($tabClass)
     {
-        $tab = new Tab((int) Tab::getIdFromClassName($tabClass));
+        $tabId = (int) Tab::getIdFromClassName($tabClass);
+        if (!$tabId) {
+            return true;
+        }
+
+        $tab = new Tab($tabId);
         return $tab->delete();
     }
 
