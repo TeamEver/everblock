@@ -101,117 +101,159 @@ class Everblock extends Module
     }
 
 
-    public function install()
+    public function install(): bool
     {
-        Configuration::updateValue('EVERBLOCK_TINYMCE', 1);
-        Configuration::updateValue('EVERPSCSS_P_LLOREM_NUMBER', 5);
-        Configuration::updateValue('EVERPSCSS_S_LLOREM_NUMBER', 5);
-        Configuration::updateValue('EVERPS_TAB_NB', 5);
-        Configuration::updateValue('EVERPS_FLAG_NB', 5);
-        Configuration::updateValue('EVERWP_API_URL', '');
-        Configuration::updateValue('EVERWP_BLOG_URL', '/blog');
-        Configuration::updateValue('EVERWP_POST_NBR', 3);
-        Configuration::updateValue('EVERWP_POSTS_BG_IMAGE', '');
-        Configuration::updateValue('EVER_SOLDOUT_COLOR', '#ff0000');
-        Configuration::updateValue('EVER_SOLDOUT_TEXTCOLOR', '#ffffff');
-        Configuration::updateValue('EVERINSTA_SHOW_CAPTION', 0);
-        Configuration::updateValue('EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE', 2097152);
-        Configuration::updateValue(
-            'EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS',
-            json_encode(['pdf', 'jpg', 'jpeg', 'png']),
-            true
-        );
-        Configuration::updateValue(
-            'EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES',
-            json_encode(['application/pdf', 'image/jpeg', 'image/png']),
-            true
-        );
-        Configuration::updateValue(
-            'EVERPS_FEATURES_AS_FLAGS',
-            json_encode([1]),
-            true
-        );
-        Configuration::updateValue('EVERBLOCK_SOLDOUT_FLAG', 0);
-        Configuration::updateValue('EVERBLOCK_LOW_STOCK_THRESHOLD', 5);
-        Configuration::updateValue('EVERBLOCK_STORELOCATOR_TOGGLE', 0);
-        Configuration::updateValue('EVERBLOCK_GOOGLE_API_KEY', '');
-        Configuration::updateValue('EVERBLOCK_GOOGLE_PLACE_ID', '');
-        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT', 5);
-        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING', 0);
-        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SORT', 'most_relevant');
-        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING', 1);
-        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR', 1);
-        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA', 1);
-        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL', $this->l('Read all reviews on Google'));
-        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL', '');
-        Configuration::updateValue('EVERBLOCK_PAGES_BASE_URL', 'guide');
-        Configuration::updateValue('EVERBLOCK_PAGES_PER_PAGE', 9);
-        Configuration::updateValue('EVERBLOCK_FAQ_BASE_URL', 'faq');
-        Configuration::updateValue('EVERBLOCK_FAQ_PER_PAGE', 10);
-        // Install SQL
+        if (!parent::install()) {
+            return false;
+        }
+
+        if (!$this->installConfiguration()) {
+            return false;
+        }
+
+        if (!$this->installSql()) {
+            return false;
+        }
+
+        if (!$this->installHooks()) {
+            return false;
+        }
+
+        if (!$this->installTabs()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function installConfiguration(): bool
+    {
+        $configuration = [
+            ['EVERBLOCK_TINYMCE', 1],
+            ['EVERPSCSS_P_LLOREM_NUMBER', 5],
+            ['EVERPSCSS_S_LLOREM_NUMBER', 5],
+            ['EVERPS_TAB_NB', 5],
+            ['EVERPS_FLAG_NB', 5],
+            ['EVERWP_API_URL', ''],
+            ['EVERWP_BLOG_URL', '/blog'],
+            ['EVERWP_POST_NBR', 3],
+            ['EVERWP_POSTS_BG_IMAGE', ''],
+            ['EVER_SOLDOUT_COLOR', '#ff0000'],
+            ['EVER_SOLDOUT_TEXTCOLOR', '#ffffff'],
+            ['EVERINSTA_SHOW_CAPTION', 0],
+            ['EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE', 2097152],
+            ['EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS', json_encode(['pdf', 'jpg', 'jpeg', 'png']), true],
+            ['EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES', json_encode(['application/pdf', 'image/jpeg', 'image/png']), true],
+            ['EVERPS_FEATURES_AS_FLAGS', json_encode([1]), true],
+            ['EVERBLOCK_SOLDOUT_FLAG', 0],
+            ['EVERBLOCK_LOW_STOCK_THRESHOLD', 5],
+            ['EVERBLOCK_STORELOCATOR_TOGGLE', 0],
+            ['EVERBLOCK_GOOGLE_API_KEY', ''],
+            ['EVERBLOCK_GOOGLE_PLACE_ID', ''],
+            ['EVERBLOCK_GOOGLE_REVIEWS_LIMIT', 5],
+            ['EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING', 0],
+            ['EVERBLOCK_GOOGLE_REVIEWS_SORT', 'most_relevant'],
+            ['EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING', 1],
+            ['EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR', 1],
+            ['EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA', 1],
+            ['EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL', $this->l('Read all reviews on Google')],
+            ['EVERBLOCK_GOOGLE_REVIEWS_CTA_URL', ''],
+            ['EVERBLOCK_PAGES_BASE_URL', 'guide'],
+            ['EVERBLOCK_PAGES_PER_PAGE', 9],
+            ['EVERBLOCK_FAQ_BASE_URL', 'faq'],
+            ['EVERBLOCK_FAQ_PER_PAGE', 10],
+        ];
+
+        foreach ($configuration as $item) {
+            $autoload = $item[2] ?? false;
+            if (!Configuration::updateValue($item[0], $item[1], $autoload)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function installSql(): bool
+    {
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
-        // Hook actionGetEverBlockBefore
-        if (!Hook::getIdByName('actionGetEverBlockBefore')) {
-            $hook = new Hook();
-            $hook->name = 'actionGetEverBlockBefore';
-            $hook->title = 'Before block is rendered';
-            $hook->description = 'This hook triggers before block is rendered';
-            $hook->save();
+
+        foreach ($sql as $query) {
+            if (!Db::getInstance()->execute($query)) {
+                return false;
+            }
         }
-        // Hook actionEverBlockChangeShortcodeBefore
-        if (!Hook::getIdByName('actionEverBlockChangeShortcodeBefore')) {
-            $hook = new Hook();
-            $hook->name = 'actionEverBlockChangeShortcodeBefore';
-            $hook->title = 'Before block shortcodes are rendered';
-            $hook->description = 'This hook triggers before every block shortcode is rendered';
-            $hook->save();
+
+        return true;
+    }
+
+    private function installHooks(): bool
+    {
+        $customHooks = [
+            ['actionGetEverBlockBefore', 'Before block is rendered', 'This hook triggers before block is rendered'],
+            ['actionEverBlockChangeShortcodeBefore', 'Before block shortcodes are rendered', 'This hook triggers before every block shortcode is rendered'],
+            ['actionEverBlockChangeShortcodeAfter', 'After block shortcodes are rendered', 'This hook triggers after every block shortcode is rendered'],
+            ['displayBeforeRenderingShortcodes', 'Before rendering shortcodes', 'This hook triggers before shortcodes are rendered'],
+            ['displayAfterRenderingShortcodes', 'After rendering shortcodes', 'This hook triggers after shortcodes are rendered'],
+            ['displayFakeHook', 'Fake hook', 'Ne pas afficher ce hook en front, il sera utilisé pour du contenu asynchrone'],
+        ];
+
+        foreach ($customHooks as $customHook) {
+            if (!$this->createHookIfNotExists($customHook[0], $customHook[1], $customHook[2])) {
+                return false;
+            }
         }
-        // Hook actionEverBlockChangeShortcodeBefore
-        if (!Hook::getIdByName('actionEverBlockChangeShortcodeAfter')) {
-            $hook = new Hook();
-            $hook->name = 'actionEverBlockChangeShortcodeAfter';
-            $hook->title = 'After block shortcodes are rendered';
-            $hook->description = 'This hook triggers after every block shortcode is rendered';
-            $hook->save();
+
+        $hooksToRegister = [
+            'displayHeader',
+            'actionAdminControllerSetMedia',
+            'actionRegisterBlock',
+            'moduleRoutes',
+        ];
+
+        foreach ($hooksToRegister as $hookName) {
+            if (!$this->registerHook($hookName)) {
+                return false;
+            }
         }
-        // Hook displayBeforeRenderingShortcodes
-        if (!Hook::getIdByName('displayBeforeRenderingShortcodes')) {
-            $hook = new Hook();
-            $hook->name = 'displayBeforeRenderingShortcodes';
-            $hook->title = 'Before rendering shortcodes';
-            $hook->description = 'This hook triggers before shortcodes are rendered';
-            $hook->save();
+
+        return true;
+    }
+
+    private function installTabs(): bool
+    {
+        $tabs = [
+            ['AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block')],
+            ['AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration')],
+            ['AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks')],
+            ['AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks')],
+            ['AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes')],
+            ['AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ')],
+            ['AdminEverBlockPage', 'AdminEverBlockParent', $this->l('Pages')],
+        ];
+
+        foreach ($tabs as $tab) {
+            if (!$this->installModuleTab($tab[0], $tab[1], $tab[2])) {
+                return false;
+            }
         }
-        // Hook displayAfterRenderingShortcodes
-        if (!Hook::getIdByName('displayAfterRenderingShortcodes')) {
-            $hook = new Hook();
-            $hook->name = 'displayAfterRenderingShortcodes';
-            $hook->title = 'After rendering shortcodes';
-            $hook->description = 'This hook triggers after shortcodes are rendered';
-            $hook->save();
+
+        return true;
+    }
+
+    private function createHookIfNotExists(string $name, string $title, string $description): bool
+    {
+        if ((int) Hook::getIdByName($name) > 0) {
+            return true;
         }
-        // Hook displayFakeHook
-        if (!Hook::getIdByName('displayFakeHook')) {
-            $hook = new Hook();
-            $hook->name = 'displayFakeHook';
-            $hook->title = 'Fake hook';
-            $hook->description = 'Ne pas afficher ce hook en front, il sera utilisé pour du contenu asynchrone';
-            $hook->save();
-        }
-        $installed = parent::install()
-            && $this->registerHook('displayHeader')
-            && $this->registerHook('actionAdminControllerSetMedia')
-            && $this->registerHook('actionRegisterBlock')
-            && $this->registerHook('moduleRoutes')
-            && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
-            && $this->installModuleTab('AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'))
-            && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
-            && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
-            && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes'))
-            && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'))
-            && $this->installModuleTab('AdminEverBlockPage', 'AdminEverBlockParent', $this->l('Pages'));
-        return $installed;
+
+        $hook = new Hook();
+        $hook->name = $name;
+        $hook->title = $title;
+        $hook->description = $description;
+
+        return (bool) $hook->add();
     }
 
     public function uninstall()
@@ -456,28 +498,33 @@ class Everblock extends Module
         );
     }
 
-    protected function installModuleTab($tabClass, $parent, $tabName)
+    private function installModuleTab(string $className, string $parentClassName, string $name): bool
     {
-        $existingTabId = (int) Tab::getIdFromClassName($tabClass);
-        $tab = $existingTabId ? new Tab($existingTabId) : new Tab();
-        $tab->active = 1;
-        $tab->class_name = $tabClass;
-        $tab->id_parent = (int) Tab::getIdFromClassName($parent);
-        if (!$existingTabId) {
-            $tab->position = Tab::getNewLastPosition($tab->id_parent);
-        }
-        $tab->module = $this->name;
-        if ($tabClass == 'AdminEverBlockParent') {
-            $tab->icon = 'icon-team-ever';
-        }
-        foreach (Language::getLanguages(false) as $lang) {
-            $tab->name[(int) $lang['id_lang']] = $tabName;
-        }
-        if ($existingTabId) {
-            return $tab->update();
+        if ((int) Tab::getIdFromClassName($className) > 0) {
+            return true;
         }
 
-        return $tab->add();
+        $parentId = (int) Tab::getIdFromClassName($parentClassName);
+        if ($parentId <= 0) {
+            return false;
+        }
+
+        $tab = new Tab();
+        $tab->active = 1;
+        $tab->class_name = $className;
+        $tab->id_parent = $parentId;
+        $tab->position = Tab::getNewLastPosition($tab->id_parent);
+        $tab->module = $this->name;
+
+        if ($className === 'AdminEverBlockParent') {
+            $tab->icon = 'icon-team-ever';
+        }
+
+        foreach (Language::getLanguages(false) as $lang) {
+            $tab->name[(int) $lang['id_lang']] = $name;
+        }
+
+        return (bool) $tab->add();
     }
 
     protected function uninstallModuleTab($tabClass)
