@@ -775,7 +775,6 @@ class Everblock extends Module
         }
     }
 
-
     public function hookFilterQcdPageBuilderBackOfficeTargets(array $params)
     {
         if (!isset($params['targets']) || !is_array($params['targets'])) {
@@ -850,7 +849,6 @@ class Everblock extends Module
 
         return $params;
     }
-
 
     public function getContent()
     {
