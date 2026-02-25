@@ -135,7 +135,6 @@ return [
     'views/css/ever.css',
     'views/css/everblock.css',
     'views/css/index.php',
-    'views/css/quill.css',
     'views/img/ever.png',
     'views/img/favicon.png',
     'views/img/fileType',

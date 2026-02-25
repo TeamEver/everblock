@@ -41,7 +41,7 @@
     cursor: pointer;
 }
 
-/* Prettyblock link hover effect */
+/* Link hover effect */
 .everblock-link-hover--text {
     text-decoration-line: underline;
     text-decoration-color: transparent;
@@ -67,47 +67,8 @@
     transform: scale(1.04);
 }
 
-/* Prettyblock LLM links */
-.prettyblock-llm-links__inner {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
+/* LLM links */
 
-.prettyblock-llm-links__heading {
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.prettyblock-llm-links__list {
-    row-gap: 1rem;
-}
-
-.prettyblock-llm-links__item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    text-align: center;
-    padding: 0.75rem 0.5rem;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    background-color: #f8f9fa;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    color: inherit;
-}
-
-.prettyblock-llm-links__item:hover,
-.prettyblock-llm-links__item:focus {
-    text-decoration: none;
-    color: inherit;
-}
-
-.prettyblock-llm-links__icon {
-    max-width: 92px;
-    height: auto;
-}
 
 /* Lookbook product markers */
 
@@ -205,30 +166,6 @@
     }
 }
 
-.prettyblock-lookbook {
-    width: 100%;
-    display: grid;
-    gap: 1.5rem;
-    align-items: start;
-}
-
-.prettyblock-lookbook.columns-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.prettyblock-lookbook.columns-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.prettyblock-lookbook .lookbook-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.prettyblock-lookbook .lookbook-item--main {
-    padding: 0 1.5rem;
-}
 
 .lookbook-main-wrapper {
     max-width: 640px;
@@ -240,20 +177,12 @@
 }
 
 @media (max-width: 767.98px) {
-    .prettyblock-lookbook.columns-2,
-    .prettyblock-lookbook.columns-3 {
-        grid-template-columns: 1fr;
-    }
+    
 }
 
 @media (min-width: 992px) {
-    .prettyblock-lookbook {
-        gap: 0;
-    }
+    
 
-    .prettyblock-lookbook .lookbook-item--main {
-        padding: 0 3rem;
-    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -425,62 +354,8 @@
 .nav-tabs .nav-item {
     list-style-type: none;
 }
-.prettyblock-category-tabs__nav.nav-tabs {
-    border-bottom: 0;
-    gap: 0.5rem;
-}
-.prettyblock-category-tabs__nav .nav-item {
-    margin-bottom: 0;
-}
-.prettyblock-category-tabs__tab-link {
-    border: 1px solid var(--bs-primary, #0d6efd);
-    border-radius: 999px;
-    color: var(--bs-primary, #0d6efd);
-    font-weight: 600;
-    padding: 0.5rem 1.5rem;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-.prettyblock-category-tabs__tab-link:hover,
-.prettyblock-category-tabs__tab-link:focus {
-    border-color: var(--bs-primary, #0d6efd);
-    color: var(--bs-primary, #0d6efd);
-}
-.prettyblock-category-tabs__tab-link.active {
-    background-color: var(--bs-primary, #0d6efd);
-    border-color: var(--bs-primary, #0d6efd);
-    color: #fff;
-}
-.prettyblock-category-tabs__layout {
-    align-items: flex-start;
-}
-.prettyblock-category-tabs__slider {
-    width: 100%;
-}
-.prettyblock-category-tabs__slider-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-}
-.prettyblock-category-tabs__slider-title {
-    flex: 1;
-    font-weight: 600;
-    text-align: center;
-}
-.prettyblock-category-tabs__slider .carousel-control-prev,
-.prettyblock-category-tabs__slider .carousel-control-next {
-    position: static;
-    width: 2rem;
-    height: 2rem;
-    margin: 0;
-    opacity: 1;
-}
-.prettyblock-category-tabs__slider .carousel-control-prev.disabled,
-.prettyblock-category-tabs__slider .carousel-control-next.disabled {
-    opacity: 0.4;
-    pointer-events: none;
-}
+
+
 #everblockModal button.close {
     float: right;
     padding: 0;
@@ -771,267 +646,19 @@
 }
 
 /* Cover block */
-.prettyblock-cover-row {
-    display: flex;
-    flex-wrap: wrap;
-}
 
-.prettyblock-cover-row--spaced {
-    gap: var(--prettyblock-cover-columns-gap, 2rem);
-}
-
-.prettyblock-cover-row > .prettyblock-cover-item,
-.prettyblock-cover-row > .col {
-    flex: 0 0 100%;
-    max-width: 100%;
-}
 
 @media (min-width: 768px) {
-    .prettyblock-cover-row--cols-1 > .prettyblock-cover-item,
-    .prettyblock-cover-row--cols-1 > .col {
-        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 0)) / 1);
-        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 0)) / 1);
-    }
+    
 
-    .prettyblock-cover-row--cols-2 > .prettyblock-cover-item,
-    .prettyblock-cover-row--cols-2 > .col {
-        flex: 0 0 calc((100% - var(--prettyblock-cover-columns-gap, 2rem)) / 2);
-        max-width: calc((100% - var(--prettyblock-cover-columns-gap, 2rem)) / 2);
-    }
-
-    .prettyblock-cover-row--cols-3 > .prettyblock-cover-item,
-    .prettyblock-cover-row--cols-3 > .col {
-        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 2)) / 3);
-        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 2)) / 3);
-    }
-
-    .prettyblock-cover-row--cols-4 > .prettyblock-cover-item,
-    .prettyblock-cover-row--cols-4 > .col {
-        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 3)) / 4);
-        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 3)) / 4);
-    }
-
-    .prettyblock-cover-row--cols-5 > .prettyblock-cover-item,
-    .prettyblock-cover-row--cols-5 > .col {
-        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 4)) / 5);
-        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 4)) / 5);
-    }
-
-    .prettyblock-cover-row--cols-6 > .prettyblock-cover-item,
-    .prettyblock-cover-row--cols-6 > .col {
-        flex: 0 0 calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 5)) / 6);
-        max-width: calc((100% - (var(--prettyblock-cover-columns-gap, 2rem) * 5)) / 6);
-    }
 }
 
-.prettyblock-cover-item,
-.prettyblock-cover-row > .col {
-    position: relative;
-    overflow: hidden;
-}
-
-.prettyblock-cover-item img.prettyblock-cover-image,
-.prettyblock-cover-row > .col img.prettyblock-cover-image {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.prettyblock-cover-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 1rem;
-    z-index: 2;
-}
-
-.prettyblock-cover-overlay > * {
-    position: relative;
-    z-index: 2;
-}
-
-.prettyblock-cover-full-link {
-    z-index: 3;
-}
-
-.prettyblock-cover-overlay .btn {
-    position: relative;
-    z-index: 4;
-}
-
-.prettyblock-cover-overlay.position-desktop-top {
-    justify-content: flex-start;
-    align-items: center;
-    text-align: center;
-}
-
-.prettyblock-cover-overlay.position-desktop-top-left {
-    justify-content: flex-start;
-    align-items: flex-start;
-    text-align: left;
-}
-
-.prettyblock-cover-overlay.position-desktop-top-right {
-    justify-content: flex-start;
-    align-items: flex-end;
-    text-align: right;
-}
-
-.prettyblock-cover-overlay.position-desktop-bottom {
-    justify-content: flex-end;
-    align-items: center;
-    text-align: center;
-}
-
-.prettyblock-cover-overlay.position-desktop-left {
-    justify-content: center;
-    align-items: flex-start;
-    text-align: left;
-}
-
-.prettyblock-cover-overlay.position-desktop-center-left {
-    justify-content: center;
-    align-items: flex-start;
-    text-align: left;
-}
-
-.prettyblock-cover-overlay.position-desktop-right {
-    justify-content: center;
-    align-items: flex-end;
-    text-align: right;
-}
-
-.prettyblock-cover-overlay.position-desktop-center-right {
-    justify-content: center;
-    align-items: flex-end;
-    text-align: right;
-}
-
-.prettyblock-cover-overlay.position-desktop-center {
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-.prettyblock-cover-overlay.position-desktop-bottom-left {
-    justify-content: flex-end;
-    align-items: flex-start;
-    text-align: left;
-}
-
-.prettyblock-cover-overlay.position-desktop-bottom-right {
-    justify-content: flex-end;
-    align-items: flex-end;
-    text-align: right;
-}
-.prettyblock-cover-overlay.position-desktop-center-bottom {
-    justify-content: flex-end;
-    align-items: center;
-    text-align: center;
-}
 
 @media (max-width: 767px) {
-    .prettyblock-cover-item,
-    .prettyblock-cover-row > .col {
-        overflow: visible;
-    }
+    
 
-    .prettyblock-cover-item img.prettyblock-cover-image,
-    .prettyblock-cover-row > .col img.prettyblock-cover-image {
-        position: absolute;
-        inset: 0;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .prettyblock-cover-overlay {
-        position: relative;
-        overflow-y: visible;
-        height: auto;
-        min-height: 100%;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-top {
-        justify-content: flex-start;
-        align-items: center;
-        text-align: center;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-top-left {
-        justify-content: flex-start;
-        align-items: flex-start;
-        text-align: left;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-top-right {
-        justify-content: flex-start;
-        align-items: flex-end;
-        text-align: right;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-bottom {
-        justify-content: flex-end;
-        align-items: center;
-        text-align: center;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-left {
-        justify-content: center;
-        align-items: flex-start;
-        text-align: left;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-center-left {
-        justify-content: center;
-        align-items: flex-start;
-        text-align: left;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-right {
-        justify-content: center;
-        align-items: flex-end;
-        text-align: right;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-center-right {
-        justify-content: center;
-        align-items: flex-end;
-        text-align: right;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-center {
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-bottom-left {
-        justify-content: flex-end;
-        align-items: flex-start;
-        text-align: left;
-    }
-
-    .prettyblock-cover-overlay.position-mobile-bottom-right {
-        justify-content: flex-end;
-        align-items: flex-end;
-        text-align: right;
-    }
-    .prettyblock-cover-overlay.position-mobile-center-bottom {
-        justify-content: flex-end;
-        align-items: center;
-        text-align: center;
-    }
 }
 
-.prettyblock-cover-overlay .d-flex {
-    flex-wrap: wrap;
-}
 
 /* Cover block slider (Bootstrap carousel) */
 .ever-bootstrap-carousel .carousel-item img{
@@ -1071,82 +698,8 @@
     z-index: 3;
 }
 
-/* Prettyblocks image slider (Bootstrap) */
-.prettyblocks-image-slider-wrapper {
-    max-width: 100%;
-}
+/* Image slider (Bootstrap) */
 
-.prettyblocks-image-slider.carousel {
-    --prettyblocks-transition-speed: 600ms;
-}
-
-.prettyblocks-image-slider.carousel .carousel-inner {
-    border-radius: 0.75rem;
-    overflow: hidden;
-}
-
-.prettyblocks-slider-item-inner {
-    position: relative;
-}
-
-.prettyblocks-slider-picture,
-.prettyblocks-slider-image {
-    display: block;
-    width: 100%;
-}
-
-.prettyblocks-slider-image {
-    height: auto;
-}
-
-.prettyblocks-image-slider .carousel-indicators {
-    bottom: 1rem;
-    gap: 0.5rem;
-}
-
-.prettyblocks-image-slider .carousel-indicators li {
-    width: 0.75rem;
-    height: 0.75rem;
-    background-color: rgba(255, 255, 255, 0.6);
-    border: 0;
-    border-radius: 50%;
-    transition: transform 0.3s ease, background-color 0.3s ease;
-}
-
-.prettyblocks-image-slider .carousel-indicators li.active,
-.prettyblocks-image-slider .carousel-indicators li:hover {
-    background-color: #ffffff;
-    transform: scale(1.15);
-}
-
-.prettyblocks-image-slider .carousel-control-prev,
-.prettyblocks-image-slider .carousel-control-next {
-    width: 3rem;
-    height: 3rem;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 1;
-    background-color: rgba(0, 0, 0, 0.45);
-    border-radius: 50%;
-    transition: background-color 0.3s ease, opacity 0.3s ease;
-}
-
-.prettyblocks-image-slider .carousel-control-prev:hover,
-.prettyblocks-image-slider .carousel-control-next:hover {
-    background-color: rgba(0, 0, 0, 0.65);
-}
-
-.prettyblocks-image-slider .carousel-control-prev-icon,
-.prettyblocks-image-slider .carousel-control-next-icon {
-    filter: invert(1);
-    width: 1.5rem;
-    height: 1.5rem;
-}
-
-.prettyblocks-image-slider.carousel .carousel-item {
-    transition: transform var(--prettyblocks-transition-speed, 600ms) ease-in-out,
-        opacity var(--prettyblocks-transition-speed, 600ms) ease-in-out;
-}
 
 /* Simple image slider (vanilla) */
 .ever-slider {
@@ -1214,20 +767,8 @@
 }
 
 @media (max-width: 767.98px) {
-    .prettyblocks-image-slider-wrapper {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-    }
+    
 
-    .prettyblocks-image-slider .carousel-control-prev,
-    .prettyblocks-image-slider .carousel-control-next {
-        width: 2.5rem;
-        height: 2.5rem;
-    }
-
-    .prettyblocks-image-slider .carousel-indicators {
-        bottom: 0.5rem;
-    }
 }
 
 /* Store locator adjustments */
@@ -3260,8 +2801,8 @@
   border: 0;
 }
 
-/* Prettyblock FAQ styles moved to prettyblock-faq.css */
-/* Prettyblock Google reviews */
+/* FAQ styles */
+/* Google reviews */
 .everblock-google-reviews__col {
   display: flex;
 }
