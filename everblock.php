@@ -856,7 +856,9 @@ class Everblock extends Module
     public function hookFilterQcdPageBuilderDeclarativeBlocks(array $params)
     {
         $defaultLogo = 'modules/' . $this->name . '/views/img/login.svg';
+        $cartLogo = 'modules/' . $this->name . '/views/img/svg/cart.svg';
         $loginTemplate = 'views/templates/front/blocks/everblock_login.tpl';
+        $cartTemplate = 'views/templates/hook/cart.tpl';
 
         return [
             [
@@ -876,6 +878,27 @@ class Everblock extends Module
                             'type' => 'text',
                             'label' => 'Block title',
                             'default' => $this->l('Login'),
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'name' => $this->l('Cart'),
+                'description' => $this->l('Display cart'),
+                'code' => 'everblock_cart',
+                'tab' => 'general',
+                'icon_path' => $cartLogo,
+                'need_reload' => true,
+                'templates' => [
+                    'default' => $cartTemplate,
+                ],
+                'config' => [
+                    'fields' => [
+                        [
+                            'name' => 'title',
+                            'type' => 'text',
+                            'label' => 'Block title',
+                            'default' => $this->l('Cart'),
                         ],
                     ],
                 ],
