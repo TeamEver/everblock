@@ -852,7 +852,6 @@ class Everblock extends Module
         return $params;
     }
 
-
     public function hookFilterQcdPageBuilderDeclarativeBlocks(array $params)
     {
         $defaultLogo = 'modules/' . $this->name . '/views/img/login.svg';
