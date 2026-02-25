@@ -103,6 +103,7 @@ class Everblock extends Module
 
     public function install()
     {
+        $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
         Configuration::updateValue('EVERBLOCK_TINYMCE', 1);
         Configuration::updateValue('EVERPSCSS_P_LLOREM_NUMBER', 5);
         Configuration::updateValue('EVERPSCSS_S_LLOREM_NUMBER', 5);
@@ -290,17 +291,6 @@ class Everblock extends Module
         }
 
         return $uninstalled;
-    }
-
-
-    private function registerQcdPageBuilderBackOfficeTargetsHook(): bool
-    {
-        if (!Hook::getIdByName('filterQcdPageBuilderBackOfficeTargets')) {
-            return true;
-        }
-
-        return $this->isRegisteredInHook('filterQcdPageBuilderBackOfficeTargets')
-            || $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
     }
 
 
@@ -675,8 +665,7 @@ class Everblock extends Module
             $this->unregisterHook('beforeRenderingEverblockSpecialEvent');
             $this->unregisterHook('beforeRenderingEverblockEverblock');
         }
-
-        $this->registerQcdPageBuilderBackOfficeTargetsHook();
+        $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
 
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
@@ -800,7 +789,7 @@ class Everblock extends Module
         $this->registerHook('actionObjectEverBlockFlagsDeleteAfter');
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
-        $this->registerQcdPageBuilderBackOfficeTargetsHook();
+        $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
         if ($this->hasPrettyblocksModule()) {
