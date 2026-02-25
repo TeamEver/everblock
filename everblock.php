@@ -210,7 +210,6 @@ class Everblock extends Module
         $installed = parent::install()
             && $this->registerHook('displayHeader')
             && $this->registerHook('actionAdminControllerSetMedia')
-            && $this->registerHook('actionRegisterBlock')
             && $this->registerHook('moduleRoutes')
             && $this->registerHook('beforeRenderingEverblockSpecialEvent')
             && $this->registerQcdPageBuilderBackOfficeTargetsHook()
@@ -222,14 +221,6 @@ class Everblock extends Module
             && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'))
             && $this->installModuleTab('AdminEverBlockPage', 'AdminEverBlockParent', $this->l('Pages'));
 
-        if ($installed && $this->hasPrettyblocksModule()) {
-            $installed = $installed
-                && $this->installModuleTab(
-                    'AdminEverBlockPrettyblock',
-                    'AdminEverBlockParent',
-                    $this->l('PrettyBlocks')
-                );
-        }
 
         if ($installed) {
             $this->importLegacyTranslations();
@@ -285,9 +276,6 @@ class Everblock extends Module
             && $this->uninstallModuleTab('AdminEverBlockPage')
             && $this->uninstallModuleTab('AdminEverBlockParent'));
 
-        if (Tab::getIdFromClassName('AdminEverBlockPrettyblock')) {
-            $uninstalled = $uninstalled && $this->uninstallModuleTab('AdminEverBlockPrettyblock');
-        }
 
         return $uninstalled;
     }
@@ -515,13 +503,6 @@ class Everblock extends Module
         return $tab->delete();
     }
 
-    private function hasPrettyblocksModule(): bool
-    {
-        return (bool) Module::isInstalled('prettyblocks')
-            && (bool) Module::isEnabled('prettyblocks')
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks');
-    }
-
     public function checkHooks()
     {
         if (!Hook::getIdByName('displayEverblockExtraOrderStep')) {
@@ -608,74 +589,14 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after product miniature is rendered';
             $hook->save();
         }
-        if ($this->hasPrettyblocksModule()) {
-            if (!Hook::getIdByName('beforeRenderingEverblockProductHighlight')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingEverblockProductHighlight';
-                $hook->title = 'Before rendering product highlight block';
-                $hook->description = 'This hook triggers before product highlight block is rendered';
-                $hook->save();
-            }
-            if (!Hook::getIdByName('beforeRenderingEverblockCategoryTabs')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingEverblockCategoryTabs';
-                $hook->title = 'Before rendering category tabs block';
-                $hook->description = 'This hook triggers before category tabs block is rendered';
-                $hook->save();
-            }
-            if (!Hook::getIdByName('beforeRenderingEverblockCategoryPrice')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingEverblockCategoryPrice';
-                $hook->title = 'Before rendering category price block';
-                $hook->description = 'This hook triggers before category price block is rendered';
-                $hook->save();
-            }
-            if (!Hook::getIdByName('beforeRenderingEverblockLookbook')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingEverblockLookbook';
-                $hook->title = 'Before rendering lookbook block';
-                $hook->description = 'This hook triggers before lookbook block is rendered';
-                $hook->save();
-            }
-            if (!Hook::getIdByName('beforeRenderingEverblockFlashDeals')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingEverblockFlashDeals';
-                $hook->title = 'Before rendering flash deals block';
-                $hook->description = 'This hook triggers before flash deals block is rendered';
-                $hook->save();
-            }
-            if (!Hook::getIdByName('beforeRenderingEverblockCategoryProducts')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingEverblockCategoryProducts';
-                $hook->title = 'Before rendering category products block';
-                $hook->description = 'This hook triggers before category products block is rendered';
-                $hook->save();
-            }
-            if (!Hook::getIdByName('beforeRenderingEverblockSpecialEvent')) {
-                $hook = new Hook();
-                $hook->name = 'beforeRenderingEverblockSpecialEvent';
-                $hook->title = 'Before rendering special event block';
-                $hook->description = 'This hook triggers before special event block is rendered';
-                $hook->save();
-            }
-            $this->registerHook('beforeRenderingEverblockProductHighlight');
-            $this->registerHook('beforeRenderingEverblockCategoryTabs');
-            $this->registerHook('beforeRenderingEverblockCategoryPrice');
-            $this->registerHook('beforeRenderingEverblockLookbook');
-            $this->registerHook('beforeRenderingEverblockFlashDeals');
-            $this->registerHook('beforeRenderingEverblockCategoryProducts');
-            $this->registerHook('beforeRenderingEverblockSpecialEvent');
-            $this->registerHook('beforeRenderingEverblockEverblock');
-        } else {
-            $this->unregisterHook('beforeRenderingEverblockProductHighlight');
-            $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
-            $this->unregisterHook('beforeRenderingEverblockCategoryPrice');
-            $this->unregisterHook('beforeRenderingEverblockLookbook');
-            $this->unregisterHook('beforeRenderingEverblockFlashDeals');
-            $this->unregisterHook('beforeRenderingEverblockCategoryProducts');
-            $this->unregisterHook('beforeRenderingEverblockSpecialEvent');
-            $this->unregisterHook('beforeRenderingEverblockEverblock');
-        }
+        $this->unregisterHook('beforeRenderingEverblockProductHighlight');
+        $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
+        $this->unregisterHook('beforeRenderingEverblockCategoryPrice');
+        $this->unregisterHook('beforeRenderingEverblockLookbook');
+        $this->unregisterHook('beforeRenderingEverblockFlashDeals');
+        $this->unregisterHook('beforeRenderingEverblockCategoryProducts');
+        $this->unregisterHook('beforeRenderingEverblockSpecialEvent');
+        $this->unregisterHook('beforeRenderingEverblockEverblock');
         $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
 
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
@@ -755,20 +676,6 @@ class Everblock extends Module
             }
             $tab->add();
         }
-        if ($this->hasPrettyblocksModule()) {
-            $id_tab = Tab::getIdFromClassName('AdminEverBlockPrettyblock');
-            if (!$id_tab) {
-                $tab = new Tab();
-                $tab->class_name = 'AdminEverBlockPrettyblock';
-                $tab->module = $this->name;
-                $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
-                $tab->position = Tab::getNewLastPosition($tab->id_parent);
-                foreach (Language::getLanguages(false) as $lang) {
-                    $tab->name[(int) $lang['id_lang']] = $this->l('PrettyBlocks');
-                }
-                $tab->add();
-            }
-        }
         $this->registerHook('displayContentWrapperTop');
         $this->registerHook('actionCmsPageFormBuilderModifier');
         $this->registerHook('actionObjectCmsUpdateAfter');
@@ -803,13 +710,7 @@ class Everblock extends Module
         $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
-        if ($this->hasPrettyblocksModule()) {
-            $this->registerHook('actionRegisterBlock');
-            $this->registerHook('beforeRenderingEverblockProductSelector');
-            $this->registerHook('beforeRenderingEverblockCategoryProducts');
-        } else {
-            $this->unregisterHook('actionRegisterBlock');
-        }
+        $this->unregisterHook('actionRegisterBlock');
     }
 
     protected function updateProductFlagsHook()
@@ -870,7 +771,6 @@ class Everblock extends Module
                 'admineverblockhook',
                 'admineverblockpage',
                 'admineverblockshortcode',
-                'admineverblockprettyblock',
             ],
 
             // Sélecteurs du textarea réel (pas l'iframe TinyMCE)
@@ -3511,7 +3411,6 @@ class Everblock extends Module
             'AdminEverBlockHookController',
             'AdminEverBlockShortcodeController',
             'AdminEverBlockPageController',
-            'AdminEverBlockPrettyblockController',
         ];
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
         if ($controller === 'AdminProducts') {
