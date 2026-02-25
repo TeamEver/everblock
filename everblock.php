@@ -33,7 +33,6 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
 use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverblockCache;
-use Everblock\Tools\Service\EverblockQcdPageBuilderProvider;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\GithubReleaseChecker;
 use Everblock\Tools\Service\ImportFile;
@@ -52,8 +51,6 @@ class Everblock extends Module
     private $html;
     private $postErrors = [];
     private $postSuccess = [];
-    /** @var EverblockQcdPageBuilderProvider|null */
-    private $qcdPageBuilderProvider;
     private $allowedActions = [
         'saveblocks',
         'restoreblocks',
@@ -219,10 +216,6 @@ class Everblock extends Module
             if (!$this->registerHook($hookName)) {
                 return false;
             }
-        }
-
-        if (!$this->registerQcdPageBuilderHooks()) {
-            return false;
         }
 
         return true;
@@ -741,31 +734,8 @@ class Everblock extends Module
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
         $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
-        $this->registerQcdPageBuilderHooks();
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
-    }
-
-    private function registerQcdPageBuilderHooks(): bool
-    {
-        $qcdHooks = [
-            'filterQcdPageBuilderBackOfficeBlocks',
-            'filterQcdPageBuilderBlocks',
-            'filterQcdPageBuilderRenderBlock',
-            'actionQcdPageBuilderRenderBlock',
-        ];
-
-        foreach ($qcdHooks as $hookName) {
-            if ((int) Hook::getIdByName($hookName) <= 0) {
-                continue;
-            }
-
-            if (!$this->isRegisteredInHook($hookName) && !$this->registerHook($hookName)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     protected function updateProductFlagsHook()
@@ -878,153 +848,6 @@ class Everblock extends Module
         ];
 
         return $params;
-    }
-
-    public function hookFilterQcdPageBuilderBackOfficeBlocks(array $params)
-    {
-        return $this->appendQcdEverblockBuilderBlockDefinition($params);
-    }
-
-    public function hookFilterQcdPageBuilderBlocks(array $params)
-    {
-        return $this->appendQcdEverblockBuilderBlockDefinition($params);
-    }
-
-    public function hookFilterQcdPageBuilderRenderBlock(array $params)
-    {
-        return $this->renderQcdEverblockBuilderBlock($params);
-    }
-
-    public function hookActionQcdPageBuilderRenderBlock(array $params)
-    {
-        return $this->renderQcdEverblockBuilderBlock($params);
-    }
-
-    private function appendQcdEverblockBuilderBlockDefinition(array $params): array
-    {
-        $idLang = (int) $this->context->language->id;
-        $idShop = (int) $this->context->shop->id;
-
-        $choices = $this->getQcdPageBuilderProvider()->getSelectChoices($idLang, $idShop);
-        $emptyChoices = empty($choices);
-
-        if (!isset($params['blocks']) || !is_array($params['blocks'])) {
-            $params['blocks'] = [];
-        }
-
-        $params['blocks'][] = [
-            'type' => 'everblock_selector',
-            'name' => 'Everblock existant',
-            'label' => 'Everblock existant',
-            'category' => 'dynamic',
-            'icon' => 'view_module',
-            'description' => 'Affiche un Everblock enregistré via le rendu QCD.',
-            'fields' => [
-                [
-                    'name' => 'everblock_id',
-                    'label' => 'Everblock',
-                    'type' => 'select',
-                    'searchable' => true,
-                    'required' => true,
-                    'placeholder' => $emptyChoices ? 'Aucun everblock disponible' : 'Choisir un everblock',
-                    'choices' => $choices,
-                ],
-                [
-                    'name' => 'use_builder_rendering',
-                    'label' => 'Utiliser le rendu builder',
-                    'type' => 'switch',
-                    'default' => true,
-                ],
-                [
-                    'name' => 'fallback',
-                    'label' => 'Fallback',
-                    'type' => 'text',
-                    'required' => false,
-                    'placeholder' => 'Texte facultatif si le bloc est introuvable/inactif',
-                ],
-            ],
-            'empty_state' => $emptyChoices ? 'Aucun everblock disponible pour cette boutique/langue.' : '',
-        ];
-
-        return $params;
-    }
-
-    /**
-     * @param array<string, mixed> $params
-     *
-     * @return array<string, mixed>|string
-     */
-    private function renderQcdEverblockBuilderBlock(array $params)
-    {
-        $blockType = (string) ($params['block_type'] ?? $params['type'] ?? '');
-        if ($blockType !== 'everblock_selector') {
-            return $params;
-        }
-
-        $configuration = [];
-        if (isset($params['configuration']) && is_array($params['configuration'])) {
-            $configuration = $params['configuration'];
-        } elseif (isset($params['config']) && is_array($params['config'])) {
-            $configuration = $params['config'];
-        }
-
-        $normalizedConfiguration = $this->normalizeQcdEverblockBlockConfiguration($configuration);
-        $idEverblock = (int) $normalizedConfiguration['everblock_id'];
-        $fallback = (string) $normalizedConfiguration['fallback'];
-        $useBuilderRendering = (bool) $normalizedConfiguration['use_builder_rendering'];
-
-        if ($idEverblock <= 0) {
-            return $fallback;
-        }
-
-        $idLang = isset($params['id_lang']) ? (int) $params['id_lang'] : (int) $this->context->language->id;
-        $idShop = isset($params['id_shop']) ? (int) $params['id_shop'] : (int) $this->context->shop->id;
-
-        if ($idLang <= 0 || $idShop <= 0) {
-            return $fallback;
-        }
-
-        $selectedBlock = $this->getQcdPageBuilderProvider()->findEverblockById($idLang, $idShop, $idEverblock);
-        if (!$selectedBlock || (int) $selectedBlock['active'] !== 1) {
-            return $fallback;
-        }
-
-        if ($useBuilderRendering) {
-            $qcdModule = Module::getInstanceByName('qcdpagebuilder');
-            if ($qcdModule && is_callable([$qcdModule, 'renderTargetField'])) {
-                return (string) $qcdModule->renderTargetField('everblock', $idEverblock, 'content', $fallback, $idShop, $idLang);
-            }
-        }
-
-        $everblock = new EverBlockClass($idEverblock, $idLang, $idShop);
-        if (!Validate::isLoadedObject($everblock)) {
-            return $fallback;
-        }
-
-        return (string) ($everblock->content ?: $fallback);
-    }
-
-    /**
-     * @param array<string, mixed> $configuration
-     *
-     * @return array<string, mixed>
-     */
-    private function normalizeQcdEverblockBlockConfiguration(array $configuration): array
-    {
-        return [
-            'everblock_id' => (int) ($configuration['everblock_id'] ?? 0),
-            'use_builder_rendering' => (bool) ($configuration['use_builder_rendering'] ?? true),
-            'fallback' => trim((string) ($configuration['fallback'] ?? '')),
-        ];
-    }
-
-    private function getQcdPageBuilderProvider(): EverblockQcdPageBuilderProvider
-    {
-        if (!$this->qcdPageBuilderProvider instanceof EverblockQcdPageBuilderProvider) {
-            $this->qcdPageBuilderProvider = new EverblockQcdPageBuilderProvider();
-        }
-
-        return $this->qcdPageBuilderProvider;
     }
 
     public function getContent()
@@ -5140,14 +4963,7 @@ class Everblock extends Module
                     'args' => $args,
                 ]
             );
-            if ((bool) Module::isInstalled('prettyblocks') === true
-                && (bool) Module::isEnabled('prettyblocks') === true
-                && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-            ) {
-                $context->smarty->assign([
-                    'prettyblocks_installed' => true,
-                ]);
-            }   
+
             $context->smarty->assign([
                 'everhook' => trim($method),
                 $this->name => $currentBlock,
