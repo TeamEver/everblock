@@ -5117,6 +5117,19 @@ class Everblock extends Module
                         'is_bypassed' => true,
                     ]);
                 }
+                /** @var Qcdpagebuilder|null $builder */
+                $builder = \Module::getInstanceByName('qcdpagebuilder');
+
+                $block['content'] = $builder
+                    ? (string) $builder->renderTargetField(
+                        'everblock',                  // target_type
+                        (int) $block['id_everblock'],           // target_id
+                        'content',                    // target_field
+                        (string) $block['content'],  // fallback natif (ex: content_2)
+                        (int) $context->shop->id,
+                        (int) $context->language->id
+                    )
+                    : (string) $block['content'];
                 $currentBlock[] = ['block' => $block];
             }
             Hook::exec(
