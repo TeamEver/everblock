@@ -822,94 +822,119 @@ $(document).ready(function(){
         });
     });
 
-    // Guided product selector
-    var guidedSelections = {};
-    var stepHistory = [];
-    var $guidedSteps = $('.everblock-guided-step');
-    var totalSteps = $guidedSteps.length;
-    var currentStep = 0;
-
-    function updateProgress(current) {
-        if (!totalSteps) {
-            $('.everblock-guided-progress').addClass('d-none');
-            return;
-        }
-        var pct = (current / totalSteps) * 100;
-        $('.everblock-guided-progress .progress-bar').css('width', pct + '%');
-        $('.everblock-guided-progress .progress-counter').text(current + '/' + totalSteps);
+    // Guided product selector (novice-friendly setup)
+    var $guidedRoots = $('.everblock-guided');
+    if (!$guidedRoots.length && $('.everblock-guided-step').length) {
+        $guidedRoots = $(document.body);
     }
 
-    function showStep(index) {
-        if (index >= totalSteps) {
-            showFallback();
-            return;
-        }
-        var $target = $guidedSteps.eq(index);
-        var hasAnswers = $target.find('.guided-answer').length > 0;
-        if (!hasAnswers) {
-            showFallback();
-            return;
-        }
-        $guidedSteps.addClass('d-none');
-        $target.removeClass('d-none');
-        $target.find('.guided-back').toggleClass('d-none', index === 0);
-        $('.everblock-guided-fallback').addClass('d-none');
-        currentStep = index;
-        updateProgress(index + 1);
-    }
+    $guidedRoots.each(function () {
+        var $flow = $(this);
+        var guidedSelections = {};
+        var stepHistory = [];
+        var $guidedSteps = $flow.find('.everblock-guided-step');
+        var totalSteps = $guidedSteps.length;
+        var currentStep = 0;
 
-    function showFallback() {
-        $guidedSteps.addClass('d-none');
-        $('.everblock-guided-fallback').removeClass('d-none');
-        updateProgress(totalSteps);
-    }
-
-    if (totalSteps) {
-        showStep(0);
-    } else {
-        showFallback();
-    }
-
-    $(document).on('click', '.everblock-guided-step .guided-answer', function () {
-        var $btn = $(this);
-        var $step = $btn.closest('.everblock-guided-step');
-        var key = $step.data('question');
-        var value = $btn.data('value');
-        if (key && value) {
-            guidedSelections[key] = value;
+        function updateProgress(current) {
+            var $progress = $flow.find('.everblock-guided-progress');
+            if (!totalSteps || !$progress.length) {
+                return;
+            }
+            var pct = (current / totalSteps) * 100;
+            $progress.find('.progress-bar').css('width', pct + '%');
+            $progress.find('.progress-counter').text(current + '/' + totalSteps);
         }
-        var url = $btn.data('url');
-        if (url) {
-            var query = $.param(guidedSelections);
-            var separator = url.indexOf('?') === -1 ? '?' : '&';
-            window.location.href = url + (query ? separator + query : '');
-            return;
+
+        function showFallback() {
+            $guidedSteps.addClass('d-none');
+            $flow.find('.everblock-guided-fallback').removeClass('d-none');
+            updateProgress(totalSteps);
         }
-        var nextIndex = $guidedSteps.index($step) + 1;
-        if (nextIndex < totalSteps) {
-            stepHistory.push($guidedSteps.index($step));
-            showStep(nextIndex);
+
+        function showStep(index) {
+            if (index < 0 || index >= totalSteps) {
+                showFallback();
+                return;
+            }
+            var $target = $guidedSteps.eq(index);
+            var hasAnswers = $target.find('.guided-answer').length > 0;
+            if (!hasAnswers) {
+                showFallback();
+                return;
+            }
+            $guidedSteps.addClass('d-none');
+            $target.removeClass('d-none');
+            $flow.find('.everblock-guided-fallback').addClass('d-none');
+            $target.find('.guided-back').toggleClass('d-none', stepHistory.length === 0);
+            currentStep = index;
+            updateProgress(index + 1);
+        }
+
+        function resolveStepIndex($button, fallbackIndex) {
+            var nextRaw = $button.data('next');
+            if (typeof nextRaw === 'number') {
+                return nextRaw;
+            }
+            if (typeof nextRaw === 'string') {
+                if (/^\d+$/.test(nextRaw)) {
+                    return parseInt(nextRaw, 10);
+                }
+                var $target = $flow.find(nextRaw).first();
+                if ($target.length) {
+                    return $guidedSteps.index($target);
+                }
+            }
+            return fallbackIndex;
+        }
+
+        $guidedSteps.each(function (index) {
+            $(this).attr('data-guided-index', index);
+        });
+
+        if (totalSteps) {
+            showStep(0);
         } else {
             showFallback();
         }
-    });
 
-    $(document).on('click', '.guided-back', function () {
-        if (!stepHistory.length) {
-            return;
-        }
-        var prevIndex = stepHistory.pop();
-        var currentKey = $guidedSteps.eq(currentStep).data('question');
-        if (currentKey) {
-            delete guidedSelections[currentKey];
-        }
-        showStep(prevIndex);
-    });
+        $flow.on('click', '.everblock-guided-step .guided-answer', function () {
+            var $btn = $(this);
+            var $step = $btn.closest('.everblock-guided-step');
+            var key = $step.data('question');
+            var value = $btn.data('value');
+            if (key && typeof value !== 'undefined' && value !== '') {
+                guidedSelections[key] = value;
+            }
+            var url = $btn.data('url') || $btn.attr('href');
+            if (url && url !== '#') {
+                var query = $.param(guidedSelections);
+                var separator = url.indexOf('?') === -1 ? '?' : '&';
+                window.location.href = url + (query ? separator + query : '');
+                return;
+            }
+            stepHistory.push(currentStep);
+            var fallbackIndex = $guidedSteps.index($step) + 1;
+            var nextIndex = resolveStepIndex($btn, fallbackIndex);
+            showStep(nextIndex);
+        });
 
-    $(document).on('click', '.guided-restart', function () {
-        guidedSelections = {};
-        stepHistory = [];
-        showStep(0);
+        $flow.on('click', '.guided-back', function () {
+            if (!stepHistory.length) {
+                return;
+            }
+            var currentKey = $guidedSteps.eq(currentStep).data('question');
+            if (currentKey) {
+                delete guidedSelections[currentKey];
+            }
+            showStep(stepHistory.pop());
+        });
+
+        $flow.on('click', '.guided-restart', function () {
+            guidedSelections = {};
+            stepHistory = [];
+            showStep(0);
+        });
     });
 
     // Flash deals countdown
