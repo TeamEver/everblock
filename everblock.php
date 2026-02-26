@@ -29,6 +29,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
+require_once _PS_MODULE_DIR_ . 'everblock/src/Service/EverblockCache.php';
 
 use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
