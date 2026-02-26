@@ -975,19 +975,73 @@ class Everblock extends Module
         $context =& $params['context'];
         $blockType = isset($context['block_type']) ? (string) $context['block_type'] : '';
 
-        if ($blockType !== 'everblock_latest_pages') {
-            return;
-        }
-
-        $context['owner_module'] = $this->name;
-        $context['template'] = 'views/templates/front/pages-alt.tpl';
-
         if (!isset($context['normalized']) || !is_array($context['normalized'])) {
             $context['normalized'] = [];
         }
         if (!isset($context['normalized']['attributes']) || !is_array($context['normalized']['attributes'])) {
             $context['normalized']['attributes'] = [];
         }
+
+        if ($blockType === 'everblock_select') {
+            $context['owner_module'] = $this->name;
+            $context['template'] = 'views/templates/hook/everblock.tpl';
+
+            $idEverblock = (int) ($context['normalized']['attributes']['id_everblock'] ?? $context['attributes']['id_everblock'] ?? 0);
+            $context['normalized']['attributes']['id_everblock'] = $idEverblock;
+
+            if ($idEverblock <= 0) {
+                $this->context->smarty->assign([
+                    'everblock' => [],
+                    'everhook' => 'qcdpagebuilder',
+                ]);
+
+                return;
+            }
+
+            $everblock = new EverBlockClass(
+                $idEverblock,
+                (int) $this->context->language->id,
+                (int) $this->context->shop->id
+            );
+
+            if (!Validate::isLoadedObject($everblock)) {
+                $this->context->smarty->assign([
+                    'everblock' => [],
+                    'everhook' => 'qcdpagebuilder',
+                ]);
+
+                return;
+            }
+
+            /** @var Qcdpagebuilder|null $builder */
+            $builder = Module::getInstanceByName('qcdpagebuilder');
+            $everblock->content = $builder
+                ? (string) $builder->renderTargetField(
+                    'everblock',
+                    (int) $everblock->id,
+                    'content',
+                    (string) $everblock->content,
+                    (int) $this->context->shop->id,
+                    (int) $this->context->language->id
+                )
+                : (string) $everblock->content;
+
+            $this->context->smarty->assign([
+                'everblock' => [
+                    ['block' => $everblock],
+                ],
+                'everhook' => 'qcdpagebuilder',
+            ]);
+
+            return;
+        }
+
+        if ($blockType !== 'everblock_latest_pages') {
+            return;
+        }
+
+        $context['owner_module'] = $this->name;
+        $context['template'] = 'views/templates/front/pages-alt.tpl';
 
         $limit = (int) ($context['normalized']['attributes']['limit'] ?? $context['attributes']['limit'] ?? 10);
         if ($limit <= 0) {
