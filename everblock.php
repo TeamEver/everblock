@@ -973,7 +973,22 @@ class Everblock extends Module
         }
 
         $context =& $params['context'];
-        $blockType = isset($context['block_type']) ? (string) $context['block_type'] : '';
+        $rawBlockType = (string) (
+            $context['block_type']
+            ?? $context['type']
+            ?? $context['code']
+            ?? $context['normalized']['block_type']
+            ?? $context['normalized']['type']
+            ?? $context['normalized']['code']
+            ?? ''
+        );
+        $blockType = Tools::strtolower(trim($rawBlockType));
+        if ($blockType !== '' && preg_match('/[.:\/]/', $blockType)) {
+            $parts = preg_split('/[.:\/]/', $blockType);
+            if (isset($parts[0]) && $parts[0] === $this->name && isset($parts[count($parts) - 1])) {
+                $blockType = (string) $parts[count($parts) - 1];
+            }
+        }
 
         if (!isset($context['normalized']) || !is_array($context['normalized'])) {
             $context['normalized'] = [];
@@ -982,7 +997,19 @@ class Everblock extends Module
             $context['normalized']['attributes'] = [];
         }
 
-        if ($blockType === 'everblock_select') {
+        $isEverblockSelect = in_array(
+            $blockType,
+            ['everblock_select', 'everblock'],
+            true
+        );
+
+        if (!$isEverblockSelect
+            && isset($context['normalized']['attributes']['id_everblock'])
+        ) {
+            $isEverblockSelect = true;
+        }
+
+        if ($isEverblockSelect) {
             $context['owner_module'] = $this->name;
             $context['template'] = 'views/templates/hook/everblock.tpl';
 
@@ -1036,7 +1063,7 @@ class Everblock extends Module
             return;
         }
 
-        if ($blockType !== 'everblock_latest_pages') {
+        if (!in_array($blockType, ['everblock_latest_pages', 'latest_pages'], true)) {
             return;
         }
 
