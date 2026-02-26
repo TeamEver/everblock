@@ -232,11 +232,8 @@ class Everblock extends Module
             'filterQcdPageBuilderBackOfficeTargets',
             'filterQcdPageBuilderDeclarativeBlocks',
             'filterQcdPageBuilderThirdPartyBlockFrontRender',
+            'filterQcdPageBuilderThirdPartyBlockFrontAssets',
         ];
-
-        if (method_exists($this, 'hookFilterQcdPageBuilderThirdPartyBlockFrontAssets')) {
-            $hooksToRegister[] = 'filterQcdPageBuilderThirdPartyBlockFrontAssets';
-        }
 
         foreach ($hooksToRegister as $hookName) {
             if (!$this->isRegisteredInHook($hookName) && !$this->registerHook($hookName)) {
@@ -245,6 +242,87 @@ class Everblock extends Module
         }
 
         return true;
+    }
+
+    public function hookFilterQcdPageBuilderThirdPartyBlockFrontAssets(array $params)
+    {
+        $supportedTypes = [
+            'everblock_select',
+            'everblock_shortcode',
+            'everblock_faq',
+            'everblock_latest_pages',
+        ];
+
+        $rawContexts = $params['block_contexts'] ?? $params['block_types'] ?? [];
+        if (!is_array($rawContexts) || empty($rawContexts)) {
+            return [];
+        }
+
+        $hasEverblockBuilderBlock = false;
+        foreach ($rawContexts as $rawContext) {
+            $rawBlockType = '';
+            if (is_array($rawContext)) {
+                $rawBlockType = (string) (
+                    $rawContext['block_type']
+                    ?? $rawContext['type']
+                    ?? $rawContext['code']
+                    ?? $rawContext['normalized']['block_type']
+                    ?? $rawContext['normalized']['type']
+                    ?? $rawContext['normalized']['code']
+                    ?? ''
+                );
+            } else {
+                $rawBlockType = (string) $rawContext;
+            }
+
+            $blockType = Tools::strtolower(trim($rawBlockType));
+            if ($blockType !== '' && preg_match('/[.:\/]/', $blockType)) {
+                $parts = preg_split('/[.:\/]/', $blockType);
+                if (isset($parts[0]) && $parts[0] === $this->name && isset($parts[count($parts) - 1])) {
+                    $blockType = (string) $parts[count($parts) - 1];
+                }
+            }
+
+            if (in_array($blockType, $supportedTypes, true)) {
+                $hasEverblockBuilderBlock = true;
+                break;
+            }
+        }
+
+        if (!$hasEverblockBuilderBlock) {
+            return [];
+        }
+
+        return [
+            'stylesheets' => [
+                [
+                    'id' => 'module-' . $this->name . '-builder-blocks-css',
+                    'path' => 'modules/' . $this->name . '/views/css/' . $this->name . '.css',
+                    'options' => [
+                        'media' => 'all',
+                        'priority' => 200,
+                    ],
+                ],
+            ],
+            'javascripts' => [
+                [
+                    'id' => 'module-' . $this->name . '-builder-blocks-js',
+                    'path' => 'modules/' . $this->name . '/views/js/' . $this->name . '.js',
+                    'options' => [
+                        'position' => 'bottom',
+                        'priority' => 200,
+                    ],
+                ],
+                [
+                    'id' => 'module-' . $this->name . '-builder-blocks-slider-js',
+                    'path' => 'modules/' . $this->name . '/views/js/everblock-slider.js',
+                    'options' => [
+                        'position' => 'bottom',
+                        'priority' => 210,
+                    ],
+                ],
+            ],
+        ];
     }
 
     private function installTabs(): bool
