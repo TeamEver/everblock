@@ -113,9 +113,6 @@
             </div>
           </div>
           {hook h='displayAfterLocatorStore' store=$item}
-          {if $has_prettyblocks}
-            {prettyblocks_zone zone_name="displayPrettyBlocksStoreLocator{$item.id}"}
-          {/if}
         </div>
       {/foreach}
       </div>

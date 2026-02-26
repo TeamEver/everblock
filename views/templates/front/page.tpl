@@ -26,10 +26,6 @@
     </div>
   </article>
 
-  {if $everblock_prettyblocks_enabled}
-    {prettyblocks_zone zone_name=$everblock_prettyblocks_zone_name}
-  {/if}
-
   <div class="modal fade everblock-image-modal" id="everblockImageModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
       <div class="modal-content">

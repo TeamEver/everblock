@@ -95,7 +95,7 @@
                             {l s='Available shortcodes' mod='everblock'}
                         </h3>
                         <p class="everblock-shortcode-modal__subtitle">
-                            {l s='Use these shortcodes inside your blocks, CMS pages or PrettyBlocks zones.' mod='everblock'}
+                            {l s='Use these shortcodes inside your blocks or CMS pages.' mod='everblock'}
                         </p>
                     </div>
                     <button type="button" class="everblock-shortcode-modal__close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="{l s='Close' mod='everblock'}">

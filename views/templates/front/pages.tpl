@@ -1,10 +1,6 @@
 {extends file='page.tpl'}
 
 {block name='page_content'}
-  {if $everblock_prettyblocks_enabled}
-    {prettyblocks_zone zone_name=$everblock_prettyblocks_top_zone_name}
-  {/if}
-
   <section class="everblock-pages-list">
     {if $everblock_pages|@count}
       <div class="row">
@@ -67,9 +63,6 @@
     {/if}
   </section>
 
-  {if $everblock_prettyblocks_enabled}
-    {prettyblocks_zone zone_name=$everblock_prettyblocks_bottom_zone_name}
-  {/if}
 
   {if !empty($everblock_structured_data)}
     <script type="application/ld+json">
