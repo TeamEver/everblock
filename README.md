@@ -294,7 +294,6 @@ You can create your own shortcodes from the "Shortcodes" tab accessible in the "
 | `[linkedproducts]` | — | nb, limit, orderby, orderway |
 | `[crosselling]` | — | nb, limit, orderby, orderway, carousel |
 | `[widget]` | moduleName, hookName | — |
-| `[prettyblocks]` | name | — |
 | `[everaddtocart]` | ref | text |
 | `[evercontact]` | type, label | value, values, required, class |
 | `[everorderform]` | type, label | value, values, required, class |
@@ -540,7 +539,6 @@ Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessibl
 - `[evermap]` : Affiche une carte Google centrée sur l'adresse de la boutique si la clé Google Maps est renseignée.
 - `[qcdacf field objectType objectId]` : Affiche une valeur provenant des champs QCD ACF. Module disponible chez [410 Gone](https://www.410-gone.fr/).
 - `[widget moduleName="mymodule" hookName="displayHome"]` : Affiche le widget d'un autre module.
-- `[prettyblocks name="myzone"]` : Affiche une zone PrettyBlocks si le module est installé.
 - `[everblock 3]` : Insère le contenu du bloc ayant l'ID 3.
 - `[cms id="1"]` or `[evercms id="1"]` : Affiche le contenu de la page CMS ayant l'ID 1.
 
@@ -766,7 +764,6 @@ Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en
 - `[displayQcdSvg name="icon" class="myclass" inline=true]`: Muestra un icono SVG de QCD. Módulo disponible en [410 Gone](https://www.410-gone.fr/).
 - `[qcdacf field objectType objectId]`: Muestra un valor de los campos QCD ACF. Módulo disponible en [410 Gone](https://www.410-gone.fr/).
 - `[widget moduleName="mymodule" hookName="displayHome"]`: Muestra el widget de otro módulo.
-- `[prettyblocks name="myzone"]`: Muestra una zona PrettyBlocks si el módulo está instalado.
 - `[everblock 3]`: Inserta el contenido del bloque con ID 3.
 - `[cms id="1"]` or `[evercms id="1"]`: Muestra el contenido de la página CMS con ID 1.
 
@@ -992,7 +989,6 @@ Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block
 - `[displayQcdSvg name="icon" class="myclass" inline=true]`: Mostra un'icona SVG QCD. Modulo disponibile presso [410 Gone](https://www.410-gone.fr/).
 - `[qcdacf field objectType objectId]`: Mostra un valore dai campi QCD ACF. Modulo disponibile presso [410 Gone](https://www.410-gone.fr/).
 - `[widget moduleName="mymodule" hookName="displayHome"]`: Mostra il widget di un altro modulo.
-- `[prettyblocks name="myzone"]`: Mostra una zona PrettyBlocks se il modulo è installato.
 - `[everblock 3]`: Inserisce il contenuto del blocco con ID 3.
 - `[cms id="1"]` or `[evercms id="1"]`: Mostra il contenuto della pagina CMS con ID 1.
 

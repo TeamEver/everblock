@@ -72,7 +72,6 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         }
 
         $structuredData = $this->buildItemListStructuredData($pages, $pageLinks);
-        $isPrettyBlocksEnabled = $this->isPrettyBlocksEnabled();
         $pagination = $this->buildPagination(
             $currentPage,
             $totalPages,
@@ -84,9 +83,6 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             'everblock_pages' => $pages,
             'everblock_page_links' => $pageLinks,
             'everblock_structured_data' => $structuredData,
-            'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
-            'everblock_prettyblocks_top_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone_top' : '',
-            'everblock_prettyblocks_bottom_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone_bottom' : '',
             'everblock_pagination' => $pagination,
         ]);
 
@@ -179,12 +175,6 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         ];
     }
 
-    protected function isPrettyBlocksEnabled(): bool
-    {
-        return (bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) Everblock\Tools\Service\EverblockTools::moduleDirectoryExists('prettyblocks') === true;
-    }
 
     protected function setTemplateMeta(string $title, string $description): void
     {

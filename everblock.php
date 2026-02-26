@@ -407,9 +407,6 @@ class Everblock extends Module
             && $this->uninstallModuleTab('AdminEverBlockPage')
             && $this->uninstallModuleTab('AdminEverBlockParent'));
 
-        if (Tab::getIdFromClassName('AdminEverBlockPrettyblock')) {
-            $uninstalled = $uninstalled && $this->uninstallModuleTab('AdminEverBlockPrettyblock');
-        }
 
         return $uninstalled;
     }
@@ -893,7 +890,6 @@ class Everblock extends Module
             'admineverblockhook',
             'admineverblockpage',
             'admineverblockshortcode',
-            'admineverblockprettyblock',
         ];
 
         $currentController = Tools::strtolower((string) Tools::getValue('controller'));
@@ -919,7 +915,6 @@ class Everblock extends Module
                 'body.admineverblockcontroller textarea[name="content_2"]',
                 'body.admineverblockpage form textarea[name="content_2"]',
                 'body.admineverblockfaq form textarea[name="content_2"]',
-                'body.admineverblockprettyblock form textarea[name="content_2"]',
                 'form#everblock_form textarea[name="content_2"]',
                 'form[name="everblock_form"] textarea[name="content_2"]',
                 'form[action*="AdminEverBlock"] textarea[name="content_2"]',
@@ -3809,7 +3804,6 @@ class Everblock extends Module
             'AdminEverBlockHookController',
             'AdminEverBlockShortcodeController',
             'AdminEverBlockPageController',
-            'AdminEverBlockPrettyblockController',
         ];
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
         if ($controller === 'AdminProducts') {
@@ -3950,76 +3944,12 @@ class Everblock extends Module
 
     public function hookDisplayWrapperTop()
     {
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
-            if (Tools::getValue('id_product')) {
-                $idObj = (int) Tools::getValue('id_product');
-                $objectName = 'Product';
-            }
-            if (Tools::getValue('id_category')) {
-                $idObj = (int) Tools::getValue('id_category');
-                $objectName = 'Category';
-            }
-            if (Tools::getValue('id_manufacturer')) {
-                $idObj = (int) Tools::getValue('id_manufacturer');
-                $objectName = 'Manufacturer';
-            }
-            if (Tools::getValue('id_supplier')) {
-                $idObj = (int) Tools::getValue('id_supplier');
-                $objectName = 'Supplier';
-            }
-            if (Tools::getValue('id_cms')) {
-                $idObj = (int) Tools::getValue('id_cms');
-                $objectName = 'Cms';
-            }
-            if (isset($idObj) && isset($objectName)) {
-                $this->context->smarty->assign(array(
-                    'idObj' => $idObj,
-                    'objectName' => $objectName,
-                    'zone' => 'displayWrapperTop',
-                ));
-                return $this->display(__FILE__, 'views/templates/hook/prettyblocks.tpl');
-            }
-        }
+        return;
     }
 
     public function hookDisplayWrapperBottom()
     {
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
-        ) {
-            if (Tools::getValue('id_product')) {
-                $idObj = (int) Tools::getValue('id_product');
-                $objectName = 'Product';
-            }
-            if (Tools::getValue('id_category')) {
-                $idObj = (int) Tools::getValue('id_category');
-                $objectName = 'Category';
-            }
-            if (Tools::getValue('id_manufacturer')) {
-                $idObj = (int) Tools::getValue('id_manufacturer');
-                $objectName = 'Manufacturer';
-            }
-            if (Tools::getValue('id_supplier')) {
-                $idObj = (int) Tools::getValue('id_supplier');
-                $objectName = 'Supplier';
-            }
-            if (Tools::getValue('id_cms')) {
-                $idObj = (int) Tools::getValue('id_cms');
-                $objectName = 'Cms';
-            }
-            if (isset($idObj) && isset($objectName)) {
-                $this->context->smarty->assign(array(
-                    'idObj' => $idObj,
-                    'objectName' => $objectName,
-                    'zone' => 'displayWrapperBottom',
-                ));
-                return $this->display(__FILE__, 'views/templates/hook/prettyblocks.tpl');
-            }
-        }
+        return;
     }
 
     public function hookActionCheckoutRender($params)
