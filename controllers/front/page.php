@@ -61,7 +61,7 @@ class EverblockPageModuleFrontController extends ModuleFrontController
             ));
         }
 
-        $metaTitle = $page->meta_title ?: $page->title;
+        $metaTitle = isset($page->meta_title) && $page->meta_title ? $page->meta_title : $page->title;
         $metaDescription = $page->meta_description ?: ($page->short_description ?? '');
 
         $renderedContent = $page->content;
