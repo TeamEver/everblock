@@ -40,10 +40,14 @@ class QcdThirdPartyBlockRenderer
     /** @var Context */
     private $context;
 
-    public function __construct(Everblock $module, Context $context)
+    /** @var Module|null */
+    private $qcdBuilderModule;
+
+    public function __construct(Everblock $module, Context $context, ?Module $qcdBuilderModule = null)
     {
         $this->module = $module;
         $this->context = $context;
+        $this->qcdBuilderModule = $qcdBuilderModule;
     }
 
     public function renderFromHookFilterQcdPageBuilderThirdPartyBlockFrontRender(array &$params): void
@@ -109,7 +113,7 @@ class QcdThirdPartyBlockRenderer
         }
 
         /** @var Qcdpagebuilder|null $builder */
-        $builder = Module::getInstanceByName('qcdpagebuilder');
+        $builder = $this->qcdBuilderModule;
         $everblock->content = $builder
             ? (string) $builder->renderTargetField(
                 'everblock',
@@ -153,14 +157,29 @@ class QcdThirdPartyBlockRenderer
         $context['normalized']['attributes']['limit'] = $limit;
 
         $customerGroups = EverblockPage::getCustomerGroups($this->context);
-        $pages = EverblockPage::getPages(
+        $customerGroups = array_map('intval', (array) $customerGroups);
+        sort($customerGroups);
+
+        static $latestPagesCache = [];
+        $cacheKey = implode(':', [
             (int) $this->context->language->id,
             (int) $this->context->shop->id,
-            true,
-            $customerGroups,
-            1,
-            $limit
-        );
+            $limit,
+            implode(',', $customerGroups),
+        ]);
+
+        if (!isset($latestPagesCache[$cacheKey])) {
+            $latestPagesCache[$cacheKey] = EverblockPage::getPages(
+                (int) $this->context->language->id,
+                (int) $this->context->shop->id,
+                true,
+                $customerGroups,
+                1,
+                $limit
+            );
+        }
+
+        $pages = $latestPagesCache[$cacheKey];
 
         $pageLinks = [];
         foreach ($pages as $page) {

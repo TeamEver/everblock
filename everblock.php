@@ -65,6 +65,10 @@ class Everblock extends Module
     private $bypassedControllers = [
         'hookDisplayInvoiceLegalFreeText',
     ];
+    /** @var Module|null */
+    private $qcdBuilderModule;
+    /** @var bool */
+    private $qcdBuilderModuleResolved = false;
 
     public function __construct()
     {
@@ -1099,8 +1103,33 @@ class Everblock extends Module
 
     public function hookFilterQcdPageBuilderThirdPartyBlockFrontRender(array $params)
     {
-        $renderer = new QcdThirdPartyBlockRenderer($this, $this->context);
+        $renderer = new QcdThirdPartyBlockRenderer(
+            $this,
+            $this->context,
+            $this->getQcdBuilderModule()
+        );
         $renderer->renderFromHookFilterQcdPageBuilderThirdPartyBlockFrontRender($params);
+    }
+
+    private function getQcdBuilderModule(): ?Module
+    {
+        if ($this->qcdBuilderModuleResolved) {
+            return $this->qcdBuilderModule;
+        }
+
+        static $cachedQcdBuilderModule;
+        static $cachedQcdBuilderModuleResolved = false;
+
+        if (!$cachedQcdBuilderModuleResolved) {
+            $module = Module::getInstanceByName('qcdpagebuilder');
+            $cachedQcdBuilderModule = ($module instanceof Module) ? $module : null;
+            $cachedQcdBuilderModuleResolved = true;
+        }
+
+        $this->qcdBuilderModule = $cachedQcdBuilderModule;
+        $this->qcdBuilderModuleResolved = true;
+
+        return $this->qcdBuilderModule;
     }
 
     public function getContent()
@@ -5129,7 +5158,7 @@ class Everblock extends Module
                     ]);
                 }
                 /** @var Qcdpagebuilder|null $builder */
-                $builder = \Module::getInstanceByName('qcdpagebuilder');
+                $builder = $this->getQcdBuilderModule();
 
                 $block['content'] = $builder
                     ? (string) $builder->renderTargetField(
