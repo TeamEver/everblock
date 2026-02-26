@@ -211,11 +211,35 @@ class Everblock extends Module
             'actionAdminControllerSetMedia',
             'actionRegisterBlock',
             'moduleRoutes',
-            'filterQcdPageBuilderDeclarativeBlocks',
         ];
 
         foreach ($hooksToRegister as $hookName) {
             if (!$this->registerHook($hookName)) {
+                return false;
+            }
+        }
+
+        if (!$this->registerQcdBuilderHooks()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function registerQcdBuilderHooks(): bool
+    {
+        $hooksToRegister = [
+            'filterQcdPageBuilderBackOfficeTargets',
+            'filterQcdPageBuilderDeclarativeBlocks',
+            'filterQcdPageBuilderThirdPartyBlockFrontRender',
+        ];
+
+        if (method_exists($this, 'hookFilterQcdPageBuilderThirdPartyBlockFrontAssets')) {
+            $hooksToRegister[] = 'filterQcdPageBuilderThirdPartyBlockFrontAssets';
+        }
+
+        foreach ($hooksToRegister as $hookName) {
+            if (!$this->isRegisteredInHook($hookName) && !$this->registerHook($hookName)) {
                 return false;
             }
         }
@@ -735,9 +759,7 @@ class Everblock extends Module
         $this->registerHook('actionObjectEverBlockFlagsDeleteAfter');
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
-        $this->registerHook('filterQcdPageBuilderBackOfficeTargets');
-        $this->registerHook('filterQcdPageBuilderDeclarativeBlocks');
-        $this->registerHook('filterQcdPageBuilderThirdPartyBlockFrontRender');
+        $this->registerQcdBuilderHooks();
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
     }
