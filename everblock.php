@@ -34,6 +34,7 @@ require_once _PS_MODULE_DIR_ . 'everblock/src/Service/EverblockCache.php';
 use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Service\QcdThirdPartyBlockRenderer;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\GithubReleaseChecker;
 use Everblock\Tools\Service\ImportFile;
@@ -1085,143 +1086,8 @@ class Everblock extends Module
 
     public function hookFilterQcdPageBuilderThirdPartyBlockFrontRender(array $params)
     {
-        if (!isset($params['context']) || !is_array($params['context'])) {
-            return;
-        }
-
-        $context =& $params['context'];
-        $rawBlockType = (string) (
-            $context['block_type']
-            ?? $context['type']
-            ?? $context['code']
-            ?? $context['normalized']['block_type']
-            ?? $context['normalized']['type']
-            ?? $context['normalized']['code']
-            ?? ''
-        );
-        $blockType = Tools::strtolower(trim($rawBlockType));
-        if ($blockType !== '' && preg_match('/[.:\/]/', $blockType)) {
-            $parts = preg_split('/[.:\/]/', $blockType);
-            if (isset($parts[0]) && $parts[0] === $this->name && isset($parts[count($parts) - 1])) {
-                $blockType = (string) $parts[count($parts) - 1];
-            }
-        }
-
-        if (!isset($context['normalized']) || !is_array($context['normalized'])) {
-            $context['normalized'] = [];
-        }
-        if (!isset($context['normalized']['attributes']) || !is_array($context['normalized']['attributes'])) {
-            $context['normalized']['attributes'] = [];
-        }
-
-        $isEverblockSelect = in_array(
-            $blockType,
-            ['everblock_select', 'everblock'],
-            true
-        );
-
-        if (!$isEverblockSelect
-            && isset($context['normalized']['attributes']['id_everblock'])
-        ) {
-            $isEverblockSelect = true;
-        }
-
-        if ($isEverblockSelect) {
-            $context['owner_module'] = $this->name;
-            $context['template'] = 'views/templates/hook/everblock.tpl';
-
-            $idEverblock = (int) ($context['normalized']['attributes']['id_everblock'] ?? $context['attributes']['id_everblock'] ?? 0);
-            $context['normalized']['attributes']['id_everblock'] = $idEverblock;
-
-            if ($idEverblock <= 0) {
-                $this->context->smarty->assign([
-                    'everblock' => [],
-                    'everhook' => 'qcdpagebuilder',
-                ]);
-
-                return;
-            }
-
-            $everblock = new EverBlockClass(
-                $idEverblock,
-                (int) $this->context->language->id,
-                (int) $this->context->shop->id
-            );
-
-            if (!Validate::isLoadedObject($everblock)) {
-                $this->context->smarty->assign([
-                    'everblock' => [],
-                    'everhook' => 'qcdpagebuilder',
-                ]);
-
-                return;
-            }
-
-            /** @var Qcdpagebuilder|null $builder */
-            $builder = Module::getInstanceByName('qcdpagebuilder');
-            $everblock->content = $builder
-                ? (string) $builder->renderTargetField(
-                    'everblock',
-                    (int) $everblock->id,
-                    'content',
-                    (string) $everblock->content,
-                    (int) $this->context->shop->id,
-                    (int) $this->context->language->id
-                )
-                : (string) $everblock->content;
-
-            $this->context->smarty->assign([
-                'everblock' => [
-                    ['block' => $everblock],
-                ],
-                'everhook' => 'qcdpagebuilder',
-            ]);
-
-            return;
-        }
-
-        if (!in_array($blockType, ['everblock_latest_pages', 'latest_pages'], true)) {
-            return;
-        }
-
-        $context['owner_module'] = $this->name;
-        $context['template'] = 'views/templates/front/pages-alt.tpl';
-
-        $limit = (int) ($context['normalized']['attributes']['limit'] ?? $context['attributes']['limit'] ?? 10);
-        if ($limit <= 0) {
-            $limit = 10;
-        }
-        $limit = min($limit, 50);
-        $context['normalized']['attributes']['limit'] = $limit;
-
-        $customerGroups = EverblockPage::getCustomerGroups($this->context);
-        $pages = EverblockPage::getPages(
-            (int) $this->context->language->id,
-            (int) $this->context->shop->id,
-            true,
-            $customerGroups,
-            1,
-            $limit
-        );
-
-        $pageLinks = [];
-        foreach ($pages as $page) {
-            $pageLinks[(int) $page->id] = $this->context->link->getModuleLink(
-                $this->name,
-                'page',
-                [
-                    'id_everblock_page' => (int) $page->id,
-                    'rewrite' => $page->link_rewrite,
-                ]
-            );
-
-            $page->cover_image_data = $page->getCoverImageData($this->context);
-        }
-
-        $this->context->smarty->assign([
-            'everblock_pages' => $pages,
-            'everblock_page_links' => $pageLinks,
-        ]);
+        $renderer = new QcdThirdPartyBlockRenderer($this, $this->context);
+        $renderer->renderFromHookFilterQcdPageBuilderThirdPartyBlockFrontRender($params);
     }
 
     public function getContent()
