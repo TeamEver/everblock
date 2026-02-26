@@ -138,7 +138,9 @@ class QcdThirdPartyBlockRenderer
         }
 
         $context['owner_module'] = $this->module->name;
-        $context['template'] = 'views/templates/front/pages-alt.tpl';
+        if ($this->shouldUseAlternatePagesTemplate($context)) {
+            $context['template'] = 'views/templates/front/pages-alt.tpl';
+        }
 
         $limit = (int) $this->getContextValue($context, [
             ['normalized', 'attributes', 'limit'],
@@ -180,6 +182,16 @@ class QcdThirdPartyBlockRenderer
         ]);
 
         return true;
+    }
+
+    private function shouldUseAlternatePagesTemplate(array $context): bool
+    {
+        $templateVariant = (string) $this->getContextValue($context, [
+            ['normalized', 'attributes', 'template_variant'],
+            ['attributes', 'template_variant'],
+        ], '');
+
+        return Tools::strtolower(trim($templateVariant)) === 'alt';
     }
 
     private function ensureNormalizedContext(array &$context): void
