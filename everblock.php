@@ -885,29 +885,46 @@ class Everblock extends Module
             $params['targets'] = [];
         }
 
+        $supportedControllers = [
+            'admineverblock',
+            'admineverblockcontroller',
+            'admineverblockconfiguration',
+            'admineverblockfaq',
+            'admineverblockhook',
+            'admineverblockpage',
+            'admineverblockshortcode',
+            'admineverblockprettyblock',
+        ];
+
+        $currentController = Tools::strtolower((string) Tools::getValue('controller'));
+        if (!$currentController && isset($this->context->controller->controller_name)) {
+            $currentController = Tools::strtolower((string) $this->context->controller->controller_name);
+        }
+
+        if (!in_array($currentController, $supportedControllers, true)) {
+            return $params;
+        }
+
         $params['targets'][] = [
             // Identifiants techniques obligatoires [a-z0-9_]{2,64}
             'target_type' => 'everblock',
             'target_field' => 'content',
 
             // Le nom de contrôleur est comparé en minuscule côté registry
-            'controllers' => [
-                'admineverblock',
-                'admineverblockcontroller',
-                'admineverblockconfiguration',
-                'admineverblockfaq',
-                'admineverblockhook',
-                'admineverblockpage',
-                'admineverblockshortcode',
-                'admineverblockprettyblock',
-            ],
+            'controllers' => $supportedControllers,
 
             // Sélecteurs du textarea réel (pas l'iframe TinyMCE)
             'selectors' => [
                 'body.admineverblock textarea[name="content_2"]',
                 'body.admineverblockcontroller textarea[name="content_2"]',
-                'body[class*="admin"] textarea[name="content_2"]',
-                'textarea[name="content_2"]',
+                'body.admineverblockpage form textarea[name="content_2"]',
+                'body.admineverblockfaq form textarea[name="content_2"]',
+                'body.admineverblockprettyblock form textarea[name="content_2"]',
+                'form#everblock_form textarea[name="content_2"]',
+                'form[name="everblock_form"] textarea[name="content_2"]',
+                'form[action*="AdminEverBlock"] textarea[name="content_2"]',
+                'form[action*="AdminEverBlockPage"] textarea[name="content_2"]',
+                'form[action*="AdminEverBlockFaq"] textarea[name="content_2"]',
             ],
 
             // Stratégie de résolution de l'ID objet
