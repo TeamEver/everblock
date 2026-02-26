@@ -411,6 +411,24 @@ class Everblock extends Module
         return $uninstalled;
     }
 
+    protected function registerQcdPageBuilderBackOfficeTargetsHook()
+    {
+        $hookName = 'filterQcdPageBuilderBackOfficeTargets';
+
+        if (!Hook::getIdByName($hookName)) {
+            $hook = new Hook();
+            $hook->name = $hookName;
+            $hook->title = 'QCD Page Builder back-office targets filter';
+            $hook->description = 'This hook allows modules to add back-office editable targets for QCD Page Builder';
+
+            if (!$hook->save()) {
+                return false;
+            }
+        }
+
+        return (bool) $this->registerHook($hookName);
+    }
+
 
     public function l($string, $specific = null, $idLang = null)
     {
