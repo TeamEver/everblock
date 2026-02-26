@@ -131,7 +131,6 @@ class EverblockTools extends ObjectModel
             '[linkedproducts' => ['method' => 'getLinkedProductsShortcode', 'args' => ['context', 'module']],
             '[crosselling' => ['method' => 'getCrossSellingShortcode', 'args' => ['context', 'module']],
             '[widget' => 'getWidgetShortcode',
-            '[prettyblocks' => ['method' => 'getPrettyblocksShortcodes', 'args' => ['context', 'module']],
             '[everaddtocart' => ['method' => 'getAddToCartShortcode', 'args' => ['context', 'module']],
             '[cms' => ['method' => 'getCmsShortcode', 'args' => ['context']],
         ];
@@ -2305,45 +2304,6 @@ class EverblockTools extends ObjectModel
 
     public static function getPrettyblocksShortcodes(string $txt, Context $context, Everblock $module): string
     {
-        if ((bool) Module::isInstalled('prettyblocks') === true
-            && (bool) Module::isEnabled('prettyblocks') === true
-            && (bool) static::moduleDirectoryExists('prettyblocks') === true
-        ) {
-            try {
-                // Définir le chemin vers le template
-                $templatePath = static::getTemplatePath('hook/prettyblocks.tpl', $module);
-                // Regex pour trouver les shortcodes de type [prettyblocks name="mon_nom"]
-                $pattern = '/\[prettyblocks name="([^"]+)"\]/';
-
-                // Fonction de remplacement pour traiter chaque shortcode trouvé
-                $replacementFunction = function ($matches) use ($context, $templatePath) {
-                    $zoneName = $matches[1];
-
-                    try {
-                        // Assigner le nom de la zone à Smarty
-                        $context->smarty->assign('zone_name', $zoneName);
-
-                        // Récupérer le rendu du template avec Smarty
-                        return $context->smarty->fetch($templatePath);
-                    } catch (\Throwable $e) {
-                        PrestaShopLogger::addLog(
-                            sprintf('Prettyblocks shortcode rendering failed for zone "%s": %s', $zoneName, $e->getMessage()),
-                            3
-                        );
-                        return '';
-                    }
-                };
-
-                // Remplacer tous les shortcodes trouvés par le rendu Smarty correspondant
-                $txt = preg_replace_callback($pattern, $replacementFunction, $txt);
-            } catch (\Throwable $e) {
-                PrestaShopLogger::addLog(
-                    sprintf('Prettyblocks shortcode parsing failed: %s', $e->getMessage()),
-                    3
-                );
-            }
-        }
-        
         return $txt;
     }
 
@@ -3930,12 +3890,8 @@ class EverblockTools extends ObjectModel
         if (!empty($stores)) {
             $smarty = $context->smarty;
             $templatePath = static::getTemplatePath('hook/storelocator.tpl', $module);
-            $hasPrettyblocks = Module::isInstalled('prettyblocks')
-                && Module::isEnabled('prettyblocks')
-                && static::moduleDirectoryExists('prettyblocks');
             $smarty->assign([
                 'everblock_stores' => $stores,
-                'has_prettyblocks' => $hasPrettyblocks,
                 'everblock_show_map_toggle' => (bool) Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
             ]);
             $storeLocatorContent = $smarty->fetch($templatePath);

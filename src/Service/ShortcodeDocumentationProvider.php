@@ -654,17 +654,6 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[prettyblocks name="myzone"]',
-                        'description' => $translator->trans('Insert the output of a PrettyBlocks zone.', [], $domain),
-                        'parameters' => [
-                            [
-                                'name' => 'name',
-                                'description' => $translator->trans('Zone name configured inside PrettyBlocks.', [], $domain),
-                                'required' => true,
-                            ],
-                        ],
-                    ],
-                    [
                         'code' => '[wordpress-posts]',
                         'description' => $translator->trans('Display the latest posts retrieved from a connected WordPress site.', [], $domain),
                         'parameters' => [],
