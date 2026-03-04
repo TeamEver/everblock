@@ -75,6 +75,12 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockTools extends ObjectModel
 {
+    /**
+     * Point d'entrée principal du moteur de shortcodes.
+     *
+     * Le texte est enrichi en plusieurs étapes : hooks d'extension, résolution des
+     * shortcodes métier, remplacement des variables Smarty et post-traitements client.
+     */
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
         Hook::exec('displayBeforeRenderingShortcodes', ['html' => &$txt]);

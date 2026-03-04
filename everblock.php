@@ -88,6 +88,17 @@ class Everblock extends Module
         ];
     }
 
+    /**
+     * Intercepte dynamiquement les hooks display non déclarés explicitement.
+     *
+     * Cette méthode évite de devoir créer une méthode hook* pour chaque hook display,
+     * tout en limitant l'exécution au front-office (hors contrôleurs bypassés).
+     *
+     * @param string $method Nom de la méthode appelée (ex: hookDisplayHome)
+     * @param array<int, mixed> $args Arguments transmis par PrestaShop
+     *
+     * @return mixed
+     */
     public function __call($method, $args)
     {
         if (php_sapi_name() == 'cli') {
@@ -106,7 +117,9 @@ class Everblock extends Module
         }
     }
 
-
+    /**
+     * Installe le module et son socle fonctionnel (config, SQL, hooks, onglets BO).
+     */
     public function install(): bool
     {
         if (!parent::install()) {
@@ -132,6 +145,9 @@ class Everblock extends Module
         return true;
     }
 
+    /**
+     * Initialise les clés de configuration nécessaires au fonctionnement du module.
+     */
     private function installConfiguration(): bool
     {
         $configuration = [
@@ -180,6 +196,9 @@ class Everblock extends Module
         return true;
     }
 
+    /**
+     * Exécute le script SQL d'installation et crée les tables du module.
+     */
     private function installSql(): bool
     {
         $sql = [];
@@ -194,6 +213,9 @@ class Everblock extends Module
         return true;
     }
 
+    /**
+     * Crée les hooks personnalisés du module puis enregistre les hooks natifs requis.
+     */
     private function installHooks(): bool
     {
         $customHooks = [
@@ -231,6 +253,9 @@ class Everblock extends Module
         return true;
     }
 
+    /**
+     * Enregistre les hooks d'intégration avec QCD Builder lorsqu'ils sont disponibles.
+     */
     private function registerQcdBuilderHooks(): bool
     {
         $hooksToRegister = [
