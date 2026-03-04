@@ -48,6 +48,9 @@ class ImportFileCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * Déclare la commande d'import et prépare les chemins de fichiers utilisés.
+     */
     protected function configure()
     {
         $this->setName('everblock:tools:import');
@@ -61,6 +64,9 @@ class ImportFileCommand extends Command
         $this->module = \Module::getInstanceByName('everblock');
     }
 
+    /**
+     * Orchestration de l'import XLSX : lecture, mise à jour des blocs puis nettoyage.
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if (file_exists($this->filename)) {
@@ -93,6 +99,14 @@ class ImportFileCommand extends Command
         }
     }
 
+    /**
+     * Crée ou met à jour un bloc à partir d'une ligne du fichier d'import.
+     *
+     * Chaque colonne est validée avant affectation afin d'éviter l'écriture de données
+     * incohérentes en base.
+     *
+     * @param array<string, mixed> $line
+     */
     protected function updateEverblocks($line, $output)
     {
         if (!isset($line['id_lang'])
