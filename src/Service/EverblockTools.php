@@ -158,7 +158,11 @@ class EverblockTools extends ObjectModel
             $callArgs = array_merge([$txt], static::resolveShortcodeArgs($args, $context, $module));
             $txt = forward_static_call_array([static::class, $method], $callArgs);
         }
-        if (in_array($context->controller->controller_type, $controllerTypes)) {
+        $controllerType = is_object($context->controller) && isset($context->controller->controller_type)
+            ? $context->controller->controller_type
+            : null;
+
+        if ($controllerType !== null && in_array($controllerType, $controllerTypes, true)) {
             $txt = static::getCustomerShortcodes($txt, $context);
             $txt = static::obfuscateTextByClass($txt);
         }
