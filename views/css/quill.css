@@ -1,0 +1,10 @@
+/* Minimal QuillJS formatting classes for Prettyblock content */
+.ql-align-center { text-align: center; }
+.ql-align-right { text-align: right; }
+.ql-align-justify { text-align: justify; }
+.ql-direction-rtl { direction: rtl; text-align: inherit; }
+.ql-font-serif { font-family: serif; }
+.ql-font-monospace { font-family: monospace; }
+.ql-size-small { font-size: 0.75em; }
+.ql-size-large { font-size: 1.5em; }
+.ql-size-huge { font-size: 2.5em; }

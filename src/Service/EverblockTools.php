@@ -75,13 +75,6 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockTools extends ObjectModel
 {
-    /**
-     * Point d'entrée principal du moteur de shortcodes.
-     *
-     * Le texte est enrichi en plusieurs étapes : hooks d'extension, résolution des
-     * shortcodes métier, remplacement des variables Smarty et post-traitements client.
-     * @example $html = EverblockTools::renderShortcodes('[cart_total]', $context, $module);
-     */
     public static function renderShortcodes(string $txt, Context $context, Everblock $module): string
     {
         Hook::exec('displayBeforeRenderingShortcodes', ['html' => &$txt]);
@@ -138,6 +131,7 @@ class EverblockTools extends ObjectModel
             '[linkedproducts' => ['method' => 'getLinkedProductsShortcode', 'args' => ['context', 'module']],
             '[crosselling' => ['method' => 'getCrossSellingShortcode', 'args' => ['context', 'module']],
             '[widget' => 'getWidgetShortcode',
+            '[prettyblocks' => ['method' => 'getPrettyblocksShortcodes', 'args' => ['context', 'module']],
             '[everaddtocart' => ['method' => 'getAddToCartShortcode', 'args' => ['context', 'module']],
             '[cms' => ['method' => 'getCmsShortcode', 'args' => ['context']],
         ];
@@ -158,11 +152,7 @@ class EverblockTools extends ObjectModel
             $callArgs = array_merge([$txt], static::resolveShortcodeArgs($args, $context, $module));
             $txt = forward_static_call_array([static::class, $method], $callArgs);
         }
-        $controllerType = is_object($context->controller) && isset($context->controller->controller_type)
-            ? $context->controller->controller_type
-            : null;
-
-        if ($controllerType !== null && in_array($controllerType, $controllerTypes, true)) {
+        if (in_array($context->controller->controller_type, $controllerTypes)) {
             $txt = static::getCustomerShortcodes($txt, $context);
             $txt = static::obfuscateTextByClass($txt);
         }
@@ -177,7 +167,6 @@ class EverblockTools extends ObjectModel
      * @param string $attrStr
      *
      * @return array<string, mixed>
-     * @example $attrs = EverblockTools::parseShortcodeAttrs('limit="4" order="rand"');
      */
     protected static function parseShortcodeAttrs(string $attrStr): array
     {
@@ -201,7 +190,6 @@ class EverblockTools extends ObjectModel
      * @param array<int, string> $args
      *
      * @return array<int, mixed>
-     * @example $args = EverblockTools::resolveShortcodeArgs(['context', 'module'], $context, $module);
      */
     protected static function resolveShortcodeArgs(array $args, Context $context, Everblock $module): array
     {
@@ -229,7 +217,6 @@ class EverblockTools extends ObjectModel
      * @param Everblock $module
      *
      * @return string
-     * @example $html = EverblockTools::getProductsByTagShortcode('[products_by_tag tag="summer|sale" limit="6"]', $context, $module);
      */
     protected static function getProductsByTagShortcode(string $txt, Context $context, Everblock $module): string
     {
@@ -410,7 +397,6 @@ class EverblockTools extends ObjectModel
      * @param Everblock $module
      *
      * @return string
-     * @example $html = EverblockTools::getLowStockShortcode('[low_stock threshold="3" limit="4"]', $context, $module);
      */
     protected static function getLowStockShortcode(string $txt, Context $context, Everblock $module): string
     {
@@ -682,11 +668,6 @@ class EverblockTools extends ObjectModel
         }, $txt);
     }
 
-    /**
-     * Gère le shortcode associé à `getCrossSellingShortcode`.
-     *
-     * @example $html = EverblockTools::getCrossSellingShortcode('[crosselling id_product=12]', $context, $module);
-     */
     public static function getCrossSellingShortcode(string $txt, Context $context, Everblock $module): string
     {
 
@@ -960,11 +941,6 @@ class EverblockTools extends ObjectModel
         }
     }
 
-    /**
-     * Gère le shortcode associé à `getAddToCartShortcode`.
-     *
-     * @example $html = EverblockTools::getAddToCartShortcode('[everaddtocart id_product=42]', $context, $module);
-     */
     public static function getAddToCartShortcode(string $txt, Context $context, Everblock $module): string
     {
         // Expression régulière pour capturer le shortcode avec les paramètres 'ref' et optionnellement 'text'
@@ -1018,11 +994,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getFaqShortcodes`.
-     *
-     * @example $html = EverblockTools::getFaqShortcodes('[everfaq id=3]', $context, $module);
-     */
     public static function getFaqShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/faq.tpl', $module);
@@ -1042,11 +1013,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getProductFaqShortcodes`.
-     *
-     * @example $html = EverblockTools::getProductFaqShortcodes('[everfaq_product id_product=42]', $context, $module);
-     */
     public static function getProductFaqShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/faq.tpl', $module);
@@ -1087,11 +1053,6 @@ class EverblockTools extends ObjectModel
     }
 
     // Todo : trigger shortcode
-    /**
-     * Gère le shortcode associé à `getCmsShortcode`.
-     *
-     * @example $html = EverblockTools::getCmsShortcode('[cms id=5]', $context);
-     */
     public static function getCmsShortcode(string $txt, Context $context): string
     {
         // Regex pour [cms id="X"] ou [evercms id="X"]
@@ -1114,11 +1075,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getInstagramShortcodes`.
-     *
-     * @example $html = EverblockTools::getInstagramShortcodes('[everinstagram]', $context, $module);
-     */
     public static function getInstagramShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $imgs = static::fetchInstagramImages();
@@ -1150,11 +1106,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getWordpressPostsShortcode`.
-     *
-     * @example $html = EverblockTools::getWordpressPostsShortcode('[wordpress-posts]', $context, $module);
-     */
     public static function getWordpressPostsShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all('/\[wordpress-posts\]/i', $txt, $matches, PREG_SET_ORDER);
@@ -1203,11 +1154,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getGoogleReviewsShortcode`.
-     *
-     * @example $html = EverblockTools::getGoogleReviewsShortcode('[googlereviews limit="5"]', $context, $module);
-     */
     public static function getGoogleReviewsShortcode(string $txt, Context $context, Everblock $module): string
     {
         $pattern = '/\[googlereviews(?:\s+([^\]]+))?\]/i';
@@ -1529,11 +1475,6 @@ class EverblockTools extends ObjectModel
         return is_array($cachedData) ? $cachedData : $empty;
     }
 
-    /**
-     * Gère le shortcode associé à `getProductShortcodes`.
-     *
-     * @example $html = EverblockTools::getProductShortcodes('[product id=42]', $context, $module);
-     */
     public static function getProductShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -1561,11 +1502,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getProductImageShortcodes`.
-     *
-     * @example $html = EverblockTools::getProductImageShortcodes('[product_image id=42 type="large_default"]', $context, $module);
-     */
     public static function getProductImageShortcodes(string $txt, Context $context, Everblock $module): string
     {
         // Debug: vérifier si le shortcode est détecté
@@ -1661,11 +1597,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getFeatureProductShortcodes`.
-     *
-     * @example $html = EverblockTools::getFeatureProductShortcodes('[productfeature id_product=42 id_feature=3]', $context, $module);
-     */
     public static function getFeatureProductShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -1800,11 +1731,6 @@ class EverblockTools extends ObjectModel
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
-    /**
-     * Gère le shortcode associé à `getFeatureValueProductShortcodes`.
-     *
-     * @example $html = EverblockTools::getFeatureValueProductShortcodes('[productfeaturevalue id_product=42 id_feature=3]', $context, $module);
-     */
     public static function getFeatureValueProductShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -1867,11 +1793,6 @@ class EverblockTools extends ObjectModel
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
-    /**
-     * Gère le shortcode associé à `getCategoryShortcodes`.
-     *
-     * @example $html = EverblockTools::getCategoryShortcodes('[category id=2]', $context, $module);
-     */
     public static function getCategoryShortcodes(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -1977,11 +1898,6 @@ class EverblockTools extends ObjectModel
         return is_array($cachedProducts) ? $cachedProducts : [];
     }
 
-    /**
-     * Gère le shortcode associé à `getManufacturerShortcodes`.
-     *
-     * @example $html = EverblockTools::getManufacturerShortcodes('[manufacturer id=7]', $context, $module);
-     */
     public static function getManufacturerShortcodes($message, $context, Everblock $module)
     {
         $templatePath = static::getTemplatePath('hook/ever_presented_products.tpl', $module);
@@ -2058,11 +1974,6 @@ class EverblockTools extends ObjectModel
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
-    /**
-     * Gère le shortcode associé à `getBrandsShortcode`.
-     *
-     * @example $html = EverblockTools::getBrandsShortcode('[brands limit="12"]', $context, $module);
-     */
     public static function getBrandsShortcode(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/ever_brand.tpl', $module);
@@ -2372,11 +2283,6 @@ class EverblockTools extends ObjectModel
         return EverblockCache::cacheRetrieve($cacheId);
     }
 
-    /**
-     * Gère le shortcode associé à `getWidgetShortcode`.
-     *
-     * @example $html = EverblockTools::getWidgetShortcode('[widget id=footer_links]');
-     */
     public static function getWidgetShortcode($txt)
     {
         $txt = preg_replace_callback('/\[widget moduleName="(.+?)" hookName="(.+?)"\]/', function ($matches) {
@@ -2397,21 +2303,50 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getPrettyblocksShortcodes`.
-     *
-     * @example $html = EverblockTools::getPrettyblocksShortcodes('[prettyblocks id=home-hero]', $context, $module);
-     */
     public static function getPrettyblocksShortcodes(string $txt, Context $context, Everblock $module): string
     {
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) static::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            try {
+                // Définir le chemin vers le template
+                $templatePath = static::getTemplatePath('hook/prettyblocks.tpl', $module);
+                // Regex pour trouver les shortcodes de type [prettyblocks name="mon_nom"]
+                $pattern = '/\[prettyblocks name="([^"]+)"\]/';
+
+                // Fonction de remplacement pour traiter chaque shortcode trouvé
+                $replacementFunction = function ($matches) use ($context, $templatePath) {
+                    $zoneName = $matches[1];
+
+                    try {
+                        // Assigner le nom de la zone à Smarty
+                        $context->smarty->assign('zone_name', $zoneName);
+
+                        // Récupérer le rendu du template avec Smarty
+                        return $context->smarty->fetch($templatePath);
+                    } catch (\Throwable $e) {
+                        PrestaShopLogger::addLog(
+                            sprintf('Prettyblocks shortcode rendering failed for zone "%s": %s', $zoneName, $e->getMessage()),
+                            3
+                        );
+                        return '';
+                    }
+                };
+
+                // Remplacer tous les shortcodes trouvés par le rendu Smarty correspondant
+                $txt = preg_replace_callback($pattern, $replacementFunction, $txt);
+            } catch (\Throwable $e) {
+                PrestaShopLogger::addLog(
+                    sprintf('Prettyblocks shortcode parsing failed: %s', $e->getMessage()),
+                    3
+                );
+            }
+        }
+        
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `generateFormFromShortcode`.
-     *
-     * @example $html = EverblockTools::generateFormFromShortcode('[evercontactform_open]', $context, $module, 'contact');
-     */
     public static function generateFormFromShortcode(
         string $shortcode,
         Context $context,
@@ -2466,11 +2401,6 @@ class EverblockTools extends ObjectModel
         return $context->smarty->fetch($templatePath);
     }
 
-    /**
-     * Gère le shortcode associé à `getFormShortcode`.
-     *
-     * @example $html = EverblockTools::getFormShortcode('[evercontactform_open]', $context, $module);
-     */
     public static function getFormShortcode(string $txt, Context $context, Everblock $module): string
     {
         // Remplace [evercontactform_open] par le formulaire ouvrant
@@ -2497,11 +2427,6 @@ class EverblockTools extends ObjectModel
         return $result;
     }
 
-    /**
-     * Gère le shortcode associé à `getOrderFormShortcode`.
-     *
-     * @example $html = EverblockTools::getOrderFormShortcode('[everorderform_open]', $context, $module);
-     */
     public static function getOrderFormShortcode(string $txt, Context $context, Everblock $module): string
     {
         $txt = str_replace('[everorderform_open]', '<div class="container">', $txt);
@@ -2534,11 +2459,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getNativeContactShortcode`.
-     *
-     * @example $html = EverblockTools::getNativeContactShortcode('[nativecontact]', $context, $module);
-     */
     public static function getNativeContactShortcode(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/contact.tpl', $module);
@@ -2547,11 +2467,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getCartShortcode`.
-     *
-     * @example $html = EverblockTools::getCartShortcode('[evercart]', $context, $module);
-     */
     public static function getCartShortcode(string $txt, Context $context, Everblock $module): string
     {
         $templatePath = static::getTemplatePath('hook/cart.tpl', $module);
@@ -2560,11 +2475,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getCartTotalShortcode`.
-     *
-     * @example $html = EverblockTools::getCartTotalShortcode('[cart_total]', $context);
-     */
     public static function getCartTotalShortcode(string $txt, Context $context): string
     {
         $total = 0;
@@ -2576,11 +2486,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getCartQuantityShortcode`.
-     *
-     * @example $html = EverblockTools::getCartQuantityShortcode('[cart_quantity]', $context);
-     */
     public static function getCartQuantityShortcode(string $txt, Context $context): string
     {
         $quantity = 0;
@@ -2591,11 +2496,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getShopLogoShortcode`.
-     *
-     * @example $html = EverblockTools::getShopLogoShortcode('[shop_logo]', $context);
-     */
     public static function getShopLogoShortcode(string $txt, Context $context): string
     {
         $logoName = Configuration::get('PS_LOGO', null, null, (int) $context->shop->id);
@@ -2619,11 +2519,6 @@ class EverblockTools extends ObjectModel
         return str_replace('[shop_logo]', $imgTag, $txt);
     }
 
-    /**
-     * Gère le shortcode associé à `getAlertShortcode`.
-     *
-     * @example $html = EverblockTools::getAlertShortcode('[alert type="warning" text="Stock faible"]');
-     */
     public static function getAlertShortcode(string $txt): string
     {
         $allowedTypes = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
@@ -2645,11 +2540,6 @@ class EverblockTools extends ObjectModel
         );
     }
 
-    /**
-     * Gère le shortcode associé à `getNewsletterFormShortcode`.
-     *
-     * @example $html = EverblockTools::getNewsletterFormShortcode('[newsletter_form]', $context, $module);
-     */
     public static function getNewsletterFormShortcode(string $txt, Context $context, Everblock $module): string
     {
         if (Module::isInstalled('ps_emailsubscription') && Module::isEnabled('ps_emailsubscription')) {
@@ -2679,11 +2569,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getEverBlockShortcode`.
-     *
-     * @example $html = EverblockTools::getEverBlockShortcode('[everblock 12]', $context);
-     */
     public static function getEverBlockShortcode(string $txt, Context $context): string
     {
         preg_match_all('/\[everblock\s+(\d+)\]/i', $txt, $matches);
@@ -2706,11 +2591,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getRandomProductsShortcode`.
-     *
-     * @example $html = EverblockTools::getRandomProductsShortcode('[random_product nb=4 carousel=true]', $context, $module);
-     */
     public static function getRandomProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
         // Update regex to capture optional params nb, limit, carousel, orderby and orderway
@@ -2766,11 +2646,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getLastProductsShortcode`.
-     *
-     * @example $html = EverblockTools::getLastProductsShortcode('[last-products nb=6]', $context, $module);
-     */
     public static function getLastProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
         // Update regex to capture optional nb, limit, carousel, orderby and orderway
@@ -2824,11 +2699,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getRecentlyViewedShortcode`.
-     *
-     * @example $html = EverblockTools::getRecentlyViewedShortcode('[recently_viewed nb=5]', $context, $module);
-     */
     public static function getRecentlyViewedShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all('/\[recently_viewed(?:\s+nb=(\d+))?(?:\s+carousel=(true|false))?\]/i', $txt, $matches, PREG_SET_ORDER);
@@ -2863,11 +2733,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getPromoProductsShortcode`.
-     *
-     * @example $html = EverblockTools::getPromoProductsShortcode('[promo-products nb=8]', $context, $module);
-     */
     public static function getPromoProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
         // Update regex to capture optional nb, limit, carousel, orderby and orderway
@@ -2922,11 +2787,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getBestSalesShortcode`.
-     *
-     * @example $html = EverblockTools::getBestSalesShortcode('[best-sales nb=6]', $context, $module);
-     */
     public static function getBestSalesShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all(
@@ -3004,11 +2864,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getCategoryBestSalesShortcode`.
-     *
-     * @example $html = EverblockTools::getCategoryBestSalesShortcode('[categorybestsales id_category=2 nb=6]', $context, $module);
-     */
     public static function getCategoryBestSalesShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all(
@@ -3067,11 +2922,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getBrandBestSalesShortcode`.
-     *
-     * @example $html = EverblockTools::getBrandBestSalesShortcode('[brandbestsales id_manufacturer=7 nb=6]', $context, $module);
-     */
     public static function getBrandBestSalesShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all(
@@ -3130,11 +2980,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getFeatureBestSalesShortcode`.
-     *
-     * @example $html = EverblockTools::getFeatureBestSalesShortcode('[featurebestsales id_feature=3 nb=6]', $context, $module);
-     */
     public static function getFeatureBestSalesShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all(
@@ -3193,11 +3038,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getFeatureValueBestSalesShortcode`.
-     *
-     * @example $html = EverblockTools::getFeatureValueBestSalesShortcode('[featurevaluebestsales id_feature_value=9 nb=6]', $context, $module);
-     */
     public static function getFeatureValueBestSalesShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all(
@@ -3256,11 +3096,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getLinkedProductsShortcode`.
-     *
-     * @example $html = EverblockTools::getLinkedProductsShortcode('[linkedproducts id_product=42]', $context, $module);
-     */
     public static function getLinkedProductsShortcode(string $txt, Context $context, Everblock $module): string
     {
         if (!Tools::getValue('id_product')) {
@@ -3339,11 +3174,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getAccessoriesShortcode`.
-     *
-     * @example $html = EverblockTools::getAccessoriesShortcode('[accessories id_product=42]', $context, $module);
-     */
     public static function getAccessoriesShortcode(string $txt, Context $context, Everblock $module): string
     {
         if (!Tools::getValue('id_product')) {
@@ -3429,11 +3259,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getSubcategoriesShortcode`.
-     *
-     * @example $html = EverblockTools::getSubcategoriesShortcode('[subcategories id_category=2]', $context, $module);
-     */
     public static function getSubcategoriesShortcode(string $txt, Context $context, Everblock $module): string
     {
         $categoryShortcodes = [];
@@ -3478,11 +3303,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getStoreShortcode`.
-     *
-     * @example $html = EverblockTools::getStoreShortcode('[everstore id_store=1]', $context, $module);
-     */
     public static function getStoreShortcode(string $txt, Context $context, Everblock $module): string
     {
         preg_match_all('/\[everstore\s+(\d+)\]/i', $txt, $matches);
@@ -3579,11 +3399,6 @@ class EverblockTools extends ObjectModel
         return $modifiedTxt;
     }
 
-    /**
-     * Gère le shortcode associé à `getEverImgShortcode`.
-     *
-     * @example $html = EverblockTools::getEverImgShortcode('[everimg src="/img/cms/banner.jpg" alt="Banniere"]', $context, $module);
-     */
     public static function getEverImgShortcode(string $txt, Context $context, Everblock $module): string
     {
         // 🔹 Regex robuste : compatible avec carousel=true ou carousel="true"
@@ -3814,11 +3629,6 @@ class EverblockTools extends ObjectModel
         ];
     }
     
-    /**
-     * Gère le shortcode associé à `getVideoShortcode`.
-     *
-     * @example $html = EverblockTools::getVideoShortcode('[video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ"]');
-     */
     public static function getVideoShortcode(string $txt): string
     {
         preg_match_all('/\[video\s+(.*?)\]/i', $txt, $videoMatches);
@@ -4036,7 +3846,7 @@ class EverblockTools extends ObjectModel
 
     public static function getFrenchHolidays($year)
     {
-        $easterDate = self::getEasterDate((int) $year);
+        $easterDate = easter_date($year);
         $holidays = [
             // Jours fixes
             sprintf('%s-01-01', $year), // Jour de l'an
@@ -4049,33 +3859,13 @@ class EverblockTools extends ObjectModel
             sprintf('%s-12-25', $year), // Noël
 
             // Jours mobiles (basés sur Pâques)
-            $easterDate, // Pâques
-            date('Y-m-d', strtotime($easterDate . ' +39 days')), // Ascension
-            date('Y-m-d', strtotime($easterDate . ' +49 days')), // Pentecôte
-            date('Y-m-d', strtotime($easterDate . ' +50 days')), // Lundi de Pentecôte
+            date('Y-m-d', $easterDate), // Pâques
+            date('Y-m-d', strtotime('+39 days', $easterDate)), // Ascension
+            date('Y-m-d', strtotime('+49 days', $easterDate)), // Pentecôte
+            date('Y-m-d', strtotime('+50 days', $easterDate)), // Lundi de Pentecôte
         ];
 
         return $holidays;
-    }
-
-    protected static function getEasterDate(int $year): string
-    {
-        $goldenNumber = $year % 19;
-        $century = intdiv($year, 100);
-        $centuryRemainder = $year % 100;
-        $leapCorrection = intdiv($century, 4);
-        $centuryMod = $century % 4;
-        $moonCorrection = intdiv($century + 8, 25);
-        $epactCorrection = intdiv($century - $moonCorrection + 1, 3);
-        $epact = (19 * $goldenNumber + $century - $leapCorrection - $epactCorrection + 15) % 30;
-        $yearRemainder = intdiv($centuryRemainder, 4);
-        $weekdayRemainder = $centuryRemainder % 4;
-        $weekday = (32 + (2 * $centuryMod) + (2 * $yearRemainder) - $epact - $weekdayRemainder) % 7;
-        $monthOffset = intdiv($goldenNumber + (11 * $epact) + (22 * $weekday), 451);
-        $month = intdiv($epact + $weekday - (7 * $monthOffset) + 114, 31);
-        $day = (($epact + $weekday - (7 * $monthOffset) + 114) % 31) + 1;
-
-        return sprintf('%04d-%02d-%02d', $year, $month, $day);
     }
 
     protected static function getStoreHolidayHoursConfig(int $storeId): array
@@ -4120,8 +3910,12 @@ class EverblockTools extends ObjectModel
         if (!empty($stores)) {
             $smarty = $context->smarty;
             $templatePath = static::getTemplatePath('hook/storelocator.tpl', $module);
+            $hasPrettyblocks = Module::isInstalled('prettyblocks')
+                && Module::isEnabled('prettyblocks')
+                && static::moduleDirectoryExists('prettyblocks');
             $smarty->assign([
                 'everblock_stores' => $stores,
+                'has_prettyblocks' => $hasPrettyblocks,
                 'everblock_show_map_toggle' => (bool) Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
             ]);
             $storeLocatorContent = $smarty->fetch($templatePath);
@@ -4450,11 +4244,6 @@ class EverblockTools extends ObjectModel
         return $googleMapCode;
     }
 
-    /**
-     * Gère le shortcode associé à `getEverMapShortcode`.
-     *
-     * @example $html = EverblockTools::getEverMapShortcode('[evermap lat="48.8566" lng="2.3522"]', $context, $module);
-     */
     public static function getEverMapShortcode(string $txt, Context $context, Everblock $module): string
     {
         $apiKey = Configuration::get('EVERBLOCK_GMAP_KEY');
@@ -4713,11 +4502,6 @@ class EverblockTools extends ObjectModel
         return $text;
     }
 
-    /**
-     * Gère le shortcode associé à `getCustomerShortcodes`.
-     *
-     * @example $html = EverblockTools::getCustomerShortcodes('Bonjour [firstname]', $context);
-     */
     public static function getCustomerShortcodes(string $txt, Context $context): string
     {
         $entityShortcodes = [];
@@ -4740,11 +4524,6 @@ class EverblockTools extends ObjectModel
         return $txt;
     }
 
-    /**
-     * Gère le shortcode associé à `getEverShortcodes`.
-     *
-     * @example $html = EverblockTools::getEverShortcodes('Bienvenue sur [shop_name]', $context);
-     */
     public static function getEverShortcodes(string $txt, Context $context): string
     {
         $customShortcodes = EverblockShortcode::getAllShortcodes(

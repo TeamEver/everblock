@@ -61,10 +61,11 @@ class EverblockPageModuleFrontController extends ModuleFrontController
             ));
         }
 
-        $metaTitle = isset($page->meta_title) && $page->meta_title ? $page->meta_title : $page->title;
+        $metaTitle = $page->meta_title ?: $page->title;
         $metaDescription = $page->meta_description ?: ($page->short_description ?? '');
 
         $renderedContent = $page->content;
+        $isPrettyBlocksEnabled = $this->isPrettyBlocksEnabled();
 
         $pages = EverblockPage::getPages(
             (int) $this->context->language->id,
@@ -94,6 +95,8 @@ class EverblockPageModuleFrontController extends ModuleFrontController
                 ? $this->context->link->getMediaLink(_PS_IMG_ . 'pages/' . $page->cover_image)
                 : '',
             'everblock_structured_data' => $this->buildItemListStructuredData($pages, $pageLinks),
+            'everblock_prettyblocks_enabled' => $isPrettyBlocksEnabled,
+            'everblock_prettyblocks_zone_name' => $isPrettyBlocksEnabled ? 'everblock_page_zone_' . (int) $page->id : '',
         ]);
 
         $this->setTemplate('module:everblock/views/templates/front/page.tpl');
@@ -156,6 +159,12 @@ class EverblockPageModuleFrontController extends ModuleFrontController
         return parent::getCanonicalURL();
     }
 
+    protected function isPrettyBlocksEnabled(): bool
+    {
+        return (bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) Everblock\Tools\Service\EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+    }
 
     protected function ensureEverblockPage(array $customerGroups = []): ?EverblockPage
     {

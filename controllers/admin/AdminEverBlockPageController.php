@@ -280,10 +280,6 @@ class AdminEverBlockPageController extends ModuleAdminController
                     ],
                 ],
                 [
-                    'type' => 'hidden',
-                    'name' => 'id_shop',
-                ],
-                [
                     'type' => 'text',
                     'label' => $this->l('Page name'),
                     'name' => 'name',
@@ -360,10 +356,6 @@ class AdminEverBlockPageController extends ModuleAdminController
 
     public function postProcess()
     {
-        if (Tools::isSubmit('submitAdd' . $this->table) || Tools::isSubmit('submitAdd' . $this->table . 'AndStay')) {
-            $_POST['id_shop'] = (int) $this->context->shop->id;
-        }
-
         parent::postProcess();
 
         if (Tools::isSubmit('submitAdd' . $this->table) || Tools::isSubmit('submitAdd' . $this->table . 'AndStay')) {

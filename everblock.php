@@ -29,12 +29,12 @@ require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
 require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
-require_once _PS_MODULE_DIR_ . 'everblock/src/Service/EverblockCache.php';
 
-use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use \PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
+use Everblock\Tools\Service\EverblockPrettyBlocks;
+use Everblock\Tools\Service\EverblockPrettyBlocksImportExport;
 use Everblock\Tools\Service\EverblockCache;
-use Everblock\Tools\Service\QcdThirdPartyBlockRenderer;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\GithubReleaseChecker;
 use Everblock\Tools\Service\ImportFile;
@@ -65,16 +65,12 @@ class Everblock extends Module
     private $bypassedControllers = [
         'hookDisplayInvoiceLegalFreeText',
     ];
-    /** @var Module|null */
-    private $qcdBuilderModule;
-    /** @var bool */
-    private $qcdBuilderModuleResolved = false;
 
     public function __construct()
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '8.3.0';
+        $this->version = '8.2.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -88,17 +84,6 @@ class Everblock extends Module
         ];
     }
 
-    /**
-     * Intercepte dynamiquement les hooks display non déclarés explicitement.
-     *
-     * Cette méthode évite de devoir créer une méthode hook* pour chaque hook display,
-     * tout en limitant l'exécution au front-office (hors contrôleurs bypassés).
-     *
-     * @param string $method Nom de la méthode appelée (ex: hookDisplayHome)
-     * @param array<int, mixed> $args Arguments transmis par PrestaShop
-     *
-     * @return mixed
-     */
     public function __call($method, $args)
     {
         if (php_sapi_name() == 'cli') {
@@ -117,277 +102,141 @@ class Everblock extends Module
         }
     }
 
-    /**
-     * Installe le module et son socle fonctionnel (config, SQL, hooks, onglets BO).
-     */
-    public function install(): bool
+
+    public function install()
     {
-        if (!parent::install()) {
-            return false;
-        }
-
-        if (!$this->installConfiguration()) {
-            return false;
-        }
-
-        if (!$this->installSql()) {
-            return false;
-        }
-
-        if (!$this->installHooks()) {
-            return false;
-        }
-
-        if (!$this->installTabs()) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Initialise les clés de configuration nécessaires au fonctionnement du module.
-     */
-    private function installConfiguration(): bool
-    {
-        $configuration = [
-            ['EVERBLOCK_TINYMCE', 1],
-            ['EVERPSCSS_P_LLOREM_NUMBER', 5],
-            ['EVERPSCSS_S_LLOREM_NUMBER', 5],
-            ['EVERPS_TAB_NB', 5],
-            ['EVERPS_FLAG_NB', 5],
-            ['EVERWP_API_URL', ''],
-            ['EVERWP_BLOG_URL', '/blog'],
-            ['EVERWP_POST_NBR', 3],
-            ['EVERWP_POSTS_BG_IMAGE', ''],
-            ['EVER_SOLDOUT_COLOR', '#ff0000'],
-            ['EVER_SOLDOUT_TEXTCOLOR', '#ffffff'],
-            ['EVERINSTA_SHOW_CAPTION', 0],
-            ['EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE', 2097152],
-            ['EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS', json_encode(['pdf', 'jpg', 'jpeg', 'png']), true],
-            ['EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES', json_encode(['application/pdf', 'image/jpeg', 'image/png']), true],
-            ['EVERPS_FEATURES_AS_FLAGS', json_encode([1]), true],
-            ['EVERBLOCK_SOLDOUT_FLAG', 0],
-            ['EVERBLOCK_LOW_STOCK_THRESHOLD', 5],
-            ['EVERBLOCK_STORELOCATOR_TOGGLE', 0],
-            ['EVERBLOCK_GOOGLE_API_KEY', ''],
-            ['EVERBLOCK_GOOGLE_PLACE_ID', ''],
-            ['EVERBLOCK_GOOGLE_REVIEWS_LIMIT', 5],
-            ['EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING', 0],
-            ['EVERBLOCK_GOOGLE_REVIEWS_SORT', 'most_relevant'],
-            ['EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING', 1],
-            ['EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR', 1],
-            ['EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA', 1],
-            ['EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL', $this->l('Read all reviews on Google')],
-            ['EVERBLOCK_GOOGLE_REVIEWS_CTA_URL', ''],
-            ['EVERBLOCK_PAGES_BASE_URL', 'guide'],
-            ['EVERBLOCK_PAGES_PER_PAGE', 9],
-            ['EVERBLOCK_FAQ_BASE_URL', 'faq'],
-            ['EVERBLOCK_FAQ_PER_PAGE', 10],
-        ];
-
-        foreach ($configuration as $item) {
-            $autoload = $item[2] ?? false;
-            if (!Configuration::updateValue($item[0], $item[1], $autoload)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Exécute le script SQL d'installation et crée les tables du module.
-     */
-    private function installSql(): bool
-    {
+        Configuration::updateValue('EVERBLOCK_TINYMCE', 1);
+        Configuration::updateValue('EVERPSCSS_P_LLOREM_NUMBER', 5);
+        Configuration::updateValue('EVERPSCSS_S_LLOREM_NUMBER', 5);
+        Configuration::updateValue('EVERPS_TAB_NB', 5);
+        Configuration::updateValue('EVERPS_FLAG_NB', 5);
+        Configuration::updateValue('EVERWP_API_URL', '');
+        Configuration::updateValue('EVERWP_BLOG_URL', '/blog');
+        Configuration::updateValue('EVERWP_POST_NBR', 3);
+        Configuration::updateValue('EVERWP_POSTS_BG_IMAGE', '');
+        Configuration::updateValue('EVER_SOLDOUT_COLOR', '#ff0000');
+        Configuration::updateValue('EVER_SOLDOUT_TEXTCOLOR', '#ffffff');
+        Configuration::updateValue('EVERINSTA_SHOW_CAPTION', 0);
+        Configuration::updateValue('EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE', 2097152);
+        Configuration::updateValue(
+            'EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS',
+            json_encode(['pdf', 'jpg', 'jpeg', 'png']),
+            true
+        );
+        Configuration::updateValue(
+            'EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES',
+            json_encode(['application/pdf', 'image/jpeg', 'image/png']),
+            true
+        );
+        Configuration::updateValue(
+            'EVERPS_FEATURES_AS_FLAGS',
+            json_encode([1]),
+            true
+        );
+        Configuration::updateValue('EVERBLOCK_SOLDOUT_FLAG', 0);
+        Configuration::updateValue('EVERBLOCK_LOW_STOCK_THRESHOLD', 5);
+        Configuration::updateValue('EVERBLOCK_STORELOCATOR_TOGGLE', 0);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_API_KEY', '');
+        Configuration::updateValue('EVERBLOCK_GOOGLE_PLACE_ID', '');
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_LIMIT', 5);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_MIN_RATING', 0);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SORT', 'most_relevant');
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING', 1);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR', 1);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA', 1);
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_LABEL', $this->l('Read all reviews on Google'));
+        Configuration::updateValue('EVERBLOCK_GOOGLE_REVIEWS_CTA_URL', '');
+        Configuration::updateValue('EVERBLOCK_PAGES_BASE_URL', 'guide');
+        Configuration::updateValue('EVERBLOCK_PAGES_PER_PAGE', 9);
+        Configuration::updateValue('EVERBLOCK_FAQ_BASE_URL', 'faq');
+        Configuration::updateValue('EVERBLOCK_FAQ_PER_PAGE', 10);
+        // Install SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/install.php';
-
-        foreach ($sql as $query) {
-            if (!Db::getInstance()->execute($query)) {
-                return false;
-            }
+        // Hook actionGetEverBlockBefore
+        if (!Hook::getIdByName('actionGetEverBlockBefore')) {
+            $hook = new Hook();
+            $hook->name = 'actionGetEverBlockBefore';
+            $hook->title = 'Before block is rendered';
+            $hook->description = 'This hook triggers before block is rendered';
+            $hook->save();
         }
-
-        return true;
-    }
-
-    /**
-     * Crée les hooks personnalisés du module puis enregistre les hooks natifs requis.
-     */
-    private function installHooks(): bool
-    {
-        $customHooks = [
-            ['actionGetEverBlockBefore', 'Before block is rendered', 'This hook triggers before block is rendered'],
-            ['actionEverBlockChangeShortcodeBefore', 'Before block shortcodes are rendered', 'This hook triggers before every block shortcode is rendered'],
-            ['actionEverBlockChangeShortcodeAfter', 'After block shortcodes are rendered', 'This hook triggers after every block shortcode is rendered'],
-            ['displayBeforeRenderingShortcodes', 'Before rendering shortcodes', 'This hook triggers before shortcodes are rendered'],
-            ['displayAfterRenderingShortcodes', 'After rendering shortcodes', 'This hook triggers after shortcodes are rendered'],
-            ['displayFakeHook', 'Fake hook', 'Ne pas afficher ce hook en front, il sera utilisé pour du contenu asynchrone'],
-        ];
-
-        foreach ($customHooks as $customHook) {
-            if (!$this->createHookIfNotExists($customHook[0], $customHook[1], $customHook[2])) {
-                return false;
-            }
+        // Hook actionEverBlockChangeShortcodeBefore
+        if (!Hook::getIdByName('actionEverBlockChangeShortcodeBefore')) {
+            $hook = new Hook();
+            $hook->name = 'actionEverBlockChangeShortcodeBefore';
+            $hook->title = 'Before block shortcodes are rendered';
+            $hook->description = 'This hook triggers before every block shortcode is rendered';
+            $hook->save();
         }
-
-        $hooksToRegister = [
-            'displayHeader',
-            'actionAdminControllerSetMedia',
-            'actionRegisterBlock',
-            'moduleRoutes',
-        ];
-
-        foreach ($hooksToRegister as $hookName) {
-            if (!$this->registerHook($hookName)) {
-                return false;
-            }
+        // Hook actionEverBlockChangeShortcodeBefore
+        if (!Hook::getIdByName('actionEverBlockChangeShortcodeAfter')) {
+            $hook = new Hook();
+            $hook->name = 'actionEverBlockChangeShortcodeAfter';
+            $hook->title = 'After block shortcodes are rendered';
+            $hook->description = 'This hook triggers after every block shortcode is rendered';
+            $hook->save();
         }
-
-        if (!$this->registerQcdBuilderHooks()) {
-            return false;
+        // Hook displayBeforeRenderingShortcodes
+        if (!Hook::getIdByName('displayBeforeRenderingShortcodes')) {
+            $hook = new Hook();
+            $hook->name = 'displayBeforeRenderingShortcodes';
+            $hook->title = 'Before rendering shortcodes';
+            $hook->description = 'This hook triggers before shortcodes are rendered';
+            $hook->save();
         }
-
-        return true;
-    }
-
-    /**
-     * Enregistre les hooks d'intégration avec QCD Builder lorsqu'ils sont disponibles.
-     */
-    private function registerQcdBuilderHooks(): bool
-    {
-        $hooksToRegister = [
-            'filterQcdPageBuilderBackOfficeTargets',
-            'filterQcdPageBuilderDeclarativeBlocks',
-            'filterQcdPageBuilderThirdPartyBlockFrontRender',
-            'filterQcdPageBuilderThirdPartyBlockFrontAssets',
-        ];
-
-        foreach ($hooksToRegister as $hookName) {
-            if (!$this->isRegisteredInHook($hookName) && !$this->registerHook($hookName)) {
-                return false;
-            }
+        // Hook displayAfterRenderingShortcodes
+        if (!Hook::getIdByName('displayAfterRenderingShortcodes')) {
+            $hook = new Hook();
+            $hook->name = 'displayAfterRenderingShortcodes';
+            $hook->title = 'After rendering shortcodes';
+            $hook->description = 'This hook triggers after shortcodes are rendered';
+            $hook->save();
         }
-
-        return true;
-    }
-
-    public function hookFilterQcdPageBuilderThirdPartyBlockFrontAssets(array $params)
-    {
-        $supportedTypes = [
-            'everblock_select',
-            'everblock_shortcode',
-            'everblock_faq',
-            'everblock_latest_pages',
-        ];
-
-        $rawContexts = $params['block_contexts'] ?? $params['block_types'] ?? [];
-        if (!is_array($rawContexts) || empty($rawContexts)) {
-            return [];
+        // Hook displayFakeHook
+        if (!Hook::getIdByName('displayFakeHook')) {
+            $hook = new Hook();
+            $hook->name = 'displayFakeHook';
+            $hook->title = 'Fake hook';
+            $hook->description = 'Ne pas afficher ce hook en front, il sera utilisé pour du contenu asynchrone';
+            $hook->save();
         }
+        // Hook beforeRenderingEverblockSpecialEvent
+        if (!Hook::getIdByName('beforeRenderingEverblockSpecialEvent')) {
+            $hook = new Hook();
+            $hook->name = 'beforeRenderingEverblockSpecialEvent';
+            $hook->title = 'Before rendering special event block';
+            $hook->description = 'This hook triggers before special event block is rendered';
+            $hook->save();
+        }
+        $installed = parent::install()
+            && $this->registerHook('displayHeader')
+            && $this->registerHook('actionAdminControllerSetMedia')
+            && $this->registerHook('actionRegisterBlock')
+            && $this->registerHook('moduleRoutes')
+            && $this->registerHook('beforeRenderingEverblockSpecialEvent')
+            && $this->installModuleTab('AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'))
+            && $this->installModuleTab('AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'))
+            && $this->installModuleTab('AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'))
+            && $this->installModuleTab('AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'))
+            && $this->installModuleTab('AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes'))
+            && $this->installModuleTab('AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'))
+            && $this->installModuleTab('AdminEverBlockPage', 'AdminEverBlockParent', $this->l('Pages'));
 
-        $hasEverblockBuilderBlock = false;
-        foreach ($rawContexts as $rawContext) {
-            $rawBlockType = '';
-            if (is_array($rawContext)) {
-                $rawBlockType = (string) (
-                    $rawContext['block_type']
-                    ?? $rawContext['type']
-                    ?? $rawContext['code']
-                    ?? $rawContext['normalized']['block_type']
-                    ?? $rawContext['normalized']['type']
-                    ?? $rawContext['normalized']['code']
-                    ?? ''
+        if ($installed && $this->hasPrettyblocksModule()) {
+            $installed = $installed
+                && $this->installModuleTab(
+                    'AdminEverBlockPrettyblock',
+                    'AdminEverBlockParent',
+                    $this->l('PrettyBlocks')
                 );
-            } else {
-                $rawBlockType = (string) $rawContext;
-            }
-
-            $blockType = Tools::strtolower(trim($rawBlockType));
-            if ($blockType !== '' && preg_match('/[.:\/]/', $blockType)) {
-                $parts = preg_split('/[.:\/]/', $blockType);
-                if (isset($parts[0]) && $parts[0] === $this->name && isset($parts[count($parts) - 1])) {
-                    $blockType = (string) $parts[count($parts) - 1];
-                }
-            }
-
-            if (in_array($blockType, $supportedTypes, true)) {
-                $hasEverblockBuilderBlock = true;
-                break;
-            }
         }
 
-        if (!$hasEverblockBuilderBlock) {
-            return [];
+        if ($installed) {
+            $this->importLegacyTranslations();
         }
 
-        return [
-            'stylesheets' => [
-                [
-                    'id' => 'module-' . $this->name . '-builder-blocks-css',
-                    'path' => 'modules/' . $this->name . '/views/css/' . $this->name . '.css',
-                    'options' => [
-                        'media' => 'all',
-                        'priority' => 200,
-                    ],
-                ],
-            ],
-            'javascripts' => [
-                [
-                    'id' => 'module-' . $this->name . '-builder-blocks-js',
-                    'path' => 'modules/' . $this->name . '/views/js/' . $this->name . '.js',
-                    'options' => [
-                        'position' => 'bottom',
-                        'priority' => 200,
-                    ],
-                ],
-                [
-                    'id' => 'module-' . $this->name . '-builder-blocks-slider-js',
-                    'path' => 'modules/' . $this->name . '/views/js/everblock-slider.js',
-                    'options' => [
-                        'position' => 'bottom',
-                        'priority' => 210,
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    private function installTabs(): bool
-    {
-        $tabs = [
-            ['AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block')],
-            ['AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration')],
-            ['AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks')],
-            ['AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks')],
-            ['AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes')],
-            ['AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ')],
-            ['AdminEverBlockPage', 'AdminEverBlockParent', $this->l('Pages')],
-        ];
-
-        foreach ($tabs as $tab) {
-            if (!$this->installModuleTab($tab[0], $tab[1], $tab[2])) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function createHookIfNotExists(string $name, string $title, string $description): bool
-    {
-        if ((int) Hook::getIdByName($name) > 0) {
-            return true;
-        }
-
-        $hook = new Hook();
-        $hook->name = $name;
-        $hook->title = $title;
-        $hook->description = $description;
-
-        return (bool) $hook->add();
+        return $installed;
     }
 
     public function uninstall()
@@ -429,36 +278,20 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_FAQ_BASE_URL');
         Configuration::deleteByName('EVERBLOCK_FAQ_PER_PAGE');
         $uninstalled = (parent::uninstall()
+            && $this->uninstallModuleTab('AdminEverBlockParent')
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
             && $this->uninstallModuleTab('AdminEverBlock')
             && $this->uninstallModuleTab('AdminEverBlockHook')
             && $this->uninstallModuleTab('AdminEverBlockShortcode')
             && $this->uninstallModuleTab('AdminEverBlockFaq')
-            && $this->uninstallModuleTab('AdminEverBlockPage')
-            && $this->uninstallModuleTab('AdminEverBlockParent'));
+            && $this->uninstallModuleTab('AdminEverBlockPage'));
 
+        if (Tab::getIdFromClassName('AdminEverBlockPrettyblock')) {
+            $uninstalled = $uninstalled && $this->uninstallModuleTab('AdminEverBlockPrettyblock');
+        }
 
         return $uninstalled;
     }
-
-    protected function registerQcdPageBuilderBackOfficeTargetsHook()
-    {
-        $hookName = 'filterQcdPageBuilderBackOfficeTargets';
-
-        if (!Hook::getIdByName($hookName)) {
-            $hook = new Hook();
-            $hook->name = $hookName;
-            $hook->title = 'QCD Page Builder back-office targets filter';
-            $hook->description = 'This hook allows modules to add back-office editable targets for QCD Page Builder';
-
-            if (!$hook->save()) {
-                return false;
-            }
-        }
-
-        return (bool) $this->registerHook($hookName);
-    }
-
 
     public function l($string, $specific = null, $idLang = null)
     {
@@ -647,44 +480,34 @@ class Everblock extends Module
         );
     }
 
-    private function installModuleTab(string $className, string $parentClassName, string $name): bool
+    protected function installModuleTab($tabClass, $parent, $tabName)
     {
-        if ((int) Tab::getIdFromClassName($className) > 0) {
-            return true;
-        }
-
-        $parentId = (int) Tab::getIdFromClassName($parentClassName);
-        if ($parentId <= 0) {
-            return false;
-        }
-
         $tab = new Tab();
         $tab->active = 1;
-        $tab->class_name = $className;
-        $tab->id_parent = $parentId;
+        $tab->class_name = $tabClass;
+        $tab->id_parent = (int) Tab::getIdFromClassName($parent);
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
         $tab->module = $this->name;
-
-        if ($className === 'AdminEverBlockParent') {
+        if ($tabClass == 'AdminEverBlockParent') {
             $tab->icon = 'icon-team-ever';
         }
-
         foreach (Language::getLanguages(false) as $lang) {
-            $tab->name[(int) $lang['id_lang']] = $name;
+            $tab->name[(int) $lang['id_lang']] = $tabName;
         }
-
-        return (bool) $tab->add();
+        return $tab->add();
     }
 
     protected function uninstallModuleTab($tabClass)
     {
-        $tabId = (int) Tab::getIdFromClassName($tabClass);
-        if (!$tabId) {
-            return true;
-        }
-
-        $tab = new Tab($tabId);
+        $tab = new Tab((int) Tab::getIdFromClassName($tabClass));
         return $tab->delete();
+    }
+
+    private function hasPrettyblocksModule(): bool
+    {
+        return (bool) Module::isInstalled('prettyblocks')
+            && (bool) Module::isEnabled('prettyblocks')
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks');
     }
 
     public function checkHooks()
@@ -773,7 +596,74 @@ class Everblock extends Module
             $hook->description = 'This hook triggers after product miniature is rendered';
             $hook->save();
         }
-
+        if ($this->hasPrettyblocksModule()) {
+            if (!Hook::getIdByName('beforeRenderingEverblockProductHighlight')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockProductHighlight';
+                $hook->title = 'Before rendering product highlight block';
+                $hook->description = 'This hook triggers before product highlight block is rendered';
+                $hook->save();
+            }
+            if (!Hook::getIdByName('beforeRenderingEverblockCategoryTabs')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockCategoryTabs';
+                $hook->title = 'Before rendering category tabs block';
+                $hook->description = 'This hook triggers before category tabs block is rendered';
+                $hook->save();
+            }
+            if (!Hook::getIdByName('beforeRenderingEverblockCategoryPrice')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockCategoryPrice';
+                $hook->title = 'Before rendering category price block';
+                $hook->description = 'This hook triggers before category price block is rendered';
+                $hook->save();
+            }
+            if (!Hook::getIdByName('beforeRenderingEverblockLookbook')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockLookbook';
+                $hook->title = 'Before rendering lookbook block';
+                $hook->description = 'This hook triggers before lookbook block is rendered';
+                $hook->save();
+            }
+            if (!Hook::getIdByName('beforeRenderingEverblockFlashDeals')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockFlashDeals';
+                $hook->title = 'Before rendering flash deals block';
+                $hook->description = 'This hook triggers before flash deals block is rendered';
+                $hook->save();
+            }
+            if (!Hook::getIdByName('beforeRenderingEverblockCategoryProducts')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockCategoryProducts';
+                $hook->title = 'Before rendering category products block';
+                $hook->description = 'This hook triggers before category products block is rendered';
+                $hook->save();
+            }
+            if (!Hook::getIdByName('beforeRenderingEverblockSpecialEvent')) {
+                $hook = new Hook();
+                $hook->name = 'beforeRenderingEverblockSpecialEvent';
+                $hook->title = 'Before rendering special event block';
+                $hook->description = 'This hook triggers before special event block is rendered';
+                $hook->save();
+            }
+            $this->registerHook('beforeRenderingEverblockProductHighlight');
+            $this->registerHook('beforeRenderingEverblockCategoryTabs');
+            $this->registerHook('beforeRenderingEverblockCategoryPrice');
+            $this->registerHook('beforeRenderingEverblockLookbook');
+            $this->registerHook('beforeRenderingEverblockFlashDeals');
+            $this->registerHook('beforeRenderingEverblockCategoryProducts');
+            $this->registerHook('beforeRenderingEverblockSpecialEvent');
+            $this->registerHook('beforeRenderingEverblockEverblock');
+        } else {
+            $this->unregisterHook('beforeRenderingEverblockProductHighlight');
+            $this->unregisterHook('beforeRenderingEverblockCategoryTabs');
+            $this->unregisterHook('beforeRenderingEverblockCategoryPrice');
+            $this->unregisterHook('beforeRenderingEverblockLookbook');
+            $this->unregisterHook('beforeRenderingEverblockFlashDeals');
+            $this->unregisterHook('beforeRenderingEverblockCategoryProducts');
+            $this->unregisterHook('beforeRenderingEverblockSpecialEvent');
+            $this->unregisterHook('beforeRenderingEverblockEverblock');
+        }
         // Vérifier si l'onglet "AdminEverBlockParent" existe déjà
         $id_tab = Tab::getIdFromClassName('AdminEverBlockParent');
         if (!$id_tab) {
@@ -851,6 +741,20 @@ class Everblock extends Module
             }
             $tab->add();
         }
+        if ($this->hasPrettyblocksModule()) {
+            $id_tab = Tab::getIdFromClassName('AdminEverBlockPrettyblock');
+            if (!$id_tab) {
+                $tab = new Tab();
+                $tab->class_name = 'AdminEverBlockPrettyblock';
+                $tab->module = $this->name;
+                $tab->id_parent = Tab::getIdFromClassName('AdminEverBlockParent');
+                $tab->position = Tab::getNewLastPosition($tab->id_parent);
+                foreach (Language::getLanguages(false) as $lang) {
+                    $tab->name[(int) $lang['id_lang']] = $this->l('PrettyBlocks');
+                }
+                $tab->add();
+            }
+        }
         $this->registerHook('displayContentWrapperTop');
         $this->registerHook('actionCmsPageFormBuilderModifier');
         $this->registerHook('actionObjectCmsUpdateAfter');
@@ -882,9 +786,15 @@ class Everblock extends Module
         $this->registerHook('actionObjectEverBlockFlagsDeleteAfter');
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
-        $this->registerQcdBuilderHooks();
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
+        if ($this->hasPrettyblocksModule()) {
+            $this->registerHook('actionRegisterBlock');
+            $this->registerHook('beforeRenderingEverblockProductSelector');
+            $this->registerHook('beforeRenderingEverblockCategoryProducts');
+        } else {
+            $this->unregisterHook('actionRegisterBlock');
+        }
     }
 
     protected function updateProductFlagsHook()
@@ -924,239 +834,6 @@ class Everblock extends Module
         }
     }
 
-    public function hookFilterQcdPageBuilderBackOfficeTargets(array $params)
-    {
-        if (!isset($params['targets']) || !is_array($params['targets'])) {
-            $params['targets'] = [];
-        }
-
-        $supportedControllers = [
-            'admineverblock',
-            'admineverblockcontroller',
-            'admineverblockconfiguration',
-            'admineverblockfaq',
-            'admineverblockhook',
-            'admineverblockpage',
-            'admineverblockshortcode',
-        ];
-
-        $currentController = Tools::strtolower((string) Tools::getValue('controller'));
-        if (!$currentController && isset($this->context->controller->controller_name)) {
-            $currentController = Tools::strtolower((string) $this->context->controller->controller_name);
-        }
-
-        if (!in_array($currentController, $supportedControllers, true)) {
-            return $params;
-        }
-
-        $params['targets'][] = [
-            // Identifiants techniques obligatoires [a-z0-9_]{2,64}
-            'target_type' => 'everblock',
-            'target_field' => 'content',
-
-            // Le nom de contrôleur est comparé en minuscule côté registry
-            'controllers' => $supportedControllers,
-
-            // Sélecteurs du textarea réel (pas l'iframe TinyMCE)
-            'selectors' => [
-                'body.admineverblock textarea[name="content_2"]',
-                'body.admineverblockcontroller textarea[name="content_2"]',
-                'body.admineverblockpage form textarea[name="content_2"]',
-                'body.admineverblockfaq form textarea[name="content_2"]',
-                'form#everblock_form textarea[name="content_2"]',
-                'form[name="everblock_form"] textarea[name="content_2"]',
-                'form[action*="AdminEverBlock"] textarea[name="content_2"]',
-                'form[action*="AdminEverBlockPage"] textarea[name="content_2"]',
-                'form[action*="AdminEverBlockFaq"] textarea[name="content_2"]',
-            ],
-
-            // Stratégie de résolution de l'ID objet
-            'id_resolver' => [
-                // 1) hidden/input ID (source principale)
-                'input_selectors' => [
-                    'input[name="id_everblock"]',
-                    'input[name="everblock[id_everblock]"]',
-                    'input[name="everblock[id]"]',
-                ],
-
-                // 2) fallback data-* si votre template les expose
-                'data_attributes' => [
-                    'data-id-everblock',
-                    'data-everblock-id',
-                    'data-id-object',
-                    'data-id',
-                ],
-
-                // 3) fallback meta optionnel
-                'meta_selectors' => [
-                    'meta[name="qcdpb:id_everblock"]',
-                    'meta[name="everblock:id"]',
-                ],
-
-                // 4) fallback querystring et action du formulaire
-                'query_params' => ['id_everblock', 'everblockId', 'id'],
-                'custom_extractors' => ['closest_form_action_query'],
-
-                // 5) draft optionnel: autorise un ID pseudo-stable avant 1er save
-                // Recommandation: conserver la règle "enregistrer d'abord" pour un rattachement définitif
-                'draft_key' => [
-                    'enabled' => true,
-                    'input_selectors' => ['input[name="title_2"]', 'input[name="name"]'],
-                    'data_attributes' => ['data-draft-key'],
-                    'query_params' => ['draft_key', 'draft'],
-                ],
-
-                // 6) fallback final sur segments d'URL (legacy utile)
-                'path_fallback' => true,
-            ],
-        ];
-
-        return $params;
-    }
-
-    public function hookFilterQcdPageBuilderDeclarativeBlocks(array $params)
-    {
-        $everblockLogo = 'modules/' . $this->name . '/views/img/svg/grid.svg';
-        $shortcodeLogo = 'modules/' . $this->name . '/views/img/svg/copy.svg';
-        $faqLogo = 'modules/' . $this->name . '/views/img/svg/help.svg';
-        $pagesLogo = 'modules/' . $this->name . '/views/img/svg/list.svg';
-
-        $everblockTemplate = 'views/templates/hook/everblock.tpl';
-        $shortcodeTemplate = 'views/templates/hook/everblock.tpl';
-        $faqTemplate = 'views/templates/hook/faq.tpl';
-        $pagesTemplate = 'views/templates/front/pages.tpl';
-
-        return [
-            [
-                'name' => $this->l('Everblock selection'),
-                'description' => $this->l('Display a selected Everblock'),
-                'code' => 'everblock_select',
-                'tab' => 'general',
-                'icon_path' => $everblockLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $everblockTemplate,
-                ],
-                'config' => [
-                    'fields' => [
-                        [
-                            'name' => 'id_everblock',
-                            'type' => 'select',
-                            'label' => $this->l('Everblock'),
-                            'collection' => [
-                                'class' => \EverBlockClass::class,
-                                'label_field' => 'name',
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'name' => $this->l('Shortcode selection'),
-                'description' => $this->l('Display a selected shortcode entry'),
-                'code' => 'everblock_shortcode',
-                'tab' => 'general',
-                'icon_path' => $shortcodeLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $shortcodeTemplate,
-                ],
-                'config' => [
-                    'fields' => [
-                        [
-                            'name' => 'id_everblock_shortcode',
-                            'type' => 'select',
-                            'label' => $this->l('Shortcode'),
-                            'collection' => [
-                                'class' => \EverblockShortcode::class,
-                                'label_field' => 'title',
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'name' => $this->l('FAQ selection'),
-                'description' => $this->l('Display selected FAQ entries'),
-                'code' => 'everblock_faq',
-                'tab' => 'general',
-                'icon_path' => $faqLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $faqTemplate,
-                ],
-                'config' => [
-                    'fields' => [
-                        [
-                            'name' => 'faq_ids',
-                            'type' => 'array',
-                            'input' => 'multiselect',
-                            'label' => $this->l('FAQs'),
-                            'collection' => [
-                                'class' => \EverblockFaq::class,
-                                'label_field' => 'title',
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'name' => $this->l('Latest pages'),
-                'description' => $this->l('Display latest published pages'),
-                'code' => 'everblock_latest_pages',
-                'tab' => 'general',
-                'icon_path' => $pagesLogo,
-                'need_reload' => true,
-                'templates' => [
-                    'default' => $pagesTemplate,
-                ],
-                'config' => [
-                    'fields' => [
-                        [
-                            'name' => 'limit',
-                            'type' => 'number',
-                            'label' => $this->l('Number of pages'),
-                            'default' => 5,
-                            'min' => 1,
-                            'max' => 50,
-                        ],
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    public function hookFilterQcdPageBuilderThirdPartyBlockFrontRender(array $params)
-    {
-        $renderer = new QcdThirdPartyBlockRenderer(
-            $this,
-            $this->context,
-            $this->getQcdBuilderModule()
-        );
-        $renderer->renderFromHookFilterQcdPageBuilderThirdPartyBlockFrontRender($params);
-    }
-
-    private function getQcdBuilderModule(): ?Module
-    {
-        if ($this->qcdBuilderModuleResolved) {
-            return $this->qcdBuilderModule;
-        }
-
-        static $cachedQcdBuilderModule;
-        static $cachedQcdBuilderModuleResolved = false;
-
-        if (!$cachedQcdBuilderModuleResolved) {
-            $module = Module::getInstanceByName('qcdpagebuilder');
-            $cachedQcdBuilderModule = ($module instanceof Module) ? $module : null;
-            $cachedQcdBuilderModuleResolved = true;
-        }
-
-        $this->qcdBuilderModule = $cachedQcdBuilderModule;
-        $this->qcdBuilderModuleResolved = true;
-
-        return $this->qcdBuilderModule;
-    }
-
     public function getContent()
     {
         if ($this->isProductModalAjaxRequest()) {
@@ -1170,6 +847,7 @@ class Everblock extends Module
         $this->secureModuleFolder();
         EverblockTools::checkAndFixDatabase();
         $this->checkHooks();
+        EverblockPrettyBlocks::ensureBeforeRenderingHooksRegistered($this);
         $this->html = '';
 
         if (Tools::isSubmit('deleteEVERBLOCK_MARKER_ICON')) {
@@ -1207,6 +885,17 @@ class Everblock extends Module
         }
         if ((bool) Tools::isSubmit('submitUploadBlocksFile') === true) {
             $this->uploadBlocksFile();
+        }
+        if ((bool) Tools::isSubmit('submitUploadSvg') === true) {
+            $this->uploadSvgFile();
+        }
+        if ((bool) Tools::isSubmit('submitExportPrettyblocks') === true) {
+            $prettyblocksImportExport = new EverblockPrettyBlocksImportExport();
+            $prettyblocksImportExport->exportPrettyblocks($this, $this->postErrors);
+        }
+        if ((bool) Tools::isSubmit('submitImportPrettyblocks') === true) {
+            $prettyblocksImportExport = $prettyblocksImportExport ?? new EverblockPrettyBlocksImportExport();
+            $prettyblocksImportExport->importPrettyblocks($this, $this->postErrors, $this->postSuccess);
         }
         if ((bool) Tools::isSubmit('submitEmptyCache') === true) {
             $this->emptyAllCache();
@@ -1948,8 +1637,16 @@ class Everblock extends Module
             'pages' => $this->l('Pages'),
         ];
 
-        if ($hasStores) {
-            $tabs['holiday'] = $this->l('Holiday opening hours by store');
+        $isPrettyBlocksEnabled = (bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true;
+
+        if ($isPrettyBlocksEnabled) {
+            $tabs['prettyblock'] = $this->l('Prettyblock');
+
+            if ($hasStores) {
+                $tabs['holiday'] = $this->l('Holiday opening hours by store');
+            }
         }
 
         $tabs['cron'] = $this->l('Tâches crons');
@@ -1979,8 +1676,12 @@ class Everblock extends Module
 
         $docTemplates['cron'] = 'cron.tpl';
 
-        if ($hasStores) {
-            $docTemplates['holiday'] = 'holiday.tpl';
+        if ($isPrettyBlocksEnabled) {
+            $docTemplates['prettyblock'] = 'prettyblock.tpl';
+
+            if ($hasStores) {
+                $docTemplates['holiday'] = 'holiday.tpl';
+            }
         }
 
         if (null === $this->context->smarty->getTemplateVars('donation_link')) {
@@ -2680,6 +2381,72 @@ class Everblock extends Module
             }
         }
 
+        if ($isPrettyBlocksEnabled) {
+            $prettyblocksImportExport = new EverblockPrettyBlocksImportExport();
+            $prettyblocksHookOptions = $prettyblocksImportExport->getPrettyblocksHookOptions();
+            $prettyblocksHookDesc = $prettyblocksHookOptions
+                ? $this->l('Select a hook to export all PrettyBlocks data as JSON.')
+                : $this->l('No PrettyBlocks data found to export.');
+
+            $prettyBlocksInputs = [
+                [
+                    'type' => 'html',
+                    'name' => 'anchor_everblock_prettyblocks',
+                    'html_content' => '<span id="everblock_prettyblocks"></span>',
+                    'form_group_class' => 'hidden everblock-anchor',
+                ],
+                [
+                    'type' => 'file',
+                    'label' => $this->l('Upload custom SVG'),
+                    'desc' => $this->l('Upload your own SVG icon for PrettyBlocks'),
+                    'hint' => $this->l('Only SVG files are allowed'),
+                    'name' => 'CUSTOM_SVG',
+                    'display_image' => false,
+                    'required' => false,
+                ],
+                [
+                    'type' => 'select',
+                    'label' => $this->l('PrettyBlocks hook to export'),
+                    'desc' => $prettyblocksHookDesc,
+                    'name' => 'EVERBLOCK_PRETTYBLOCKS_HOOK',
+                    'options' => [
+                        'query' => $prettyblocksHookOptions,
+                        'id' => 'id',
+                        'name' => 'name',
+                    ],
+                ],
+                [
+                    'type' => 'file',
+                    'label' => $this->l('Import PrettyBlocks JSON'),
+                    'desc' => $this->l('Upload a JSON export to import PrettyBlocks data. Images will be re-downloaded and URLs will be updated.'),
+                    'name' => 'PRETTYBLOCKS_IMPORT_FILE',
+                    'display_image' => false,
+                    'required' => false,
+                ],
+            ];
+
+            foreach ($prettyBlocksInputs as $input) {
+                $input['tab'] = 'prettyblock';
+                $form['form']['input'][] = $input;
+            }
+
+            $form['form']['input'][] = [
+                'type' => 'html',
+                'name' => 'submitPrettyblocksActions',
+                'html_content' => sprintf(
+                    '<div class="everblock-prettyblocks-action__buttons"><button type="submit" name="%s" class="btn btn-default"><i class="process-icon-download"></i> %s</button><button type="submit" name="%s" class="btn btn-default"><i class="process-icon-download"></i> %s</button><button type="submit" name="%s" class="btn btn-default"><i class="process-icon-upload"></i> %s</button></div>',
+                    'submitUploadSvg',
+                    htmlspecialchars($this->l('Upload SVG'), ENT_QUOTES, 'UTF-8'),
+                    'submitExportPrettyblocks',
+                    htmlspecialchars($this->l('Export PrettyBlocks JSON'), ENT_QUOTES, 'UTF-8'),
+                    'submitImportPrettyblocks',
+                    htmlspecialchars($this->l('Import PrettyBlocks JSON'), ENT_QUOTES, 'UTF-8')
+                ),
+                'form_group_class' => 'everblock-prettyblocks-action',
+                'tab' => 'prettyblock',
+            ];
+        }
+
         $importInputs = [
             [
                 'type' => 'html',
@@ -2834,7 +2601,7 @@ class Everblock extends Module
         ];
 
         $holidayInputs = [];
-        if ($hasStores) {
+        if ($hasStores && $isPrettyBlocksEnabled) {
             $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
             foreach ($stores as $store) {
                 foreach ($holidays as $date) {
@@ -3001,6 +2768,10 @@ class Everblock extends Module
                 'EVERPS_FEATURE_TEXTCOLOR_' . $featureId
             ] = Configuration::get('EVERPS_FEATURE_TEXTCOLOR_' . $featureId);
         }
+        $prettyblocksImportExport = new EverblockPrettyBlocksImportExport();
+        $prettyblocksHookOptions = $prettyblocksImportExport->getPrettyblocksHookOptions();
+        $prettyblocksHookDefault = $prettyblocksHookOptions ? $prettyblocksHookOptions[0]['id'] : '';
+        $prettyblocksHookValue = Tools::getValue('EVERBLOCK_PRETTYBLOCKS_HOOK', $prettyblocksHookDefault);
         $configData = [
             'EVEROPTIONS_POSITION' => Configuration::get('EVEROPTIONS_POSITION'),
             'EVEROPTIONS_TITLE' => $this->getConfigInMultipleLangs('EVEROPTIONS_TITLE'),
@@ -3046,6 +2817,7 @@ class Everblock extends Module
             'EVERPSCSS_S_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_S_LLOREM_NUMBER'),
             'EVERBLOCK_TINYMCE' => Configuration::get('EVERBLOCK_TINYMCE'),
             'EVERBLOCK_DISABLE_WEBP' => Configuration::get('EVERBLOCK_DISABLE_WEBP'),
+            'EVERBLOCK_PRETTYBLOCKS_HOOK' => $prettyblocksHookValue,
             'EVERPS_OLD_URL' => '',
             'EVERPS_NEW_URL' => '',
             'EVER_TAB_CONTENT' => $this->getConfigInMultipleLangs('EVER_TAB_CONTENT'),
@@ -3054,6 +2826,8 @@ class Everblock extends Module
             'EVERPS_FLAG_NB' => Configuration::get('EVERPS_FLAG_NB'),
             'TABS_FILE' => '',
             'BLOCKS_FILE' => '',
+            'CUSTOM_SVG' => '',
+            'PRETTYBLOCKS_IMPORT_FILE' => '',
         ];
         $stores = Store::getStores((int) $this->context->language->id);
         $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
@@ -3742,6 +3516,7 @@ class Everblock extends Module
             'AdminEverBlockHookController',
             'AdminEverBlockShortcodeController',
             'AdminEverBlockPageController',
+            'AdminEverBlockPrettyblockController',
         ];
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
         if ($controller === 'AdminProducts') {
@@ -3882,12 +3657,76 @@ class Everblock extends Module
 
     public function hookDisplayWrapperTop()
     {
-        return;
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            if (Tools::getValue('id_product')) {
+                $idObj = (int) Tools::getValue('id_product');
+                $objectName = 'Product';
+            }
+            if (Tools::getValue('id_category')) {
+                $idObj = (int) Tools::getValue('id_category');
+                $objectName = 'Category';
+            }
+            if (Tools::getValue('id_manufacturer')) {
+                $idObj = (int) Tools::getValue('id_manufacturer');
+                $objectName = 'Manufacturer';
+            }
+            if (Tools::getValue('id_supplier')) {
+                $idObj = (int) Tools::getValue('id_supplier');
+                $objectName = 'Supplier';
+            }
+            if (Tools::getValue('id_cms')) {
+                $idObj = (int) Tools::getValue('id_cms');
+                $objectName = 'Cms';
+            }
+            if (isset($idObj) && isset($objectName)) {
+                $this->context->smarty->assign(array(
+                    'idObj' => $idObj,
+                    'objectName' => $objectName,
+                    'zone' => 'displayWrapperTop',
+                ));
+                return $this->display(__FILE__, 'views/templates/hook/prettyblocks.tpl');
+            }
+        }
     }
 
     public function hookDisplayWrapperBottom()
     {
-        return;
+        if ((bool) Module::isInstalled('prettyblocks') === true
+            && (bool) Module::isEnabled('prettyblocks') === true
+            && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+        ) {
+            if (Tools::getValue('id_product')) {
+                $idObj = (int) Tools::getValue('id_product');
+                $objectName = 'Product';
+            }
+            if (Tools::getValue('id_category')) {
+                $idObj = (int) Tools::getValue('id_category');
+                $objectName = 'Category';
+            }
+            if (Tools::getValue('id_manufacturer')) {
+                $idObj = (int) Tools::getValue('id_manufacturer');
+                $objectName = 'Manufacturer';
+            }
+            if (Tools::getValue('id_supplier')) {
+                $idObj = (int) Tools::getValue('id_supplier');
+                $objectName = 'Supplier';
+            }
+            if (Tools::getValue('id_cms')) {
+                $idObj = (int) Tools::getValue('id_cms');
+                $objectName = 'Cms';
+            }
+            if (isset($idObj) && isset($objectName)) {
+                $this->context->smarty->assign(array(
+                    'idObj' => $idObj,
+                    'objectName' => $objectName,
+                    'zone' => 'displayWrapperBottom',
+                ));
+                return $this->display(__FILE__, 'views/templates/hook/prettyblocks.tpl');
+            }
+        }
     }
 
     public function hookActionCheckoutRender($params)
@@ -4949,23 +4788,13 @@ class Everblock extends Module
                     'ever_id_cart' => Cart::lastNoneOrderedCart($order->id_customer),
                 ]
             );
-            if (version_compare(_PS_VERSION_, '8.0', '<')) {
-                /** @var PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButtonsCollection $bar */
-                $bar = $params['actions_bar_buttons_collection'];
-                $bar->add(
-                    new PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButton(
-                        'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
-                    )
-                );
-            } else {
-                /** @var PrestaShop\PrestaShop\Core\Action\ActionsBarButtonsCollection $bar */
-                $bar = $params['actions_bar_buttons_collection'];
-                $bar->add(
-                    new PrestaShop\PrestaShop\Core\Action\ActionsBarButton(
-                        'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
-                    )
-                );
-            }
+            /** @var \PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButtonsCollection $bar */
+            $bar = $params['actions_bar_buttons_collection'];
+            $bar->add(
+                new \PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButton(
+                    'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
+                )
+            );
         }
     }
 
@@ -5182,19 +5011,6 @@ class Everblock extends Module
                         'is_bypassed' => true,
                     ]);
                 }
-                /** @var Qcdpagebuilder|null $builder */
-                $builder = $this->getQcdBuilderModule();
-
-                $block['content'] = $builder
-                    ? (string) $builder->renderTargetField(
-                        'everblock',                  // target_type
-                        (int) $block['id_everblock'],           // target_id
-                        'content',                    // target_field
-                        (string) $block['content'],  // fallback natif (ex: content_2)
-                        (int) $context->shop->id,
-                        (int) $context->language->id
-                    )
-                    : (string) $block['content'];
                 $currentBlock[] = ['block' => $block];
             }
             Hook::exec(
@@ -5205,7 +5021,14 @@ class Everblock extends Module
                     'args' => $args,
                 ]
             );
-
+            if ((bool) Module::isInstalled('prettyblocks') === true
+                && (bool) Module::isEnabled('prettyblocks') === true
+                && (bool) EverblockTools::moduleDirectoryExists('prettyblocks') === true
+            ) {
+                $context->smarty->assign([
+                    'prettyblocks_installed' => true,
+                ]);
+            }   
             $context->smarty->assign([
                 'everhook' => trim($method),
                 $this->name => $currentBlock,
@@ -5293,6 +5116,11 @@ class Everblock extends Module
         $this->context->controller->registerStylesheet(
             'module-' . $this->name . '-css',
             'modules/' . $this->name . '/views/css/' . $this->name . '.css',
+            ['media' => 'all', 'priority' => 200]
+        );
+        $this->context->controller->registerStylesheet(
+            'module-' . $this->name . '-quill-css',
+            'modules/' . $this->name . '/views/css/quill.css',
             ['media' => 'all', 'priority' => 200]
         );
         $flagsCssFile = _PS_MODULE_DIR_ . $this->name . '/views/css/feature-flags-' . $idShop . '.css';
@@ -5424,6 +5252,12 @@ class Everblock extends Module
     public function hookDisplayContentWrapperTop()
     {
         return $this->display(__FILE__, 'views/templates/hook/displayEverModel.tpl');
+    }
+
+    public function hookActionRegisterBlock($params)
+    {
+        EverblockTools::checkAndFixDatabase();
+        return EverblockPrettyBlocks::getEverPrettyBlocks($this->context);
     }
 
     protected function compressCSSCode($css)
@@ -6036,6 +5870,256 @@ class Everblock extends Module
         }
 
         return ['products' => $products];
+    }
+
+    public function hookBeforeRenderingEverblockSpecialEvent($params)
+    {
+        $products = [];
+        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
+            foreach ($params['block']['states'] as $key => $state) {
+                if (empty($state['product_ids'])) {
+                    continue;
+                }
+                $ids = array_filter(array_map('intval', explode(',', $state['product_ids'])));
+                if (empty($ids)) {
+                    continue;
+                }
+                $presented = EverblockTools::everPresentProducts($ids, $this->context);
+                if (!empty($presented)) {
+                    $products[$key] = $presented;
+                }
+            }
+        }
+
+        return ['products' => $products];
+    }
+
+    private function getPricesDropProducts(int $requestedProductCount, string $sortBy, string $sortDirection): array
+    {
+        $products = Product::getPricesDrop(
+            (int) $this->context->language->id,
+            0,
+            $requestedProductCount,
+            false,
+            $sortBy,
+            $sortDirection,
+            false,
+            false,
+            $this->context
+        );
+        return is_array($products) ? $products : [];
+    }
+
+    public function hookBeforeRenderingEverblockFlashDeals($params)
+    {
+        $settings = [];
+
+        if (!empty($params['block']['settings']) && is_array($params['block']['settings'])) {
+            $settings = $params['block']['settings'];
+        }
+
+        $sortBy = isset($settings['sort_by']) ? (string) $settings['sort_by'] : 'price';
+        $allowedSorts = ['price', 'date_add'];
+        if (!in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'price';
+        }
+
+        $sortDirection = isset($settings['sort_direction']) ? strtoupper((string) $settings['sort_direction']) : 'ASC';
+        if (!in_array($sortDirection, ['ASC', 'DESC'], true)) {
+            $sortDirection = 'ASC';
+        }
+
+        $limit = isset($settings['product_limit']) ? (int) $settings['product_limit'] : 8;
+        if ($limit <= 0) {
+            $limit = 8;
+        }
+
+        $requestedProductCount = max($limit * 2, $limit + 5);
+        $requestedProductCount = min($requestedProductCount, 50);
+
+        $promotionalProducts = $this->getPricesDropProducts($requestedProductCount, $sortBy, $sortDirection);
+
+        if (empty($promotionalProducts) || !is_array($promotionalProducts)) {
+            return false;
+        }
+
+        // 🔹 Extraction des IDs produits
+        $productIds = array_column($promotionalProducts, 'id_product');
+        if (empty($productIds)) {
+            return false;
+        }
+
+        // 🔹 Présentation via Everblock
+        $presentedProducts = EverblockTools::everPresentProducts($productIds, $this->context);
+
+        if (empty($presentedProducts)) {
+            return false;
+        }
+
+        if (count($presentedProducts) > $limit) {
+            $presentedProducts = array_slice($presentedProducts, 0, $limit);
+        }
+
+        return ['deals' => $presentedProducts];
+    }
+
+    public function hookBeforeRenderingEverblockBestSales($params)
+    {
+        $settings = [];
+        if (!empty($params['block']['settings']) && is_array($params['block']['settings'])) {
+            $settings = $params['block']['settings'];
+        }
+
+        $limit = isset($settings['product_limit']) ? (int) $settings['product_limit'] : 10;
+        if ($limit <= 0) {
+            $limit = 10;
+        }
+
+        $categoryId = 0;
+        if (!empty($settings['best_sales_category']['id'])) {
+            $categoryId = (int) $settings['best_sales_category']['id'];
+        }
+
+        if ($categoryId > 0) {
+            $productIds = EverblockTools::getBestSellingProductIdsForCategoryPrettyblock($categoryId, $limit);
+        } else {
+            $productIds = EverblockTools::getBestSellingProductIdsForPrettyblock($limit);
+        }
+        $presentedProducts = [];
+        if (!empty($productIds)) {
+            $presentedProducts = EverblockTools::everPresentProducts($productIds, $this->context);
+        }
+
+        return [
+            'products' => $presentedProducts,
+            'best_sales_url' => $this->context->link->getPageLink('best-sales'),
+        ];
+    }
+
+    public function hookBeforeRenderingEverblockGuidedSelector($params)
+    {
+        $states = $params['block']['states'] ?? [];
+
+        foreach ($states as &$state) {
+            $question = isset($state['question']) ? trim($state['question']) : '';
+            $state['question'] = $question;
+            $state['key'] = Tools::link_rewrite($question);
+
+            $answers = [];
+            $lines = preg_split("/(\r\n|\r|\n)/", $state['answers'] ?? '');
+            foreach ($lines as $line) {
+                $parts = explode('|', $line);
+                $text = trim($parts[0] ?? '');
+                if ($text === '') {
+                    continue;
+                }
+                $link = trim($parts[1] ?? '');
+                $answers[] = [
+                    'text' => $text,
+                    'link' => $link,
+                    'value' => Tools::link_rewrite($text),
+                ];
+            }
+            $state['answers'] = $answers;
+        }
+        unset($state);
+
+        return ['states' => $states];
+    }
+
+    public function hookBeforeRenderingEverblockLookbook($params)
+    {
+        return [];
+    }
+
+    public function hookBeforeRenderingEverblockCategoryProducts($params)
+    {
+        $products = [];
+        if (!empty($params['block']['states']) && is_array($params['block']['states'])) {
+            foreach ($params['block']['states'] as $key => $state) {
+                if (empty($state['category']['id'])) {
+                    continue;
+                }
+                $idCategory = (int) $state['category']['id'];
+                if ($idCategory <= 0) {
+                    continue;
+                }
+                $limit = !empty($state['product_limit']) ? (int) $state['product_limit'] : 4;
+                $includeSub = !empty($state['include_subcategories']);
+                $categoryProducts = EverblockTools::getProductsByCategoryId(
+                    $idCategory,
+                    $limit,
+                    'id_product',
+                    'ASC',
+                    $includeSub
+                );
+                if (!empty($categoryProducts)) {
+                    $ids = array_column($categoryProducts, 'id_product');
+                    $presented = EverblockTools::everPresentProducts($ids, $this->context);
+                    if (!empty($presented)) {
+                        $products[$key] = $presented;
+                    }
+                }
+            }
+        }
+
+        return ['products' => $products];
+    }
+
+
+    private function resolvePrettyblocksValue($value)
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        if (array_key_exists('id', $value)) {
+            return $value['id'];
+        }
+        if (array_key_exists('value', $value)) {
+            return $value['value'];
+        }
+        if (array_key_exists('url', $value)) {
+            return $value['url'];
+        }
+        if (array_key_exists('link', $value)) {
+            return $value['link'];
+        }
+        if (array_key_exists('href', $value)) {
+            return $value['href'];
+        }
+
+        $langId = isset($this->context->language) ? (int) $this->context->language->id : 0;
+        if ($langId > 0 && array_key_exists($langId, $value)) {
+            return $this->resolvePrettyblocksValue($value[$langId]);
+        }
+
+        $first = reset($value);
+        if ($first !== false) {
+            return $this->resolvePrettyblocksValue($first);
+        }
+
+        return null;
+    }
+
+    private function sortPrettyblocksByOrder(array $items): array
+    {
+        usort($items, function (array $left, array $right): int {
+            $leftOrder = isset($left['settings']['order'])
+                ? (int) $left['settings']['order']
+                : (isset($left['settings']['position']) ? (int) $left['settings']['position'] : 0);
+            $rightOrder = isset($right['settings']['order'])
+                ? (int) $right['settings']['order']
+                : (isset($right['settings']['position']) ? (int) $right['settings']['position'] : 0);
+
+            if ($leftOrder === $rightOrder) {
+                return ($left['position'] ?? 0) <=> ($right['position'] ?? 0);
+            }
+
+            return $leftOrder <=> $rightOrder;
+        });
+
+        return $items;
     }
 
     public function hookDisplayReassurance($params)
