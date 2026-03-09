@@ -25,7 +25,7 @@
     <div class="row">
   {/if}
 <!-- Module Ever Block -->
-<div class="{if $block.settings.default.container}container{/if}" style="{$prettyblock_spacing_style}">
+<div class="{if $block.settings.default.force_full_width}container{/if}" style="{$prettyblock_spacing_style}">
     {if $block.settings.default.container}
         <div class="row">
     {/if}
