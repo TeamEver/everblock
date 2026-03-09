@@ -333,6 +333,7 @@ return [
     'views/templates/hook/prettyblocks/prettyblock_img_slider.tpl',
     'views/templates/hook/prettyblocks/prettyblock_layout.tpl',
     'views/templates/hook/prettyblocks/prettyblock_link_list.tpl',
+    'views/templates/hook/prettyblocks/prettyblock_llm_links.tpl',
     'views/templates/hook/prettyblocks/prettyblock_login.tpl',
     'views/templates/hook/prettyblocks/prettyblock_lookbook.tpl',
     'views/templates/hook/prettyblocks/prettyblock_masonry_gallery.tpl',
