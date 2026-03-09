@@ -164,7 +164,7 @@
                                                 <div class="products row">
                                                     {foreach from=$block.extra.products[$key] item=product name=desktopBottomProducts}
                                                         {if $smarty.foreach.desktopBottomProducts.index >= $sideProductsCount}
-                                                            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses='col-12'}
+                                                            {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
                                                         {/if}
                                                     {/foreach}
                                                 </div>
