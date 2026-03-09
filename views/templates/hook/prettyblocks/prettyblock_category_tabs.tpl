@@ -72,7 +72,7 @@
                     {if $desktopItems < 1}
                         {assign var='desktopItems' value=1}
                     {/if}
-                    {if $sliderImagesCount > 0}
+                    {if $sliderImagesCount > 0 && $useDesktopSlider}
                         {assign var='desktopItems' value=2}
                     {/if}
                     {if $productCount > 0 && $productCount < $desktopItems}
@@ -145,13 +145,16 @@
                             {if isset($block.extra.products[$key]) && $block.extra.products[$key]}
                                 {if $hasSliderImages && !$useDesktopSlider}
                                     {assign var='sideProductsCount' value=2}
+                                    {assign var='sideProductColumnClasses' value="col-"|cat:$mobileColumnWidth}
+                                    {assign var='sideProductColumnClasses' value=$sideProductColumnClasses|cat:" col-sm-"|cat:$tabletColumnWidth}
+                                    {assign var='sideProductColumnClasses' value=$sideProductColumnClasses|cat:" col-lg-6 col-xl-6"}
                                     <div class="col-12 col-lg-8">
                                         <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-none d-md-block">
                                             {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                             <div class="products row">
                                                 {foreach from=$block.extra.products[$key] item=product name=desktopSideProducts}
                                                     {if $smarty.foreach.desktopSideProducts.index < $sideProductsCount}
-                                                        {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$productColumnClasses}
+                                                        {include file="catalog/_partials/miniatures/product.tpl" product=$product productClasses=$sideProductColumnClasses}
                                                     {/if}
                                                 {/foreach}
                                             </div>
