@@ -108,7 +108,7 @@
                         <div class="row prettyblock-category-tabs__layout{if $hasSliderImages} prettyblock-category-tabs__layout--with-slider{/if}">
                             {if $hasSliderImages}
                                 {assign var='carouselId' value="category-tabs-slider-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
-                                <div class="col-12 col-lg-4">
+                                <div class="col-12 col-lg-6">
                                     <div class="prettyblock-category-tabs__slider mt-3">
                                         <div id="{$carouselId}" class="prettyblocks-image-slider carousel slide" data-ride="carousel" data-bs-ride="carousel" data-bs-wrap="true" data-autoplay="0" data-transition-speed="600">
                                             <div class="prettyblock-category-tabs__slider-header">
@@ -148,7 +148,7 @@
                                     {assign var='sideProductColumnClasses' value="col-"|cat:$mobileColumnWidth}
                                     {assign var='sideProductColumnClasses' value=$sideProductColumnClasses|cat:" col-sm-"|cat:$tabletColumnWidth}
                                     {assign var='sideProductColumnClasses' value=$sideProductColumnClasses|cat:" col-lg-6 col-xl-6"}
-                                    <div class="col-12 col-lg-8">
+                                    <div class="col-12 col-lg-6">
                                         <section class="ever-featured-products featured-products clearfix mt-3 category_tabs d-none d-md-block">
                                             {hook h='displayBeforeProductMiniature' products=$block.extra.products[$key] origin='category_tabs' page_name=$page.page_name}
                                             <div class="products row">
@@ -217,7 +217,7 @@
                                         {/if}
                                     </div>
                                 {else}
-                                    <div class="col-12{if $hasSliderImages} col-lg-8{/if}">
+                                    <div class="col-12{if $hasSliderImages} col-lg-6{/if}">
                                         {if $useDesktopSlider || $useMobileSlider}
                                             {if $useDesktopSlider}
                                                 {assign var='carouselIdDesktop' value="category-tabs-carousel-desktop-"|cat:$block.id_prettyblocks|cat:"-"|cat:$key|cat:"-"|cat:mt_rand(1000,999999)}
