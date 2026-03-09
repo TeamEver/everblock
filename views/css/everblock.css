@@ -322,6 +322,13 @@
     height: 100%;
     object-fit: contain;
 }
+
+@media (max-width: 767.98px) {
+    .ever-featured-products .products.row > * {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
 /* Style pour les boutons de partage */
 
 .everblock-sharer {
