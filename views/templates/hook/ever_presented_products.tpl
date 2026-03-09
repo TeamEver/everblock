@@ -22,11 +22,8 @@
   {/if}
   {assign var='carouselCounter' value=$carouselCounter+1}
 
-  {assign var='mobileItems' value=$carouselMobileItems|default:1|intval}
-  {if $mobileItems < 1}
-    {assign var='mobileItems' value=1}
-  {/if}
-  {if isset($carousel) && $carousel && $mobileItems < 2}
+  {assign var='mobileItems' value=$carouselMobileItems|default:2|intval}
+  {if $mobileItems < 2}
     {assign var='mobileItems' value=2}
   {/if}
   {assign var='tabletItems' value=$carouselTabletItems|default:2|intval}
@@ -46,7 +43,7 @@
   {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-lg-"|cat:$desktopColumnWidth}
   {assign var='productColumnClasses' value=$productColumnClasses|cat:" col-xl-"|cat:$desktopColumnWidth}
 
-  <section class="ever-featured-products featured-products clearfix mx-5 d-none d-md-block{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
+  <section class="ever-featured-products featured-products clearfix mx-5{if isset($carousel) && $carousel} d-none d-md-block{/if}{if isset($shortcodeClass)} {$shortcodeClass|escape:'htmlall':'UTF-8'}{/if}">
     {if isset($carousel) && $carousel}
       {assign var="carouselId" value="ever-presented-carousel-"|cat:mt_rand(1000,999999)}
       {assign var="numProductsPerSlide" value=$desktopItems}
