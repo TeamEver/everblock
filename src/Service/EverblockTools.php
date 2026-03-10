@@ -76,6 +76,30 @@ if (!defined('_PS_VERSION_')) {
 class EverblockTools extends ObjectModel
 {
     /**
+     * Fast pre-check used to avoid running the shortcode engine on pages that
+     * do not contain any known token.
+     */
+    public static function hasShortcodeToken(string $txt): bool
+    {
+        $needles = [
+            '[',
+            '{hook h=',
+            '{$',
+            '{if',
+            '{foreach',
+            '{include',
+        ];
+
+        foreach ($needles as $needle) {
+            if (strpos($txt, $needle) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Point d'entrée principal du moteur de shortcodes.
      *
      * Le texte est enrichi en plusieurs étapes : hooks d'extension, résolution des

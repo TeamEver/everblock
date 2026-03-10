@@ -3855,6 +3855,9 @@ class Everblock extends Module
             );
         }
         $txt = $params['html'];
+        if (!EverblockTools::hasShortcodeToken($txt)) {
+            return $txt;
+        }
         try {
             $context = Context::getContext();
             // @Todo : move to EverblockShortcodes
