@@ -3131,6 +3131,10 @@
 }
 
 @media (max-width: 575.98px) {
+    .everblock-shortcode-search .input-group-text {
+        display: none;
+    }
+
     .everblock-shortcode-modal__header {
         flex-direction: column;
         align-items: flex-start;
