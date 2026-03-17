@@ -1,10 +1,10 @@
 {extends file='page.tpl'}
 
 {block name='page_content'}
-  <div class="everpsblog-category-header container-fluid p-0 mb-4">
-    <div class="everpsblog-category-hero">
-      <div class="everpsblog-category-hero-overlay">
-        <h1 class="everpsblog-category-title m-0" itemprop="headline">{$everblock_page->title|default:''}</h1>
+  <div class="everpsguide-category-header container-fluid p-0 mb-4">
+    <div class="everpsguide-category-hero">
+      <div class="everpsguide-category-hero-overlay">
+        <h1 class="everpsguide-category-title m-0" itemprop="headline">{$everblock_page->title|default:''}</h1>
       </div>
     </div>
   </div>

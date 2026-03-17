@@ -3394,18 +3394,18 @@
 }
 
 /* Guides listing layout */
-.everpsblog-category-header {
+.everpsguide-category-header {
   border-radius: 1rem;
   overflow: hidden;
 }
 
-.everpsblog-category-hero {
+.everpsguide-category-hero {
   position: relative;
   min-height: 180px;
   background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
 }
 
-.everpsblog-category-hero-overlay {
+.everpsguide-category-hero-overlay {
   display: flex;
   align-items: center;
   min-height: 180px;
@@ -3413,7 +3413,7 @@
   background: linear-gradient(90deg, rgba(17, 24, 39, 0.72) 0%, rgba(17, 24, 39, 0.25) 100%);
 }
 
-.everpsblog-category-title {
+.everpsguide-category-title {
   color: #fff;
   font-size: clamp(1.75rem, 3vw, 2.5rem);
   font-weight: 700;
