@@ -1,9 +1,16 @@
 {extends file='page.tpl'}
 
 {block name='page_content'}
+  <div class="everpsblog-category-header container-fluid p-0 mb-4">
+    <div class="everpsblog-category-hero">
+      <div class="everpsblog-category-hero-overlay">
+        <h1 class="everpsblog-category-title m-0" itemprop="headline">{$everblock_page->title|default:''}</h1>
+      </div>
+    </div>
+  </div>
+
   <article class="everblock-page" itemscope itemtype="https://schema.org/Article">
     <header class="everblock-page__header">
-      <h1 itemprop="headline">{$everblock_page->title|default:''}</h1>
       {if $everblock_page_image}
         <figure class="everblock-page__cover">
             <img src="{$everblock_page_image}" alt="{$everblock_page->title|default:''|escape:'htmlall':'UTF-8'}" loading="lazy" itemprop="image">
