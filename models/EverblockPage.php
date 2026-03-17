@@ -169,19 +169,22 @@ class EverblockPage extends ObjectModel
         bool $onlyActive = true,
         array $allowedGroups = [],
         int $page = 1,
-        ?int $perPage = null
+        ?int $perPage = null,
+        string $keyword = ''
     ): array
     {
         $shopId = static::resolveShopId($shopId);
         $page = max(1, (int) $page);
         $perPage = $perPage !== null ? (int) $perPage : null;
+        $keyword = trim($keyword);
         $cacheId = 'EverblockPage_getPages_'
             . (int) $langId . '_'
             . (int) $shopId . '_'
             . (int) $onlyActive . '_'
             . md5(json_encode($allowedGroups)) . '_'
             . (int) $page . '_'
-            . (int) $perPage;
+            . (int) $perPage . '_'
+            . md5($keyword);
 
         if (EverblockCache::isCacheStored($cacheId)) {
             return EverblockCache::cacheRetrieve($cacheId);
@@ -195,6 +198,11 @@ class EverblockPage extends ObjectModel
 
         if ($onlyActive) {
             $sql->where('p.active = 1');
+        }
+
+        if ($keyword !== '') {
+            $safeKeyword = '%' . pSQL($keyword) . '%';
+            $sql->where("(pl.title LIKE '$safeKeyword' OR pl.name LIKE '$safeKeyword' OR pl.meta_description LIKE '$safeKeyword' OR pl.short_description LIKE '$safeKeyword')");
         }
 
         $sql->orderBy('p.position ASC, p.date_add DESC');
@@ -218,14 +226,22 @@ class EverblockPage extends ObjectModel
         return $pages;
     }
 
-    public static function countPages(int $langId, ?int $shopId = null, bool $onlyActive = true, array $allowedGroups = []): int
+    public static function countPages(
+        int $langId,
+        ?int $shopId = null,
+        bool $onlyActive = true,
+        array $allowedGroups = [],
+        string $keyword = ''
+    ): int
     {
         $shopId = static::resolveShopId($shopId);
+        $keyword = trim($keyword);
         $cacheId = 'EverblockPage_countPages_'
             . (int) $langId . '_'
             . (int) $shopId . '_'
             . (int) $onlyActive . '_'
-            . md5(json_encode($allowedGroups));
+            . md5(json_encode($allowedGroups)) . '_'
+            . md5($keyword);
 
         if (EverblockCache::isCacheStored($cacheId)) {
             return (int) EverblockCache::cacheRetrieve($cacheId);
@@ -243,6 +259,11 @@ class EverblockPage extends ObjectModel
 
         if ($onlyActive) {
             $sql->where('p.active = 1');
+        }
+
+        if ($keyword !== '') {
+            $safeKeyword = '%' . pSQL($keyword) . '%';
+            $sql->where("(pl.title LIKE '$safeKeyword' OR pl.name LIKE '$safeKeyword' OR pl.meta_description LIKE '$safeKeyword' OR pl.short_description LIKE '$safeKeyword')");
         }
 
         $rows = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
