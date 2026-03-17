@@ -10,6 +10,17 @@
   {/if}
 
   <section class="everblock-pages-list">
+    <form class="everblock-pages-search mb-4" method="get" action="{$link->getModuleLink('everblock', 'pages')|escape:'htmlall':'UTF-8'}">
+      <div class="input-group">
+        <span class="input-group-text">{l s='Recherche sur les guides' mod='everblock' d='Modules.Everblock.Front'}</span>
+        <input type="search"
+               class="form-control"
+               name="keyword"
+               value="{$everblock_keyword|default:''|escape:'htmlall':'UTF-8'}"
+               placeholder="{l s='Rechercher par mot-clé' mod='everblock' d='Modules.Everblock.Front'}" />
+        <button type="submit" class="btn btn-primary">{l s='Rechercher' mod='everblock' d='Modules.Everblock.Front'}</button>
+      </div>
+    </form>
     {if $everblock_pages|@count}
       <div class="row">
         {foreach from=$everblock_pages item=page}

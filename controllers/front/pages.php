@@ -37,11 +37,13 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         }
 
         $currentPage = max(1, (int) Tools::getValue('page', 1));
+        $searchKeyword = trim((string) Tools::getValue('keyword', ''));
         $totalItems = EverblockPage::countPages(
             (int) $this->context->language->id,
             (int) $this->context->shop->id,
             true,
-            $customerGroups
+            $customerGroups,
+            $searchKeyword
         );
         $totalPages = $totalItems > 0 ? (int) ceil($totalItems / $itemsPerPage) : 0;
         if ($totalPages > 0 && $currentPage > $totalPages) {
@@ -54,7 +56,8 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             true,
             $customerGroups,
             $currentPage,
-            $itemsPerPage
+            $itemsPerPage,
+            $searchKeyword
         );
 
         $pageLinks = [];
@@ -77,7 +80,8 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             $currentPage,
             $totalPages,
             $itemsPerPage,
-            $totalItems
+            $totalItems,
+            $searchKeyword
         );
 
         $this->context->smarty->assign([
@@ -88,6 +92,7 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             'everblock_prettyblocks_top_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone_top' : '',
             'everblock_prettyblocks_bottom_zone_name' => $isPrettyBlocksEnabled ? 'everblock_pages_listing_zone_bottom' : '',
             'everblock_pagination' => $pagination,
+            'everblock_keyword' => $searchKeyword,
         ]);
 
         $this->setTemplate('module:everblock/views/templates/front/pages.tpl');
@@ -110,9 +115,21 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         return $breadcrumb;
     }
 
-    protected function buildPagination(int $currentPage, int $totalPages, int $itemsPerPage, int $totalItems): array
+    protected function buildPagination(
+        int $currentPage,
+        int $totalPages,
+        int $itemsPerPage,
+        int $totalItems,
+        string $keyword = ''
+    ): array
     {
-        $baseLink = $this->context->link->getModuleLink($this->module->name, 'pages');
+        $keyword = trim($keyword);
+        $baseParams = [];
+        if ($keyword !== '') {
+            $baseParams['keyword'] = $keyword;
+        }
+
+        $baseLink = $this->context->link->getModuleLink($this->module->name, 'pages', $baseParams);
         $pages = [];
 
         for ($page = 1; $page <= $totalPages; ++$page) {
@@ -120,7 +137,11 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
                 'number' => $page,
                 'link' => $page === 1
                     ? $baseLink
-                    : $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $page]),
+                    : $this->context->link->getModuleLink(
+                        $this->module->name,
+                        'pages',
+                        array_merge($baseParams, ['page' => $page])
+                    ),
                 'active' => $page === $currentPage,
             ];
         }
@@ -135,10 +156,18 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
             'previous_link' => $currentPage > 1
                 ? ($currentPage - 1 === 1
                     ? $baseLink
-                    : $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $currentPage - 1]))
+                    : $this->context->link->getModuleLink(
+                        $this->module->name,
+                        'pages',
+                        array_merge($baseParams, ['page' => $currentPage - 1])
+                    ))
                 : $baseLink,
             'next_link' => $currentPage < $totalPages
-                ? $this->context->link->getModuleLink($this->module->name, 'pages', ['page' => $currentPage + 1])
+                ? $this->context->link->getModuleLink(
+                    $this->module->name,
+                    'pages',
+                    array_merge($baseParams, ['page' => $currentPage + 1])
+                )
                 : $baseLink,
             'pages' => $pages,
         ];
