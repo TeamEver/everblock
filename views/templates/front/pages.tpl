@@ -10,10 +10,10 @@
   {/if}
 
   <section class="everblock-pages-list">
-    <div class="everpsblog-category-header container-fluid p-0 mb-4">
-      <div class="everpsblog-category-hero">
-        <div class="everpsblog-category-hero-overlay">
-          <h1 class="everpsblog-category-title m-0">{l s='Guides et tutoriels' mod='everblock' d='Modules.Everblock.Front'}</h1>
+    <div class="everpsguide-category-header container-fluid p-0 mb-4">
+      <div class="everpsguide-category-hero">
+        <div class="everpsguide-category-hero-overlay">
+          <h1 class="everpsguide-category-title m-0">{l s='Guides et tutoriels' mod='everblock' d='Modules.Everblock.Front'}</h1>
         </div>
       </div>
     </div>
@@ -33,12 +33,12 @@
       <div class="everblock-guides-stack">
         {foreach from=$everblock_pages item=page}
           {assign var='coverImage' value=$page->cover_image_data|default:null}
-          <article class="col-12 mb-4 article everpsblog" id="everpsblog-{$page->id|intval}">
-            <div class="card h-100 shadow-sm border-0 everpsblog everpsblog-listing-card overflow-hidden">
+          <article class="col-12 mb-4 article everpsguide" id="everpsguide-{$page->id|intval}">
+            <div class="card h-100 shadow-sm border-0 everpsguide everpsguide-listing-card overflow-hidden">
               <div class="row g-0 h-100 align-items-stretch">
                 <div class="col-12 col-lg-6">
                   <div class="article-img text-center mb-0 h-100">
-                    <div class="everpsblog-image-wrapper position-relative overflow-hidden h-100" style="aspect-ratio: 16 / 9;">
+                    <div class="everpsguide-image-wrapper position-relative overflow-hidden h-100" style="aspect-ratio: 16 / 9;">
                       {if $coverImage && $coverImage.url}
                         <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" title="{$page->title|default:''|escape:'htmlall':'UTF-8'}" class="d-block h-100">
                           <img src="{$coverImage.url|escape:'htmlall':'UTF-8'}"
@@ -57,16 +57,16 @@
 
                 <div class="col-12 col-lg-6">
                   <div class="card-body d-flex flex-column h-100 p-4">
-                    <h2 class="everpsblog article-content h2 mb-3" id="everpsblog-post-title-{$page->id|intval}">
+                    <h2 class="everpsguide article-content h2 mb-3" id="everpsguide-post-title-{$page->id|intval}">
                       <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" title="{$page->title|default:''|escape:'htmlall':'UTF-8'}" class="default text-dark text-decoration-none">
                         {$page->title|default:''|escape:'htmlall':'UTF-8'}
                       </a>
                     </h2>
                     <p class="h4 fw-bold text-primary mb-3 text-center text-md-start">{$page->date_upd|date_format:"%d/%m/%Y"}</p>
                     {if $page->short_description}
-                      <div class="everpsblogcontent rte mb-3" id="everpsblog-post-content-{$page->id|intval}">{$page->short_description|strip_tags|truncate:220:'...':true}</div>
+                      <div class="everpsguidecontent rte mb-3" id="everpsguide-post-content-{$page->id|intval}">{$page->short_description|strip_tags|truncate:220:'...':true}</div>
                     {elseif $page->meta_description}
-                      <div class="everpsblogcontent rte mb-3" id="everpsblog-post-content-{$page->id|intval}">{$page->meta_description|truncate:220:'...':true}</div>
+                      <div class="everpsguidecontent rte mb-3" id="everpsguide-post-content-{$page->id|intval}">{$page->meta_description|truncate:220:'...':true}</div>
                     {/if}
                     <div class="mt-auto text-center text-lg-start">
                       <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" class="btn btn-primary rounded-pill px-4 default fw-semibold" title="{$page->title|default:''|escape:'htmlall':'UTF-8'}">
