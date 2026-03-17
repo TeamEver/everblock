@@ -10,6 +10,14 @@
   {/if}
 
   <section class="everblock-pages-list">
+    <div class="everpsblog-category-header container-fluid p-0 mb-4">
+      <div class="everpsblog-category-hero">
+        <div class="everpsblog-category-hero-overlay">
+          <h1 class="everpsblog-category-title m-0">{l s='Guides et tutoriels' mod='everblock' d='Modules.Everblock.Front'}</h1>
+        </div>
+      </div>
+    </div>
+
     <form class="everblock-pages-search mb-4" method="get" action="{$link->getModuleLink('everblock', 'pages')|escape:'htmlall':'UTF-8'}">
       <div class="input-group">
         <span class="input-group-text">{l s='Recherche sur les guides' mod='everblock' d='Modules.Everblock.Front'}</span>

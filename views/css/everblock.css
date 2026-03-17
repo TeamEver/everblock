@@ -3394,6 +3394,32 @@
 }
 
 /* Guides listing layout */
+.everpsblog-category-header {
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.everpsblog-category-hero {
+  position: relative;
+  min-height: 180px;
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+.everpsblog-category-hero-overlay {
+  display: flex;
+  align-items: center;
+  min-height: 180px;
+  padding: 1.5rem;
+  background: linear-gradient(90deg, rgba(17, 24, 39, 0.72) 0%, rgba(17, 24, 39, 0.25) 100%);
+}
+
+.everpsblog-category-title {
+  color: #fff;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
 .everblock-guides-stack {
   display: flex;
   flex-direction: column;
