@@ -3408,9 +3408,10 @@
 .everpsguide-category-hero-overlay {
   display: flex;
   align-items: center;
+  justify-content: center;
   min-height: 180px;
   padding: 1.5rem;
-  background: linear-gradient(90deg, rgba(17, 24, 39, 0.72) 0%, rgba(17, 24, 39, 0.25) 100%);
+  background: linear-gradient(90deg, #0a0f54 0%, #0a0f54 50%, #0a0f54 100%);
 }
 
 .everpsguide-category-title {
@@ -3418,6 +3419,7 @@
   font-size: clamp(1.75rem, 3vw, 2.5rem);
   font-weight: 700;
   line-height: 1.1;
+  text-align: center;
 }
 
 .everblock-guides-stack {
