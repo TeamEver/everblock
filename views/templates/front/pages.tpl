@@ -24,40 +24,49 @@
     {if $everblock_pages|@count}
       <div class="everblock-guides-stack">
         {foreach from=$everblock_pages item=page}
-          <article class="everblock-guide-list-card">
-            <div class="row no-gutters align-items-stretch">
-              {assign var='coverImage' value=$page->cover_image_data|default:null}
-              <div class="col-lg-5">
-                {if $coverImage && $coverImage.url}
-                  <div class="everblock-guide-list-card__image-wrap">
-                    <img src="{$coverImage.url|escape:'htmlall':'UTF-8'}"
-                         alt="{$coverImage.alt|default:$page->title|default:''|escape:'htmlall':'UTF-8'}"
-                         class="everblock-guide-list-card__image"
-                         loading="lazy"
-                         width="{$coverImage.width|intval}"
-                         height="{$coverImage.height|intval}" />
+          {assign var='coverImage' value=$page->cover_image_data|default:null}
+          <article class="col-12 mb-4 article everpsblog" id="everpsblog-{$page->id|intval}">
+            <div class="card h-100 shadow-sm border-0 everpsblog everpsblog-listing-card overflow-hidden">
+              <div class="row g-0 h-100 align-items-stretch">
+                <div class="col-12 col-lg-6">
+                  <div class="article-img text-center mb-0 h-100">
+                    <div class="everpsblog-image-wrapper position-relative overflow-hidden h-100" style="aspect-ratio: 16 / 9;">
+                      {if $coverImage && $coverImage.url}
+                        <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" title="{$page->title|default:''|escape:'htmlall':'UTF-8'}" class="d-block h-100">
+                          <img src="{$coverImage.url|escape:'htmlall':'UTF-8'}"
+                               width="{$coverImage.width|intval}"
+                               height="{$coverImage.height|intval}"
+                               class="img-fluid w-100 h-100 mx-auto d-block"
+                               style="object-fit: cover;"
+                               alt="{$coverImage.alt|default:$page->title|default:''|escape:'htmlall':'UTF-8'}"
+                               title="{$page->title|default:''|escape:'htmlall':'UTF-8'}"
+                               loading="lazy" />
+                        </a>
+                      {/if}
+                    </div>
                   </div>
-                {else}
-                  <div class="everblock-guide-list-card__image-wrap"></div>
-                {/if}
-              </div>
+                </div>
 
-              <div class="col-lg-7">
-                <div class="everblock-guide-list-card__content position-relative">
-                  <h3 class="everblock-guide-list-card__title">
-                    <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" class="stretched-link text-decoration-none">
-                      {$page->title|default:''|escape:'htmlall':'UTF-8'}
-                    </a>
-                  </h3>
-                  <p class="everblock-guide-list-card__date text-primary">{$page->date_upd|date_format:"%d/%m/%Y"}</p>
-                  {if $page->short_description}
-                    <p class="everblock-guide-list-card__description">{$page->short_description|strip_tags|truncate:220:'...':true}</p>
-                  {elseif $page->meta_description}
-                    <p class="everblock-guide-list-card__description">{$page->meta_description|truncate:220:'...':true}</p>
-                  {/if}
-                  <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" class="btn btn-primary everblock-guide-list-card__cta">
-                    {l s='Lire la suite' mod='everblock' d='Modules.Everblock.Front'}
-                  </a>
+                <div class="col-12 col-lg-6">
+                  <div class="card-body d-flex flex-column h-100 p-4">
+                    <h2 class="everpsblog article-content h2 mb-3" id="everpsblog-post-title-{$page->id|intval}">
+                      <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" title="{$page->title|default:''|escape:'htmlall':'UTF-8'}" class="default text-dark text-decoration-none">
+                        {$page->title|default:''|escape:'htmlall':'UTF-8'}
+                      </a>
+                    </h2>
+                    <p class="h4 fw-bold text-primary mb-3 text-center text-md-start">{$page->date_upd|date_format:"%d/%m/%Y"}</p>
+                    {if $page->short_description}
+                      <div class="everpsblogcontent rte mb-3" id="everpsblog-post-content-{$page->id|intval}">{$page->short_description|strip_tags|truncate:220:'...':true}</div>
+                    {elseif $page->meta_description}
+                      <div class="everpsblogcontent rte mb-3" id="everpsblog-post-content-{$page->id|intval}">{$page->meta_description|truncate:220:'...':true}</div>
+                    {/if}
+                    <div class="mt-auto text-center text-lg-start">
+                      <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" class="btn btn-primary rounded-pill px-4 default fw-semibold" title="{$page->title|default:''|escape:'htmlall':'UTF-8'}">
+                        {l s='Lire la suite' mod='everblock' d='Modules.Everblock.Front'}
+                        <i class="material-icons" aria-hidden="true">chevron_right</i>
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
