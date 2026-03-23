@@ -81,8 +81,15 @@ class EverblockTools extends ObjectModel
      */
     public static function hasShortcodeToken(string $txt): bool
     {
+        if ($txt === '') {
+            return false;
+        }
+
+        if (strpos($txt, '[') === false && strpos($txt, '{') === false) {
+            return false;
+        }
+
         $needles = [
-            '[',
             '{hook h=',
             '{$',
             '{if',
@@ -96,7 +103,9 @@ class EverblockTools extends ObjectModel
             }
         }
 
-        return false;
+        // Shortcode shape: [tag] or [tag ...] where tag starts with a letter.
+        // This avoids triggering the heavy renderer on plain HTML/JS arrays.
+        return (bool) preg_match('/\[[a-z][a-z0-9_-]*(?:\s[^\]]*)?\]/i', $txt);
     }
 
     /**
