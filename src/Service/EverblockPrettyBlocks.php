@@ -2867,9 +2867,9 @@ class EverblockPrettyBlocks
                             'type' => 'select',
                             'label' => $module->l('Order by'),
                             'choices' => [
-                                'id_product' => $module->l('ID'),
-                                'date_add' => $module->l('Date added'),
-                                'price' => $module->l('Price'),
+                                'id_product' => 'id',
+                                'date_add' => 'date_add',
+                                'price' => 'price',
                             ],
                             'default' => 'id_product',
                         ],
@@ -2877,8 +2877,8 @@ class EverblockPrettyBlocks
                             'type' => 'select',
                             'label' => $module->l('Order way'),
                             'choices' => [
-                                'ASC' => $module->l('Ascending'),
-                                'DESC' => $module->l('Descending'),
+                                'ASC' => 'ASC',
+                                'DESC' => 'DESC',
                             ],
                             'default' => 'ASC',
                         ],
@@ -3786,6 +3786,11 @@ class EverblockPrettyBlocks
                 ],
                 'config' => [
                     'fields' => static::appendSpacingFields([
+                        'title' => [
+                            'type' => 'text',
+                            'label' => $module->l('Title text'),
+                            'default' => '',
+                        ],
                         'slider_desktop' => [
                             'type' => 'checkbox',
                             'label' => $module->l('Enable desktop slider'),
@@ -3826,6 +3831,11 @@ class EverblockPrettyBlocks
                         'button_url_override' => [
                             'type' => 'text',
                             'label' => $module->l('Override the best sellers button URL'),
+                            'default' => '',
+                        ],
+                        'button_text' => [
+                            'type' => 'text',
+                            'label' => $module->l('Text for the best sellers button'),
                             'default' => '',
                         ],
                     ], $module),
