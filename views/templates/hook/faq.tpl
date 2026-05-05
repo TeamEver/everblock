@@ -34,7 +34,7 @@
                   </span>
                 </button>
                 {if isset($faq->tag_link) && $faq->tag_link}
-                  <a class="badge bg-secondary text-decoration-none everblock-faq-chip flex-shrink-0" href="{$faq->tag_link|escape:'htmlall':'UTF-8'}" title="{l s='View all questions from the %s group' sprintf=[$faq->tag_name] mod='everblock' d='Modules.Everblock.Front'}">
+                  <a class="badge bg-secondary text-decoration-none everblock-faq-chip flex-shrink-0" href="{$faq->tag_link|escape:'htmlall':'UTF-8'}" title="{l s='View all questions from the %s group' sprintf=[$faq->tag_name] d='Modules.Everblock.Front'}">
                     {$faq->tag_name|escape:'htmlall':'UTF-8'}
                   </a>
                 {/if}

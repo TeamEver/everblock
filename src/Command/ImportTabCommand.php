@@ -24,6 +24,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Exception;
 use Everblock\Tools\Service\ImportFile;
 use Language;
 use Symfony\Component\Console\Command\Command;

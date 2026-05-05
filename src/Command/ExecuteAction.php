@@ -28,6 +28,8 @@ use Configuration;
 use Currency;
 use Db;
 use DbQuery;
+use EverBlockClass;
+use Exception;
 use Everblock\Tools\Service\ImportFile;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;

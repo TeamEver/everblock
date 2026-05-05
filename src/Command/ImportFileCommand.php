@@ -24,15 +24,16 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Exception;
 use Everblock\Tools\Service\ImportFile;
+use Hook;
+use PrestaShopLogger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Validate;
-use Hook;
-use PrestaShopLogger;
 
 class ImportFileCommand extends Command
 {

@@ -22,8 +22,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
-
 class EverblockPageModuleFrontController extends ModuleFrontController
 {
     /** @var EverblockPage|null */
@@ -106,7 +104,7 @@ class EverblockPageModuleFrontController extends ModuleFrontController
         $breadcrumb = parent::getBreadcrumbLinks();
 
         $breadcrumb['links'][] = [
-            'title' => $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
+            'title' => $this->translate('Guides and tutorials'),
             'url' => $this->context->link->getModuleLink($this->module->name, 'pages'),
         ];
 
@@ -215,9 +213,14 @@ class EverblockPageModuleFrontController extends ModuleFrontController
         return [
             '@context' => 'https://schema.org',
             '@type' => 'ItemList',
-            'name' => $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
-            'description' => $this->trans('Découvrez nos guides pratiques pour ...', [], 'Modules.Everblock.Front'),
+            'name' => $this->translate('Guides and tutorials'),
+            'description' => $this->translate('Discover our practical guides.'),
             'itemListElement' => $elements,
         ];
+    }
+
+    protected function translate(string $message, array $parameters = []): string
+    {
+        return $this->context->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Front');
     }
 }

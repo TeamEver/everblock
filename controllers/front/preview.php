@@ -66,14 +66,14 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
     {
         $token = Tools::getValue('token');
         $validTokens = [
-            Tools::getAdminTokenLite('AdminEverBlockController'),
-            Tools::getAdminTokenLite('AdminEverBlockConfigurationController'),
-            Tools::getAdminTokenLite('AdminEverBlockHookController'),
+            Tools::getAdminTokenLite('AdminEverBlock'),
+            Tools::getAdminTokenLite('AdminEverBlockConfiguration'),
+            Tools::getAdminTokenLite('AdminEverBlockHook'),
             Tools::getAdminTokenLite('AdminModules'),
         ];
 
         if (!$token || !in_array($token, $validTokens, true)) {
-            // throw new Exception($this->module->l('Invalid preview token.'));
+            // throw new Exception($this->translate('Invalid preview token.'));
         }
     }
 
@@ -86,7 +86,7 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
         $block = new EverBlockClass($blockId, $languageId, $shopId);
 
         if (!Validate::isLoadedObject($block)) {
-            throw new Exception($this->module->l('Unable to find the requested block.'));
+            throw new Exception($this->translate('Unable to find the requested block.'));
         }
 
         return $block;
@@ -151,6 +151,11 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
 
     protected function getReturnUrl(): string
     {
-        return $this->context->link->getAdminLink('AdminEverBlockController');
+        return $this->context->link->getAdminLink('AdminEverBlock');
+    }
+
+    protected function translate(string $message, array $parameters = []): string
+    {
+        return $this->context->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Front');
     }
 }

@@ -22,8 +22,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
-
 class EverblockFaqsModuleFrontController extends ModuleFrontController
 {
     /** @var string */
@@ -85,11 +83,11 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
         $faqsWithLinks = $this->attachTagLinks($faqs);
 
         $title = $this->isAllFaqsPage
-            ? $this->trans('FAQ', [], 'Modules.Everblock.Front')
-            : $this->trans('FAQ', [], 'Modules.Everblock.Front') . ' - ' . $tagName;
+            ? $this->translate('FAQ')
+            : $this->translate('FAQ') . ' - ' . $tagName;
         $description = $this->isAllFaqsPage
-            ? $this->trans('All frequently asked questions, across every group.', [], 'Modules.Everblock.Front')
-            : $this->trans('Frequently asked questions grouped by tag.', [], 'Modules.Everblock.Front');
+            ? $this->translate('All frequently asked questions, across every group.')
+            : $this->translate('Frequently asked questions grouped by tag.');
 
         $this->context->smarty->assign([
             'everblock_tag_name' => $tagName,
@@ -114,7 +112,7 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
         $breadcrumb = parent::getBreadcrumbLinks();
 
         $breadcrumb['links'][] = [
-            'title' => $this->trans('FAQ', [], 'Modules.Everblock.Front'),
+            'title' => $this->translate('FAQ'),
             'url' => $this->isAllFaqsPage ? $this->getCanonicalURL() : '',
         ];
 
@@ -195,8 +193,8 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
             '@context' => 'https://schema.org',
             '@type' => 'FAQPage',
             'name' => $this->tagName === ''
-                ? $this->trans('FAQ', [], 'Modules.Everblock.Front')
-                : $this->trans('FAQ', [], 'Modules.Everblock.Front') . ' - ' . $this->tagName,
+                ? $this->translate('FAQ')
+                : $this->translate('FAQ') . ' - ' . $this->tagName,
             'mainEntity' => $entities,
         ];
     }
@@ -242,5 +240,10 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
         }
 
         return $faqs;
+    }
+
+    protected function translate(string $message, array $parameters = []): string
+    {
+        return $this->context->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Front');
     }
 }

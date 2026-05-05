@@ -32,33 +32,32 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
 
     protected function formProcess()
     {
-        // ✅ Token CSRF sécurisé (lié à la session)
-        $validToken = Tools::getToken(); // équivalent de Tools::getAdminTokenLite sans dépendre de l'admin
+        // Token CSRF securise, lie a la session.
+        $validToken = Tools::getToken();
         $submittedToken = Tools::getValue('token');
 
         if (!$submittedToken || $submittedToken !== $validToken) {
-            // Tu peux faire un redirect ou un die avec message custom
-            return $this->terminateWithResponse($this->module->l('Invalid security token.'));
+            return $this->terminateWithResponse($this->translate('Invalid security token.'));
         }
 
-        // ➕ Récupération du formulaire
+        // Recuperation du formulaire.
         $formData = Tools::getAllValues();
 
-        // ➕ Si vide ou si erreurs
+        // Si vide ou si erreurs.
         if (empty($formData) || sizeof($this->context->controller->errors)) {
             return $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
         }
 
-        // ➕ Hook avant traitement
+        // Hook avant traitement.
         Hook::exec('hookActionContactFormSubmitBefore', ['formData' => &$formData]);
 
-        // ➕ Si erreurs existantes
+        // Si erreurs existantes.
         if (empty($formData) || sizeof($this->context->controller->errors)) {
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
             return $this->terminateWithResponse($response);
         }
 
-        // ➕ Contenu du message HTML
+        // Contenu du message HTML.
         $messageContent = '';
         $excludedKeys = ['token', 'everHide', 'submit', 'action'];
 
@@ -79,17 +78,17 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             }
         }
 
-        // ✅ Si le contenu est vide (pas de message à envoyer)
+        // Si le contenu est vide, pas de message a envoyer.
         if (trim(strip_tags($messageContent)) === '') {
             return $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
         }
 
-        // ➕ Infos client
-        $messageContent .= '<p><strong>' . $this->module->l('Client IP:') . '</strong> ' . Tools::getRemoteAddr() . '</p>';
-        $messageContent .= '<p><strong>' . $this->module->l('Client browser:') . '</strong> ' . Tools::getUserBrowser() . '</p>';
-        $messageContent .= '<p><strong>' . $this->module->l('Client platform:') . '</strong> ' . Tools::getUserPlatform() . '</p>';
+        // Infos client.
+        $messageContent .= '<p><strong>' . $this->translate('Client IP:') . '</strong> ' . Tools::getRemoteAddr() . '</p>';
+        $messageContent .= '<p><strong>' . $this->translate('Client browser:') . '</strong> ' . Tools::getUserBrowser() . '</p>';
+        $messageContent .= '<p><strong>' . $this->translate('Client platform:') . '</strong> ' . Tools::getUserPlatform() . '</p>';
 
-        // ➕ Pièces jointes
+        // Pieces jointes.
         $attachments = [];
         $maxFileSize = (int) Configuration::get('EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE');
         $allowedExtensions = $this->getConfigurationList('EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS');
@@ -108,7 +107,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             $fileSize = isset($fileData['size']) ? (int) $fileData['size'] : 0;
             if ($maxFileSize > 0 && $fileSize > $maxFileSize) {
                 $uploadError = true;
-                $this->context->controller->errors[] = $this->module->l('The uploaded file exceeds the allowed size.');
+                $this->context->controller->errors[] = $this->translate('The uploaded file exceeds the allowed size.');
                 PrestaShopLogger::addLog(
                     sprintf(
                         'Everblock contact: rejected "%s" because it exceeds the size limit (%d bytes > %d bytes).',
@@ -124,7 +123,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             $extension = Tools::strtolower(pathinfo($fileData['name'], PATHINFO_EXTENSION));
             if (!empty($allowedExtensions) && !in_array($extension, $allowedExtensions)) {
                 $uploadError = true;
-                $this->context->controller->errors[] = $this->module->l('The uploaded file type is not allowed.');
+                $this->context->controller->errors[] = $this->translate('The uploaded file type is not allowed.');
                 PrestaShopLogger::addLog(
                     sprintf(
                         'Everblock contact: rejected "%s" because the extension "%s" is not allowed.',
@@ -144,7 +143,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
 
             if (!empty($allowedMimeTypes) && (!is_string($mime) || !in_array($mime, $allowedMimeTypes))) {
                 $uploadError = true;
-                $this->context->controller->errors[] = $this->module->l('The uploaded file type is not allowed.');
+                $this->context->controller->errors[] = $this->translate('The uploaded file type is not allowed.');
                 PrestaShopLogger::addLog(
                     sprintf(
                         'Everblock contact: rejected "%s" because the MIME type "%s" is not allowed.',
@@ -168,8 +167,8 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
             return $this->terminateWithResponse($response);
         }
 
-        // ➕ Destinataires
-        $mailSubject = $this->module->l('New form submitted');
+        // Destinataires.
+        $mailSubject = $this->translate('New form submitted');
         $mailRecipient = Configuration::get('PS_SHOP_EMAIL');
 
         if ($everHideValue = Tools::getValue('everHide')) {
@@ -307,5 +306,10 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
     protected function isUploadedFile($tmpName)
     {
         return is_uploaded_file($tmpName);
+    }
+
+    protected function translate(string $message, array $parameters = []): string
+    {
+        return $this->context->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Contact');
     }
 }

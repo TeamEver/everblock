@@ -21,15 +21,55 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require_once('vendor/autoload.php');
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockClass.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockShortcode.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockTabsClass.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFlagsClass.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockFaq.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockModal.php';
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
-require_once _PS_MODULE_DIR_ . 'everblock/src/Service/EverblockCache.php';
+$autoloadPath = __DIR__ . '/vendor/autoload.php';
+if (is_file($autoloadPath)) {
+    require_once $autoloadPath;
+}
+
+spl_autoload_register(static function ($className) {
+    $prefix = 'Everblock\\Tools\\';
+    if (strncmp($className, $prefix, strlen($prefix)) !== 0) {
+        return;
+    }
+
+    $relativeClass = substr($className, strlen($prefix));
+    $file = __DIR__ . '/src/' . str_replace('\\', '/', $relativeClass) . '.php';
+    if (is_file($file)) {
+        require_once $file;
+    }
+});
+
+require_once __DIR__ . '/src/Service/EverblockCache.php';
+
+if (!function_exists('everblockRegisterLegacyAlias')) {
+    function everblockRegisterLegacyAlias(string $className, string $legacyAlias, string $relativePath): void
+    {
+        if (class_exists($legacyAlias, false)) {
+            return;
+        }
+
+        if (!class_exists($className, false)) {
+            $file = __DIR__ . '/' . ltrim($relativePath, '/\\');
+            if (is_file($file)) {
+                require_once $file;
+            }
+        }
+
+        if (!class_exists($className, false)) {
+            return;
+        }
+
+        class_alias($className, $legacyAlias, false);
+    }
+}
+
+everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Block::class, 'EverBlockClass', 'src/Entity/Block.php');
+everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Shortcode::class, 'EverblockShortcode', 'src/Entity/Shortcode.php');
+everblockRegisterLegacyAlias(\Everblock\Tools\Entity\ProductTab::class, 'EverblockTabsClass', 'src/Entity/ProductTab.php');
+everblockRegisterLegacyAlias(\Everblock\Tools\Entity\ProductFlag::class, 'EverblockFlagsClass', 'src/Entity/ProductFlag.php');
+everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Faq::class, 'EverblockFaq', 'src/Entity/Faq.php');
+everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Modal::class, 'EverblockModal', 'src/Entity/Modal.php');
+everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Page::class, 'EverblockPage', 'src/Entity/Page.php');
 
 use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
@@ -74,7 +114,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '8.3.0';
+        $this->version = '8.3.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -130,6 +170,10 @@ class Everblock extends Module
             return false;
         }
 
+        if (!$this->installTranslations()) {
+            return false;
+        }
+
         if (!$this->installSql()) {
             return false;
         }
@@ -151,6 +195,7 @@ class Everblock extends Module
     private function installConfiguration(): bool
     {
         $configuration = [
+            ['EVERBLOCK_LOAD_FRONT_CSS', 1],
             ['EVERBLOCK_TINYMCE', 1],
             ['EVERPSCSS_P_LLOREM_NUMBER', 5],
             ['EVERPSCSS_S_LLOREM_NUMBER', 5],
@@ -191,6 +236,22 @@ class Everblock extends Module
             if (!Configuration::updateValue($item[0], $item[1], $autoload)) {
                 return false;
             }
+        }
+
+        return true;
+    }
+
+    private function installTranslations(): bool
+    {
+        return $this->refreshTranslations();
+    }
+
+    public function refreshTranslations(?int $idLang = null): bool
+    {
+        try {
+            $this->importLegacyTranslations($idLang);
+        } catch (Throwable $exception) {
+            PrestaShopLogger::addLog('Everblock translations import failed: ' . $exception->getMessage(), 2);
         }
 
         return true;
@@ -237,6 +298,7 @@ class Everblock extends Module
             'displayHeader',
             'actionAdminControllerSetMedia',
             'actionRegisterBlock',
+            'actionObjectLanguageAddAfter',
             'moduleRoutes',
         ];
 
@@ -358,17 +420,18 @@ class Everblock extends Module
     private function installTabs(): bool
     {
         $tabs = [
-            ['AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block')],
-            ['AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration')],
-            ['AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks')],
-            ['AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks')],
-            ['AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes')],
-            ['AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ')],
-            ['AdminEverBlockPage', 'AdminEverBlockParent', $this->l('Pages')],
+            ['AdminEverBlockParent', 'IMPROVE', $this->l('Ever Block'), null],
+            ['AdminEverBlockConfiguration', 'AdminEverBlockParent', $this->l('Configuration'), 'admin_everblock_configuration'],
+            ['AdminEverBlock', 'AdminEverBlockParent', $this->l('HTML Blocks'), 'admin_everblock_blocks'],
+            ['AdminEverBlockHook', 'AdminEverBlockParent', $this->l('Hooks'), 'admin_everblock_hooks'],
+            ['AdminEverBlockShortcode', 'AdminEverBlockParent', $this->l('Shortcodes'), 'admin_everblock_shortcodes'],
+            ['AdminEverBlockShortcodeDocumentation', 'AdminEverBlockParent', $this->l('Shortcode documentation'), 'admin_everblock_shortcodes_documentation'],
+            ['AdminEverBlockFaq', 'AdminEverBlockParent', $this->l('FAQ'), 'admin_everblock_faqs'],
+            ['AdminEverBlockPage', 'AdminEverBlockParent', $this->l('Pages'), 'admin_everblock_pages'],
         ];
 
         foreach ($tabs as $tab) {
-            if (!$this->installModuleTab($tab[0], $tab[1], $tab[2])) {
+            if (!$this->installModuleTab($tab[0], $tab[1], $tab[2], $tab[3])) {
                 return false;
             }
         }
@@ -407,6 +470,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERWP_POSTS_BG_IMAGE');
         Configuration::deleteByName('EVER_SOLDOUT_COLOR');
         Configuration::deleteByName('EVER_SOLDOUT_TEXTCOLOR');
+        Configuration::deleteByName('EVERBLOCK_LOAD_FRONT_CSS');
         Configuration::deleteByName('EVERBLOCK_SOLDOUT_FLAG');
         Configuration::deleteByName('EVERINSTA_SHOW_CAPTION');
         Configuration::deleteByName('EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE');
@@ -433,6 +497,7 @@ class Everblock extends Module
             && $this->uninstallModuleTab('AdminEverBlock')
             && $this->uninstallModuleTab('AdminEverBlockHook')
             && $this->uninstallModuleTab('AdminEverBlockShortcode')
+            && $this->uninstallModuleTab('AdminEverBlockShortcodeDocumentation')
             && $this->uninstallModuleTab('AdminEverBlockFaq')
             && $this->uninstallModuleTab('AdminEverBlockPage')
             && $this->uninstallModuleTab('AdminEverBlockParent'));
@@ -491,7 +556,19 @@ class Everblock extends Module
         return Tools::ucfirst($key);
     }
 
-    private function importLegacyTranslations()
+    public function hookActionObjectLanguageAddAfter($params): void
+    {
+        $language = $params['object'] ?? null;
+        if ($language instanceof Language && Validate::isLoadedObject($language)) {
+            $this->refreshTranslations((int) $language->id);
+
+            return;
+        }
+
+        $this->refreshTranslations();
+    }
+
+    private function importLegacyTranslations(?int $idLang = null)
     {
         $legacyDir = dirname(__FILE__) . '/translations';
 
@@ -505,7 +582,7 @@ class Everblock extends Module
             return;
         }
 
-        foreach (Language::getLanguages(false) as $language) {
+        foreach ($this->getLanguagesForTranslationImport($idLang) as $language) {
             $legacyFile = $this->resolveLegacyFileForIso($legacyDir, $language['iso_code']);
 
             if (!$legacyFile) {
@@ -543,6 +620,23 @@ class Everblock extends Module
                 );
             }
         }
+    }
+
+    private function getLanguagesForTranslationImport(?int $idLang = null): array
+    {
+        if ($idLang === null || $idLang <= 0) {
+            return Language::getLanguages(false);
+        }
+
+        $language = new Language($idLang);
+        if (!Validate::isLoadedObject($language)) {
+            return [];
+        }
+
+        return [[
+            'id_lang' => (int) $language->id,
+            'iso_code' => (string) $language->iso_code,
+        ]];
     }
 
     private function loadDefaultLegacyTranslations($legacyDir)
@@ -597,6 +691,7 @@ class Everblock extends Module
 
         $backup = isset($GLOBALS['_MODULE']) ? $GLOBALS['_MODULE'] : null;
         $GLOBALS['_MODULE'] = [];
+        $_MODULE = &$GLOBALS['_MODULE'];
 
         include $path;
 
@@ -639,17 +734,46 @@ class Everblock extends Module
 
     private function upsertTranslation($idLang, $domain, $source, $translation)
     {
-        Db::getInstance()->execute(
-            'INSERT INTO `' . _DB_PREFIX_ . "translation` (`id_lang`, `domain`, `key`, `translation`, `theme`, `modified`)"
-            . " VALUES ("
-            . (int) $idLang . ", '" . pSQL($domain) . "', '" . pSQL($source) . "', '" . pSQL($translation, true) . "', NULL, 0)"
-            . " ON DUPLICATE KEY UPDATE `translation` = VALUES(`translation`), `modified` = VALUES(`modified`)"
+        $db = Db::getInstance();
+        $where = '`id_lang` = ' . (int) $idLang
+            . " AND `domain` = '" . pSQL($domain) . "'"
+            . " AND `key` = '" . pSQL($source, true) . "'"
+            . " AND (`theme` IS NULL OR `theme` = '')";
+        $idTranslation = (int) $db->getValue(
+            'SELECT `id_translation` FROM `' . _DB_PREFIX_ . 'translation` WHERE ' . $where
         );
+
+        if ($idTranslation > 0) {
+            $db->update(
+                'translation',
+                ['translation' => pSQL($translation, true)],
+                '`id_translation` = ' . (int) $idTranslation
+            );
+
+            return;
+        }
+
+        $db->insert('translation', [
+            'id_lang' => (int) $idLang,
+            'domain' => pSQL($domain),
+            'key' => pSQL($source, true),
+            'translation' => pSQL($translation, true),
+            'theme' => '',
+        ], false, true, Db::INSERT);
     }
 
-    private function installModuleTab(string $className, string $parentClassName, string $name): bool
+    private function installModuleTab(string $className, string $parentClassName, string $name, ?string $routeName = null): bool
     {
-        if ((int) Tab::getIdFromClassName($className) > 0) {
+        $existingId = (int) Tab::getIdFromClassName($className);
+        if ($existingId > 0) {
+            if ($routeName) {
+                $existingTab = new Tab($existingId);
+                if (property_exists($existingTab, 'route_name')) {
+                    $existingTab->route_name = $routeName;
+                    $existingTab->save();
+                }
+            }
+
             return true;
         }
 
@@ -664,6 +788,9 @@ class Everblock extends Module
         $tab->id_parent = $parentId;
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
         $tab->module = $this->name;
+        if ($routeName && property_exists($tab, 'route_name')) {
+            $tab->route_name = $routeName;
+        }
 
         if ($className === 'AdminEverBlockParent') {
             $tab->icon = 'icon-team-ever';
@@ -874,6 +1001,7 @@ class Everblock extends Module
         $this->registerHook('actionOutputHTMLBefore');
         $this->registerHook('displayHeader');
         $this->registerHook('actionAdminControllerSetMedia');
+        $this->registerHook('actionObjectLanguageAddAfter');
         $this->registerHook('actionObjectEverBlockClassUpdateAfter');
         $this->registerHook('actionObjectEverBlockClassDeleteAfter');
         $this->registerHook('actionObjectEverblockFaqUpdateAfter');
@@ -885,6 +1013,7 @@ class Everblock extends Module
         $this->registerQcdBuilderHooks();
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
+        $this->installTabs();
     }
 
     protected function updateProductFlagsHook()
@@ -906,7 +1035,7 @@ class Everblock extends Module
 
             $sql = new DbQuery();
             $sql->select('id_everblock_flags');
-            $sql->from(EverblockFlagsClass::$definition['table']);
+            $sql->from('everblock_flags');
             $sql->where('id_shop = ' . (int) $idShop);
             if (Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql)) {
                 $needHook = true;
@@ -932,7 +1061,6 @@ class Everblock extends Module
 
         $supportedControllers = [
             'admineverblock',
-            'admineverblockcontroller',
             'admineverblockconfiguration',
             'admineverblockfaq',
             'admineverblockhook',
@@ -960,7 +1088,6 @@ class Everblock extends Module
             // Sélecteurs du textarea réel (pas l'iframe TinyMCE)
             'selectors' => [
                 'body.admineverblock textarea[name="content_2"]',
-                'body.admineverblockcontroller textarea[name="content_2"]',
                 'body.admineverblockpage form textarea[name="content_2"]',
                 'body.admineverblockfaq form textarea[name="content_2"]',
                 'form#everblock_form textarea[name="content_2"]',
@@ -1166,6 +1293,240 @@ class Everblock extends Module
         if ($this->isFaqSearchAjaxRequest()) {
             $this->ajaxProcessFaqSearch();
         }
+
+        $this->createUpgradeFile();
+        $this->secureModuleFolder();
+        EverblockTools::checkAndFixDatabase();
+        $this->checkHooks();
+
+        Tools::redirectAdmin($this->context->link->getAdminLink('AdminEverBlockConfiguration'));
+
+        return '';
+    }
+
+    public function getAdminConfigurationFormData(): array
+    {
+        $data = $this->getConfigFormValues();
+        $languages = Language::getLanguages(false);
+
+        foreach ($languages as $language) {
+            $langId = (int) $language['id_lang'];
+            $data['EVEROPTIONS_TITLE_' . $langId] = $data['EVEROPTIONS_TITLE'][$langId] ?? '';
+            $data['EVER_TAB_TITLE_' . $langId] = $data['EVER_TAB_TITLE'][$langId] ?? '';
+            $data['EVER_TAB_CONTENT_' . $langId] = $data['EVER_TAB_CONTENT'][$langId] ?? '';
+        }
+
+        $featuresAsFlags = json_decode((string) Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
+        $data['EVERPS_FEATURES_AS_FLAGS'] = is_array($featuresAsFlags) ? array_map('intval', $featuresAsFlags) : [];
+        unset(
+            $data['EVEROPTIONS_TITLE'],
+            $data['EVER_TAB_TITLE'],
+            $data['EVER_TAB_CONTENT'],
+            $data['EVERPS_FEATURES_AS_FLAGS[]']
+        );
+
+        foreach ([
+            'EVERPSCSS_CACHE',
+            'EVERBLOCK_CACHE',
+            'EVERBLOCK_LOAD_FRONT_CSS',
+            'EVERBLOCK_USE_OBF',
+            'EVERBLOCK_TINYMCE',
+            'EVERBLOCK_DISABLE_WEBP',
+            'EVERINSTA_SHOW_CAPTION',
+            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING',
+            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR',
+            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA',
+            'EVERBLOCK_STORELOCATOR_TOGGLE',
+            'EVERBLOCK_SOLDOUT_FLAG',
+        ] as $booleanField) {
+            $defaultValue = $booleanField === 'EVERBLOCK_LOAD_FRONT_CSS' ? 1 : 0;
+            $data[$booleanField] = (int) ($data[$booleanField] ?? $defaultValue);
+        }
+
+        return $data;
+    }
+
+    public function getAdminConfigurationViewContext(): array
+    {
+        $idLang = (int) $this->context->language->id;
+        $features = Feature::getFeatures($idLang);
+        $featureChoices = [];
+        $featureNames = [];
+        foreach ($features as $feature) {
+            $featureId = (int) $feature['id_feature'];
+            $featureName = (string) $feature['name'];
+            $featureChoices[$featureName] = $featureId;
+            $featureNames[$featureId] = $featureName;
+        }
+
+        $stores = Store::getStores($idLang);
+        $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
+        $bannedFeatures = json_decode((string) Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
+        if (!is_array($bannedFeatures)) {
+            $bannedFeatures = [];
+        }
+        $bannedFeatures = array_map('intval', $bannedFeatures);
+
+        $imageBaseUrl = $this->context->link->getBaseLink(null, null) . 'modules/' . $this->name . '/views/img/';
+        $wordpressBackground = Configuration::get('EVERWP_POSTS_BG_IMAGE');
+        $markerIcon = Configuration::get('EVERBLOCK_MARKER_ICON');
+
+        $cronLinks = [];
+        $cronToken = $this->encrypt($this->name . '/evercron');
+        foreach ($this->allowedActions as $action) {
+            $cronLinks[$action] = $this->context->link->getModuleLink(
+                $this->name,
+                'cron',
+                [
+                    'action' => $action,
+                    'evertoken' => $cronToken,
+                ]
+            );
+        }
+
+        return [
+            'banned_features' => $bannedFeatures,
+            'cron_links' => $cronLinks,
+            'current_images' => [
+                'EVERWP_POSTS_BG_IMAGE' => $wordpressBackground ? $imageBaseUrl . $wordpressBackground : null,
+                'EVERBLOCK_MARKER_ICON' => $markerIcon ? $imageBaseUrl . $markerIcon : null,
+            ],
+            'feature_choices' => $featureChoices,
+            'feature_names' => $featureNames,
+            'has_instagram_token' => (bool) Configuration::get('EVERINSTA_ACCESS_TOKEN'),
+            'has_stores' => !empty($stores),
+            'holidays' => $holidays,
+            'languages' => Language::getLanguages(false),
+            'module_version' => $this->version,
+            'stats' => $this->getModuleStatistics(),
+            'stores' => $stores,
+        ];
+    }
+
+    public function processAdminConfigurationRequest(): array
+    {
+        $this->createUpgradeFile();
+        $this->secureModuleFolder();
+        EverblockTools::checkAndFixDatabase();
+        $this->checkHooks();
+        $this->postErrors = [];
+        $this->postSuccess = [];
+
+        if (Tools::isSubmit('deleteEVERBLOCK_MARKER_ICON')) {
+            $icon = Configuration::get('EVERBLOCK_MARKER_ICON');
+            if ($icon) {
+                $path = _PS_MODULE_DIR_ . $this->name . '/views/img/' . $icon;
+                if (file_exists($path)) {
+                    @unlink($path);
+                }
+                Configuration::deleteByName('EVERBLOCK_MARKER_ICON');
+                $this->postSuccess[] = $this->l('Marker icon removed.');
+            }
+        }
+
+        if (Tools::isSubmit('deleteEVERWP_POSTS_BG_IMAGE')) {
+            $background = Configuration::get('EVERWP_POSTS_BG_IMAGE');
+            if ($background) {
+                $path = _PS_MODULE_DIR_ . $this->name . '/views/img/' . $background;
+                if (file_exists($path)) {
+                    @unlink($path);
+                }
+                Configuration::deleteByName('EVERWP_POSTS_BG_IMAGE');
+                $this->postSuccess[] = $this->l('WordPress background image removed.');
+            }
+        }
+
+        if (Tools::isSubmit('submit' . $this->name . 'Module')) {
+            if (!isset($_POST['EVERPS_FEATURES_AS_FLAGS'])) {
+                $_POST['EVERPS_FEATURES_AS_FLAGS'] = [];
+            }
+            $this->postValidation();
+            if (!count($this->postErrors)) {
+                $this->postProcess();
+            }
+        }
+
+        if (Tools::isSubmit('submitUploadTabsFile')) {
+            $this->uploadTabsFile();
+        }
+        if (Tools::isSubmit('submitUploadBlocksFile')) {
+            $this->uploadBlocksFile();
+        }
+        if (Tools::isSubmit('submitEmptyCache')) {
+            $this->emptyAllCache();
+        }
+        if (Tools::isSubmit('submitEmptyLogs')) {
+            $purged = EverblockTools::purgeNativePrestashopLogsTable();
+            $this->postSuccess[] = $purged ? $this->l('Log tables emptied') : $this->l('Log tables NOT emptied');
+            if (!$purged) {
+                array_pop($this->postSuccess);
+                $this->postErrors[] = $this->l('Log tables NOT emptied');
+            }
+        }
+        if (Tools::isSubmit('submitDropUnusedLangs')) {
+            $this->appendToolResult(EverblockTools::dropUnusedLangs());
+        }
+        if (Tools::isSubmit('submitSecureModuleFoldersWithApache')) {
+            $this->appendToolResult(EverblockTools::secureModuleFoldersWithApache());
+        }
+        if (Tools::isSubmit('submitBackupBlocks')) {
+            $backuped = EverblockTools::exportModuleTablesSQL();
+            $configBackuped = EverblockTools::exportConfigurationSQL();
+            $this->postSuccess[] = $backuped && $configBackuped ? $this->l('Backup done') : $this->l('Backup failed');
+            if (!$backuped || !$configBackuped) {
+                array_pop($this->postSuccess);
+                $this->postErrors[] = $this->l('Backup failed');
+            }
+        }
+        if (Tools::isSubmit('submitRestoreBackup')) {
+            $restored = EverblockTools::restoreModuleTablesFromBackup();
+            $this->postSuccess[] = $restored ? $this->l('Restore done') : $this->l('Restore failed');
+            if (!$restored) {
+                array_pop($this->postSuccess);
+                $this->postErrors[] = $this->l('Restore failed');
+            }
+        }
+        if (Tools::isSubmit('submitCreateProduct')) {
+            $created = EverblockTools::generateProducts((int) $this->context->shop->id);
+            $this->postSuccess[] = $created ? $this->l('Products creation done') : $this->l('Products creation failed');
+            if (!$created) {
+                array_pop($this->postSuccess);
+                $this->postErrors[] = $this->l('Products creation failed');
+            }
+        }
+        if (Tools::isSubmit('submitMigrateUrls') && Tools::getValue('EVERPS_OLD_URL') && Tools::getValue('EVERPS_NEW_URL')) {
+            $this->appendToolResult(EverblockTools::migrateUrls(
+                Tools::getValue('EVERPS_OLD_URL'),
+                Tools::getValue('EVERPS_NEW_URL'),
+                (int) $this->context->shop->id
+            ));
+        }
+        if (Tools::isSubmit('submitEverblockUpdate')) {
+            $this->processEverblockUpdate(new GithubReleaseChecker($this->version));
+        }
+
+        return [
+            'errors' => $this->postErrors,
+            'success' => $this->postSuccess,
+        ];
+    }
+
+    private function appendToolResult($result): void
+    {
+        if (!is_array($result)) {
+            return;
+        }
+
+        foreach ($result['postErrors'] ?? [] as $error) {
+            $this->postErrors[] = $error;
+        }
+        foreach ($result['querySuccess'] ?? [] as $success) {
+            $this->postSuccess[] = $success;
+        }
+    }
+
+    private function renderLegacyConfigurationContent()
+    {
         $this->createUpgradeFile();
         $this->secureModuleFolder();
         EverblockTools::checkAndFixDatabase();
@@ -1894,22 +2255,7 @@ class Everblock extends Module
 
     protected function renderForm()
     {
-        $helper = new HelperForm();
-        $helper->show_toolbar = false;
-        $helper->table = $this->table;
-        $helper->module = $this;
-        $helper->default_form_language = $this->context->language->id;
-        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
-        $helper->identifier = $this->identifier;
-        $helper->submit_action = 'submit' . $this->name . 'Module';
-        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminModules');
-        $helper->tpl_vars = [
-            'fields_value' => $this->getConfigFormValues(),
-            'languages' => $this->context->controller->getLanguages(),
-            'id_language' => $this->context->language->id,
-        ];
-        return $helper->generateForm($this->getConfigForm());
+        return '';
     }
 
 
@@ -3293,6 +3639,10 @@ class Everblock extends Module
             Tools::getValue('EVERBLOCK_CACHE')
         );
         Configuration::updateValue(
+            'EVERBLOCK_LOAD_FRONT_CSS',
+            Tools::getValue('EVERBLOCK_LOAD_FRONT_CSS')
+        );
+        Configuration::updateValue(
             'EVERBLOCK_USE_OBF',
             Tools::getValue('EVERBLOCK_USE_OBF')
         );
@@ -3540,6 +3890,11 @@ class Everblock extends Module
                 $dest = _PS_MODULE_DIR_ . $this->name . '/views/img/' . $safeName;
                 copy($tmpName, $dest);
                 @unlink($tmpName);
+                $webpUrl = EverblockTools::convertToWebP($dest);
+                if ($webpUrl) {
+                    $webpPath = parse_url($webpUrl, PHP_URL_PATH);
+                    $safeName = $webpPath ? basename($webpPath) : basename($webpUrl);
+                }
                 Configuration::updateValue('EVERWP_POSTS_BG_IMAGE', $safeName);
             }
         }
@@ -3735,13 +4090,17 @@ class Everblock extends Module
     {
         $controller = Tools::getValue('controller');
         $isModuleConfiguration = Tools::getValue('configure') === $this->name;
+        $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '');
+        $isSymfonyContentForm = (bool) preg_match('#/modules/everblock/(blocks|pages|faqs|shortcodes)/(new|[0-9]+/edit)#', $requestUri);
+        $isSymfonyEverblockAdmin = strpos($requestUri, '/modules/everblock/') !== false;
         $moduleControllers = [
-            'AdminEverBlockController',
-            'AdminEverBlockConfigurationController',
-            'AdminEverBlockFaqController',
-            'AdminEverBlockHookController',
-            'AdminEverBlockShortcodeController',
-            'AdminEverBlockPageController',
+            'AdminEverBlock',
+            'AdminEverBlockConfiguration',
+            'AdminEverBlockFaq',
+            'AdminEverBlockHook',
+            'AdminEverBlockShortcode',
+            'AdminEverBlockShortcodeDocumentation',
+            'AdminEverBlockPage',
         ];
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
         if ($controller === 'AdminProducts') {
@@ -3751,6 +4110,8 @@ class Everblock extends Module
         if (Tools::getValue('id_' . $this->name)
             || Tools::getIsset('add' . $this->name)
             || $isModuleConfiguration
+            || $isSymfonyEverblockAdmin
+            || in_array($controller, $moduleControllers, true)
             || Tools::getValue('id_' . $this->name . '_faq')
             || Tools::getIsset('add' . $this->name . '_faq')
         ) {
@@ -3773,7 +4134,10 @@ class Everblock extends Module
             $this->context->controller->addJs($this->_path . 'views/js/admin.js');
             if ((bool) Configuration::get('EVERBLOCK_TINYMCE') === true
                 && !$isModuleConfiguration
+                && ($isSymfonyContentForm || Tools::getValue('id_' . $this->name) || Tools::getIsset('add' . $this->name))
             ) {
+                $this->context->controller->addJs(__PS_BASE_URI__ . 'js/tiny_mce/tinymce.min.js');
+                $this->context->controller->addJs(__PS_BASE_URI__ . 'js/admin/tinymce.inc.js');
                 $this->context->controller->addJs($this->_path . 'views/js/adminTinyMce.js');
             }
         }
@@ -5159,9 +5523,13 @@ class Everblock extends Module
                 ) {
                     continue;
                 }
-                $customerGroups = Customer::getGroupsStatic(
-                    (int) $id_entity
-                );
+                $customerGroups = $id_entity
+                    ? Customer::getGroupsStatic((int) $id_entity)
+                    : array_values(array_unique(array_filter([
+                        (int) Configuration::get('PS_UNIDENTIFIED_GROUP'),
+                        (int) Configuration::get('PS_GUEST_GROUP'),
+                        (int) Configuration::get('PS_CUSTOMER_GROUP'),
+                    ])));
                 $allowedGroups = json_decode($block['groups'], true);
                 if (isset($customerGroups)
                     && !empty($allowedGroups)
@@ -5292,12 +5660,13 @@ class Everblock extends Module
         }
 
         $idShop = (int) $this->context->shop->id;
-        // Register your CSS file
-        $this->context->controller->registerStylesheet(
-            'module-' . $this->name . '-css',
-            'modules/' . $this->name . '/views/css/' . $this->name . '.css',
-            ['media' => 'all', 'priority' => 200]
-        );
+        if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_LOAD_FRONT_CSS') === true) {
+            $this->context->controller->registerStylesheet(
+                'module-' . $this->name . '-css',
+                'modules/' . $this->name . '/views/css/' . $this->name . '.css',
+                ['media' => 'all', 'priority' => 200]
+            );
+        }
         $flagsCssFile = _PS_MODULE_DIR_ . $this->name . '/views/css/feature-flags-' . $idShop . '.css';
         if (file_exists($flagsCssFile) && filesize($flagsCssFile) > 0) {
             $this->context->controller->registerStylesheet(
@@ -6169,5 +6538,10 @@ class Everblock extends Module
                 ],
             ],
         ];
+    }
+
+    public function isUsingNewTranslationSystem()
+    {
+        return true;
     }
 }

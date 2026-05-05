@@ -58,12 +58,12 @@ class ShortcodeDocumentationProvider
                 'title' => $translator->trans('Catalog & merchandising', [], $domain),
                 'entries' => [
                     [
-                        'code' => '[product id="1,2,3" carousel=true]',
+                        'code' => '[product 1,2,3 carousel=true]',
                         'description' => $translator->trans('Display one or more products by their IDs with an optional carousel layout.', [], $domain),
                         'parameters' => [
                             [
-                                'name' => 'id',
-                                'description' => $translator->trans('Comma-separated list of product IDs to render.', [], $domain),
+                                'name' => 'IDs',
+                                'description' => $translator->trans('Comma-separated product IDs written just after the shortcode name.', [], $domain),
                                 'required' => true,
                             ],
                             [
@@ -74,23 +74,23 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[product_image id="1" image="2"]',
+                        'code' => '[product_image 1 2]',
                         'description' => $translator->trans('Output a specific image from a product gallery.', [], $domain),
                         'parameters' => [
                             [
-                                'name' => 'id',
-                                'description' => $translator->trans('Product ID providing the media.', [], $domain),
+                                'name' => 'Product ID',
+                                'description' => $translator->trans('Product ID written as the first value after the shortcode name.', [], $domain),
                                 'required' => true,
                             ],
                             [
-                                'name' => 'image',
-                                'description' => $translator->trans('Image position to display. Defaults to the first picture.', [], $domain),
+                                'name' => 'Image number',
+                                'description' => $translator->trans('Image position written as the second value. Defaults to the first picture.', [], $domain),
                                 'required' => false,
                             ],
                         ],
                     ],
                     [
-                        'code' => '[productfeature id="2" nb="12" carousel=true]',
+                        'code' => '[productfeature id=2 nb=12 carousel=true]',
                         'description' => $translator->trans('List products matching a given feature.', [], $domain),
                         'parameters' => [
                             [
@@ -105,8 +105,8 @@ class ShortcodeDocumentationProvider
                             ],
                             [
                                 'name' => 'carousel',
-                                'description' => $translator->trans('Render the selection inside a carousel.', [], $domain),
-                                'required' => false,
+                                'description' => $translator->trans('Required by the shortcode parser; use true for a carousel or false for a grid.', [], $domain),
+                                'required' => true,
                             ],
                             [
                                 'name' => 'orderby / orderway',
@@ -116,7 +116,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[productfeaturevalue id="5" nb="8"]',
+                        'code' => '[productfeaturevalue id=5 nb=8]',
                         'description' => $translator->trans('Display products attached to a specific feature value.', [], $domain),
                         'parameters' => [
                             [
@@ -196,7 +196,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[last-products nb="4" carousel=true]',
+                        'code' => '[last-products nb=4 carousel=true]',
                         'description' => $translator->trans('Display the most recently created products.', [], $domain),
                         'parameters' => [
                             [
@@ -217,7 +217,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[recently_viewed nb="4" carousel=true]',
+                        'code' => '[recently_viewed nb=4 carousel=true]',
                         'description' => $translator->trans('Suggest the products recently seen by the visitor.', [], $domain),
                         'parameters' => [
                             [
@@ -233,7 +233,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[promo-products nb="10" carousel=true]',
+                        'code' => '[promo-products nb=10 carousel=true]',
                         'description' => $translator->trans('Highlight products currently on promotion.', [], $domain),
                         'parameters' => [
                             [
@@ -249,7 +249,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[best-sales nb="10" carousel=true]',
+                        'code' => '[best-sales nb=10 carousel=true]',
                         'description' => $translator->trans('Expose the top selling products in the catalogue.', [], $domain),
                         'parameters' => [
                             [
@@ -270,7 +270,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[categorybestsales id="8" nb="10"]',
+                        'code' => '[categorybestsales id=8 nb=10]',
                         'description' => $translator->trans('Show best selling products limited to a category.', [], $domain),
                         'parameters' => [
                             [
@@ -286,7 +286,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[brandbestsales id="3" nb="10"]',
+                        'code' => '[brandbestsales id=3 nb=10]',
                         'description' => $translator->trans('Top sellers restricted to a manufacturer.', [], $domain),
                         'parameters' => [
                             [
@@ -302,7 +302,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[featurebestsales id="2" nb="10"]',
+                        'code' => '[featurebestsales id=2 nb=10]',
                         'description' => $translator->trans('Best sellers using a feature as the selector.', [], $domain),
                         'parameters' => [
                             [
@@ -318,7 +318,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[featurevaluebestsales id="5" nb="10"]',
+                        'code' => '[featurevaluebestsales id=5 nb=10]',
                         'description' => $translator->trans('Best selling products tied to a feature value.', [], $domain),
                         'parameters' => [
                             [
@@ -479,7 +479,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[crosselling nb="4" orderby="id_product" orderway="asc"]',
+                        'code' => '[crosselling nb=4 orderby=id_product orderway=ASC]',
                         'description' => $translator->trans('Mix cross-selling accessories with top sellers when the cart is empty.', [], $domain),
                         'parameters' => [
                             [
@@ -543,12 +543,23 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[everstore id="1,4"]',
-                        'description' => $translator->trans('Display one or several stores from the store locator.', [], $domain),
+                        'code' => '[evercms id="1"]',
+                        'description' => $translator->trans('Alias of the CMS shortcode, kept for shops using the historical Ever Block syntax.', [], $domain),
                         'parameters' => [
                             [
                                 'name' => 'id',
-                                'description' => $translator->trans('Comma-separated store IDs to include.', [], $domain),
+                                'description' => $translator->trans('CMS page ID to display.', [], $domain),
+                                'required' => true,
+                            ],
+                        ],
+                    ],
+                    [
+                        'code' => '[everstore 1]',
+                        'description' => $translator->trans('Display the information of one store from the PrestaShop store locator.', [], $domain),
+                        'parameters' => [
+                            [
+                                'name' => 'ID',
+                                'description' => $translator->trans('Store ID written just after the shortcode name.', [], $domain),
                                 'required' => true,
                             ],
                         ],
@@ -564,12 +575,12 @@ class ShortcodeDocumentationProvider
                         'parameters' => [],
                     ],
                     [
-                        'code' => '[video url="https://..."]',
+                        'code' => '[video https://www.youtube.com/watch?v=dQw4w9WgXcQ]',
                         'description' => $translator->trans('Embed a responsive iframe pointing to a video URL (YouTube, Vimeo, etc.).', [], $domain),
                         'parameters' => [
                             [
-                                'name' => 'url',
-                                'description' => $translator->trans('Video sharing URL to embed.', [], $domain),
+                                'name' => 'URL',
+                                'description' => $translator->trans('Video sharing URL written just after the shortcode name.', [], $domain),
                                 'required' => true,
                             ],
                         ],
@@ -617,7 +628,7 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[qcdacf field="my_field" objectType="product" objectId="12"]',
+                        'code' => '[qcdacf my_field product 12]',
                         'description' => $translator->trans('Print values provided by the QCD ACF module.', [], $domain),
                         'parameters' => [
                             [
@@ -627,12 +638,12 @@ class ShortcodeDocumentationProvider
                             ],
                             [
                                 'name' => 'objectType',
-                                'description' => $translator->trans('Entity type (product, category, supplier, etc.).', [], $domain),
+                                'description' => $translator->trans('Legacy syntax value. The renderer resolves the entity from the current page context.', [], $domain),
                                 'required' => true,
                             ],
                             [
                                 'name' => 'objectId',
-                                'description' => $translator->trans('Identifier of the entity providing the field value.', [], $domain),
+                                'description' => $translator->trans('Legacy syntax value. The renderer resolves the entity from the current page context.', [], $domain),
                                 'required' => true,
                             ],
                         ],
@@ -766,6 +777,31 @@ class ShortcodeDocumentationProvider
                         'parameters' => [],
                     ],
                     [
+                        'code' => '[entity_company]',
+                        'description' => $translator->trans('Authenticated customer company name.', [], $domain),
+                        'parameters' => [],
+                    ],
+                    [
+                        'code' => '[entity_siret]',
+                        'description' => $translator->trans('Authenticated customer SIRET number.', [], $domain),
+                        'parameters' => [],
+                    ],
+                    [
+                        'code' => '[entity_ape]',
+                        'description' => $translator->trans('Authenticated customer APE code.', [], $domain),
+                        'parameters' => [],
+                    ],
+                    [
+                        'code' => '[entity_birthday]',
+                        'description' => $translator->trans('Authenticated customer birthday.', [], $domain),
+                        'parameters' => [],
+                    ],
+                    [
+                        'code' => '[entity_website]',
+                        'description' => $translator->trans('Authenticated customer website.', [], $domain),
+                        'parameters' => [],
+                    ],
+                    [
                         'code' => '[entity_gender]',
                         'description' => $translator->trans('Authenticated customer gender.', [], $domain),
                         'parameters' => [],
@@ -814,8 +850,8 @@ class ShortcodeDocumentationProvider
                 'title' => $translator->trans('Forms & automation', [], $domain),
                 'entries' => [
                     [
-                        'code' => '[evercontactform_open] ... [evercontactform_close]',
-                        'description' => $translator->trans('Wrap a custom contact form handled by Ever Block.', [], $domain),
+                        'code' => '[evercontactform_open]',
+                        'description' => $translator->trans('Open a custom contact form handled by Ever Block.', [], $domain),
                         'parameters' => [],
                     ],
                     [
@@ -850,8 +886,13 @@ class ShortcodeDocumentationProvider
                         ],
                     ],
                     [
-                        'code' => '[everorderform_open] ... [everorderform_close]',
-                        'description' => $translator->trans('Create additional checkout steps with custom fields.', [], $domain),
+                        'code' => '[evercontactform_close]',
+                        'description' => $translator->trans('Close a custom contact form and inject the hidden security token.', [], $domain),
+                        'parameters' => [],
+                    ],
+                    [
+                        'code' => '[everorderform_open]',
+                        'description' => $translator->trans('Open an additional checkout form block.', [], $domain),
                         'parameters' => [],
                     ],
                     [
@@ -884,6 +925,11 @@ class ShortcodeDocumentationProvider
                                 'required' => false,
                             ],
                         ],
+                    ],
+                    [
+                        'code' => '[everorderform_close]',
+                        'description' => $translator->trans('Close the additional checkout form block.', [], $domain),
+                        'parameters' => [],
                     ],
                 ],
             ],

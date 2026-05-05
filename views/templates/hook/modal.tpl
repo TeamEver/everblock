@@ -27,7 +27,7 @@
     {elseif $everblockModalButtonLabel}
         {$everblockModalButtonLabel|escape:'htmlall':'UTF-8'}
     {else}
-        {l s='Show modal' mod='everblock'}
+        {l s='Show modal' d='Modules.Everblock.Front'}
     {/if}
 </button>
 {/if}

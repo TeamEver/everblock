@@ -33,7 +33,7 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         if (!$token || $token !== Tools::getToken(false)) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('Invalid token', 'slotmachine'),
+                'message' => $this->translate('Invalid token'),
             ]);
         }
 
@@ -41,7 +41,7 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         if (!$idBlock) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('Invalid configuration', 'slotmachine'),
+                'message' => $this->translate('Invalid configuration'),
             ]);
         }
 
@@ -56,7 +56,7 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         if (!$row) {
             $response = [
                 'status' => false,
-                'message' => $this->module->l('Configuration not found', 'slotmachine'),
+                'message' => $this->translate('Configuration not found'),
             ];
             if ($checkOnly) {
                 $response['played'] = false;
@@ -106,8 +106,8 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         $endDateValue = $this->resolveConfigValue($settings['end_date'] ?? '');
         $preStartMessage = $this->resolveConfigValue($settings['pre_start_message'] ?? '');
         $postEndMessage = $this->resolveConfigValue($settings['post_end_message'] ?? '');
-        $defaultPreStartMessage = $this->module->l('The game has not started yet.', 'slotmachine');
-        $defaultPostEndMessage = $this->module->l('The game is over.', 'slotmachine');
+        $defaultPreStartMessage = $this->translate('The game has not started yet.');
+        $defaultPostEndMessage = $this->translate('The game is over.');
 
         $now = time();
         $startTimestamp = $this->parseDateTime($startDateValue);
@@ -154,7 +154,7 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         if ($requireLogin && !$customerLogged && !$employeeLogged) {
             $response = [
                 'status' => false,
-                'message' => $this->module->l('You must be logged in to play', 'slotmachine'),
+                'message' => $this->translate('You must be logged in to play'),
                 'playable' => false,
                 'reason' => 'login_required',
             ];
@@ -164,10 +164,7 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
             $this->renderJson($response);
         }
 
-        $refusalMessage = $this->module->l(
-            'You have already played. The game can only be played once per household.',
-            'slotmachine'
-        );
+        $refusalMessage = $this->translate('You have already played. The game can only be played once per household.');
 
         if ($checkOnly) {
             if (($already && $idCustomer) || $ipAlready) {
@@ -183,7 +180,7 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
                     'status' => false,
                     'played' => false,
                     'playable' => false,
-                    'message' => $this->module->l('No symbols available', 'slotmachine'),
+                    'message' => $this->translate('No symbols available'),
                 ]);
             }
             $this->renderJson([
@@ -206,7 +203,7 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         if (!is_array($rawSymbols) || empty($rawSymbols)) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('No symbols available', 'slotmachine'),
+                'message' => $this->translate('No symbols available'),
                 'playable' => false,
             ]);
         }
@@ -216,7 +213,7 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         if (empty($symbols)) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('No symbols available', 'slotmachine'),
+                'message' => $this->translate('No symbols available'),
                 'playable' => false,
             ]);
         }
@@ -407,17 +404,17 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
 
                 if (!empty($displayCategoryNames)) {
                     $displayCategoryNames = array_values(array_unique($displayCategoryNames));
-                    $categoriesMessage = $this->module->l('Valid for categories:', 'slotmachine') . ' '
+                    $categoriesMessage = $this->translate('Valid for categories:') . ' '
                         . implode(', ', $displayCategoryNames);
                 }
             } elseif ($isWinning && !$customerLogged && !$employeeLogged) {
                 $isWinning = false;
-                $resultMessage = $this->module->l('Log in to receive your reward.', 'slotmachine');
+                $resultMessage = $this->translate('Log in to receive your reward.');
             }
         }
 
         if ($segmentMinimumPurchase > 0) {
-            $minimumPurchaseMessage = $this->module->l('Minimum purchase (tax incl.):', 'slotmachine') . ' '
+            $minimumPurchaseMessage = $this->translate('Minimum purchase (tax incl.):') . ' '
                 . Tools::displayPrice($segmentMinimumPurchase, $priceCurrency);
         }
 
@@ -435,14 +432,14 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         ]);
 
         if ($rewardsDepleted) {
-            $finalMessage = $this->module->l('All rewards have already been distributed.', 'slotmachine');
+            $finalMessage = $this->translate('All rewards have already been distributed.');
         } else {
             if ($resultMessage !== '') {
                 $finalMessage = $resultMessage;
             } elseif ($isWinning) {
-                $finalMessage = $this->module->l('You won:', 'slotmachine') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
+                $finalMessage = $this->translate('You won:') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
             } else {
-                $finalMessage = $this->module->l('No win this time:', 'slotmachine') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
+                $finalMessage = $this->translate('No win this time:') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
             }
         }
 
@@ -734,5 +731,10 @@ class EverblockSlotmachineModuleFrontController extends ModuleFrontController
         }
 
         return null;
+    }
+
+    protected function translate(string $message, array $parameters = []): string
+    {
+        return $this->context->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Slotmachine');
     }
 }

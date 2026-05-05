@@ -3,38 +3,116 @@ services:
         autowire: true
         autoconfigure: true
 
+    Everblock\Tools\Controller\Admin\EverblockAdminController:
+        public: true
+        tags:
+            - { name: controller.service_arguments }
+
+    Everblock\Tools\Form\BlockType:
+        tags: [form.type]
+    Everblock\Tools\Form\EverblockConfigurationType:
+        tags: [form.type]
+    Everblock\Tools\Form\ShortcodeType:
+        tags: [form.type]
+    Everblock\Tools\Form\FaqType:
+        tags: [form.type]
+    Everblock\Tools\Form\PageType:
+        tags: [form.type]
+    Everblock\Tools\Form\HookType:
+        tags: [form.type]
+
+    Everblock\Tools\Grid\AdminSectionGridFactory: ~
+
+    Everblock\Tools\Repository\BlockRepository:
+        public: true
+        arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
+    everblock.repository.block:
+        alias: Everblock\Tools\Repository\BlockRepository
+        public: true
+
+    Everblock\Tools\Repository\ShortcodeRepository:
+        public: true
+        arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
+    everblock.repository.shortcode:
+        alias: Everblock\Tools\Repository\ShortcodeRepository
+        public: true
+
+    Everblock\Tools\Repository\FaqRepository:
+        public: true
+        arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
+    everblock.repository.faq:
+        alias: Everblock\Tools\Repository\FaqRepository
+        public: true
+
+    Everblock\Tools\Repository\PageRepository:
+        public: true
+        arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
+    everblock.repository.page:
+        alias: Everblock\Tools\Repository\PageRepository
+        public: true
+
+    Everblock\Tools\Repository\ProductContentRepository:
+        public: true
+        arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
+    everblock.repository.product_content:
+        alias: Everblock\Tools\Repository\ProductContentRepository
+        public: true
+
+    Everblock\Tools\Repository\HookRepository:
+        public: true
+        arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
+    everblock.repository.hook:
+        alias: Everblock\Tools\Repository\HookRepository
+        public: true
+
+    Everblock\Tools\Handler\ListAdminItemsHandler:
+        tags:
+            - { name: tactician.handler, command: Everblock\Tools\Query\ListAdminItemsQuery }
+    Everblock\Tools\Handler\GetAdminItemHandler:
+        tags:
+            - { name: tactician.handler, command: Everblock\Tools\Query\GetAdminItemQuery }
+    Everblock\Tools\Handler\SaveAdminItemHandler:
+        tags:
+            - { name: tactician.handler, command: Everblock\Tools\Command\SaveAdminItemCommand }
+    Everblock\Tools\Handler\DeleteAdminItemHandler:
+        tags:
+            - { name: tactician.handler, command: Everblock\Tools\Command\DeleteAdminItemCommand }
+    Everblock\Tools\Handler\ClearEverblockCacheHandler:
+        tags:
+            - { name: tactician.handler, command: Everblock\Tools\Command\ClearEverblockCacheCommand }
+
     everblock.tools.import:
         class: Everblock\Tools\Command\ImportFileCommand
         public: true
         tags:
-            - { name: 'console.command' }
+            - { name: console.command }
 
     everblock.tools.import_tab:
         class: Everblock\Tools\Command\ImportTabCommand
         public: true
         tags:
-            - { name: 'console.command' }
+            - { name: console.command }
 
     everblock.tools.export:
         class: Everblock\Tools\Command\ExportFileCommand
         public: true
         tags:
-            - { name: 'console.command' }
+            - { name: console.command }
 
     everblock.tools.execute_action:
         class: Everblock\Tools\Command\ExecuteAction
         public: true
         tags:
-            - { name: 'console.command' }
+            - { name: console.command }
 
     everblock.tools.search_replace:
         class: Everblock\Tools\Command\SearchReplaceCommand
         public: true
         tags:
-            - { name: 'console.command' }
+            - { name: console.command }
 
     everblock.tools.clean_games:
         class: Everblock\Tools\Command\CleanGameDataCommand
         public: true
         tags:
-            - { name: 'console.command' }
+            - { name: console.command }

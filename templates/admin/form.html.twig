@@ -1,0 +1,160 @@
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+{% form_theme form '@PrestaShop/Admin/TwigTemplateForm/prestashop_ui_kit.html.twig' %}
+
+{% block content %}
+  {% include '@Modules/everblock/templates/admin/_nav.html.twig' with {section: section, sections: sections, config: config} %}
+
+  <div class="everblock-bo-form everblock-bo-form--{{ section }}">
+    <div class="everblock-bo-header">
+      <div>
+        <p class="everblock-bo-kicker">{{ config.title }}</p>
+        <h2 class="everblock-bo-title">{{ id ? 'Edit'|trans({}, 'Admin.Actions') : 'Add new'|trans({}, 'Admin.Actions') }}</h2>
+      </div>
+      <a class="btn btn-outline-secondary" href="{{ path(config.route) }}">
+        <i class="material-icons">arrow_back</i>
+        {{ 'Back to list'|trans({}, 'Admin.Actions') }}
+      </a>
+    </div>
+
+    {{ form_start(form, {attr: {class: 'everblock-bo-symfony-form'}}) }}
+      {% if section == 'blocks' %}
+        {% set tab_icons = {
+          general: 'tune',
+          targeting: 'filter_alt',
+          display: 'palette',
+          modal: 'web_asset',
+          schedule: 'event'
+        } %}
+
+        <div class="everblock-bo-workbench">
+          <aside class="everblock-bo-tabs" aria-label="{{ 'Block sections'|trans({}, 'Modules.Everblock.Admin') }}">
+            <ul class="nav nav-tabs" role="tablist">
+              {% for tab_key, tab_title in form_tabs %}
+                <li class="nav-item">
+                  <a
+                    class="nav-link{% if loop.first %} active{% endif %}"
+                    id="everblock-block-tab-link-{{ tab_key }}"
+                    data-toggle="tab"
+                    href="#everblock-block-tab-{{ tab_key }}"
+                    role="tab"
+                    aria-controls="everblock-block-tab-{{ tab_key }}"
+                    aria-selected="{{ loop.first ? 'true' : 'false' }}"
+                  >
+                    <i class="material-icons">{{ tab_icons[tab_key]|default('settings') }}</i>
+                    <span>{{ tab_title|trans({}, 'Modules.Everblock.Admin') }}</span>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </aside>
+
+          <main class="everblock-bo-surface">
+            <div class="tab-content">
+              {% for tab_key, tab_title in form_tabs %}
+                <section
+                  class="tab-pane fade{% if loop.first %} show active{% endif %}"
+                  id="everblock-block-tab-{{ tab_key }}"
+                  role="tabpanel"
+                  aria-labelledby="everblock-block-tab-link-{{ tab_key }}"
+                >
+                  <div class="everblock-bo-section-heading">
+                    <div class="everblock-bo-section-icon">
+                      <i class="material-icons">{{ tab_icons[tab_key]|default('settings') }}</i>
+                    </div>
+                    <div>
+                      <h3>{{ tab_title|trans({}, 'Modules.Everblock.Admin') }}</h3>
+                      {% if tab_help[tab_key] is defined %}
+                        <p>{{ tab_help[tab_key]|trans({}, 'Modules.Everblock.Admin') }}</p>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="everblock-bo-field-grid everblock-bo-field-grid--{{ tab_key }}">
+                    {% for field_name in field_tabs[tab_key]|default([]) %}
+                      {% if form[field_name] is defined %}
+                        {% set is_wide = field_name starts with 'content_' or field_name starts with 'custom_code_' or field_name in ['categories', 'manufacturers', 'suppliers', 'cms_categories', 'groups', 'data_attribute'] %}
+                        {% set is_boolean = field_name in ['active', 'only_home', 'only_category', 'only_category_product', 'only_manufacturer', 'only_supplier', 'only_cms_category', 'obfuscate_link', 'add_container', 'lazyload', 'modal'] %}
+                        {% set field_label = form[field_name].vars.label|default(field_name|replace({'_': ' '})) %}
+                        {% set field_description = field_descriptions[field_name]|default(form[field_name].vars.help|default('')) %}
+                        {% set description_id = form[field_name].vars.id ~ '_description' %}
+                        <div class="everblock-bo-field everblock-bo-field--{{ field_name|replace({'_': '-'}) }}{% if is_wide %} everblock-bo-field--wide{% endif %}{% if is_boolean %} everblock-bo-field--boolean{% endif %}">
+                          <div class="everblock-bo-field-card">
+                            <div class="everblock-bo-field-meta">
+                              <div class="everblock-bo-label-line">
+                                <label class="everblock-bo-label" for="{{ form[field_name].vars.id }}">
+                                  {{ field_label|trans({}, 'Modules.Everblock.Admin') }}
+                                </label>
+                                {% if field_description %}
+                                  <span
+                                    class="everblock-bo-tooltip"
+                                    tabindex="0"
+                                    data-tooltip="{{ field_description|trans({}, 'Modules.Everblock.Admin') }}"
+                                    title="{{ field_description|trans({}, 'Modules.Everblock.Admin') }}"
+                                    aria-label="{{ field_description|trans({}, 'Modules.Everblock.Admin') }}"
+                                  >
+                                    <i class="material-icons">help_outline</i>
+                                  </span>
+                                {% endif %}
+                              </div>
+                              {% if field_description %}
+                                <p class="everblock-bo-description" id="{{ description_id }}">{{ field_description|trans({}, 'Modules.Everblock.Admin') }}</p>
+                              {% endif %}
+                            </div>
+                            <div class="everblock-bo-control">
+                              {% if field_description %}
+                                {{ form_widget(form[field_name], {attr: {'aria-describedby': description_id}}) }}
+                              {% else %}
+                                {{ form_widget(form[field_name]) }}
+                              {% endif %}
+                              {{ form_errors(form[field_name]) }}
+                            </div>
+                          </div>
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </section>
+              {% endfor %}
+            </div>
+
+            {{ form_rest(form) }}
+          </main>
+        </div>
+      {% else %}
+        <div class="card">
+          <div class="card-body">
+            {{ form_widget(form) }}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="everblock-bo-actionbar">
+        <div class="everblock-bo-actionbar__meta">
+          {% if section == 'blocks' %}
+            {% if tinymce_enabled %}
+              <span class="everblock-bo-status everblock-bo-status--ok">
+                <i class="material-icons">edit</i>
+                {{ 'Extended TinyMCE'|trans({}, 'Modules.Everblock.Admin') }}
+              </span>
+            {% else %}
+              <span class="everblock-bo-status">
+                <i class="material-icons">edit_off</i>
+                {{ 'Standard textareas'|trans({}, 'Modules.Everblock.Admin') }}
+              </span>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="everblock-bo-actionbar__buttons">
+          <button class="btn btn-outline-secondary" type="submit" name="save_and_stay" value="1">
+            <i class="material-icons">save_as</i>
+            {{ 'Save and stay'|trans({}, 'Admin.Actions') }}
+          </button>
+          <button class="btn btn-primary" type="submit">
+            <i class="material-icons">save</i>
+            {{ 'Save'|trans({}, 'Admin.Actions') }}
+          </button>
+        </div>
+      </div>
+    {{ form_end(form, {render_rest: section != 'blocks'}) }}
+  </div>
+{% endblock %}

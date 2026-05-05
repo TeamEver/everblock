@@ -1,0 +1,30 @@
+{% set nav_icons = {
+  blocks: 'dashboard_customize',
+  hooks: 'anchor',
+  shortcodes: 'code',
+  faqs: 'quiz',
+  pages: 'article'
+} %}
+
+<nav class="everblock-bo-nav" aria-label="{{ 'Ever Block back office'|trans({}, 'Modules.Everblock.Admin') }}">
+  <div class="everblock-bo-nav__links">
+    <a class="everblock-bo-nav__link {{ section|default('') == '' ? 'is-active' : '' }}" href="{{ path('admin_everblock_configuration') }}">
+      <i class="material-icons">settings</i>
+      <span>Configuration</span>
+    </a>
+    {% for key, item in sections %}
+      <a class="everblock-bo-nav__link {{ key == section|default('') ? 'is-active' : '' }}" href="{{ path(item.route) }}">
+        <i class="material-icons">{{ nav_icons[key]|default('view_list') }}</i>
+        <span>{{ item.title }}</span>
+      </a>
+    {% endfor %}
+    <a class="everblock-bo-nav__link {{ section|default('') == 'shortcode_documentation' ? 'is-active' : '' }}" href="{{ path('admin_everblock_shortcodes_documentation') }}">
+      <i class="material-icons">menu_book</i>
+      <span>{{ 'Shortcode documentation'|trans({}, 'Modules.Everblock.Admin') }}</span>
+    </a>
+  </div>
+  <a class="everblock-bo-nav__cache" href="{{ path('admin_everblock_clear_cache', {redirect_route: config.route|default('admin_everblock_configuration')}) }}">
+    <i class="material-icons">delete_sweep</i>
+    <span>{{ 'Clear cache'|trans({}, 'Modules.Everblock.Admin') }}</span>
+  </a>
+</nav>

@@ -32,13 +32,13 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
         if (!$token || $token !== Tools::getToken(false)) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('Invalid token', 'scratch'),
+                'message' => $this->translate('Invalid token'),
             ]));
         }
         if (!$this->context->customer->isLogged()) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('You must be logged in to play', 'scratch'),
+                'message' => $this->translate('You must be logged in to play'),
             ]));
         }
         $idCustomer = (int) $this->context->customer->id;
@@ -46,7 +46,7 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
         if (!$idBlock) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('Invalid configuration', 'scratch'),
+                'message' => $this->translate('Invalid configuration'),
             ]));
         }
         $ipAddress = Tools::getRemoteAddr();
@@ -66,10 +66,7 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
                 . $idBlock . " AND ip_address = '" . pSQL($ipAddress) . "'"
             );
         }
-        $refusalMessage = $this->module->l(
-            'You have already played. The game can only be played once per household.',
-            'scratch'
-        );
+        $refusalMessage = $this->translate('You have already played. The game can only be played once per household.');
         $checkOnly = (bool) Tools::getValue('check');
         $idShop = (int) $this->context->shop->id;
         $idLang = (int) $this->context->language->id;
@@ -77,7 +74,7 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
         if (!$row) {
             $response = [
                 'status' => false,
-                'message' => $this->module->l('Configuration not found', 'scratch'),
+                'message' => $this->translate('Configuration not found'),
             ];
             if ($checkOnly) {
                 $response['played'] = false;
@@ -95,8 +92,8 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
         $endDateValue = $this->resolveConfigValue($settings['end_date'] ?? '');
         $preStartMessage = $this->resolveConfigValue($settings['pre_start_message'] ?? '');
         $postEndMessage = $this->resolveConfigValue($settings['post_end_message'] ?? '');
-        $defaultPreStartMessage = $this->module->l('The game has not started yet.', 'scratch');
-        $defaultPostEndMessage = $this->module->l('The game is over.', 'scratch');
+        $defaultPreStartMessage = $this->translate('The game has not started yet.');
+        $defaultPostEndMessage = $this->translate('The game is over.');
         $employeeLogged = $this->isAdmin();
         if ($employeeLogged) {
             $already = false;
@@ -158,7 +155,7 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
                     'status' => false,
                     'played' => false,
                     'playable' => false,
-                    'message' => $this->module->l('No segments available', 'scratch'),
+                    'message' => $this->translate('No segments available'),
                 ]));
             }
             die(json_encode([
@@ -214,7 +211,7 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
         if (!is_array($rawSegments) || empty($rawSegments)) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('No segments available', 'scratch'),
+                'message' => $this->translate('No segments available'),
                 'playable' => false,
             ]));
         }
@@ -222,7 +219,7 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
         if (empty($segments)) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('No segments available', 'scratch'),
+                'message' => $this->translate('No segments available'),
                 'playable' => false,
             ]));
         }
@@ -300,7 +297,7 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
         if ($total <= 0) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('Invalid probabilities', 'scratch'),
+                'message' => $this->translate('Invalid probabilities'),
             ]));
         }
         $rand = (float) mt_rand() / (float) mt_getrandmax() * $total;
@@ -525,20 +522,20 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
             'date_add' => date('Y-m-d H:i:s'),
         ]);
         if ($rewardsDepleted) {
-            $message = $this->module->l('All rewards have already been distributed.', 'scratch');
+            $message = $this->translate('All rewards have already been distributed.');
         } else {
             $message = $isWinning
-                ? $this->module->l('You won:', 'scratch') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - ' . $this->module->l('Your code:', 'scratch') . ' ' . $code
-                : $this->module->l('You lost:', 'scratch') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
+                ? $this->translate('You won:') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - ' . $this->translate('Your code:') . ' ' . $code
+                : $this->translate('You lost:') . ' ' . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
         }
         $categoriesMessage = '';
         if (!empty($displayCategoryNames)) {
             $uniqueCategoryNames = array_values(array_unique($displayCategoryNames));
-            $categoriesMessage = $this->module->l('Valid for categories:', 'scratch') . ' ' . implode(', ', $uniqueCategoryNames);
+            $categoriesMessage = $this->translate('Valid for categories:') . ' ' . implode(', ', $uniqueCategoryNames);
         }
         $minimumPurchaseMessage = '';
         if ($segmentMinimumPurchase > 0) {
-            $minimumPurchaseMessage = $this->module->l('Minimum purchase (tax incl.):', 'scratch') . ' '
+            $minimumPurchaseMessage = $this->translate('Minimum purchase (tax incl.):') . ' '
                 . Tools::displayPrice($segmentMinimumPurchase, $priceCurrency);
         }
         die(json_encode([
@@ -633,5 +630,10 @@ class EverblockScratchModuleFrontController extends ModuleFrontController
         }
 
         return $value;
+    }
+
+    protected function translate(string $message, array $parameters = []): string
+    {
+        return $this->context->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Scratch');
     }
 }

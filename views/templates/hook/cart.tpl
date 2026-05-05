@@ -17,9 +17,9 @@
 *}
 
 <div id="_desktop_cart" class="ever-shopping-cart dropdown blockcart">
-  <a rel="nofollow" aria-label="{l s='Shopping cart link containing %nbProducts% product(s)' sprintf=['%nbProducts%' => $cart.products_count] mod='everblock'}" href="{$urls.pages.cart}" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown">
+  <a rel="nofollow" aria-label="{l s='Shopping cart link containing %nbProducts% product(s)' sprintf=['%nbProducts%' => $cart.products_count] d='Modules.Everblock.Front'}" href="{$urls.pages.cart}" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown">
     <i class="material-icons shopping-cart" aria-hidden="true">shopping_cart</i>
-    <span class="hidden-sm-down">{l s='Cart' mod='everblock'}</span>
+    <span class="hidden-sm-down">{l s='Cart' d='Modules.Everblock.Front'}</span>
     <span class="cart-products-count">({$cart.products_count})</span>
   </a>
   <div class="dropdown-menu cart-dropdown-content">
@@ -42,14 +42,14 @@
     {/foreach}
     {if $cart.products_count > 0}
     <div class="cart-total">
-      <span class="total-label">{l s='Total' mod='everblock'}</span>
+      <span class="total-label">{l s='Total' d='Modules.Everblock.Front'}</span>
       <span class="total-value">{$cart.totals.total.value}</span>
     </div>
-    <a href="{$urls.pages.cart}" class="btn btn-primary btn-block text-white">{l s='View Cart' mod='everblock'}</a>
-    <a href="{$urls.pages.order}" class="btn btn-primary btn-block text-white">{l s='Checkout' mod='everblock'}</a>
+    <a href="{$urls.pages.cart}" class="btn btn-primary btn-block text-white">{l s='View Cart' d='Modules.Everblock.Front'}</a>
+    <a href="{$urls.pages.order}" class="btn btn-primary btn-block text-white">{l s='Checkout' d='Modules.Everblock.Front'}</a>
     {else}
     <div class="cart-total">
-      <span class="empty-cart">{l s='You cart is empty' mod='everblock'}</span>
+      <span class="empty-cart">{l s='You cart is empty' d='Modules.Everblock.Front'}</span>
     </div>
     {/if}
   </div>

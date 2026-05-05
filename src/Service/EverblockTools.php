@@ -37,6 +37,7 @@ use Everblock;
 use EverblockClass;
 use EverblockFaq;
 use EverblockShortcode;
+use Exception;
 use Gender;
 use Hook;
 use Image;
@@ -47,7 +48,6 @@ use Link;
 use Media;
 use Module;
 use NewsletterProSubscription;
-use ObjectModel;
 use Manufacturer;
 use PrestaShop\Module\PrestashopCheckout\Order\PaymentStepCheckoutOrderBuilder;
 use PrestaShop\PrestaShop\Adapter\Configuration as ConfigurationAdapter;
@@ -73,7 +73,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class EverblockTools extends ObjectModel
+class EverblockTools
 {
     /**
      * Fast pre-check used to avoid running the shortcode engine on pages that
@@ -172,6 +172,7 @@ class EverblockTools extends ObjectModel
             '[crosselling' => ['method' => 'getCrossSellingShortcode', 'args' => ['context', 'module']],
             '[widget' => 'getWidgetShortcode',
             '[everaddtocart' => ['method' => 'getAddToCartShortcode', 'args' => ['context', 'module']],
+            '[evercms' => ['method' => 'getCmsShortcode', 'args' => ['context']],
             '[cms' => ['method' => 'getCmsShortcode', 'args' => ['context']],
         ];
 
@@ -5968,41 +5969,44 @@ class EverblockTools extends ObjectModel
         if ((bool) Configuration::get('EVERBLOCK_DISABLE_WEBP') === true) {
             return $htmlContent;
         }
-        // Regular expression to find img tags and their src attributes
-        $pattern = '/<img\s+([^>]*src="([^"]+)"[^>]*)>/i';
+
+        if (!is_string($htmlContent) || stripos($htmlContent, '<img') === false) {
+            return $htmlContent;
+        }
+
+        $pattern = '/<img\b[^>]*>/i';
         $shopName = Configuration::get('PS_SHOP_NAME');
 
         $htmlContent = preg_replace_callback($pattern, function ($matches) use ($shopName) {
             $imgTag = $matches[0];
-            $imgAttributes = $matches[1];
-            $src = $matches[2];
+            if (!preg_match('/\bsrc\s*=\s*([\'\"])(.*?)\1/i', $imgTag, $srcMatch)) {
+                return $imgTag;
+            }
 
-            // Convert the image to WebP
+            $src = html_entity_decode($srcMatch[2], ENT_QUOTES, 'UTF-8');
+            if ($src === '' || strpos($src, 'data:') === 0 || preg_match('/\.svg(?:\?|$)/i', $src)) {
+                return $imgTag;
+            }
+
             $webpSrc = self::convertToWebP($src);
-            
-            if ($webpSrc) {
-                // Replace the src with the new WebP src
-                $imgTag = str_replace($src, $webpSrc, $imgTag);
+            if (!$webpSrc) {
+                return $imgTag;
+            }
 
-                // Get the image dimensions, only if the image exists
-                $imagePath = self::urlToFilePath($webpSrc);
-                if (file_exists($imagePath)) {
-                    list($width, $height) = getimagesize($imagePath);
+            $escapedSrc = htmlspecialchars($webpSrc, ENT_QUOTES, 'UTF-8');
+            $imgTag = preg_replace('/\bsrc\s*=\s*([\'\"]).*?\1/i', 'src="' . $escapedSrc . '"', $imgTag, 1);
 
-                    // Add width and height attributes if they don't already exist
-                    if (strpos($imgAttributes, 'width=') === false && strpos($imgAttributes, 'height=') === false) {
-                        $imgTag = str_replace('<img ', '<img width="' . $width . '" height="' . $height . '" ', $imgTag);
-                    } else {
-                        $imgTag = preg_replace('/width="\d*"/i', 'width="' . $width . '"', $imgTag);
-                        $imgTag = preg_replace('/height="\d*"/i', 'height="' . $height . '"', $imgTag);
-                    }
+            $imagePath = self::urlToFilePath($webpSrc);
+            if ($imagePath && file_exists($imagePath)) {
+                $dimensions = @getimagesize($imagePath);
+                if (is_array($dimensions)) {
+                    $imgTag = self::upsertHtmlAttribute($imgTag, 'width', (string) (int) $dimensions[0]);
+                    $imgTag = self::upsertHtmlAttribute($imgTag, 'height', (string) (int) $dimensions[1]);
                 }
+            }
 
-                // Add alt attribute if it doesn't exist
-                if (strpos($imgAttributes, 'alt=') === false) {
-                    // Ajoute l'attribut alt juste après <img
-                    $imgTag = preg_replace('/<img\s+/i', '<img alt="' . htmlspecialchars($shopName, ENT_QUOTES) . '" ', $imgTag);
-                }
+            if (!preg_match('/\balt\s*=/i', $imgTag)) {
+                $imgTag = self::upsertHtmlAttribute($imgTag, 'alt', (string) $shopName);
             }
 
             return $imgTag;
@@ -6011,6 +6015,16 @@ class EverblockTools extends ObjectModel
         return $htmlContent;
     }
 
+    private static function upsertHtmlAttribute(string $tag, string $attribute, string $value): string
+    {
+        $escapedValue = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        $attributePattern = '/\b' . preg_quote($attribute, '/') . '\s*=\s*([\'\"]).*?\1/i';
+        if (preg_match($attributePattern, $tag)) {
+            return preg_replace($attributePattern, $attribute . '="' . $escapedValue . '"', $tag, 1);
+        }
+
+        return preg_replace('/<img\b/i', '<img ' . $attribute . '="' . $escapedValue . '"', $tag, 1);
+    }
     public static function convertAllPrettyblocksImagesToWebP(): int
     {
         $db = Db::getInstance();
@@ -6305,6 +6319,20 @@ class EverblockTools extends ObjectModel
             $height = (int) $dimensions[1];
         }
 
+        $webpUrl = self::convertToWebP($destination);
+        if ($webpUrl) {
+            $webpPath = self::urlToFilePath($webpUrl);
+            if ($webpPath && is_file($webpPath)) {
+                $destination = $webpPath;
+                $fileName = basename($webpPath);
+                $dimensions = @getimagesize($webpPath);
+                if (is_array($dimensions)) {
+                    $width = (int) $dimensions[0];
+                    $height = (int) $dimensions[1];
+                }
+            }
+        }
+
         $width = $width ?: 600;
         $height = $height ?: 338;
 
@@ -6338,15 +6366,14 @@ class EverblockTools extends ObjectModel
 
     public static function convertToWebP($imagePath)
     {
-        // Si déjà en webp, on ne fait rien
-        if (strtolower(pathinfo($imagePath, PATHINFO_EXTENSION)) === 'webp') {
-            return $imagePath;
-        }
-
         if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
             $imagePath = self::urlToFilePath($imagePath);
-        } else {
+        } elseif (!file_exists((string) $imagePath)) {
             $imagePath = self::relativeToAbsolutePath($imagePath);
+        }
+
+        if (!$imagePath) {
+            return false;
         }
 
         $imagePath = str_replace(Tools::getHttpHost(true) . __PS_BASE_URI__, '', $imagePath);
@@ -6355,7 +6382,11 @@ class EverblockTools extends ObjectModel
         }
 
         $pathInfo = pathinfo($imagePath);
-        $hash = substr(sha1($imagePath . filemtime($imagePath)), 0, 12); // hash court et unique par contenu
+        if (strtolower($pathInfo['extension'] ?? '') === 'webp') {
+            return self::filePathToUrl($imagePath);
+        }
+
+        $hash = substr(sha1($imagePath . filemtime($imagePath)), 0, 12);
         $webpFilename = $hash . '.webp';
         $webpPath = $pathInfo['dirname'] . '/' . $webpFilename;
 
@@ -6363,16 +6394,16 @@ class EverblockTools extends ObjectModel
             return self::filePathToUrl($webpPath);
         }
 
-        switch (strtolower($pathInfo['extension'])) {
+        switch (strtolower($pathInfo['extension'] ?? '')) {
             case 'jpeg':
             case 'jpg':
-                $image = imagecreatefromjpeg($imagePath);
+                $image = @imagecreatefromjpeg($imagePath);
                 break;
             case 'png':
-                $image = imagecreatefrompng($imagePath);
+                $image = @imagecreatefrompng($imagePath);
                 break;
             case 'gif':
-                $image = imagecreatefromgif($imagePath);
+                $image = @imagecreatefromgif($imagePath);
                 break;
             default:
                 return false;
@@ -6383,6 +6414,8 @@ class EverblockTools extends ObjectModel
         }
 
         imagepalettetotruecolor($image);
+        imagealphablending($image, true);
+        imagesavealpha($image, true);
 
         if (imagewebp($image, $webpPath, 80)) {
             imagedestroy($image);
@@ -6392,11 +6425,13 @@ class EverblockTools extends ObjectModel
         imagedestroy($image);
         return false;
     }
-
     public static function urlToFilePath($url)
     {
         // Parse the current domain and the image URL
         $parsedUrl = parse_url($url);
+        if (!$parsedUrl || empty($parsedUrl['path'])) {
+            return false;
+        }
         $currentHost = parse_url(Tools::getHttpHost(true), PHP_URL_HOST);
         if (!$currentHost) {
             $currentHost = Tools::getHttpHost(false);
@@ -6419,13 +6454,23 @@ class EverblockTools extends ObjectModel
             $url = str_replace(' ', '%20', $url);
             // Parse the URL to get the filename
             $parsedUrl = parse_url($url);
-            $fileName = basename($parsedUrl['path']);
+            $extension = strtolower(pathinfo($parsedUrl['path'] ?? '', PATHINFO_EXTENSION));
+            if ($extension === 'jpeg') {
+                $extension = 'jpg';
+            }
+            if (!in_array($extension, ['jpg', 'png', 'gif', 'webp'], true)) {
+                $extension = 'jpg';
+            }
+            $fileName = 'everblock-remote-' . substr(sha1($url), 0, 16) . '.' . $extension;
 
             // Define the local path where the image will be saved
             $localPath = _PS_ROOT_DIR_ . '/img/cms/' . $fileName;
+            if (is_file($localPath)) {
+                return $localPath;
+            }
 
             // Download the image
-            $imageContents = Tools::file_get_contents($url);
+            $imageContents = Tools::file_get_contents(self::encodeUrl($url));
             if ($imageContents === false) {
                 return false; // Return false if the download failed
             }
@@ -6434,7 +6479,7 @@ class EverblockTools extends ObjectModel
             file_put_contents($localPath, $imageContents);
 
             // Return the local path
-            return $localPath;
+            return @getimagesize($localPath) ? $localPath : false;
         } catch (Exception $e) {
             return false;
         }

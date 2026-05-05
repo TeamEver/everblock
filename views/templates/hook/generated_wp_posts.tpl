@@ -40,7 +40,7 @@
                      rel="noopener"
                      title="{$post.title|escape:'htmlall':'UTF-8'}"
                      class="text-muted text-decoration-none">
-                    {$post.excerpt|strip_tags|truncate:100:'…'|escape:'htmlall':'UTF-8'}
+                    {$post.excerpt|strip_tags|truncate:100:'...'|escape:'htmlall':'UTF-8'}
                   </a>
                 </p>
               </div>
@@ -51,8 +51,8 @@
     </div>
 
     <div class="text-center mt-3">
-      <a href="{$everblock_wp_blog_url|escape:'htmlall':'UTF-8'}" title="{l s='Visit our blog' mod='everblock'}" target="_blank" class="btn btn-warning text-white fw-bold text-uppercase px-4 py-2 rounded-pill">
-        {l s='Visit our blog' mod='everblock'}
+      <a href="{$everblock_wp_blog_url|escape:'htmlall':'UTF-8'}" title="{l s='Visit our blog' d='Modules.Everblock.Front'}" target="_blank" class="btn btn-warning text-white fw-bold text-uppercase px-4 py-2 rounded-pill">
+        {l s='Visit our blog' d='Modules.Everblock.Front'}
       </a>
     </div>
   </div>

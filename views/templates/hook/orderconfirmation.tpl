@@ -19,8 +19,8 @@
 <table class="table table-striped table-hover">
 <thead class="thead-dark">
     <tr>
-        <th>{l s='Option' mod='everblock'}</th>
-        <th>{l s='Value' mod='everblock'}</th>
+        <th>{l s='Option' d='Modules.Everblock.Front'}</th>
+        <th>{l s='Value' d='Modules.Everblock.Front'}</th>
     </tr>
 </thead>
 <tbody>

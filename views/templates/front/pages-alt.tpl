@@ -5,5 +5,5 @@
     </div>
   </section>
 {else}
-  <p class="alert alert-info">{l s='No page available yet.' mod='everblock' d='Modules.Everblock.Front'}</p>
+  <p class="alert alert-info">{l s='No page available yet.' d='Modules.Everblock.Front'}</p>
 {/if}

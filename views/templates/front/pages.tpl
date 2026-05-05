@@ -8,10 +8,10 @@
       </div>
 
       {if isset($everblock_pagination.total_pages) && $everblock_pagination.total_pages > 1}
-        <nav class="mt-4" aria-label="{l s='Pagination' mod='everblock' d='Modules.Everblock.Front'}">
+        <nav class="mt-4" aria-label="{l s='Pagination' d='Modules.Everblock.Front'}">
           <ul class="pagination justify-content-center">
             <li class="page-item{if !$everblock_pagination.has_previous} disabled{/if}">
-              <a class="page-link" href="{if $everblock_pagination.has_previous}{$everblock_pagination.previous_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Previous' mod='everblock' d='Modules.Everblock.Front'}">
+              <a class="page-link" href="{if $everblock_pagination.has_previous}{$everblock_pagination.previous_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Previous' d='Modules.Everblock.Front'}">
                 <span aria-hidden="true">&laquo;</span>
               </a>
             </li>
@@ -21,7 +21,7 @@
               </li>
             {/foreach}
             <li class="page-item{if !$everblock_pagination.has_next} disabled{/if}">
-              <a class="page-link" href="{if $everblock_pagination.has_next}{$everblock_pagination.next_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Next' mod='everblock' d='Modules.Everblock.Front'}">
+              <a class="page-link" href="{if $everblock_pagination.has_next}{$everblock_pagination.next_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Next' d='Modules.Everblock.Front'}">
                 <span aria-hidden="true">&raquo;</span>
               </a>
             </li>
@@ -29,7 +29,7 @@
         </nav>
       {/if}
     {else}
-      <p class="alert alert-info">{l s='No page available yet.' mod='everblock' d='Modules.Everblock.Front'}</p>
+      <p class="alert alert-info">{l s='No page available yet.' d='Modules.Everblock.Front'}</p>
     {/if}
   </section>
 

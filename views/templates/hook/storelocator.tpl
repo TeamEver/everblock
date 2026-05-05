@@ -17,21 +17,21 @@
 *}
 <div id="store-search-block" class="mb-3 text-center mx-auto" style="max-width:800px;">
   <div class="d-flex flex-column flex-md-row align-items-center justify-content-center">
-    <label for="store_search" class="me-md-2 mb-2 mb-md-0 fw-bold text-nowrap">{l s='Find a store' mod='everblock'}</label>
+    <label for="store_search" class="me-md-2 mb-2 mb-md-0 fw-bold text-nowrap">{l s='Find a store' d='Modules.Everblock.Front'}</label>
     <div class="d-flex flex-column flex-md-row align-items-stretch w-100">
       <div class="input-group mb-2 mb-md-0 w-100 flex-grow-1">
-        <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' mod='everblock'}" autocomplete="on">
-        <button type="button" class="btn btn-primary rounded-5 ms-3" id="store_search_btn">{l s='Search' mod='everblock'}</button>
+        <input type="text" class="form-control" name="store_search" id="store_search" placeholder="{l s='Search for a store' d='Modules.Everblock.Front'}" autocomplete="on">
+        <button type="button" class="btn btn-primary rounded-5 ms-3" id="store_search_btn">{l s='Search' d='Modules.Everblock.Front'}</button>
       </div>
       {if $everblock_show_map_toggle}
         <button type="button"
                 id="store_toggle_map"
                 class="btn btn-outline-secondary w-100 w-md-auto mt-2 mt-md-0 ms-md-3"
                 data-state="visible"
-                data-label-hide="{l s='Hide map' mod='everblock'}"
-                data-label-show="{l s='Show map' mod='everblock'}"
+                data-label-hide="{l s='Hide map' d='Modules.Everblock.Front'}"
+                data-label-show="{l s='Show map' d='Modules.Everblock.Front'}"
                 aria-expanded="true">
-          {l s='Hide map' mod='everblock'}
+          {l s='Hide map' d='Modules.Everblock.Front'}
         </button>
       {/if}
     </div>
@@ -41,10 +41,10 @@
 <div id="everblock-storelocator-wrapper" class="mb-3">
   <ul class="nav nav-tabs d-md-none" id="storeLocatorTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="tab-map" data-bs-toggle="tab" data-bs-target="#pane-map" type="button" role="tab" aria-controls="pane-map" aria-selected="true">{l s='Map' mod='everblock'}</button>
+      <button class="nav-link active" id="tab-map" data-bs-toggle="tab" data-bs-target="#pane-map" type="button" role="tab" aria-controls="pane-map" aria-selected="true">{l s='Map' d='Modules.Everblock.Front'}</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-list" data-bs-toggle="tab" data-bs-target="#pane-list" type="button" role="tab" aria-controls="pane-list" aria-selected="false">{l s='Stores' mod='everblock'}</button>
+      <button class="nav-link" id="tab-list" data-bs-toggle="tab" data-bs-target="#pane-list" type="button" role="tab" aria-controls="pane-list" aria-selected="false">{l s='Stores' d='Modules.Everblock.Front'}</button>
     </li>
   </ul>
   <div class="tab-content row">
@@ -78,7 +78,7 @@
               </p>
               {if $item.phone}
                 <p class="mb-1 small">
-                  <span>{l s='Tel:' mod='everblock'}</span>
+                  <span>{l s='Tel:' d='Modules.Everblock.Front'}</span>
                   <a href="tel:{$item.phone|replace:' ':''|escape:'htmlall':'UTF-8'}" class="text-dark text-decoration-none">+{$item.phone|escape:'htmlall':'UTF-8'}</a>
                 </p>
               {/if}
@@ -87,26 +87,26 @@
               <p class="mb-1 small d-flex align-items-center">
                 {if $item.is_open}
                   <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: #28a745;"></span>
-                  {l s='Open today until %s' sprintf=[$item.open_until] mod='everblock'}
+                  {l s='Open today until %s' sprintf=[$item.open_until] d='Modules.Everblock.Front'}
                 {elseif $item.opens_at}
                   <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: #ffc107;"></span>
-                  {l s='Open today at %s' sprintf=[$item.opens_at] mod='everblock'}
+                  {l s='Open today at %s' sprintf=[$item.opens_at] d='Modules.Everblock.Front'}
                 {else}
                   <span class="d-inline-block rounded-circle me-2" style="width:8px; height:8px; background-color: #dc3545;"></span>
-                  {l s='Closed' mod='everblock'}
+                  {l s='Closed' d='Modules.Everblock.Front'}
                 {/if}
               </p>
 
               {* Voir les horaires (ouvre une modal Bootstrap) *}
               <p class="mb-0 small">
                 <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#storeHoursModal{$item.id}">
-                  <u>{l s='See hours' mod='everblock'}</u> &gt;
+                  <u>{l s='See hours' d='Modules.Everblock.Front'}</u> &gt;
                 </a>
               </p>
               {if $item.cms_link}
                 <p class="mb-0 small">
                   <a href="{$item.cms_link|escape:'htmlall':'UTF-8'}" class="text-decoration-none">
-                    {l s='Learn more' mod='everblock'}
+                    {l s='Learn more' d='Modules.Everblock.Front'}
                   </a>
                 </p>
               {/if}
@@ -127,9 +127,9 @@
       <div class="modal-content border-0 shadow">
         <div class="modal-header">
           <h5 class="modal-title" id="storeHoursModalLabel{$item.id}">
-            {l s='Hours from %s' sprintf=[$item.name|escape:'htmlall':'UTF-8'] mod='everblock'}
+            {l s='Hours from %s' sprintf=[$item.name|escape:'htmlall':'UTF-8'] d='Modules.Everblock.Front'}
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{l s='Close' mod='everblock'}"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{l s='Close' d='Modules.Everblock.Front'}"></button>
         </div>
         <div class="modal-body">
           <ul class="list-unstyled mb-3">
@@ -145,7 +145,7 @@
             <div class="text-center">
               <a href="https://www.google.com/maps/search/?api=1&query={$item.latitude},{$item.longitude}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary d-inline-flex align-items-center">
                 <i class="material-icons me-2">location_on</i>
-                {l s='Get directions' mod='everblock'}
+                {l s='Get directions' d='Modules.Everblock.Front'}
               </a>
             </div>
           {/if}

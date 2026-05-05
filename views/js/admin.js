@@ -20,7 +20,7 @@ $(document).ready(function() {
   const cssTextarea = document.getElementById('EVERPSCSS');
   const jsTextarea = document.getElementById('EVERPSJS');
 
-  if (cssTextarea) {
+  if (cssTextarea && typeof CodeMirror !== 'undefined') {
     CodeMirror.fromTextArea(cssTextarea, {
       mode: 'text/css',
       theme: 'dracula',
@@ -28,7 +28,7 @@ $(document).ready(function() {
     });
   }
 
-  if (jsTextarea) {
+  if (jsTextarea && typeof CodeMirror !== 'undefined') {
     CodeMirror.fromTextArea(jsTextarea, {
       mode: 'text/javascript',
       theme: 'dracula',
@@ -106,6 +106,17 @@ $(document).ready(function() {
       $pulse.remove();
     }, 600);
   });
+
+  $('.everblock-enhanced-multiselect, .everblock-bo-symfony-form select[multiple], .everblock-configuration-form select[multiple]').each(function () {
+    enhanceEverblockMultiselect(this);
+  });
+
+  $('.everblock-enhanced-select, .everblock-bo-symfony-form select:not([multiple]), .everblock-configuration-form select:not([multiple])').each(function () {
+    enhanceEverblockSelect(this);
+  });
+
+  initEverblockDateTimeFields();
+
   $(document).on('click', '[data-everblock-preview-open]', function (e) {
     e.preventDefault();
 
@@ -130,4 +141,467 @@ $(document).ready(function() {
       $iframe.attr('src', previewUrl);
     }, 400);
   });
+
+  $(document).on('click', '[data-everblock-copy]', function () {
+    const button = this;
+    const text = button.getAttribute('data-everblock-copy') || '';
+    const originalHtml = button.innerHTML;
+    const copiedLabel = button.getAttribute('data-everblock-copied-label') || 'Copied';
+
+    function markCopied() {
+      if (button.classList.contains('everblock-icon-btn')) {
+        button.innerHTML = '<i class="material-icons">check</i><span class="sr-only">' + copiedLabel + '</span>';
+      } else {
+        button.innerHTML = '<i class="material-icons">check</i> ' + copiedLabel;
+      }
+      setTimeout(function () {
+        button.innerHTML = originalHtml;
+      }, 1400);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(markCopied, function () {});
+      return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', 'readonly');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      markCopied();
+    } catch (error) {
+    }
+    document.body.removeChild(textarea);
+  });
+
+  const $shortcodeDocSearch = $('[data-everblock-doc-search]');
+  if ($shortcodeDocSearch.length) {
+    const $emptyState = $('[data-everblock-doc-empty]');
+
+    function filterShortcodeDocumentation() {
+      const query = $.trim($shortcodeDocSearch.val()).toLowerCase();
+      let visibleTotal = 0;
+
+      $('[data-everblock-doc-group]').each(function () {
+        const $group = $(this);
+        let groupVisible = 0;
+
+        $group.find('[data-everblock-doc-entry]').each(function () {
+          const $entry = $(this);
+          const matches = !query || $entry.text().toLowerCase().indexOf(query) !== -1;
+
+          $entry.toggle(matches);
+          if (matches) {
+            groupVisible += 1;
+            visibleTotal += 1;
+          }
+        });
+
+        $group.toggle(groupVisible > 0);
+        $group.find('[data-everblock-doc-visible-count]').text(groupVisible);
+      });
+
+      $emptyState.toggleClass('d-none', visibleTotal > 0);
+    }
+
+    $shortcodeDocSearch.on('input', filterShortcodeDocumentation);
+    $('[data-everblock-doc-clear]').on('click', function () {
+      $shortcodeDocSearch.val('').trigger('input').trigger('focus');
+    });
+  }
+
+  $(document).on('click', function (event) {
+    if (!$(event.target).closest('.everblock-multiselect').length) {
+      $('.everblock-multiselect.is-open')
+        .removeClass('is-open')
+        .find('.everblock-multiselect__control')
+        .attr('aria-expanded', 'false');
+    }
+  });
+
+  $(document).on('change', '[data-everblock-check-all]', function () {
+    const checked = this.checked;
+    $('[data-everblock-row-check]').prop('checked', checked);
+  });
+
+  $(document).on('change', '[data-everblock-row-check]', function () {
+    const $rows = $('[data-everblock-row-check]');
+    const $checkedRows = $rows.filter(':checked');
+    $('[data-everblock-check-all]')
+      .prop('checked', $rows.length > 0 && $checkedRows.length === $rows.length)
+      .prop('indeterminate', $checkedRows.length > 0 && $checkedRows.length < $rows.length);
+  });
 });
+
+function enhanceEverblockMultiselect(select) {
+  const $select = $(select);
+
+  if ($select.data('everblockEnhanced')) {
+    return;
+  }
+
+  $select.data('everblockEnhanced', true);
+  $select.addClass('everblock-native-multiselect');
+
+  const placeholder = $select.data('everblock-placeholder') || 'Rechercher';
+  const id = $select.attr('id') || ('everblock-multiselect-' + Math.random().toString(36).slice(2));
+  const $wrapper = $('<div>', {
+    class: 'everblock-multiselect',
+    'data-target': id
+  });
+  const $control = $('<button>', {
+    type: 'button',
+    class: 'everblock-multiselect__control',
+    'aria-expanded': 'false'
+  });
+  const $summary = $('<span>', { class: 'everblock-multiselect__summary' });
+  const $chevron = $('<i>', { class: 'material-icons everblock-multiselect__chevron', text: 'expand_more' });
+  const $panel = $('<div>', { class: 'everblock-multiselect__panel' });
+  const $search = $('<input>', {
+    type: 'search',
+    class: 'everblock-multiselect__search',
+    placeholder: placeholder
+  });
+  const $toolbar = $('<div>', { class: 'everblock-multiselect__toolbar' });
+  const $selectVisible = $('<button>', { type: 'button', text: 'Tout sélectionner' });
+  const $clear = $('<button>', { type: 'button', text: 'Effacer' });
+  const $options = $('<div>', { class: 'everblock-multiselect__options' });
+  const $chips = $('<div>', { class: 'everblock-multiselect__chips' });
+
+  $control.append($summary, $chevron);
+  $toolbar.append($selectVisible, $clear);
+  $panel.append($search, $toolbar, $options);
+  $wrapper.append($control, $panel, $chips);
+  $select.after($wrapper);
+
+  function optionLabel(option) {
+    return $.trim($(option).text());
+  }
+
+  function optionValue(option) {
+    return $(option).attr('value');
+  }
+
+  function renderOptions() {
+    $options.empty();
+
+    if (!select.options.length) {
+      $options.append($('<div>', { class: 'everblock-multiselect__empty', text: 'Aucune option disponible' }));
+      return;
+    }
+
+    Array.prototype.forEach.call(select.options, function (option) {
+      const value = optionValue(option);
+      const label = optionLabel(option);
+      const checkboxId = id + '-' + value;
+      const $checkbox = $('<input>', {
+        type: 'checkbox',
+        id: checkboxId,
+        checked: option.selected,
+        'data-value': value
+      });
+      const $label = $('<label>', {
+        class: 'everblock-multiselect__option',
+        for: checkboxId,
+        role: 'option',
+        'data-search': label.toLowerCase()
+      });
+
+      $label.append($checkbox, $('<span>', { text: label }));
+      $options.append($label);
+    });
+  }
+
+  function selectedOptions() {
+    return Array.prototype.filter.call(select.options, function (option) {
+      return option.selected;
+    });
+  }
+
+  function sync() {
+    const selected = selectedOptions();
+    const count = selected.length;
+
+    $summary
+      .toggleClass('has-selection', count > 0)
+      .text(count > 0 ? count + ' sélectionné' + (count > 1 ? 's' : '') : 'Aucune restriction');
+
+    $chips.empty();
+    selected.slice(0, 12).forEach(function (option) {
+      const value = optionValue(option);
+      const $chip = $('<span>', { class: 'everblock-multiselect__chip' });
+      const $remove = $('<button>', {
+        type: 'button',
+        'aria-label': 'Retirer',
+        html: '&times;'
+      });
+
+      $remove.on('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        setSelected(value, false);
+      });
+
+      $chip.append($('<span>', { text: optionLabel(option) }), $remove);
+      $chips.append($chip);
+    });
+
+    if (selected.length > 12) {
+      $chips.append($('<span>', {
+        class: 'everblock-multiselect__chip',
+        text: '+' + (selected.length - 12)
+      }));
+    }
+
+    $options.find('input[type="checkbox"]').each(function () {
+      const option = Array.prototype.find.call(select.options, function (item) {
+        return optionValue(item) === $(this).data('value').toString();
+      }, this);
+      this.checked = option ? option.selected : false;
+    });
+  }
+
+  function setSelected(value, selected) {
+    Array.prototype.forEach.call(select.options, function (option) {
+      if (optionValue(option) === value.toString()) {
+        option.selected = selected;
+      }
+    });
+    $select.trigger('change');
+    sync();
+  }
+
+  function filterOptions(query) {
+    const normalized = query.toLowerCase();
+    let visibleCount = 0;
+
+    $options.find('.everblock-multiselect__option').each(function () {
+      const matches = $(this).data('search').indexOf(normalized) !== -1;
+      $(this).toggle(matches);
+      if (matches) {
+        visibleCount += 1;
+      }
+    });
+
+    $options.find('.everblock-multiselect__empty').remove();
+    if (visibleCount === 0) {
+      $options.append($('<div>', { class: 'everblock-multiselect__empty', text: 'Aucun résultat' }));
+    }
+  }
+
+  $control.on('click', function () {
+    $('.everblock-multiselect.is-open').not($wrapper).removeClass('is-open').find('.everblock-multiselect__control').attr('aria-expanded', 'false');
+    $wrapper.toggleClass('is-open');
+    $control.attr('aria-expanded', $wrapper.hasClass('is-open') ? 'true' : 'false');
+    if ($wrapper.hasClass('is-open')) {
+      setTimeout(function () {
+        $search.trigger('focus');
+      }, 0);
+    }
+  });
+
+  $search.on('input', function () {
+    filterOptions(this.value);
+  });
+
+  $options.on('change', 'input[type="checkbox"]', function () {
+    setSelected($(this).data('value'), this.checked);
+  });
+
+  $selectVisible.on('click', function () {
+    $options.find('.everblock-multiselect__option:visible input[type="checkbox"]').each(function () {
+      setSelected($(this).data('value'), true);
+    });
+  });
+
+  $clear.on('click', function () {
+    Array.prototype.forEach.call(select.options, function (option) {
+      option.selected = false;
+    });
+    $select.trigger('change');
+    sync();
+  });
+
+  renderOptions();
+  sync();
+}
+
+function enhanceEverblockSelect(select) {
+  const $select = $(select);
+
+  if ($select.data('everblockEnhanced')) {
+    return;
+  }
+
+  $select.data('everblockEnhanced', true);
+  $select.addClass('everblock-native-select');
+
+  const placeholder = $select.data('everblock-placeholder') || 'Rechercher';
+  const id = $select.attr('id') || ('everblock-select-' + Math.random().toString(36).slice(2));
+  const $wrapper = $('<div>', {
+    class: 'everblock-multiselect everblock-multiselect--single',
+    'data-target': id
+  });
+  const $control = $('<button>', {
+    type: 'button',
+    class: 'everblock-multiselect__control',
+    'aria-expanded': 'false'
+  });
+  const $summary = $('<span>', { class: 'everblock-multiselect__summary' });
+  const $chevron = $('<i>', { class: 'material-icons everblock-multiselect__chevron', text: 'expand_more' });
+  const $panel = $('<div>', { class: 'everblock-multiselect__panel' });
+  const $search = $('<input>', {
+    type: 'search',
+    class: 'everblock-multiselect__search',
+    placeholder: placeholder
+  });
+  const $options = $('<div>', { class: 'everblock-multiselect__options', role: 'listbox' });
+
+  $control.append($summary, $chevron);
+  $panel.append($search, $options);
+  $wrapper.append($control, $panel);
+  $select.after($wrapper);
+
+  function optionLabel(option) {
+    return $.trim($(option).text());
+  }
+
+  function optionValue(option) {
+    return $(option).attr('value');
+  }
+
+  function selectedOption() {
+    return select.options[select.selectedIndex] || null;
+  }
+
+  function sync() {
+    const selected = selectedOption();
+    const selectedLabel = selected ? optionLabel(selected) : '';
+
+    $summary
+      .toggleClass('has-selection', selectedLabel !== '')
+      .text(selectedLabel || 'Sélectionner');
+
+    $options.find('.everblock-multiselect__option').each(function () {
+      $(this).toggleClass('is-selected', String($(this).data('value')) === String($select.val()));
+    });
+  }
+
+  function renderOptions() {
+    $options.empty();
+
+    if (!select.options.length) {
+      $options.append($('<div>', { class: 'everblock-multiselect__empty', text: 'Aucune option disponible' }));
+      return;
+    }
+
+    Array.prototype.forEach.call(select.options, function (option) {
+      const value = optionValue(option);
+      const label = optionLabel(option);
+      const $option = $('<button>', {
+        type: 'button',
+        class: 'everblock-multiselect__option everblock-multiselect__option--button',
+        'data-value': value,
+        'data-search': label.toLowerCase(),
+        role: 'option',
+        text: label
+      });
+
+      $option.on('click', function () {
+        $select.val(value).trigger('change');
+        $wrapper.removeClass('is-open');
+        $control.attr('aria-expanded', 'false');
+        sync();
+      });
+
+      $options.append($option);
+    });
+  }
+
+  function filterOptions(query) {
+    const normalized = query.toLowerCase();
+    let visibleCount = 0;
+
+    $options.find('.everblock-multiselect__option').each(function () {
+      const matches = $(this).data('search').indexOf(normalized) !== -1;
+      $(this).toggle(matches);
+      if (matches) {
+        visibleCount += 1;
+      }
+    });
+
+    $options.find('.everblock-multiselect__empty').remove();
+    if (visibleCount === 0) {
+      $options.append($('<div>', { class: 'everblock-multiselect__empty', text: 'Aucun résultat' }));
+    }
+  }
+
+  $control.on('click', function () {
+    $('.everblock-multiselect.is-open').not($wrapper).removeClass('is-open').find('.everblock-multiselect__control').attr('aria-expanded', 'false');
+    $wrapper.toggleClass('is-open');
+    $control.attr('aria-expanded', $wrapper.hasClass('is-open') ? 'true' : 'false');
+    if ($wrapper.hasClass('is-open')) {
+      setTimeout(function () {
+        $search.trigger('focus');
+      }, 0);
+    }
+  });
+
+  $search.on('input', function () {
+    filterOptions(this.value);
+  });
+
+  $select.on('change', sync);
+
+  renderOptions();
+  sync();
+}
+
+function initEverblockDateTimeFields() {
+  $('.everblock-datetime-field').each(function () {
+    const input = this;
+    const normalized = sqlToDatetimeLocal(input.value);
+
+    try {
+      input.type = 'datetime-local';
+    } catch (error) {
+      input.type = 'text';
+    }
+
+    if (normalized) {
+      input.value = input.type === 'datetime-local' ? normalized : datetimeLocalToSql(normalized);
+    }
+  });
+
+  $(document).on('submit', '.everblock-bo-symfony-form', function () {
+    $(this).find('.everblock-datetime-field').each(function () {
+      this.value = datetimeLocalToSql(this.value);
+    });
+  });
+}
+
+function sqlToDatetimeLocal(value) {
+  if (!value || value === '0000-00-00 00:00:00') {
+    return '';
+  }
+
+  return value.trim().replace(' ', 'T').slice(0, 16);
+}
+
+function datetimeLocalToSql(value) {
+  if (!value) {
+    return '';
+  }
+
+  const normalized = value.trim().replace('T', ' ');
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(normalized)) {
+    return normalized + ':00';
+  }
+
+  return normalized;
+}

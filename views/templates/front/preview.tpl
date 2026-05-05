@@ -20,9 +20,9 @@
 
 {block name='page_title'}
     {if isset($everblock_preview_block->name) && $everblock_preview_block->name}
-        {l s='Preview for "%s"' sprintf=[$everblock_preview_block->name] mod='everblock'}
+        {l s='Preview for "%s"' sprintf=[$everblock_preview_block->name] d='Modules.Everblock.Front'}
     {else}
-        {l s='Block preview' mod='everblock'}
+        {l s='Block preview' d='Modules.Everblock.Front'}
     {/if}
 {/block}
 
@@ -35,22 +35,22 @@
         {else}
             <div class="card mb-3">
                 <div class="card-body">
-                    <h2 class="h5 mb-3">{l s='Preview context' mod='everblock'}</h2>
+                    <h2 class="h5 mb-3">{l s='Preview context' d='Modules.Everblock.Front'}</h2>
                     <dl class="row mb-0">
                         {if isset($everblock_preview_hook) && $everblock_preview_hook}
-                            <dt class="col-sm-4 text-muted">{l s='Hook:' mod='everblock'}</dt>
+                            <dt class="col-sm-4 text-muted">{l s='Hook:' d='Modules.Everblock.Front'}</dt>
                             <dd class="col-sm-8">{$everblock_preview_hook|escape:'htmlall':'UTF-8'}</dd>
                         {/if}
                         {if isset($everblock_preview_info.controller)}
-                            <dt class="col-sm-4 text-muted">{l s='Controller:' mod='everblock'}</dt>
+                            <dt class="col-sm-4 text-muted">{l s='Controller:' d='Modules.Everblock.Front'}</dt>
                             <dd class="col-sm-8">{$everblock_preview_info.controller|escape:'htmlall':'UTF-8'}</dd>
                         {/if}
                         {if isset($everblock_preview_info.page_name) && $everblock_preview_info.page_name}
-                            <dt class="col-sm-4 text-muted">{l s='Page name:' mod='everblock'}</dt>
+                            <dt class="col-sm-4 text-muted">{l s='Page name:' d='Modules.Everblock.Front'}</dt>
                             <dd class="col-sm-8">{$everblock_preview_info.page_name|escape:'htmlall':'UTF-8'}</dd>
                         {/if}
                         {if isset($everblock_preview_info.language->name)}
-                            <dt class="col-sm-4 text-muted">{l s='Language:' mod='everblock'}</dt>
+                            <dt class="col-sm-4 text-muted">{l s='Language:' d='Modules.Everblock.Front'}</dt>
                             <dd class="col-sm-8">
                                 {$everblock_preview_info.language->name|escape:'htmlall':'UTF-8'}
                                 {if isset($everblock_preview_info.language->iso_code)}
@@ -59,7 +59,7 @@
                             </dd>
                         {/if}
                         {if isset($everblock_preview_info.currency->name)}
-                            <dt class="col-sm-4 text-muted">{l s='Currency:' mod='everblock'}</dt>
+                            <dt class="col-sm-4 text-muted">{l s='Currency:' d='Modules.Everblock.Front'}</dt>
                             <dd class="col-sm-8">
                                 {$everblock_preview_info.currency->name|escape:'htmlall':'UTF-8'}
                                 {if isset($everblock_preview_info.currency->iso_code)}
@@ -68,11 +68,11 @@
                             </dd>
                         {/if}
                         {if isset($everblock_preview_info.shop->name)}
-                            <dt class="col-sm-4 text-muted">{l s='Shop:' mod='everblock'}</dt>
+                            <dt class="col-sm-4 text-muted">{l s='Shop:' d='Modules.Everblock.Front'}</dt>
                             <dd class="col-sm-8">{$everblock_preview_info.shop->name|escape:'htmlall':'UTF-8'}</dd>
                         {/if}
                         {if isset($everblock_preview_info.ids) && $everblock_preview_info.ids}
-                            <dt class="col-sm-4 text-muted">{l s='Identifiers:' mod='everblock'}</dt>
+                            <dt class="col-sm-4 text-muted">{l s='Identifiers:' d='Modules.Everblock.Front'}</dt>
                             <dd class="col-sm-8">
                                 <ul class="list-unstyled mb-0">
                                     {foreach from=$everblock_preview_info.ids key=identifier item=value}
@@ -82,7 +82,7 @@
                             </dd>
                         {/if}
                         {if isset($everblock_preview_info.groups) && $everblock_preview_info.groups}
-                            <dt class="col-sm-4 text-muted">{l s='Simulated customer groups:' mod='everblock'}</dt>
+                            <dt class="col-sm-4 text-muted">{l s='Simulated customer groups:' d='Modules.Everblock.Front'}</dt>
                             <dd class="col-sm-8">
                                 <ul class="list-unstyled mb-0">
                                     {foreach from=$everblock_preview_info.groups item=group}
@@ -95,7 +95,7 @@
                             </dd>
                         {/if}
                         {if isset($everblock_preview_info.customer) && isset($everblock_preview_info.customer->id) && $everblock_preview_info.customer->id}
-                            <dt class="col-sm-4 text-muted">{l s='Simulated customer:' mod='everblock'}</dt>
+                            <dt class="col-sm-4 text-muted">{l s='Simulated customer:' d='Modules.Everblock.Front'}</dt>
                             <dd class="col-sm-8">
                                 #{$everblock_preview_info.customer->id|intval}
                                 {if isset($everblock_preview_info.customer->firstname) || isset($everblock_preview_info.customer->lastname)}
@@ -109,13 +109,13 @@
 
             <div class="card">
                 <div class="card-body">
-                    <h2 class="h5 mb-3">{l s='Generated HTML' mod='everblock'}</h2>
+                    <h2 class="h5 mb-3">{l s='Generated HTML' d='Modules.Everblock.Front'}</h2>
                     {if isset($everblock_preview_html) && $everblock_preview_html}
                         <div class="everblock-preview-render">
                             {$everblock_preview_html nofilter}
                         </div>
                     {else}
-                        <p class="text-muted mb-0">{l s='The block did not return any content for this context.' mod='everblock'}</p>
+                        <p class="text-muted mb-0">{l s='The block did not return any content for this context.' d='Modules.Everblock.Front'}</p>
                     {/if}
                 </div>
             </div>

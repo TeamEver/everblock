@@ -22,8 +22,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require_once _PS_MODULE_DIR_ . 'everblock/models/EverblockPage.php';
-
 class EverblockPagesModuleFrontController extends ModuleFrontController
 {
     public function initContent()
@@ -89,8 +87,8 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         $this->setTemplate('module:everblock/views/templates/front/pages.tpl');
 
         $this->setTemplateMeta(
-            $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
-            $this->trans('Découvrez nos guides pratiques pour ...', [], 'Modules.Everblock.Front')
+            $this->translate('Guides and tutorials'),
+            $this->translate('Discover our practical guides.')
         );
     }
 
@@ -99,7 +97,7 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         $breadcrumb = parent::getBreadcrumbLinks();
 
         $breadcrumb['links'][] = [
-            'title' => $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
+            'title' => $this->translate('Guides and tutorials'),
             'url' => '',
         ];
 
@@ -169,8 +167,8 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
         return [
             '@context' => 'https://schema.org',
             '@type' => 'ItemList',
-            'name' => $this->trans('Guides et tutoriels', [], 'Modules.Everblock.Front'),
-            'description' => $this->trans('Découvrez nos guides pratiques pour ...', [], 'Modules.Everblock.Front'),
+            'name' => $this->translate('Guides and tutorials'),
+            'description' => $this->translate('Discover our practical guides.'),
             'itemListElement' => $elements,
         ];
     }
@@ -199,5 +197,10 @@ class EverblockPagesModuleFrontController extends ModuleFrontController
     public function getCanonicalURL()
     {
         return $this->context->link->getModuleLink($this->module->name, 'pages');
+    }
+
+    protected function translate(string $message, array $parameters = []): string
+    {
+        return $this->context->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Front');
     }
 }

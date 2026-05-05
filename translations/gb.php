@@ -203,3 +203,5 @@ $_MODULE['<{everblock}prestashop>everblock_preview_error_generic'] = 'Unable to 
 $_MODULE['<{everblock}prestashop>everblock_preview_update_button'] = 'Update preview';
 $_MODULE['<{everblock}prestashop>generated_wp_posts_652646ea148d966b30d2ad88016ffc98'] = 'Latest news from our blog';
 $_MODULE['<{everblock}prestashop>generated_wp_posts_42a1827953d0470285d9d87c278b01e8'] = 'Visit our blog';
+
+include __DIR__ . '/modern_gb.php';

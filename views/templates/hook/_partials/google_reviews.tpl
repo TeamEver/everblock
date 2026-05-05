@@ -34,14 +34,14 @@
             <span aria-hidden="true">
               {section name=globalStar loop=5}
                 {assign var=position value=$smarty.section.globalStar.index+1}
-                <span class="{if $googleReviewsData.rating >= $position}text-warning{else}text-muted{/if}">★</span>
+                <span class="{if $googleReviewsData.rating >= $position}text-warning{else}text-muted{/if}">&#9733;</span>
               {/section}
             </span>
-            <span class="sr-only">{l s='%1$s out of %2$s' sprintf=[$googleReviewsData.rating|number_format:1, 5] mod='everblock'}</span>
+            <span class="sr-only">{l s='%1$s out of %2$s' sprintf=[$googleReviewsData.rating|number_format:1, 5] d='Modules.Everblock.Front'}</span>
           </div>
           {if $googleReviewsData.user_ratings_total}
             <p class="mb-0 text-muted small">
-              {l s='Based on %s reviews' sprintf=[$googleReviewsData.user_ratings_total] mod='everblock'}
+              {l s='Based on %s reviews' sprintf=[$googleReviewsData.user_ratings_total] d='Modules.Everblock.Front'}
             </p>
           {/if}
         </div>
@@ -56,11 +56,11 @@
       </div>
       {if $googleReviewsOptions.show_cta && $googleReviewsOptions.cta_url}
         <div class="everblock-google-reviews__cta d-flex flex-column align-items-start gap-2">
-          <a class="btn btn-primary btn-lg" href="{$googleReviewsOptions.cta_url|escape:'htmlall':'UTF-8'}" target="_blank" rel="noopener nofollow" aria-label="{l s='Read all reviews on Google' mod='everblock'}">
-            {if $googleReviewsOptions.cta_label}{$googleReviewsOptions.cta_label|escape:'htmlall':'UTF-8'}{else}{l s='Read all reviews on Google' mod='everblock'}{/if}
+          <a class="btn btn-primary btn-lg" href="{$googleReviewsOptions.cta_url|escape:'htmlall':'UTF-8'}" target="_blank" rel="noopener nofollow" aria-label="{l s='Read all reviews on Google' d='Modules.Everblock.Front'}">
+            {if $googleReviewsOptions.cta_label}{$googleReviewsOptions.cta_label|escape:'htmlall':'UTF-8'}{else}{l s='Read all reviews on Google' d='Modules.Everblock.Front'}{/if}
           </a>
-          <a class="btn btn-outline-secondary btn-sm" href="{$googleReviewsOptions.cta_url|escape:'htmlall':'UTF-8'}" target="_blank" rel="noopener nofollow" aria-label="{l s='Laisser un avis sur Google' mod='everblock'}">
-            {l s='Laisser un avis' mod='everblock'}
+          <a class="btn btn-outline-secondary btn-sm" href="{$googleReviewsOptions.cta_url|escape:'htmlall':'UTF-8'}" target="_blank" rel="noopener nofollow" aria-label="{l s='Leave a review on Google' d='Modules.Everblock.Front'}">
+            {l s='Leave a review' d='Modules.Everblock.Front'}
           </a>
         </div>
       {/if}
@@ -70,7 +70,7 @@
         {assign var=reviewCount value=$reviews|count}
         {assign var=carouselSuffix value=$googleReviewsOptions.place_id|default:$smarty.now}
 
-        <div id="everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-lg" class="carousel slide d-none d-lg-block" data-bs-interval="false" data-bs-pause="hover" aria-label="{l s='Google reviews carousel' mod='everblock'}">
+        <div id="everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-lg" class="carousel slide d-none d-lg-block" data-bs-interval="false" data-bs-pause="hover" aria-label="{l s='Google reviews carousel' d='Modules.Everblock.Front'}">
           <div class="carousel-inner">
             {foreach from=$reviews|@array_chunk:3 item=reviewGroup name=reviewsLg}
               <div class="carousel-item{if $smarty.foreach.reviewsLg.first} active{/if}">
@@ -103,12 +103,12 @@
                                 <p class="mb-2 small text-muted">{$review.relative_time_description|escape:'htmlall':'UTF-8'}</p>
                               {/if}
                               {if $review.rating}
-                                <div class="everblock-google-reviews__score d-flex align-items-center gap-2" aria-label="{l s='%1$s out of %2$s' sprintf=[$review.rating|number_format:1, 5] mod='everblock'}">
+                                <div class="everblock-google-reviews__score d-flex align-items-center gap-2" aria-label="{l s='%1$s out of %2$s' sprintf=[$review.rating|number_format:1, 5] d='Modules.Everblock.Front'}">
                                   <span class="fw-semibold">{$review.rating|number_format:1}</span>
                                   <span aria-hidden="true">
                                     {section name=item loop=5}
                                       {assign var=position value=$smarty.section.item.index+1}
-                                      <span class="{if $review.rating >= $position}text-warning{else}text-muted{/if}">★</span>
+                                <span class="{if $review.rating >= $position}text-warning{else}text-muted{/if}">&#9733;</span>
                                     {/section}
                                   </span>
                                 </div>
@@ -130,18 +130,18 @@
             {/foreach}
           </div>
           {if $reviewCount > 3}
-            <button class="carousel-control-prev" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-lg" data-bs-slide="prev" aria-label="{l s='Previous reviews' mod='everblock'}">
+            <button class="carousel-control-prev" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-lg" data-bs-slide="prev" aria-label="{l s='Previous reviews' d='Modules.Everblock.Front'}">
               <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+              <span class="visually-hidden">{l s='Previous' d='Modules.Everblock.Front'}</span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-lg" data-bs-slide="next" aria-label="{l s='Next reviews' mod='everblock'}">
+            <button class="carousel-control-next" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-lg" data-bs-slide="next" aria-label="{l s='Next reviews' d='Modules.Everblock.Front'}">
               <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+              <span class="visually-hidden">{l s='Next' d='Modules.Everblock.Front'}</span>
             </button>
           {/if}
         </div>
 
-        <div id="everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-md" class="carousel slide d-none d-md-block d-lg-none" data-bs-interval="false" data-bs-pause="hover" aria-label="{l s='Google reviews carousel' mod='everblock'}">
+        <div id="everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-md" class="carousel slide d-none d-md-block d-lg-none" data-bs-interval="false" data-bs-pause="hover" aria-label="{l s='Google reviews carousel' d='Modules.Everblock.Front'}">
           <div class="carousel-inner">
             {foreach from=$reviews|@array_chunk:2 item=reviewGroup name=reviewsMd}
               <div class="carousel-item{if $smarty.foreach.reviewsMd.first} active{/if}">
@@ -174,12 +174,12 @@
                                 <p class="mb-2 small text-muted">{$review.relative_time_description|escape:'htmlall':'UTF-8'}</p>
                               {/if}
                               {if $review.rating}
-                                <div class="everblock-google-reviews__score d-flex align-items-center gap-2" aria-label="{l s='%1$s out of %2$s' sprintf=[$review.rating|number_format:1, 5] mod='everblock'}">
+                                <div class="everblock-google-reviews__score d-flex align-items-center gap-2" aria-label="{l s='%1$s out of %2$s' sprintf=[$review.rating|number_format:1, 5] d='Modules.Everblock.Front'}">
                                   <span class="fw-semibold">{$review.rating|number_format:1}</span>
                                   <span aria-hidden="true">
                                     {section name=item loop=5}
                                       {assign var=position value=$smarty.section.item.index+1}
-                                      <span class="{if $review.rating >= $position}text-warning{else}text-muted{/if}">★</span>
+                                <span class="{if $review.rating >= $position}text-warning{else}text-muted{/if}">&#9733;</span>
                                     {/section}
                                   </span>
                                 </div>
@@ -201,18 +201,18 @@
             {/foreach}
           </div>
           {if $reviewCount > 2}
-            <button class="carousel-control-prev" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-md" data-bs-slide="prev" aria-label="{l s='Previous reviews' mod='everblock'}">
+            <button class="carousel-control-prev" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-md" data-bs-slide="prev" aria-label="{l s='Previous reviews' d='Modules.Everblock.Front'}">
               <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+              <span class="visually-hidden">{l s='Previous' d='Modules.Everblock.Front'}</span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-md" data-bs-slide="next" aria-label="{l s='Next reviews' mod='everblock'}">
+            <button class="carousel-control-next" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-md" data-bs-slide="next" aria-label="{l s='Next reviews' d='Modules.Everblock.Front'}">
               <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+              <span class="visually-hidden">{l s='Next' d='Modules.Everblock.Front'}</span>
             </button>
           {/if}
         </div>
 
-        <div id="everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-sm" class="carousel slide d-md-none" data-bs-interval="false" data-bs-pause="hover" aria-label="{l s='Google reviews carousel' mod='everblock'}">
+        <div id="everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-sm" class="carousel slide d-md-none" data-bs-interval="false" data-bs-pause="hover" aria-label="{l s='Google reviews carousel' d='Modules.Everblock.Front'}">
           <div class="carousel-inner">
             {foreach from=$reviews|@array_chunk:1 item=reviewGroup name=reviewsSm}
               <div class="carousel-item{if $smarty.foreach.reviewsSm.first} active{/if}">
@@ -245,12 +245,12 @@
                                 <p class="mb-2 small text-muted">{$review.relative_time_description|escape:'htmlall':'UTF-8'}</p>
                               {/if}
                               {if $review.rating}
-                                <div class="everblock-google-reviews__score d-flex align-items-center gap-2" aria-label="{l s='%1$s out of %2$s' sprintf=[$review.rating|number_format:1, 5] mod='everblock'}">
+                                <div class="everblock-google-reviews__score d-flex align-items-center gap-2" aria-label="{l s='%1$s out of %2$s' sprintf=[$review.rating|number_format:1, 5] d='Modules.Everblock.Front'}">
                                   <span class="fw-semibold">{$review.rating|number_format:1}</span>
                                   <span aria-hidden="true">
                                     {section name=item loop=5}
                                       {assign var=position value=$smarty.section.item.index+1}
-                                      <span class="{if $review.rating >= $position}text-warning{else}text-muted{/if}">★</span>
+                                <span class="{if $review.rating >= $position}text-warning{else}text-muted{/if}">&#9733;</span>
                                     {/section}
                                   </span>
                                 </div>
@@ -272,18 +272,18 @@
             {/foreach}
           </div>
           {if $reviewCount > 1}
-            <button class="carousel-control-prev" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-sm" data-bs-slide="prev" aria-label="{l s='Previous reviews' mod='everblock'}">
+            <button class="carousel-control-prev" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-sm" data-bs-slide="prev" aria-label="{l s='Previous reviews' d='Modules.Everblock.Front'}">
               <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+              <span class="visually-hidden">{l s='Previous' d='Modules.Everblock.Front'}</span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-sm" data-bs-slide="next" aria-label="{l s='Next reviews' mod='everblock'}">
+            <button class="carousel-control-next" type="button" data-bs-target="#everblock-google-reviews-carousel-{$carouselSuffix|escape:'htmlall':'UTF-8'}-sm" data-bs-slide="next" aria-label="{l s='Next reviews' d='Modules.Everblock.Front'}">
               <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+              <span class="visually-hidden">{l s='Next' d='Modules.Everblock.Front'}</span>
             </button>
           {/if}
         </div>
       {elseif $googleReviewsOptions.is_configured}
-        <p class="everblock-google-reviews__empty text-muted mb-0">{l s='No Google reviews available yet.' mod='everblock'}</p>
+        <p class="everblock-google-reviews__empty text-muted mb-0">{l s='No Google reviews available yet.' d='Modules.Everblock.Front'}</p>
       {/if}
     </div>
   </div>

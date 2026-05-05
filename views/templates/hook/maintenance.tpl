@@ -23,14 +23,14 @@
         <div class="col-md-12">
             <div class="card shadow-lg p-3 mb-5 bg-white rounded">
                 <div class="card-body">
-                    <h4 class="card-title text-center">{l s='Enter your password' mod='everblock'}</h4>
+                    <h4 class="card-title text-center">{l s='Enter your password' d='Modules.Everblock.Front'}</h4>
                     <form method="post">
                         <div class="form-group">
                             <label for="evermaintenancepassword">Mot de passe:</label>
-                            <input type="password" id="evermaintenancepassword" name="evermaintenancepassword" class="form-control" placeholder="{l s='Password' mod='everblock'}">
+                            <input type="password" id="evermaintenancepassword" name="evermaintenancepassword" class="form-control" placeholder="{l s='Password' d='Modules.Everblock.Front'}">
                         </div>
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary">{l s='Send' mod='everblock'}</button>
+                            <button type="submit" class="btn btn-primary">{l s='Send' d='Modules.Everblock.Front'}</button>
                         </div>
                     </form>
                 </div>

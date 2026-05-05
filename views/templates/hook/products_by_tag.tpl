@@ -25,5 +25,5 @@
     </div>
   </section>
 {else}
-  <p class="alert alert-info">{l s='No products found.' mod='everblock'}</p>
+  <p class="alert alert-info">{l s='No products found.' d='Modules.Everblock.Front'}</p>
 {/if}

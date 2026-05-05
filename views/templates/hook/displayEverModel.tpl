@@ -36,7 +36,7 @@
                     {if isset($ever_model.price_amount)}
                         {$ever_model.price}
                     {else}
-                        {l s='Price not available'}
+                        {l s='Price not available' d='Modules.Everblock.Front'}
                     {/if}
                 </p>
                 <div class="product-description mb-3">
@@ -51,7 +51,7 @@
 
                     {if isset($ever_model.combinations) && $ever_model.combinations|@count > 0}
                         <div class="form-group">
-                            <label for="ever_model_combination">{l s='Choose an option'}:</label>
+                            <label for="ever_model_combination">{l s='Choose an option' d='Modules.Everblock.Front'}:</label>
                             <select class="form-control" name="id_product_attribute" id="ever_model_combination">
                                 {foreach from=$ever_model.combinations item=comb}
                                     <option value="{$comb.id_product_attribute}" {if $comb.id_product_attribute == $ever_model.id_product_attribute}selected{/if}>
@@ -66,7 +66,7 @@
 
                     <button type="submit" class="btn btn-primary">
                         <span class="fa fa-shopping-cart mr-1" aria-hidden="true"></span>
-                        {l s='Add to cart'}
+                        {l s='Add to cart' d='Modules.Everblock.Front'}
                     </button>
                 </form>
             </div>

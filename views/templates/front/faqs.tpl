@@ -5,31 +5,31 @@
 {/block}
 
 {block name='page_content'}
-  <section class="everblock-faqs-list d-flex flex-column gap-4" aria-label="{l s='Frequently asked questions' mod='everblock' d='Modules.Everblock.Front'}">
+  <section class="everblock-faqs-list d-flex flex-column gap-4" aria-label="{l s='Frequently asked questions' d='Modules.Everblock.Front'}">
     <header>
       <div class="everblock-faqs-hero rounded-4 border bg-light p-4 p-md-5 d-flex flex-column flex-md-row justify-content-between gap-3">
         <div>
           {if $everblock_is_all_faqs_page}
-            <h1 class="mb-2">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
-            <p class="text-muted mb-0">{l s='Browse every question and answer available across all groups.' mod='everblock' d='Modules.Everblock.Front'}</p>
+            <h1 class="mb-2">{l s='FAQ' d='Modules.Everblock.Front'}</h1>
+            <p class="text-muted mb-0">{l s='Browse every question and answer available across all groups.' d='Modules.Everblock.Front'}</p>
           {else}
             <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
-              <h1 class="mb-0">{l s='FAQ' mod='everblock' d='Modules.Everblock.Front'}</h1>
-              <span class="badge text-bg-primary text-lowercase everblock-faqs-tag" aria-label="{l s='Current FAQ tag' mod='everblock' d='Modules.Everblock.Front'}">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</span>
+              <h1 class="mb-0">{l s='FAQ' d='Modules.Everblock.Front'}</h1>
+              <span class="badge text-bg-primary text-lowercase everblock-faqs-tag" aria-label="{l s='Current FAQ tag' d='Modules.Everblock.Front'}">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</span>
             </div>
-            <p class="text-muted mb-0">{l s='All frequently asked questions grouped by this tag.' mod='everblock' d='Modules.Everblock.Front'}</p>
+            <p class="text-muted mb-0">{l s='All frequently asked questions grouped by this tag.' d='Modules.Everblock.Front'}</p>
           {/if}
         </div>
 
         {if $everblock_faqs|@count}
           <div class="everblock-faqs-meta d-flex flex-wrap gap-3">
             <div class="everblock-faqs-meta__item bg-white border rounded-3 px-3 py-2 text-center shadow-sm">
-              <span class="everblock-faqs-meta__label text-muted small">{l s='Questions' mod='everblock' d='Modules.Everblock.Front'}</span>
+              <span class="everblock-faqs-meta__label text-muted small">{l s='Questions' d='Modules.Everblock.Front'}</span>
               <strong class="everblock-faqs-meta__value d-block fs-5">{$everblock_faqs|@count}</strong>
             </div>
             {if !$everblock_is_all_faqs_page && isset($everblock_tag_name)}
               <div class="everblock-faqs-meta__item bg-white border rounded-3 px-3 py-2 text-center shadow-sm">
-                <span class="everblock-faqs-meta__label text-muted small">{l s='Group' mod='everblock' d='Modules.Everblock.Front'}</span>
+                <span class="everblock-faqs-meta__label text-muted small">{l s='Group' d='Modules.Everblock.Front'}</span>
                 <strong class="everblock-faqs-meta__value d-block fs-5">{$everblock_tag_name|escape:'htmlall':'UTF-8'}</strong>
               </div>
             {/if}
@@ -43,10 +43,10 @@
       {include file='module:everblock/views/templates/hook/faq.tpl'}
 
       {if isset($everblock_pagination.total_pages) && $everblock_pagination.total_pages > 1}
-        <nav class="mt-4" aria-label="{l s='Pagination' mod='everblock' d='Modules.Everblock.Front'}">
+        <nav class="mt-4" aria-label="{l s='Pagination' d='Modules.Everblock.Front'}">
           <ul class="pagination justify-content-center">
             <li class="page-item{if !$everblock_pagination.has_previous} disabled{/if}">
-              <a class="page-link" href="{if $everblock_pagination.has_previous}{$everblock_pagination.previous_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Previous' mod='everblock' d='Modules.Everblock.Front'}">
+              <a class="page-link" href="{if $everblock_pagination.has_previous}{$everblock_pagination.previous_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Previous' d='Modules.Everblock.Front'}">
                 <span aria-hidden="true">&laquo;</span>
               </a>
             </li>
@@ -56,7 +56,7 @@
               </li>
             {/foreach}
             <li class="page-item{if !$everblock_pagination.has_next} disabled{/if}">
-              <a class="page-link" href="{if $everblock_pagination.has_next}{$everblock_pagination.next_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Next' mod='everblock' d='Modules.Everblock.Front'}">
+              <a class="page-link" href="{if $everblock_pagination.has_next}{$everblock_pagination.next_link|escape:'htmlall':'UTF-8'}{else}#{/if}" aria-label="{l s='Next' d='Modules.Everblock.Front'}">
                 <span aria-hidden="true">&raquo;</span>
               </a>
             </li>
@@ -64,7 +64,7 @@
         </nav>
       {/if}
     {else}
-      <p class="alert alert-info">{l s='No FAQ available at the moment.' mod='everblock' d='Modules.Everblock.Front'}</p>
+      <p class="alert alert-info">{l s='No FAQ available at the moment.' d='Modules.Everblock.Front'}</p>
     {/if}
   </section>
 

@@ -108,7 +108,7 @@
                     </label>
                     <div class="everblock-shortcode-search input-group">
                         <span class="input-group-addon input-group-text"><i class="icon-search"></i></span>
-                        <input type="search" class="form-control" id="everblockShortcodeSearch" placeholder="{l s='Search shortcodes…' mod='everblock'}" autocomplete="off">
+                        <input type="search" class="form-control" id="everblockShortcodeSearch" placeholder="{l s='Search shortcodes...' mod='everblock'}" autocomplete="off">
                         <div class="input-group-btn input-group-append">
                             <button class="btn btn-default btn-secondary everblock-shortcode-clear" type="button">
                                 {l s='Clear' mod='everblock'}
@@ -151,7 +151,7 @@
                                                     <code class="everblock-shortcode-entry__code">{$everblock_shortcode_entry.code|escape:'htmlall':'UTF-8'}</code>
                                                     <button type="button" class="btn btn-link everblock-shortcode-entry__copy" data-everblock-copy="{$everblock_shortcode_entry.code|escape:'htmlall':'UTF-8'}" title="{l s='Copy shortcode' mod='everblock'}">
                                                         <i class="icon-files-o" aria-hidden="true"></i>
-                                                    <span class="sr-only visually-hidden">{l s='Copy shortcode' mod='everblock'}</span>
+                                                        <span class="sr-only visually-hidden">{l s='Copy shortcode' mod='everblock'}</span>
                                                     </button>
                                                 </div>
                                                 <p class="everblock-shortcode-entry__description">

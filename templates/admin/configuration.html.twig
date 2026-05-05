@@ -1,0 +1,153 @@
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+
+{% block content %}
+  {% include '@Modules/everblock/templates/admin/_nav.html.twig' with {section: '', sections: sections, config: {route: 'admin_everblock_configuration'}} %}
+
+  <div class="everblock-config-page">
+    <div class="everblock-bo-page-head everblock-config-page__head">
+      <div>
+        <p class="everblock-bo-kicker">Ever Block</p>
+        <h2 class="everblock-bo-title">{{ 'Ever Block configuration'|trans({}, 'Modules.Everblock.Admin') }}</h2>
+      </div>
+      <span class="everblock-config-version">{{ 'Version'|trans({}, 'Modules.Everblock.Admin') }} {{ module_version }}</span>
+    </div>
+
+    <div class="everblock-config-overview">
+      <div class="everblock-config-overview__item">
+        <strong>{{ stats.blocks_active|default(0) }}</strong>
+        <span>{{ 'Active blocks'|trans({}, 'Modules.Everblock.Admin') }}</span>
+      </div>
+      <div class="everblock-config-overview__item">
+        <strong>{{ stats.shortcodes|default(0) }}</strong>
+        <span>{{ 'Shortcodes'|trans({}, 'Modules.Everblock.Admin') }}</span>
+      </div>
+      <div class="everblock-config-overview__item">
+        <strong>{{ stats.flags|default(0) }}</strong>
+        <span>{{ 'Flags'|trans({}, 'Modules.Everblock.Admin') }}</span>
+      </div>
+      <div class="everblock-config-overview__item">
+        <strong>{{ stats.tabs|default(0) }}</strong>
+        <span>{{ 'Product tabs'|trans({}, 'Modules.Everblock.Admin') }}</span>
+      </div>
+    </div>
+
+    {{ form_start(configuration_form, {
+      action: path('admin_everblock_configuration'),
+      attr: {
+        class: 'everblock-configuration-form',
+        enctype: 'multipart/form-data'
+      }
+    }) }}
+      {{ form_errors(configuration_form) }}
+
+      <div class="card everblock-config-panel">
+          <div class="card-header everblock-config-panel__tabs p-0">
+            <ul class="nav nav-tabs card-header-tabs m-0" role="tablist">
+              {% for tab_key, tab_title in configuration_tabs %}
+                <li class="nav-item">
+                  <a
+                    class="nav-link{% if loop.first %} active{% endif %}"
+                    id="everblock-tab-link-{{ tab_key }}"
+                    data-toggle="tab"
+                    href="#everblock-tab-{{ tab_key }}"
+                    role="tab"
+                    aria-controls="everblock-tab-{{ tab_key }}"
+                    aria-selected="{{ loop.first ? 'true' : 'false' }}"
+                  >
+                    {{ tab_title|trans({}, 'Modules.Everblock.Admin') }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div class="card-body everblock-config-panel__body">
+            <div class="tab-content">
+              {% for tab_key, tab_title in configuration_tabs %}
+                <section
+                  class="tab-pane fade{% if loop.first %} show active{% endif %}"
+                  id="everblock-tab-{{ tab_key }}"
+                  role="tabpanel"
+                  aria-labelledby="everblock-tab-link-{{ tab_key }}"
+                >
+                  <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <h3 class="mb-1">{{ tab_title|trans({}, 'Modules.Everblock.Admin') }}</h3>
+                      {% if configuration_docs[tab_key] is defined %}
+                        <p class="text-muted mb-0">{{ configuration_docs[tab_key]|trans({}, 'Modules.Everblock.Admin') }}</p>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  {% if tab_key == 'wordpress_tools' and current_images.EVERWP_POSTS_BG_IMAGE %}
+                    <div class="alert alert-info d-flex align-items-center justify-content-between">
+                      <span>
+                        {{ 'Current WordPress background image'|trans({}, 'Modules.Everblock.Admin') }}
+                        <a href="{{ current_images.EVERWP_POSTS_BG_IMAGE }}" target="_blank" rel="noopener noreferrer">{{ 'View image'|trans({}, 'Modules.Everblock.Admin') }}</a>
+                      </span>
+                      <a class="btn btn-outline-danger btn-sm" href="{{ path('admin_everblock_configuration', {deleteEVERWP_POSTS_BG_IMAGE: 1}) }}">
+                        <i class="material-icons">delete</i>
+                        {{ 'Delete'|trans({}, 'Admin.Actions') }}
+                      </a>
+                    </div>
+                  {% endif %}
+
+                  {% if tab_key == 'google_maps' and current_images.EVERBLOCK_MARKER_ICON %}
+                    <div class="alert alert-info d-flex align-items-center justify-content-between">
+                      <span>
+                        {{ 'Current store locator marker icon'|trans({}, 'Modules.Everblock.Admin') }}
+                        <a href="{{ current_images.EVERBLOCK_MARKER_ICON }}" target="_blank" rel="noopener noreferrer">{{ 'View icon'|trans({}, 'Modules.Everblock.Admin') }}</a>
+                      </span>
+                      <a class="btn btn-outline-danger btn-sm" href="{{ path('admin_everblock_configuration', {deleteEVERBLOCK_MARKER_ICON: 1}) }}">
+                        <i class="material-icons">delete</i>
+                        {{ 'Delete'|trans({}, 'Admin.Actions') }}
+                      </a>
+                    </div>
+                  {% endif %}
+
+                  {% for field_name in field_tabs[tab_key]|default([]) %}
+                    {% if configuration_form[field_name] is defined %}
+                      {{ form_row(configuration_form[field_name]) }}
+                    {% endif %}
+                  {% endfor %}
+
+                  {% if tab_key == 'cron' %}
+                    <div class="list-group">
+                      {% for action, link in cron_links %}
+                        <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ link }}" target="_blank" rel="noopener noreferrer">
+                          <span>{{ 'Cron for'|trans({}, 'Modules.Everblock.Admin') }} {{ action }}</span>
+                          <i class="material-icons">open_in_new</i>
+                        </a>
+                      {% else %}
+                        <p class="text-muted">{{ 'No cron action is available.'|trans({}, 'Modules.Everblock.Admin') }}</p>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+
+                  {% if action_buttons[tab_key] is defined %}
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                      {% for button in action_buttons[tab_key] %}
+                        <button type="submit" name="{{ button.name }}" value="1" class="btn btn-outline-secondary mr-2 mb-2">
+                          <i class="material-icons">{{ button.icon }}</i>
+                          {{ button.title|trans({}, 'Modules.Everblock.Admin') }}
+                        </button>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </section>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="card-footer everblock-config-panel__footer d-flex justify-content-end">
+            <button type="submit" name="submiteverblockModule" value="1" class="btn btn-primary">
+              <i class="material-icons">save</i>
+              {{ 'Save'|trans({}, 'Admin.Actions') }}
+            </button>
+          </div>
+        </div>
+
+      {{ form_rest(configuration_form) }}
+    {{ form_end(configuration_form, {render_rest: false}) }}
+  </div>
+{% endblock %}

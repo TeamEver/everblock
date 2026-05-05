@@ -200,3 +200,5 @@ $_MODULE['<{everblock}prestashop>everblock_preview_select_context'] = 'Seleziona
 $_MODULE['<{everblock}prestashop>everblock_preview_loading'] = 'Caricamento anteprima…';
 $_MODULE['<{everblock}prestashop>everblock_preview_error_generic'] = 'Impossibile caricare l’anteprima. Riprova.';
 $_MODULE['<{everblock}prestashop>everblock_preview_update_button'] = 'Aggiorna anteprima';
+
+include __DIR__ . '/modern_it.php';

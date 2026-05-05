@@ -1,0 +1,204 @@
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+
+{% block content %}
+  {% include '@Modules/everblock/templates/admin/_nav.html.twig' with {section: section, sections: sections, config: config} %}
+
+  {% set boolean_columns = config.boolean_columns|default([]) %}
+  {% set column_labels = config.column_labels|default({}) %}
+
+  <div class="everblock-bo-page-head">
+    <div>
+      <p class="everblock-bo-kicker">{{ 'Manage'|trans({}, 'Modules.Everblock.Admin') }}</p>
+      <h2 class="everblock-bo-title">{{ config.title }}</h2>
+      <p class="everblock-bo-description mb-0">
+        {{ rows|length }} {{ 'result(s)'|trans({}, 'Modules.Everblock.Admin') }}
+        {% if filters|length > 0 %}
+          &middot; {{ filters|length }} {{ 'active filter(s)'|trans({}, 'Modules.Everblock.Admin') }}
+        {% endif %}
+      </p>
+    </div>
+    <a class="btn btn-primary everblock-bo-page-head__action" href="{{ path(config.route ~ '_create') }}">
+      <i class="material-icons">add</i>
+      {{ 'Add new'|trans({}, 'Modules.Everblock.Admin') }}
+    </a>
+  </div>
+
+  <form class="everblock-filterbar mb-3" method="get" action="{{ path(config.route) }}">
+    <div class="everblock-filterbar__caption">
+      <i class="material-icons">filter_alt</i>
+      <span>{{ 'Filters'|trans({}, 'Modules.Everblock.Admin') }}</span>
+      {% if filters|length > 0 %}
+        <span class="everblock-filterbar__count">{{ filters|length }}</span>
+      {% endif %}
+    </div>
+    <div class="everblock-filterbar__fields">
+      {% for column in filter_columns %}
+        {% set label = column_labels[column]|default(column|replace({'_': ' '})|title) %}
+        <div class="everblock-filterbar__field everblock-filterbar__field--{{ column|replace({'_': '-'}) }}{% if column in boolean_columns %} everblock-filterbar__field--select{% endif %}">
+          <label class="sr-only" for="everblock-filter-{{ column }}">{{ label|trans({}, 'Modules.Everblock.Admin') }}</label>
+          {% if column in boolean_columns %}
+            <select class="form-control form-control-sm" id="everblock-filter-{{ column }}" name="filters[{{ column }}]" title="{{ label|trans({}, 'Modules.Everblock.Admin') }}">
+              <option value="">{{ label|trans({}, 'Modules.Everblock.Admin') }}</option>
+              {% if column == 'active' %}
+                <option value="1"{% if filters[column]|default('') == '1' %} selected{% endif %}>{{ 'Enabled'|trans({}, 'Admin.Global') }}</option>
+                <option value="0"{% if filters[column]|default('') == '0' %} selected{% endif %}>{{ 'Disabled'|trans({}, 'Admin.Global') }}</option>
+              {% else %}
+                <option value="1"{% if filters[column]|default('') == '1' %} selected{% endif %}>{{ 'Yes'|trans({}, 'Admin.Global') }}</option>
+                <option value="0"{% if filters[column]|default('') == '0' %} selected{% endif %}>{{ 'No'|trans({}, 'Admin.Global') }}</option>
+              {% endif %}
+            </select>
+          {% else %}
+            <input class="form-control form-control-sm" id="everblock-filter-{{ column }}" type="search" name="filters[{{ column }}]" value="{{ filters[column]|default('') }}" placeholder="{{ label|trans({}, 'Modules.Everblock.Admin') }}" title="{{ label|trans({}, 'Modules.Everblock.Admin') }}" />
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <div class="everblock-filterbar__actions">
+      <a class="btn btn-sm btn-outline-secondary" href="{{ path(config.route) }}">
+        <i class="material-icons">clear</i>
+        <span>{{ 'Reset'|trans({}, 'Admin.Actions') }}</span>
+      </a>
+      <button class="btn btn-sm btn-primary" type="submit">
+        <i class="material-icons">search</i>
+        <span>{{ 'Search'|trans({}, 'Admin.Actions') }}</span>
+      </button>
+    </div>
+  </form>
+
+  {% if section == 'blocks' %}
+    <form id="everblock-block-bulk-form" method="post">
+  {% endif %}
+
+  <div class="card everblock-bo-list-card">
+    <div class="card-header everblock-bo-list-card__header">
+      <div>
+        <strong>{{ config.title }}</strong>
+        <span class="text-muted ml-2">{{ rows|length }} {{ 'result(s)'|trans({}, 'Modules.Everblock.Admin') }}</span>
+      </div>
+
+      {% if section == 'blocks' %}
+        <div class="everblock-bo-bulk-actions">
+          <button class="btn btn-sm btn-success" type="submit" formaction="{{ path('admin_everblock_blocks_bulk_enable') }}">
+            <i class="material-icons">toggle_on</i>
+            {{ 'Enable selected'|trans({}, 'Modules.Everblock.Admin') }}
+          </button>
+          <button class="btn btn-sm btn-outline-warning" type="submit" formaction="{{ path('admin_everblock_blocks_bulk_disable') }}">
+            <i class="material-icons">toggle_off</i>
+            {{ 'Disable selected'|trans({}, 'Modules.Everblock.Admin') }}
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" type="submit" formaction="{{ path('admin_everblock_blocks_bulk_duplicate') }}">
+            <i class="material-icons">content_copy</i>
+            {{ 'Duplicate selected'|trans({}, 'Modules.Everblock.Admin') }}
+          </button>
+          <button class="btn btn-sm btn-outline-danger" type="submit" formaction="{{ path('admin_everblock_blocks_bulk_delete') }}" onclick="return confirm('{{ 'Delete selected blocks?'|trans({}, 'Modules.Everblock.Admin')|e('js') }}');">
+            <i class="material-icons">delete</i>
+            {{ 'Delete selected'|trans({}, 'Admin.Actions') }}
+          </button>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover mb-0 everblock-bo-list-table">
+        <thead>
+          <tr>
+            {% if section == 'blocks' %}
+              <th class="everblock-bo-list-table__select">
+                <input type="checkbox" data-everblock-check-all aria-label="{{ 'Select all'|trans({}, 'Admin.Actions') }}" />
+              </th>
+            {% endif %}
+            {% for column in config.columns %}
+              {% set label = column_labels[column]|default(column|replace({'_': ' '})|title) %}
+              <th>{{ label|trans({}, 'Modules.Everblock.Admin') }}</th>
+            {% endfor %}
+            <th class="text-right">{{ 'Actions'|trans({}, 'Admin.Global') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            {% set row_id = attribute(row, config.id)|default(0) %}
+            <tr>
+              {% if section == 'blocks' %}
+                <td class="everblock-bo-list-table__select">
+                  <input type="checkbox" name="selected[]" value="{{ row_id }}" data-everblock-row-check aria-label="{{ 'Select row'|trans({}, 'Modules.Everblock.Admin') }}" />
+                </td>
+              {% endif %}
+
+              {% for column in config.columns %}
+                {% set cell = attribute(row, column)|default('') %}
+                <td class="everblock-bo-list-table__cell everblock-bo-list-table__cell--{{ column|replace({'_': '-'}) }}">
+                  {% if column in boolean_columns %}
+                    {% set enabled = cell == true or cell == 1 or cell == '1' %}
+                    <span class="badge badge-{{ enabled ? 'success' : 'secondary' }}">
+                      {% if column == 'active' %}
+                        {% if enabled %}
+                          {{ 'Enabled'|trans({}, 'Admin.Global') }}
+                        {% else %}
+                          {{ 'Disabled'|trans({}, 'Admin.Global') }}
+                        {% endif %}
+                      {% else %}
+                        {% if enabled %}
+                          {{ 'Yes'|trans({}, 'Admin.Global') }}
+                        {% else %}
+                          {{ 'No'|trans({}, 'Admin.Global') }}
+                        {% endif %}
+                      {% endif %}
+                    </span>
+                  {% else %}
+                    {% set value = cell is iterable ? cell|join(', ') : cell %}
+                    {% set clean_value = value == '0000-00-00 00:00:00' ? '' : value|striptags|trim %}
+                    <span title="{{ clean_value }}">
+                      {{ clean_value|length > 140 ? clean_value|slice(0, 140) ~ '...' : clean_value }}
+                    </span>
+                  {% endif %}
+                </td>
+              {% endfor %}
+
+              <td class="everblock-bo-row-actions text-right">
+                <a class="btn btn-sm btn-outline-primary everblock-icon-btn" href="{{ path(config.route ~ '_edit', {id: row_id}) }}" title="{{ 'Edit'|trans({}, 'Admin.Actions') }}" aria-label="{{ 'Edit'|trans({}, 'Admin.Actions') }}">
+                  <i class="material-icons">edit</i>
+                  <span class="sr-only">{{ 'Edit'|trans({}, 'Admin.Actions') }}</span>
+                </a>
+
+                {% if section == 'blocks' %}
+                  {% set active_value = attribute(row, 'active')|default(false) %}
+                  {% set is_active = active_value == true or active_value == 1 or active_value == '1' %}
+                  <a class="btn btn-sm {{ is_active ? 'btn-outline-warning' : 'btn-success' }} everblock-icon-btn" href="{{ path('admin_everblock_blocks_toggle', {id: row_id}) }}" title="{{ is_active ? 'Disable'|trans({}, 'Admin.Actions') : 'Enable'|trans({}, 'Admin.Actions') }}" aria-label="{{ is_active ? 'Disable'|trans({}, 'Admin.Actions') : 'Enable'|trans({}, 'Admin.Actions') }}">
+                    <i class="material-icons">{{ is_active ? 'toggle_off' : 'toggle_on' }}</i>
+                    {% if is_active %}
+                      <span class="sr-only">{{ 'Disable'|trans({}, 'Admin.Actions') }}</span>
+                    {% else %}
+                      <span class="sr-only">{{ 'Enable'|trans({}, 'Admin.Actions') }}</span>
+                    {% endif %}
+                  </a>
+                  <a class="btn btn-sm btn-outline-secondary everblock-icon-btn" href="{{ path('admin_everblock_blocks_duplicate', {id: row_id}) }}" title="{{ 'Duplicate'|trans({}, 'Admin.Actions') }}" aria-label="{{ 'Duplicate'|trans({}, 'Admin.Actions') }}">
+                    <i class="material-icons">content_copy</i>
+                    <span class="sr-only">{{ 'Duplicate'|trans({}, 'Admin.Actions') }}</span>
+                  </a>
+                {% endif %}
+
+                <a class="btn btn-sm btn-outline-danger everblock-icon-btn" href="{{ path(config.route ~ '_delete', {id: row_id}) }}" title="{{ 'Delete'|trans({}, 'Admin.Actions') }}" aria-label="{{ 'Delete'|trans({}, 'Admin.Actions') }}" onclick="return confirm('{{ 'Delete this item?'|trans({}, 'Modules.Everblock.Admin')|e('js') }}');">
+                  <i class="material-icons">delete</i>
+                  <span class="sr-only">{{ 'Delete'|trans({}, 'Admin.Actions') }}</span>
+                </a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td class="text-center text-muted" colspan="{{ config.columns|length + (section == 'blocks' ? 2 : 1) }}">
+                <div class="everblock-bo-empty">
+                  <i class="material-icons">search_off</i>
+                  <span>{{ 'No records found'|trans({}, 'Admin.Global') }}</span>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if section == 'blocks' %}
+    </form>
+  {% endif %}
+{% endblock %}

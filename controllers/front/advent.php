@@ -34,14 +34,14 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         if (!$token || $token !== Tools::getToken(false)) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('Invalid token', 'advent'),
+                'message' => $this->translate('Invalid token'),
             ]);
         }
 
         if (!$this->context->customer->isLogged()) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('You must be logged in to open this window.', 'advent'),
+                'message' => $this->translate('You must be logged in to open this window.'),
             ]);
         }
 
@@ -50,7 +50,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         if ($idBlock <= 0 || $requestedDay < 1 || $requestedDay > 24) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('Invalid calendar configuration.', 'advent'),
+                'message' => $this->translate('Invalid calendar configuration.'),
             ]);
         }
 
@@ -66,7 +66,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         if (!$row) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('Configuration not found', 'advent'),
+                'message' => $this->translate('Configuration not found'),
             ]);
         }
 
@@ -86,7 +86,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         if (!$window) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('This window is not configured yet.', 'advent'),
+                'message' => $this->translate('This window is not configured yet.'),
             ]);
         }
 
@@ -105,7 +105,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
             $this->renderJson([
                 'status' => false,
                 'message' => sprintf(
-                    $this->module->l('This window will open on %s.', 'advent'),
+                    $this->translate('This window will open on %s.'),
                     Tools::displayDate($windowDate->format('Y-m-d'), null, false)
                 ),
                 'reason' => 'too_early',
@@ -120,7 +120,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         ) {
             $this->renderJson([
                 'status' => false,
-                'message' => $this->module->l('You can only open today\'s window.', 'advent'),
+                'message' => $this->translate('You can only open today\'s window.'),
                 'reason' => 'not_today',
                 'available_on' => $windowDate->format('Y-m-d'),
             ]);
@@ -153,7 +153,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
                 $this->renderJson([
                     'status' => 'already_opened',
                     'day' => $requestedDay,
-                    'message' => $this->module->l('You have already opened this window.', 'advent'),
+                    'message' => $this->translate('You have already opened this window.'),
                     'reason' => 'already_opened',
                     'window' => $sanitizedWindow,
                 ]);
@@ -172,7 +172,7 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         $this->renderJson([
             'status' => true,
             'day' => $requestedDay,
-            'message' => $this->module->l('Window unlocked!', 'advent'),
+            'message' => $this->translate('Window unlocked!'),
             'window' => $sanitizedWindow,
         ]);
     }
@@ -460,5 +460,10 @@ class EverblockAdventModuleFrontController extends ModuleFrontController
         }
 
         return null;
+    }
+
+    protected function translate(string $message, array $parameters = []): string
+    {
+        return $this->context->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Advent');
     }
 }

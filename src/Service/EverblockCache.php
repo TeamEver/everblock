@@ -139,6 +139,8 @@ class EverblockCache
     public static function cacheDropByPattern(string $cacheKeyStart)
     {
         if (static::useNativeCache()) {
+            Cache::clean($cacheKeyStart);
+            Cache::clean($cacheKeyStart . '*');
             // Pas de gestion native par motif → on pourrait itérer manuellement sur les clés si nécessaire
             return;
         }

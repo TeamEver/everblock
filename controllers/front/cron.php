@@ -86,7 +86,7 @@ class EverblockcronModuleFrontController extends ModuleFrontController
             $input = new ArrayInput([
                 'command' => 'everblock:tools:execute',
                 'action' => trim(Tools::getValue('action')),
-                (int) $this->context->shop->id,
+                'idshop id' => (int) $this->context->shop->id,
             ]);
 
             $output = new BufferedOutput();

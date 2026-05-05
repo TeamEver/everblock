@@ -70,12 +70,12 @@
         <!-- Controls -->
         <button class="carousel-control-prev" type="button" data-bs-target="#{$carouselId}" data-bs-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+          <span class="visually-hidden">{l s='Previous' d='Modules.Everblock.Front'}</span>
         </button>
 
         <button class="carousel-control-next" type="button" data-bs-target="#{$carouselId}" data-bs-slide="next">
           <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+          <span class="visually-hidden">{l s='Next' d='Modules.Everblock.Front'}</span>
         </button>
       </div>
     {else}
@@ -112,12 +112,12 @@
       <!-- Controls -->
       <button class="carousel-control-prev" type="button" data-bs-target="#{$mobileCarouselId}" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">{l s='Previous' mod='everblock'}</span>
+        <span class="visually-hidden">{l s='Previous' d='Modules.Everblock.Front'}</span>
       </button>
 
       <button class="carousel-control-next" type="button" data-bs-target="#{$mobileCarouselId}" data-bs-slide="next">
         <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">{l s='Next' mod='everblock'}</span>
+        <span class="visually-hidden">{l s='Next' d='Modules.Everblock.Front'}</span>
       </button>
     </div>
   </section>

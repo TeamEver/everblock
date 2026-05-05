@@ -25,12 +25,12 @@
             {/if}>
             {* SEO : modal must have titles *}
             <p id="everblockModalLabel" class="h5 modal-title d-none">
-                {l s='Modal' mod='everblock'}
+                {l s='Modal' d='Modules.Everblock.Front'}
             </p>
             <!-- Contenu de la modal -->
             <div class="modal-body">
-                <!-- Bouton de fermeture aligné à droite -->
-                <button type="button" class="close float-right" data-bs-dismiss="modal" data-dismiss="modal" aria-label="{l s='Close' mod='everblock'}">
+                <!-- Bouton de fermeture aligne a droite -->
+                <button type="button" class="close float-right" data-bs-dismiss="modal" data-dismiss="modal" aria-label="{l s='Close' d='Modules.Everblock.Front'}">
                     <span aria-hidden="true">&times;</span>
                 </button>
                 {$everblock_modal->content nofilter}
@@ -41,7 +41,7 @@
                         {elseif isset($everblock_modal->file_render_type) && $everblock_modal->file_render_type == 'video'}
                             <video controls preload="metadata" class="w-100">
                                 <source src="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" type="video/{$everblock_modal->file_extension|escape:'htmlall':'UTF-8'}" />
-                                {l s='Your browser does not support the video tag.' mod='everblock'}
+                                {l s='Your browser does not support the video tag.' d='Modules.Everblock.Front'}
                             </video>
                         {else}
                             <iframe src="{$everblock_modal->file|escape:'htmlall':'UTF-8'}" class="w-100 everblock-modal-iframe" frameborder="0" allowfullscreen></iframe>
@@ -53,5 +53,4 @@
     </div>
 </div>
 {/if}
-
 

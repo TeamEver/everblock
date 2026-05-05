@@ -32,13 +32,13 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
         if (!$token || $token !== Tools::getToken(false)) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('Invalid token', 'mysteryboxes'),
+                'message' => $this->translate('Invalid token'),
             ]));
         }
         if (!$this->context->customer->isLogged()) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('You must be logged in to open a box', 'mysteryboxes'),
+                'message' => $this->translate('You must be logged in to open a box'),
             ]));
         }
         $idCustomer = (int) $this->context->customer->id;
@@ -46,7 +46,7 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
         if (!$idBlock) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('Invalid configuration', 'mysteryboxes'),
+                'message' => $this->translate('Invalid configuration'),
             ]));
         }
         $ipAddress = Tools::getRemoteAddr();
@@ -66,10 +66,7 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
                 . $idBlock . " AND ip_address = '" . pSQL($ipAddress) . "'"
             );
         }
-        $refusalMessage = $this->module->l(
-            'You have already opened a box. The game can only be played once per household.',
-            'mysteryboxes'
-        );
+        $refusalMessage = $this->translate('You have already opened a box. The game can only be played once per household.');
         $checkOnly = (bool) Tools::getValue('check');
         $idShop = (int) $this->context->shop->id;
         $idLang = (int) $this->context->language->id;
@@ -77,7 +74,7 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
         if (!$row) {
             $response = [
                 'status' => false,
-                'message' => $this->module->l('Configuration not found', 'mysteryboxes'),
+                'message' => $this->translate('Configuration not found'),
             ];
             if ($checkOnly) {
                 $response['played'] = false;
@@ -95,8 +92,8 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
         $endDateValue = $this->resolveConfigValue($settings['end_date'] ?? '');
         $preStartMessage = $this->resolveConfigValue($settings['pre_start_message'] ?? '');
         $postEndMessage = $this->resolveConfigValue($settings['post_end_message'] ?? '');
-        $defaultPreStartMessage = $this->module->l('The game has not started yet.', 'mysteryboxes');
-        $defaultPostEndMessage = $this->module->l('The game is over.', 'mysteryboxes');
+        $defaultPreStartMessage = $this->translate('The game has not started yet.');
+        $defaultPostEndMessage = $this->translate('The game is over.');
         $employeeLogged = $this->isAdmin();
         if ($employeeLogged) {
             $already = false;
@@ -158,7 +155,7 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
                     'status' => false,
                     'played' => false,
                     'playable' => false,
-                    'message' => $this->module->l('No boxes available', 'mysteryboxes'),
+                    'message' => $this->translate('No boxes available'),
                 ]));
             }
             die(json_encode([
@@ -214,7 +211,7 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
         if (!is_array($rawSegments) || empty($rawSegments)) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('No boxes available', 'mysteryboxes'),
+                'message' => $this->translate('No boxes available'),
                 'playable' => false,
             ]));
         }
@@ -222,7 +219,7 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
         if (empty($segments)) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('No boxes available', 'mysteryboxes'),
+                'message' => $this->translate('No boxes available'),
                 'playable' => false,
             ]));
         }
@@ -300,7 +297,7 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
         if ($total <= 0) {
             die(json_encode([
                 'status' => false,
-                'message' => $this->module->l('Invalid probabilities', 'mysteryboxes'),
+                'message' => $this->translate('Invalid probabilities'),
             ]));
         }
         $rand = (float) mt_rand() / (float) mt_getrandmax() * $total;
@@ -525,25 +522,25 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
             'date_add' => date('Y-m-d H:i:s'),
         ]);
         if ($rewardsDepleted) {
-            $message = $this->module->l('All rewards have already been distributed.', 'mysteryboxes');
+            $message = $this->translate('All rewards have already been distributed.');
         } else {
             if ($isWinning) {
-                $message = $this->module->l('Congratulations! You revealed:', 'mysteryboxes') . ' '
+                $message = $this->translate('Congratulations! You revealed:') . ' '
                     . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8') . ' - '
-                    . $this->module->l('Your code:', 'mysteryboxes') . ' ' . $code;
+                    . $this->translate('Your code:') . ' ' . $code;
             } else {
-                $message = $this->module->l('You revealed:', 'mysteryboxes') . ' '
+                $message = $this->translate('You revealed:') . ' '
                     . htmlspecialchars($resultLabel, ENT_QUOTES, 'UTF-8');
             }
         }
         $categoriesMessage = '';
         if (!empty($displayCategoryNames)) {
             $uniqueCategoryNames = array_values(array_unique($displayCategoryNames));
-            $categoriesMessage = $this->module->l('Valid for categories:', 'mysteryboxes') . ' ' . implode(', ', $uniqueCategoryNames);
+            $categoriesMessage = $this->translate('Valid for categories:') . ' ' . implode(', ', $uniqueCategoryNames);
         }
         $minimumPurchaseMessage = '';
         if ($segmentMinimumPurchase > 0) {
-            $minimumPurchaseMessage = $this->module->l('Minimum purchase (tax incl.):', 'mysteryboxes') . ' '
+            $minimumPurchaseMessage = $this->translate('Minimum purchase (tax incl.):') . ' '
                 . Tools::displayPrice($segmentMinimumPurchase, $priceCurrency);
         }
         die(json_encode([
@@ -639,5 +636,10 @@ class EverblockMysteryboxesModuleFrontController extends ModuleFrontController
         }
 
         return $value;
+    }
+
+    protected function translate(string $message, array $parameters = []): string
+    {
+        return $this->context->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Mysteryboxes');
     }
 }
