@@ -1994,7 +1994,7 @@ details[open] > .everblock-doc-accordion__summary::after {
 .everblock-shortcode-docs__params {
     display: grid;
     gap: 0.45rem;
-    margin-top: auto;
+/*    margin-top: auto;*/
 }
 
 .everblock-shortcode-docs__param {
