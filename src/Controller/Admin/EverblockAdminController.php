@@ -18,6 +18,7 @@ use Everblock\Tools\Query\GetAdminItemQuery;
 use Everblock\Tools\Query\ListAdminItemsQuery;
 use Everblock\Tools\Repository\BlockRepository;
 use Everblock\Tools\Repository\HookRepository;
+use Everblock\Tools\Service\AdminConfigurationManager;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use Language;
@@ -199,6 +200,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         private readonly BlockRepository $blockRepository,
         private readonly HookRepository $hookRepository,
         private readonly FormFactoryInterface $formFactory,
+        private readonly AdminConfigurationManager $adminConfigurationManager,
         private readonly TranslatorInterface $translator
     ) {
     }
@@ -208,8 +210,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
      */
     public function configurationAction(Request $request): Response
     {
+        /** @var \Everblock $module */
         $module = Module::getInstanceByName('everblock');
-        $viewContext = $module->getAdminConfigurationViewContext();
+        $viewContext = $this->adminConfigurationManager->getViewContext($module);
         $formOptions = [
             'banned_features' => $viewContext['banned_features'],
             'feature_choices' => $viewContext['feature_choices'],
@@ -219,7 +222,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             'languages' => $viewContext['languages'],
             'stores' => $viewContext['stores'],
         ];
-        $form = $this->formFactory->createNamed('', EverblockConfigurationType::class, $module->getAdminConfigurationFormData(), $formOptions);
+        $form = $this->formFactory->createNamed('', EverblockConfigurationType::class, $this->adminConfigurationManager->getFormData($module), $formOptions);
         $form->handleRequest($request);
 
         if ($request->isMethod('POST') || $request->query->has('deleteEVERBLOCK_MARKER_ICON') || $request->query->has('deleteEVERWP_POSTS_BG_IMAGE')) {
@@ -229,7 +232,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
                 return $this->redirectToRoute('admin_everblock_configuration');
             }
 
-            $result = $module->processAdminConfigurationRequest();
+            $result = $this->adminConfigurationManager->processRequest($module);
             foreach ($result['errors'] as $error) {
                 $this->addFlash('error', $error);
             }

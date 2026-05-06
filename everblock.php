@@ -73,10 +73,10 @@ everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Page::class, 'EverblockPage
 
 use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
+use Everblock\Tools\Service\AdminConfigurationManager;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\QcdThirdPartyBlockRenderer;
 use Everblock\Tools\Service\EverblockTools;
-use Everblock\Tools\Service\GithubReleaseChecker;
 use Everblock\Tools\Service\ImportFile;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
@@ -458,7 +458,6 @@ class Everblock extends Module
         // Uninstall SQL
         $sql = [];
         include dirname(__FILE__) . '/sql/uninstall.php';
-        Configuration::deleteByName('EVERPSCSS_CACHE');
         Configuration::deleteByName('EVERPSCSS_LINKS');
         Configuration::deleteByName('EVERPSJS_LINKS');
         Configuration::deleteByName('EVERPSCSS_P_LLOREM_NUMBER');
@@ -1338,219 +1337,93 @@ class Everblock extends Module
 
     public function getAdminConfigurationFormData(): array
     {
-        $data = $this->getConfigFormValues();
-        $languages = Language::getLanguages(false);
-
-        foreach ($languages as $language) {
-            $langId = (int) $language['id_lang'];
-            $data['EVEROPTIONS_TITLE_' . $langId] = $data['EVEROPTIONS_TITLE'][$langId] ?? '';
-            $data['EVER_TAB_TITLE_' . $langId] = $data['EVER_TAB_TITLE'][$langId] ?? '';
-            $data['EVER_TAB_CONTENT_' . $langId] = $data['EVER_TAB_CONTENT'][$langId] ?? '';
-        }
-
-        $featuresAsFlags = json_decode((string) Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
-        $data['EVERPS_FEATURES_AS_FLAGS'] = is_array($featuresAsFlags) ? array_map('intval', $featuresAsFlags) : [];
-        unset(
-            $data['EVEROPTIONS_TITLE'],
-            $data['EVER_TAB_TITLE'],
-            $data['EVER_TAB_CONTENT'],
-            $data['EVERPS_FEATURES_AS_FLAGS[]']
-        );
-
-        foreach ([
-            'EVERPSCSS_CACHE',
-            'EVERBLOCK_LOAD_FRONT_CSS',
-            'EVERBLOCK_USE_OBF',
-            'EVERBLOCK_TINYMCE',
-            'EVERBLOCK_DISABLE_WEBP',
-            'EVERINSTA_SHOW_CAPTION',
-            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING',
-            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_AVATAR',
-            'EVERBLOCK_GOOGLE_REVIEWS_SHOW_CTA',
-            'EVERBLOCK_STORELOCATOR_TOGGLE',
-            'EVERBLOCK_SOLDOUT_FLAG',
-        ] as $booleanField) {
-            $defaultValue = $booleanField === 'EVERBLOCK_LOAD_FRONT_CSS' ? 1 : 0;
-            $data[$booleanField] = (int) ($data[$booleanField] ?? $defaultValue);
-        }
-
-        return $data;
+        return $this->getAdminConfigurationManager()->getFormData($this);
     }
 
     public function getAdminConfigurationViewContext(): array
     {
-        $idLang = (int) $this->context->language->id;
-        $features = Feature::getFeatures($idLang);
-        $featureChoices = [];
-        $featureNames = [];
-        foreach ($features as $feature) {
-            $featureId = (int) $feature['id_feature'];
-            $featureName = (string) $feature['name'];
-            $featureChoices[$featureName] = $featureId;
-            $featureNames[$featureId] = $featureName;
-        }
-
-        $stores = Store::getStores($idLang);
-        $holidays = EverblockTools::getFrenchHolidays((int) date('Y'));
-        $bannedFeatures = json_decode((string) Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
-        if (!is_array($bannedFeatures)) {
-            $bannedFeatures = [];
-        }
-        $bannedFeatures = array_map('intval', $bannedFeatures);
-
-        $imageBaseUrl = $this->context->link->getBaseLink(null, null) . 'modules/' . $this->name . '/views/img/';
-        $wordpressBackground = Configuration::get('EVERWP_POSTS_BG_IMAGE');
-        $markerIcon = Configuration::get('EVERBLOCK_MARKER_ICON');
-
-        $cronLinks = [];
-        $cronToken = $this->encrypt($this->name . '/evercron');
-        foreach ($this->allowedActions as $action) {
-            $cronLinks[$action] = $this->context->link->getModuleLink(
-                $this->name,
-                'cron',
-                [
-                    'action' => $action,
-                    'evertoken' => $cronToken,
-                ]
-            );
-        }
-
-        return [
-            'banned_features' => $bannedFeatures,
-            'cron_links' => $cronLinks,
-            'current_images' => [
-                'EVERWP_POSTS_BG_IMAGE' => $wordpressBackground ? $imageBaseUrl . $wordpressBackground : null,
-                'EVERBLOCK_MARKER_ICON' => $markerIcon ? $imageBaseUrl . $markerIcon : null,
-            ],
-            'feature_choices' => $featureChoices,
-            'feature_names' => $featureNames,
-            'has_instagram_token' => (bool) Configuration::get('EVERINSTA_ACCESS_TOKEN'),
-            'has_stores' => !empty($stores),
-            'holidays' => $holidays,
-            'languages' => Language::getLanguages(false),
-            'module_version' => $this->version,
-            'stats' => $this->getModuleStatistics(),
-            'stores' => $stores,
-        ];
+        return $this->getAdminConfigurationManager()->getViewContext($this);
     }
 
     public function processAdminConfigurationRequest(): array
+    {
+        return $this->getAdminConfigurationManager()->processRequest($this);
+    }
+
+    public function getAdminConfigurationLegacyFormValues(): array
+    {
+        return $this->getConfigFormValues();
+    }
+
+    public function getAdminConfigurationModuleStatistics(): array
+    {
+        return $this->getModuleStatistics();
+    }
+
+    public function getAdminConfigurationAllowedActions(): array
+    {
+        return $this->allowedActions;
+    }
+
+    public function getAdminConfigurationCronToken(): string
+    {
+        return $this->encrypt($this->name . '/evercron');
+    }
+
+    public function prepareAdminConfigurationEnvironment(): void
     {
         $this->createUpgradeFile();
         $this->secureModuleFolder();
         EverblockTools::checkAndFixDatabase();
         $this->checkHooks();
+    }
+
+    public function resetAdminConfigurationMessages(): void
+    {
         $this->postErrors = [];
         $this->postSuccess = [];
+    }
 
-        if (Tools::isSubmit('deleteEVERBLOCK_MARKER_ICON')) {
-            $icon = Configuration::get('EVERBLOCK_MARKER_ICON');
-            if ($icon) {
-                $path = _PS_MODULE_DIR_ . $this->name . '/views/img/' . $icon;
-                if (file_exists($path)) {
-                    @unlink($path);
-                }
-                Configuration::deleteByName('EVERBLOCK_MARKER_ICON');
-                $this->postSuccess[] = $this->l('Marker icon removed.');
-            }
-        }
-
-        if (Tools::isSubmit('deleteEVERWP_POSTS_BG_IMAGE')) {
-            $background = Configuration::get('EVERWP_POSTS_BG_IMAGE');
-            if ($background) {
-                $path = _PS_MODULE_DIR_ . $this->name . '/views/img/' . $background;
-                if (file_exists($path)) {
-                    @unlink($path);
-                }
-                Configuration::deleteByName('EVERWP_POSTS_BG_IMAGE');
-                $this->postSuccess[] = $this->l('WordPress background image removed.');
-            }
-        }
-
-        if (Tools::isSubmit('submit' . $this->name . 'Module')) {
-            if (!isset($_POST['EVERPS_FEATURES_AS_FLAGS'])) {
-                $_POST['EVERPS_FEATURES_AS_FLAGS'] = [];
-            }
-            $this->postValidation();
-            if (!count($this->postErrors)) {
-                $this->postProcess();
-            }
-        }
-
-        if (Tools::isSubmit('submitUploadTabsFile')) {
-            $this->uploadTabsFile();
-        }
-        if (Tools::isSubmit('submitEmptyCache')) {
-            $this->emptyAllCache();
-        }
-        if (Tools::isSubmit('submitEmptyLogs')) {
-            $purged = EverblockTools::purgeNativePrestashopLogsTable();
-            $this->postSuccess[] = $purged ? $this->l('Log tables emptied') : $this->l('Log tables NOT emptied');
-            if (!$purged) {
-                array_pop($this->postSuccess);
-                $this->postErrors[] = $this->l('Log tables NOT emptied');
-            }
-        }
-        if (Tools::isSubmit('submitDropUnusedLangs')) {
-            $this->appendToolResult(EverblockTools::dropUnusedLangs());
-        }
-        if (Tools::isSubmit('submitSecureModuleFoldersWithApache')) {
-            $this->appendToolResult(EverblockTools::secureModuleFoldersWithApache());
-        }
-        if (Tools::isSubmit('submitBackupBlocks')) {
-            $backuped = EverblockTools::exportModuleTablesSQL();
-            $configBackuped = EverblockTools::exportConfigurationSQL();
-            $this->postSuccess[] = $backuped && $configBackuped ? $this->l('Backup done') : $this->l('Backup failed');
-            if (!$backuped || !$configBackuped) {
-                array_pop($this->postSuccess);
-                $this->postErrors[] = $this->l('Backup failed');
-            }
-        }
-        if (Tools::isSubmit('submitRestoreBackup')) {
-            $restored = EverblockTools::restoreModuleTablesFromBackup();
-            $this->postSuccess[] = $restored ? $this->l('Restore done') : $this->l('Restore failed');
-            if (!$restored) {
-                array_pop($this->postSuccess);
-                $this->postErrors[] = $this->l('Restore failed');
-            }
-        }
-        if (Tools::isSubmit('submitCreateProduct')) {
-            $created = EverblockTools::generateProducts((int) $this->context->shop->id);
-            $this->postSuccess[] = $created ? $this->l('Products creation done') : $this->l('Products creation failed');
-            if (!$created) {
-                array_pop($this->postSuccess);
-                $this->postErrors[] = $this->l('Products creation failed');
-            }
-        }
-        if (Tools::isSubmit('submitMigrateUrls') && Tools::getValue('EVERPS_OLD_URL') && Tools::getValue('EVERPS_NEW_URL')) {
-            $this->appendToolResult(EverblockTools::migrateUrls(
-                Tools::getValue('EVERPS_OLD_URL'),
-                Tools::getValue('EVERPS_NEW_URL'),
-                (int) $this->context->shop->id
-            ));
-        }
-        if (Tools::isSubmit('submitEverblockUpdate')) {
-            $this->processEverblockUpdate(new GithubReleaseChecker($this->version));
-        }
-
+    public function getAdminConfigurationMessages(): array
+    {
         return [
             'errors' => $this->postErrors,
             'success' => $this->postSuccess,
         ];
     }
 
-    private function appendToolResult($result): void
+    public function runAdminConfigurationPostValidation(): void
     {
-        if (!is_array($result)) {
-            return;
+        $this->postValidation();
+    }
+
+    public function runAdminConfigurationPostProcess(): void
+    {
+        $this->postProcess();
+    }
+
+    public function runAdminConfigurationTabsUpload(): void
+    {
+        $this->uploadTabsFile();
+    }
+
+    public function runAdminConfigurationCacheCleanup(): void
+    {
+        $this->emptyAllCache();
+    }
+
+    private function getAdminConfigurationManager(): AdminConfigurationManager
+    {
+        try {
+            $container = SymfonyContainer::getInstance();
+            if ($container && $container->has(AdminConfigurationManager::class)) {
+                return $container->get(AdminConfigurationManager::class);
+            }
+        } catch (Throwable $exception) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
         }
 
-        foreach ($result['postErrors'] ?? [] as $error) {
-            $this->postErrors[] = $error;
-        }
-        foreach ($result['querySuccess'] ?? [] as $success) {
-            $this->postSuccess[] = $success;
-        }
+        return new AdminConfigurationManager();
     }
 
     private function renderAdminTwig(string $template, array $parameters = []): string
@@ -1586,188 +1459,6 @@ class Everblock extends Module
             && Tools::getValue('ajax')
             && Tools::getValue('action') === 'EverblockSearchFaq'
             && Tools::getValue('configure') === $this->name;
-    }
-
-    protected function processEverblockUpdate(GithubReleaseChecker $releaseChecker): void
-    {
-        if (!$releaseChecker->isEverblockUpdateAvailable()) {
-            $this->postErrors[] = $this->l('Ever Block is already up to date.');
-            return;
-        }
-
-        $release = $releaseChecker->getLatestEverblockRelease();
-        if (!$release || empty($release['tag_name'])) {
-            $this->postErrors[] = $this->l('Unable to fetch the latest release details.');
-            return;
-        }
-
-        $tagName = (string) $release['tag_name'];
-        $downloadUrl = 'https://github.com/TeamEver/everblock/archive/refs/tags/' . rawurlencode($tagName) . '.zip';
-        $tmpBase = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'everblock_update' . DIRECTORY_SEPARATOR;
-        if (!is_dir($tmpBase) && !@mkdir($tmpBase, 0755, true)) {
-            $this->postErrors[] = $this->l('Unable to prepare the temporary update directory.');
-            return;
-        }
-
-        $tempFile = tempnam($tmpBase, 'everblock_');
-        if (!$tempFile) {
-            $this->postErrors[] = $this->l('Unable to create the update archive.');
-            return;
-        }
-        $zipPath = $tempFile . '.zip';
-        @rename($tempFile, $zipPath);
-
-        if (!Tools::copy($downloadUrl, $zipPath)) {
-            @unlink($zipPath);
-            $this->postErrors[] = $this->l('Unable to download the latest release archive.');
-            return;
-        }
-
-        $extractDir = $tmpBase . 'extract_' . uniqid('', true) . DIRECTORY_SEPARATOR;
-        if (!@mkdir($extractDir, 0755, true)) {
-            @unlink($zipPath);
-            $this->postErrors[] = $this->l('Unable to prepare the extraction directory.');
-            return;
-        }
-
-        $zip = new ZipArchive();
-        if ($zip->open($zipPath) !== true) {
-            $this->removeDirectory($extractDir);
-            @unlink($zipPath);
-            $this->postErrors[] = $this->l('Unable to open the downloaded archive.');
-            return;
-        }
-        $zip->extractTo($extractDir);
-        $zip->close();
-        @unlink($zipPath);
-
-        $sourceDir = $this->locateEverblockSource($extractDir);
-        if (!$sourceDir) {
-            $this->removeDirectory($extractDir);
-            $this->postErrors[] = $this->l('Unable to locate the module files in the archive.');
-            return;
-        }
-
-        if (!$this->replaceModuleFiles($sourceDir)) {
-            $this->removeDirectory($extractDir);
-            $this->postErrors[] = $this->l('Unable to install the latest release.');
-            return;
-        }
-
-        $this->removeDirectory($extractDir);
-        $this->postSuccess[] = $this->l('Ever Block has been updated. The page will now reload.');
-        $this->redirectToModuleConfiguration();
-    }
-
-    protected function locateEverblockSource(string $extractDir)
-    {
-        if (file_exists($extractDir . 'everblock.php')) {
-            return $extractDir;
-        }
-
-        $entries = @scandir($extractDir);
-        if (!is_array($entries)) {
-            return null;
-        }
-
-        foreach ($entries as $entry) {
-            if ($entry === '.' || $entry === '..') {
-                continue;
-            }
-            $candidate = $extractDir . $entry . DIRECTORY_SEPARATOR;
-            if (is_dir($candidate) && file_exists($candidate . 'everblock.php')) {
-                return $candidate;
-            }
-        }
-
-        return null;
-    }
-
-    protected function replaceModuleFiles(string $sourceDir): bool
-    {
-        $targetDir = rtrim(_PS_MODULE_DIR_, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $this->name;
-        $backupDir = $targetDir . '_backup_' . date('YmdHis');
-
-        if (@rename($targetDir, $backupDir)) {
-            if (@rename($sourceDir, $targetDir)) {
-                $this->removeDirectory($backupDir);
-                return true;
-            }
-            @rename($backupDir, $targetDir);
-            return false;
-        }
-
-        return $this->recursiveCopy($sourceDir, $targetDir);
-    }
-
-    protected function recursiveCopy(string $sourceDir, string $targetDir): bool
-    {
-        if (!is_dir($sourceDir)) {
-            return false;
-        }
-        if (!is_dir($targetDir) && !@mkdir($targetDir, 0755, true)) {
-            return false;
-        }
-
-        $entries = scandir($sourceDir);
-        if (!is_array($entries)) {
-            return false;
-        }
-
-        foreach ($entries as $entry) {
-            if ($entry === '.' || $entry === '..') {
-                continue;
-            }
-            $sourcePath = $sourceDir . DIRECTORY_SEPARATOR . $entry;
-            $targetPath = $targetDir . DIRECTORY_SEPARATOR . $entry;
-            if (is_dir($sourcePath)) {
-                if (!$this->recursiveCopy($sourcePath, $targetPath)) {
-                    return false;
-                }
-                continue;
-            }
-            if (!@copy($sourcePath, $targetPath)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-        $entries = scandir($dir);
-        if (!is_array($entries)) {
-            return;
-        }
-        foreach ($entries as $entry) {
-            if ($entry === '.' || $entry === '..') {
-                continue;
-            }
-            $path = $dir . DIRECTORY_SEPARATOR . $entry;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                @unlink($path);
-            }
-        }
-        @rmdir($dir);
-    }
-
-    protected function redirectToModuleConfiguration(): void
-    {
-        $params = [
-            'configure' => $this->name,
-            'module_name' => $this->name,
-        ];
-        if ($this->tab) {
-            $params['tab_module'] = $this->tab;
-        }
-        $url = $this->context->link->getAdminLink('AdminModules', true, [], $params);
-        Tools::redirectAdmin($url);
     }
 
     protected function sanitizeModalFileName($originalName)
@@ -2098,7 +1789,6 @@ class Everblock extends Module
             'EVERBLOCK_GMAP_KEY' => Configuration::get('EVERBLOCK_GMAP_KEY'),
             'EVERBLOCK_MARKER_ICON' => Configuration::get('EVERBLOCK_MARKER_ICON'),
             'EVERBLOCK_STORELOCATOR_TOGGLE' => Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
-            'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
             'EVERBLOCK_SOLDOUT_FLAG' => Configuration::get('EVERBLOCK_SOLDOUT_FLAG'),
             'EVER_SOLDOUT_COLOR' => Configuration::get('EVER_SOLDOUT_COLOR'),
@@ -2117,7 +1807,6 @@ class Everblock extends Module
             'EVERPSCSS_P_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_P_LLOREM_NUMBER'),
             'EVERPSCSS_S_LLOREM_NUMBER' => Configuration::get('EVERPSCSS_S_LLOREM_NUMBER'),
             'EVERBLOCK_TINYMCE' => Configuration::get('EVERBLOCK_TINYMCE'),
-            'EVERBLOCK_DISABLE_WEBP' => Configuration::get('EVERBLOCK_DISABLE_WEBP'),
             'EVERPS_OLD_URL' => '',
             'EVERPS_NEW_URL' => '',
             'EVER_TAB_CONTENT' => $this->getConfigInMultipleLangs('EVER_TAB_CONTENT'),
@@ -2354,10 +2043,6 @@ class Everblock extends Module
             'EVER_TAB_CONTENT',
             $tabContent,
             true
-        );
-        Configuration::updateValue(
-            'EVERPSCSS_CACHE',
-            Tools::getValue('EVERPSCSS_CACHE')
         );
         Configuration::updateValue(
             'EVERBLOCK_LOAD_FRONT_CSS',
@@ -2652,10 +2337,6 @@ class Everblock extends Module
             Tools::getValue('EVERBLOCK_TINYMCE')
         );
         Configuration::updateValue(
-            'EVERBLOCK_DISABLE_WEBP',
-            Tools::getValue('EVERBLOCK_DISABLE_WEBP')
-        );
-        Configuration::updateValue(
             'EVERBLOCK_SOLDOUT_FLAG',
             Tools::getValue('EVERBLOCK_SOLDOUT_FLAG')
         );
@@ -2678,9 +2359,6 @@ class Everblock extends Module
         $cacheId = $this->name . 'NeedProductFlagsHook_' . $idShop;
         EverblockCache::cacheDrop($cacheId);
         $this->updateProductFlagsHook();
-        if ((bool) Tools::getValue('EVERPSCSS_CACHE') === true) {
-            $this->emptyAllCache();
-        }
         $stores = EverblockTools::getStoreLocatorData();
         $filename = 'store-locator-' . $idShop . '.js';
         $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/' . $filename;
@@ -5053,7 +4731,7 @@ class Everblock extends Module
                 'rule' => $faqBase . '/tag/{tag}',
                 'keywords' => [
                     'tag' => [
-                        'regexp' => '[_a-zA-Z0-9\pL-]*',
+                        'regexp' => '[_a-zA-Z0-9\pL-]+',
                         'param' => 'tag',
                         'required' => true,
                     ],

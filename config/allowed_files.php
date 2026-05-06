@@ -119,6 +119,7 @@ return [
     'src/Repository/ProductContentRepository.php',
     'src/Repository/RepositoryProvider.php',
     'src/Repository/ShortcodeRepository.php',
+    'src/Service/AdminConfigurationManager.php',
     'src/Service/EverblockCache.php',
     'src/Service/EverblockPreviewBuilder.php',
     'src/Service/EverblockTools.php',

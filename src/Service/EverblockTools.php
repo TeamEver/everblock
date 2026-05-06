@@ -3838,9 +3838,7 @@ class EverblockTools
             $postErrors[] = $e->getMessage();
         }
 
-        if ((bool) EverblockCache::getModuleConfiguration('EVERPSCSS_CACHE') === true) {
-            EverblockCache::clearAllModuleCache();
-        }
+        EverblockCache::clearAllModuleCache();
 
         return [
             'postErrors' => $postErrors,
@@ -5966,10 +5964,6 @@ class EverblockTools
 
     public static function convertImagesToWebP($htmlContent)
     {
-        if ((bool) Configuration::get('EVERBLOCK_DISABLE_WEBP') === true) {
-            return $htmlContent;
-        }
-
         if (!is_string($htmlContent) || stripos($htmlContent, '<img') === false) {
             return $htmlContent;
         }
@@ -6005,7 +5999,7 @@ class EverblockTools
                 }
             }
 
-            if (!preg_match('/\balt\s*=/i', $imgTag)) {
+            if (!preg_match('/\balt\s*=/i', $imgTag) || preg_match('/\balt\s*=\s*([\'\"])\s*\1/i', $imgTag)) {
                 $imgTag = self::upsertHtmlAttribute($imgTag, 'alt', (string) $shopName);
             }
 
@@ -6394,7 +6388,20 @@ class EverblockTools
             return self::filePathToUrl($webpPath);
         }
 
-        switch (strtolower($pathInfo['extension'] ?? '')) {
+        $extension = strtolower($pathInfo['extension'] ?? '');
+        $size = @getimagesize($imagePath);
+        $mime = is_array($size) ? (string) ($size['mime'] ?? '') : '';
+        $mimeExtensions = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/avif' => 'avif',
+        ];
+        if (isset($mimeExtensions[$mime])) {
+            $extension = $mimeExtensions[$mime] ?? $extension;
+        }
+
+        switch ($extension) {
             case 'jpeg':
             case 'jpg':
                 $image = @imagecreatefromjpeg($imagePath);
@@ -6404,6 +6411,9 @@ class EverblockTools
                 break;
             case 'gif':
                 $image = @imagecreatefromgif($imagePath);
+                break;
+            case 'avif':
+                $image = function_exists('imagecreatefromavif') ? @imagecreatefromavif($imagePath) : false;
                 break;
             default:
                 return false;
@@ -6438,19 +6448,33 @@ class EverblockTools
         }
 
         // Check if the image is hosted on a different domain
-        if (isset($parsedUrl['host']) && $currentHost && $parsedUrl['host'] !== $currentHost) {
+        if (isset($parsedUrl['host']) && $currentHost && strcasecmp($parsedUrl['host'], $currentHost) !== 0) {
             // Download the image and return the local file path
             return self::downloadImage($url);
         } else {
             // Convert the URL path to a relative file path
             $relativePath = urldecode($parsedUrl['path']);
-            return _PS_ROOT_DIR_ . $relativePath;
+            $baseUri = defined('__PS_BASE_URI__') ? (string) __PS_BASE_URI__ : '/';
+            if ($baseUri !== '/' && strpos($relativePath, $baseUri) === 0) {
+                $relativePath = substr($relativePath, strlen($baseUri) - 1);
+            }
+
+            $localPath = _PS_ROOT_DIR_ . $relativePath;
+            if (is_file($localPath)) {
+                return $localPath;
+            }
+
+            return filter_var($url, FILTER_VALIDATE_URL) ? self::downloadImage($url) : $localPath;
         }
     }
 
     private static function downloadImage($url)
     {
         try {
+            if (!self::ensureCmsDirectoryExists()) {
+                return false;
+            }
+
             $url = str_replace(' ', '%20', $url);
             // Parse the URL to get the filename
             $parsedUrl = parse_url($url);
@@ -6458,7 +6482,7 @@ class EverblockTools
             if ($extension === 'jpeg') {
                 $extension = 'jpg';
             }
-            if (!in_array($extension, ['jpg', 'png', 'gif', 'webp'], true)) {
+            if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'], true)) {
                 $extension = 'jpg';
             }
             $fileName = 'everblock-remote-' . substr(sha1($url), 0, 16) . '.' . $extension;

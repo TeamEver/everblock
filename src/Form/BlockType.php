@@ -166,7 +166,15 @@ final class BlockType extends AbstractType
                     'data-everblock-placeholder' => 'Search display size',
                 ],
             ])
-            ->add('background', TextType::class, ['label' => 'Background color', 'required' => false, 'attr' => ['type' => 'color']])
+            ->add('background', TextType::class, [
+                'label' => 'Background color',
+                'required' => false,
+                'attr' => [
+                    'type' => 'color',
+                    'pattern' => '^#[0-9A-Fa-f]{6}$',
+                    'placeholder' => '#000000',
+                ],
+            ])
             ->add('css_class', TextType::class, ['label' => 'CSS class', 'required' => false])
             ->add('data_attribute', TextType::class, ['label' => 'Data attributes', 'required' => false])
             ->add('categories', ChoiceType::class, [

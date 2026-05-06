@@ -43,11 +43,9 @@ final class EverblockConfigurationType extends AbstractType
             'settings' => [
                 'EVEROPTIONS_POSITION',
                 'EVERBLOCK_MAINTENANCE_PSSWD',
-                'EVERPSCSS_CACHE',
                 'EVERBLOCK_LOAD_FRONT_CSS',
                 'EVERBLOCK_USE_OBF',
                 'EVERBLOCK_TINYMCE',
-                'EVERBLOCK_DISABLE_WEBP',
                 'EVERPS_DUMMY_NBR',
                 'EVERPSCSS_P_LLOREM_NUMBER',
                 'EVERPSCSS_S_LLOREM_NUMBER',
@@ -209,6 +207,10 @@ final class EverblockConfigurationType extends AbstractType
                     'After shipping form' => 3,
                 ],
                 'required' => false,
+                'attr' => [
+                    'class' => 'everblock-enhanced-select',
+                    'data-everblock-placeholder' => 'Search position',
+                ],
             ])
             ->add('EVERBLOCK_MAINTENANCE_PSSWD', TextType::class, [
                 'label' => 'Maintenance password',
@@ -216,11 +218,9 @@ final class EverblockConfigurationType extends AbstractType
                 'help' => 'People with the password will be able to access the store in maintenance mode.',
             ]);
 
-        $this->addSwitch($builder, 'EVERPSCSS_CACHE', 'Refresh Everblock cache on saving ?');
         $this->addSwitch($builder, 'EVERBLOCK_LOAD_FRONT_CSS', 'Load everblock.css on the front office ?');
         $this->addSwitch($builder, 'EVERBLOCK_USE_OBF', 'Enable front-office script for obfuscation ?');
         $this->addSwitch($builder, 'EVERBLOCK_TINYMCE', 'Extends TinyMCE on blocks management ?');
-        $this->addSwitch($builder, 'EVERBLOCK_DISABLE_WEBP', 'Disable automatic conversion of images to webp format');
 
         $builder
             ->add('EVERPS_DUMMY_NBR', TextType::class, [
@@ -297,6 +297,10 @@ final class EverblockConfigurationType extends AbstractType
                     'Most recent' => 'newest',
                 ],
                 'required' => false,
+                'attr' => [
+                    'class' => 'everblock-enhanced-select',
+                    'data-everblock-placeholder' => 'Search sort order',
+                ],
             ]);
 
         $this->addSwitch($builder, 'EVERBLOCK_GOOGLE_REVIEWS_SHOW_RATING', 'Show overall rating');
@@ -346,12 +350,12 @@ final class EverblockConfigurationType extends AbstractType
             ->add('EVER_SOLDOUT_COLOR', TextType::class, [
                 'label' => 'Background color for Sold out flag',
                 'required' => false,
-                'attr' => ['type' => 'color'],
+                'attr' => $this->hexColorAttributes(),
             ])
             ->add('EVER_SOLDOUT_TEXTCOLOR', TextType::class, [
                 'label' => 'Text color for Sold out flag',
                 'required' => false,
-                'attr' => ['type' => 'color'],
+                'attr' => $this->hexColorAttributes(),
             ]);
 
         foreach ($options['banned_features'] as $featureId) {
@@ -361,12 +365,12 @@ final class EverblockConfigurationType extends AbstractType
                 ->add('EVERPS_FEATURE_COLOR_' . $featureId, TextType::class, [
                     'label' => 'Background color for Feature: ' . $featureName,
                     'required' => false,
-                    'attr' => ['type' => 'color'],
+                    'attr' => $this->hexColorAttributes(),
                 ])
                 ->add('EVERPS_FEATURE_TEXTCOLOR_' . $featureId, TextType::class, [
                     'label' => 'Text color for Feature: ' . $featureName,
                     'required' => false,
-                    'attr' => ['type' => 'color'],
+                    'attr' => $this->hexColorAttributes(),
                 ]);
         }
 
@@ -473,5 +477,14 @@ final class EverblockConfigurationType extends AbstractType
             'multiple' => false,
             'required' => true,
         ]);
+    }
+
+    private function hexColorAttributes(): array
+    {
+        return [
+            'type' => 'color',
+            'pattern' => '^#[0-9A-Fa-f]{6}$',
+            'placeholder' => '#000000',
+        ];
     }
 }

@@ -132,12 +132,16 @@ class Page
 
     public function getCoverImageData(Context $context): array
     {
+        $alt = is_string($this->title) && trim($this->title) !== ''
+            ? $this->title
+            : (string) Configuration::get('PS_SHOP_NAME');
+
         if (!$this->cover_image) {
             return [
                 'url' => '',
                 'width' => 0,
                 'height' => 0,
-                'alt' => is_string($this->title) ? $this->title : '',
+                'alt' => $alt,
             ];
         }
 
@@ -156,7 +160,7 @@ class Page
             'url' => $context->link->getMediaLink(_PS_IMG_ . 'pages/' . $this->cover_image),
             'width' => $width,
             'height' => $height,
-            'alt' => is_string($this->title) ? $this->title : '',
+            'alt' => $alt,
         ];
     }
 

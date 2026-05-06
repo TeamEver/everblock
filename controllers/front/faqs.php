@@ -32,7 +32,7 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
     public function init()
     {
         parent::init();
-        $this->tagName = (string) Tools::getValue('tag', '');
+        $this->tagName = $this->resolveTagName((string) Tools::getValue('tag', ''));
         $this->isAllFaqsPage = trim($this->tagName) === '';
     }
 
@@ -128,12 +128,8 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
 
     protected function buildPagination(int $currentPage, int $totalPages, int $itemsPerPage, int $totalItems): array
     {
-        $baseParams = [];
-        if (!$this->isAllFaqsPage) {
-            $baseParams['tag'] = $this->tagName;
-        }
-
-        $baseLink = $this->context->link->getModuleLink($this->module->name, 'faqs', $baseParams);
+        $tagName = $this->isAllFaqsPage ? '' : $this->tagName;
+        $baseLink = $this->buildFaqsLink($tagName);
         $pages = [];
 
         for ($page = 1; $page <= $totalPages; ++$page) {
@@ -141,9 +137,7 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
                 'number' => $page,
                 'link' => $page === 1
                     ? $baseLink
-                    : $this->context->link->getModuleLink($this->module->name, 'faqs', array_merge($baseParams, [
-                        'page' => $page,
-                    ])),
+                    : $this->buildFaqsLink($tagName, $page),
                 'active' => $page === $currentPage,
             ];
         }
@@ -158,14 +152,10 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
             'previous_link' => $currentPage > 1
                 ? ($currentPage - 1 === 1
                     ? $baseLink
-                    : $this->context->link->getModuleLink($this->module->name, 'faqs', array_merge($baseParams, [
-                        'page' => $currentPage - 1,
-                    ])))
+                    : $this->buildFaqsLink($tagName, $currentPage - 1))
                 : $baseLink,
             'next_link' => $currentPage < $totalPages
-                ? $this->context->link->getModuleLink($this->module->name, 'faqs', array_merge($baseParams, [
-                    'page' => $currentPage + 1,
-                ]))
+                ? $this->buildFaqsLink($tagName, $currentPage + 1)
                 : $baseLink,
             'pages' => $pages,
         ];
@@ -221,25 +211,68 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
 
     public function getCanonicalURL()
     {
-        $params = [];
-        if (!$this->isAllFaqsPage) {
-            $params['tag'] = $this->tagName;
-        }
-
-        return $this->context->link->getModuleLink($this->module->name, 'faqs', $params);
+        return $this->buildFaqsLink($this->isAllFaqsPage ? '' : $this->tagName);
     }
 
     protected function attachTagLinks(array $faqs): array
     {
         foreach ($faqs as $faq) {
             if (!isset($faq->tag_link)) {
-                $faq->tag_link = $this->context->link->getModuleLink($this->module->name, 'faqs', [
-                    'tag' => $faq->tag_name,
-                ]);
+                $faq->tag_link = $this->buildFaqsLink((string) $faq->tag_name);
             }
         }
 
         return $faqs;
+    }
+
+    protected function buildFaqsLink(string $tagName = '', int $page = 1): string
+    {
+        $params = [];
+        if ($page > 1) {
+            $params['page'] = $page;
+        }
+
+        if (trim($tagName) === '') {
+            return $this->context->link->getPageLink(
+                'module-everblock-faqs-list',
+                null,
+                (int) $this->context->language->id,
+                $params
+            );
+        }
+
+        $params = array_merge([
+            'tag' => Tools::link_rewrite($tagName),
+        ], $params);
+
+        return $this->context->link->getPageLink(
+            'module-everblock-faqs-tag',
+            null,
+            (int) $this->context->language->id,
+            $params
+        );
+    }
+
+    protected function resolveTagName(string $tagName): string
+    {
+        $tagName = trim($tagName);
+        if ($tagName === '') {
+            return '';
+        }
+
+        $shopId = (int) $this->context->shop->id;
+        if (EverblockFaq::countActiveByTagName($shopId, $tagName) > 0) {
+            return $tagName;
+        }
+
+        $tagRewrite = Tools::link_rewrite($tagName);
+        foreach (EverblockFaq::getAllFaq($shopId, (int) $this->context->language->id) as $faq) {
+            if (Tools::link_rewrite((string) $faq->tag_name) === $tagRewrite) {
+                return (string) $faq->tag_name;
+            }
+        }
+
+        return $tagName;
     }
 
     protected function translate(string $message, array $parameters = []): string

@@ -122,7 +122,7 @@ final class SaveAdminItemHandler
             $page->cover_image = (string) $command->data['cover_image_name'];
         }
         foreach (['name', 'title', 'meta_description', 'short_description', 'link_rewrite', 'content'] as $field) {
-            $page->{$field} = $this->localized($command->data, $field, $command->languages, $field === 'content');
+            $page->{$field} = $this->localized($command->data, $field, $command->languages, in_array($field, ['short_description', 'content'], true));
         }
         foreach ($page->link_rewrite as $langId => $rewrite) {
             $rewrite = trim((string) $rewrite);

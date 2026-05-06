@@ -6,7 +6,12 @@
       <h1 itemprop="headline">{$everblock_page->title|default:''}</h1>
       {if $everblock_page_image}
         <figure class="everblock-page__cover">
-            <img src="{$everblock_page_image}" alt="{$everblock_page->title|default:''|escape:'htmlall':'UTF-8'}" loading="lazy" itemprop="image">
+            <img src="{$everblock_page_image|escape:'htmlall':'UTF-8'}"
+                 alt="{$everblock_page_image_data.alt|default:$everblock_page->title|default:''|escape:'htmlall':'UTF-8'}"
+                 width="{$everblock_page_image_data.width|default:1200|intval}"
+                 height="{$everblock_page_image_data.height|default:675|intval}"
+                 loading="lazy"
+                 itemprop="image">
         </figure>
       {/if}
       {if $everblock_page->short_description}
