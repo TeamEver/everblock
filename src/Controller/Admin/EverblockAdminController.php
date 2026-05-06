@@ -30,6 +30,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Translation\TranslatorInterface;
 
 final class EverblockAdminController extends FrameworkBundleAdminController
 {
@@ -197,7 +198,8 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         private readonly CommandBusInterface $commandBus,
         private readonly BlockRepository $blockRepository,
         private readonly HookRepository $hookRepository,
-        private readonly FormFactoryInterface $formFactory
+        private readonly FormFactoryInterface $formFactory,
+        private readonly TranslatorInterface $translator
     ) {
     }
 
@@ -690,11 +692,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
 
     private function transAdmin(string $message, array $parameters = []): string
     {
-        if (method_exists($this, 'getTranslator')) {
-            return $this->getTranslator()->trans($message, $parameters, 'Modules.Everblock.Admin');
-        }
-
-        return $this->container->get('translator')->trans($message, $parameters, 'Modules.Everblock.Admin');
+        return $this->translator->trans($message, $parameters, 'Modules.Everblock.Admin');
     }
 
     private function config(string $section): array

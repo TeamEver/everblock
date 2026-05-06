@@ -5,6 +5,8 @@ services:
 
     Everblock\Tools\Controller\Admin\EverblockAdminController:
         public: true
+        arguments:
+            $translator: '@translator'
         tags:
             - { name: controller.service_arguments }
 

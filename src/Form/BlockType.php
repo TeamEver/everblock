@@ -159,7 +159,7 @@ final class BlockType extends AbstractType
             ])
             ->add('bootstrap_class', ChoiceType::class, [
                 'label' => 'Bootstrap size',
-                'choices' => ['None' => 0, '100%' => 1, '1/2' => 2, '1/3' => 3, '1/4' => 4, '1/6' => 6],
+                'choices' => ['None' => '0', '100%' => '1', '1/2' => '2', '1/3' => '3', '1/4' => '4', '1/6' => '6'],
                 'required' => false,
                 'attr' => [
                     'class' => 'everblock-enhanced-select',

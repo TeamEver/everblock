@@ -66,7 +66,8 @@ final class SaveAdminItemHandler
             $block->{$field} = json_encode(array_values(array_map('intval', (array) ($data[$field] ?? []))));
         }
         foreach (['background', 'css_class', 'data_attribute', 'bootstrap_class', 'date_start', 'date_end'] as $field) {
-            $block->{$field} = ($data[$field] ?? null) !== '' ? ($data[$field] ?? null) : null;
+            $value = $data[$field] ?? null;
+            $block->{$field} = $value !== null && $value !== '' ? (string) $value : null;
         }
         $block->content = $this->localized($data, 'content', $command->languages, true);
         $block->custom_code = $this->localized($data, 'custom_code', $command->languages, true);

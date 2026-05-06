@@ -5370,6 +5370,11 @@ class Everblock extends Module
         if (Tools::getValue('id_cms')) {
             $idObj = (int) Tools::getValue('id_cms');
         }
+        $everblock = EverblockClass::getBlocks(
+            (int) $id_hook,
+            (int) $context->language->id,
+            (int) $context->shop->id
+        );
         $cacheId = $this->name
         . '-id_hook-'
         . (int) $id_hook

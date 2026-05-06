@@ -126,20 +126,20 @@ class Block
         $block->device = (int) ($row['device'] ?? 0);
         $block->id_shop = (int) ($row['id_shop'] ?? 1);
         $block->position = (int) ($row['position'] ?? 0);
-        $block->categories = $row['categories'] ?? null;
-        $block->manufacturers = $row['manufacturers'] ?? null;
-        $block->suppliers = $row['suppliers'] ?? null;
-        $block->cms_categories = $row['cms_categories'] ?? null;
-        $block->groups = $row['groups'] ?? null;
-        $block->background = $row['background'] ?? null;
-        $block->css_class = $row['css_class'] ?? null;
-        $block->data_attribute = $row['data_attribute'] ?? null;
-        $block->bootstrap_class = $row['bootstrap_class'] ?? null;
+        $block->categories = self::nullableString($row['categories'] ?? null);
+        $block->manufacturers = self::nullableString($row['manufacturers'] ?? null);
+        $block->suppliers = self::nullableString($row['suppliers'] ?? null);
+        $block->cms_categories = self::nullableString($row['cms_categories'] ?? null);
+        $block->groups = self::nullableString($row['groups'] ?? null);
+        $block->background = self::nullableString($row['background'] ?? null);
+        $block->css_class = self::nullableString($row['css_class'] ?? null);
+        $block->data_attribute = self::nullableString($row['data_attribute'] ?? null);
+        $block->bootstrap_class = self::nullableString($row['bootstrap_class'] ?? null);
         $block->modal = (bool) ($row['modal'] ?? false);
         $block->delay = (int) ($row['delay'] ?? 0);
         $block->timeout = (int) ($row['timeout'] ?? 0);
-        $block->date_start = $row['date_start'] ?? null;
-        $block->date_end = $row['date_end'] ?? null;
+        $block->date_start = self::nullableString($row['date_start'] ?? null);
+        $block->date_end = self::nullableString($row['date_end'] ?? null);
         $block->active = (bool) ($row['active'] ?? false);
 
         if (isset($row['id_lang'])) {
@@ -241,6 +241,15 @@ class Block
         EverblockCache::cacheStore($cacheId, $class);
 
         return $class;
+    }
+
+    private static function nullableString($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     private function copyFrom(self $block): void
