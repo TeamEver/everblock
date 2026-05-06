@@ -115,7 +115,6 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $blockId,
             $this->context->language->id,
             $this->context->shop->id
-
         );
         if (!Validate::isLoadedObject($block)) {
             die();

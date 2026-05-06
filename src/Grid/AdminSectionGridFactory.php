@@ -77,7 +77,7 @@ final class AdminSectionGridFactory
                         ])
                 )
                 ->add(
-                (new LinkRowAction('duplicate'))
+                    (new LinkRowAction('duplicate'))
                     ->setName('Duplicate')
                     ->setIcon('content_copy')
                     ->setOptions([

@@ -19,5 +19,5 @@ $_MODULE['<{everblock}prestashop>front_guides'] = 'Ratgeber und Tutorials';
 $_MODULE['<{everblock}prestashop>front_guides_description'] = 'Entdecken Sie unsere praktischen Ratgeber.';
 $_MODULE['<{everblock}prestashop>front_all_faqs'] = 'Alle häufig gestellten Fragen aus allen Gruppen.';
 $_MODULE['<{everblock}prestashop>front_faqs_by_tag'] = 'Häufig gestellte Fragen nach Tag gruppiert.';
- 
+
 include __DIR__ . '/modern_de.php';

@@ -4,14 +4,26 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: write
+
 jobs:
   build-zip:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Create module archive
-        run: git archive --format=zip --prefix=everblock/ -o everblock.zip HEAD
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      - name: Validate release payload
+        run: php .github/scripts/validate-release.php
+      - name: Create module archive from allowlist
+        run: |
+          php .github/scripts/build-release.php build/everblock
+          cd build
+          zip -r ../everblock.zip everblock
       - name: Upload release asset
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: everblock.zip

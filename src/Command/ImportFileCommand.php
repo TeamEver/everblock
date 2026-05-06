@@ -43,7 +43,7 @@ class ImportFileCommand extends Command
     public const FAILURE = 1;
     public const INVALID = 2;
     public const ABORTED = 3;
-    
+
     protected $filename;
     protected $logFile;
     protected $module;
@@ -168,7 +168,7 @@ class ImportFileCommand extends Command
         if (isset($line['name'])) {
             if (!Validate::isString($line['name'])) {
                 $output->writeln(
-                '<error>name column is not valid : ' . $line['name'] . '</error>'
+                    '<error>name column is not valid : ' . $line['name'] . '</error>'
                 );
             } else {
                 $block->name = pSQL($line['name']);
@@ -177,7 +177,7 @@ class ImportFileCommand extends Command
         if (isset($line['active'])) {
             if (!Validate::isBool($line['active'])) {
                 $output->writeln(
-                '<error>active column is not valid : ' . $line['active'] . '</error>'
+                    '<error>active column is not valid : ' . $line['active'] . '</error>'
                 );
             } else {
                 $block->active = (bool) $line['active'];
@@ -186,7 +186,7 @@ class ImportFileCommand extends Command
         if (isset($line['date_start'])) {
             if (!Validate::isDateFormat($line['date_start'])) {
                 $output->writeln(
-                '<error>date_start column is not valid : ' . $line['date_start'] . '</error>'
+                    '<error>date_start column is not valid : ' . $line['date_start'] . '</error>'
                 );
             } else {
                 $block->date_start = $line['date_start'];
@@ -195,7 +195,7 @@ class ImportFileCommand extends Command
         if (isset($line['date_end'])) {
             if (!Validate::isDateFormat($line['date_end'])) {
                 $output->writeln(
-                '<error>date_end column is not valid : ' . $line['date_end'] . '</error>'
+                    '<error>date_end column is not valid : ' . $line['date_end'] . '</error>'
                 );
             } else {
                 $block->date_end = $line['date_end'];
@@ -204,7 +204,7 @@ class ImportFileCommand extends Command
         if (isset($line['content'])) {
             if (!Validate::isCleanHtml($line['content'])) {
                 $output->writeln(
-                '<error>content column is not valid : ' . $line['content'] . '</error>'
+                    '<error>content column is not valid : ' . $line['content'] . '</error>'
                 );
             } else {
                 $block->content = $line['content'];
@@ -214,7 +214,7 @@ class ImportFileCommand extends Command
             // huh ?
             if (!Validate::isString((string) $line['custom_code'])) {
                 $output->writeln(
-                '<error>custom_code column is not valid : ' . $line['custom_code'] . '</error>'
+                    '<error>custom_code column is not valid : ' . $line['custom_code'] . '</error>'
                 );
             } else {
                 $block->custom_code = $line['custom_code'];
@@ -223,7 +223,7 @@ class ImportFileCommand extends Command
         if (isset($line['only_category'])) {
             if (!Validate::isBool($line['only_category'])) {
                 $output->writeln(
-                '<error>only_category column is not valid : ' . $line['only_category'] . '</error>'
+                    '<error>only_category column is not valid : ' . $line['only_category'] . '</error>'
                 );
             } else {
                 $block->only_category = $line['only_category'];
@@ -232,7 +232,7 @@ class ImportFileCommand extends Command
         if (isset($line['only_category_product'])) {
             if (!Validate::isBool($line['only_category_product'])) {
                 $output->writeln(
-                '<error>only_category_product column is not valid : ' . $line['only_category_product'] . '</error>'
+                    '<error>only_category_product column is not valid : ' . $line['only_category_product'] . '</error>'
                 );
             } else {
                 $block->only_category_product = $line['only_category_product'];
@@ -241,7 +241,7 @@ class ImportFileCommand extends Command
         if (isset($line['hook'])) {
             if (!Validate::isHookName($line['hook'])) {
                 $output->writeln(
-                '<error>hook column is not valid : ' . $line['hook'] . '</error>'
+                    '<error>hook column is not valid : ' . $line['hook'] . '</error>'
                 );
             } else {
                 $idHook = (int) Hook::getIdByName($line['hook']);
@@ -256,7 +256,7 @@ class ImportFileCommand extends Command
         if (isset($line['device'])) {
             if (!Validate::isUnsignedInt($line['device'])) {
                 $output->writeln(
-                '<error>device column is not valid : ' . $line['device'] . '</error>'
+                    '<error>device column is not valid : ' . $line['device'] . '</error>'
                 );
             } else {
                 $block->device = $line['device'];
@@ -265,7 +265,7 @@ class ImportFileCommand extends Command
         if (isset($line['device'])) {
             if (!Validate::isUnsignedInt($line['device'])) {
                 $output->writeln(
-                '<error>device column is not valid : ' . $line['device'] . '</error>'
+                    '<error>device column is not valid : ' . $line['device'] . '</error>'
                 );
             } else {
                 $block->device = $line['device'];
@@ -274,7 +274,7 @@ class ImportFileCommand extends Command
         if (isset($line['background'])) {
             if (!Validate::isColor($line['background'])) {
                 $output->writeln(
-                '<error>background column is not valid : ' . $line['background'] . '</error>'
+                    '<error>background column is not valid : ' . $line['background'] . '</error>'
                 );
             } else {
                 $block->background = $line['background'];
@@ -283,7 +283,7 @@ class ImportFileCommand extends Command
         if (isset($line['css_class'])) {
             if (!Validate::isString($line['css_class'])) {
                 $output->writeln(
-                '<error>css_class column is not valid : ' . $line['css_class'] . '</error>'
+                    '<error>css_class column is not valid : ' . $line['css_class'] . '</error>'
                 );
             } else {
                 $block->css_class = $line['css_class'];
@@ -292,7 +292,7 @@ class ImportFileCommand extends Command
         if (isset($line['data_attribute'])) {
             if (!Validate::isString($line['data_attribute'])) {
                 $output->writeln(
-                '<error>data_attribute column is not valid : ' . $line['data_attribute'] . '</error>'
+                    '<error>data_attribute column is not valid : ' . $line['data_attribute'] . '</error>'
                 );
             } else {
                 $block->data_attribute = $line['data_attribute'];
@@ -301,7 +301,7 @@ class ImportFileCommand extends Command
         if (isset($line['bootstrap_class'])) {
             if (!Validate::isString($line['bootstrap_class'])) {
                 $output->writeln(
-                '<error>bootstrap_class column is not valid : ' . $line['bootstrap_class'] . '</error>'
+                    '<error>bootstrap_class column is not valid : ' . $line['bootstrap_class'] . '</error>'
                 );
             } else {
                 $block->bootstrap_class = $line['bootstrap_class'];
@@ -310,7 +310,7 @@ class ImportFileCommand extends Command
         if (isset($line['groups'])) {
             if (!Validate::isString($line['groups'])) {
                 $output->writeln(
-                '<error>groups column is not valid : ' . $line['groups'] . '</error>'
+                    '<error>groups column is not valid : ' . $line['groups'] . '</error>'
                 );
             } else {
                 $groups = explode(',', $line['groups']);
@@ -320,7 +320,7 @@ class ImportFileCommand extends Command
         if (isset($line['categories'])) {
             if (!Validate::isString($line['categories'])) {
                 $output->writeln(
-                '<error>categories column is not valid : ' . $line['categories'] . '</error>'
+                    '<error>categories column is not valid : ' . $line['categories'] . '</error>'
                 );
             } else {
                 $categories = explode(',', $line['categories']);
@@ -330,7 +330,7 @@ class ImportFileCommand extends Command
         if (isset($line['only_manufacturer'])) {
             if (!Validate::isBool($line['only_manufacturer'])) {
                 $output->writeln(
-                '<error>only_manufacturer column is not valid : ' . $line['only_manufacturer'] . '</error>'
+                    '<error>only_manufacturer column is not valid : ' . $line['only_manufacturer'] . '</error>'
                 );
             } else {
                 $block->only_manufacturer = $line['only_manufacturer'];
@@ -339,7 +339,7 @@ class ImportFileCommand extends Command
         if (isset($line['only_supplier'])) {
             if (!Validate::isBool($line['only_supplier'])) {
                 $output->writeln(
-                '<error>only_supplier column is not valid : ' . $line['only_supplier'] . '</error>'
+                    '<error>only_supplier column is not valid : ' . $line['only_supplier'] . '</error>'
                 );
             } else {
                 $block->only_supplier = $line['only_supplier'];
@@ -348,7 +348,7 @@ class ImportFileCommand extends Command
         if (isset($line['only_cms_category'])) {
             if (!Validate::isBool($line['only_cms_category'])) {
                 $output->writeln(
-                '<error>only_cms_category column is not valid : ' . $line['only_cms_category'] . '</error>'
+                    '<error>only_cms_category column is not valid : ' . $line['only_cms_category'] . '</error>'
                 );
             } else {
                 $block->only_cms_category = $line['only_cms_category'];
@@ -357,7 +357,7 @@ class ImportFileCommand extends Command
         if (isset($line['manufacturers'])) {
             if (!Validate::isString($line['manufacturers'])) {
                 $output->writeln(
-                '<error>manufacturers column is not valid : ' . $line['manufacturers'] . '</error>'
+                    '<error>manufacturers column is not valid : ' . $line['manufacturers'] . '</error>'
                 );
             } else {
                 $block->manufacturers = json_encode(explode(',', $line['manufacturers']));
@@ -366,7 +366,7 @@ class ImportFileCommand extends Command
         if (isset($line['suppliers'])) {
             if (!Validate::isString($line['suppliers'])) {
                 $output->writeln(
-                '<error>suppliers column is not valid : ' . $line['suppliers'] . '</error>'
+                    '<error>suppliers column is not valid : ' . $line['suppliers'] . '</error>'
                 );
             } else {
                 $block->suppliers = json_encode(explode(',', $line['suppliers']));
@@ -375,7 +375,7 @@ class ImportFileCommand extends Command
         if (isset($line['cms_categories'])) {
             if (!Validate::isString($line['cms_categories'])) {
                 $output->writeln(
-                '<error>cms_categories column is not valid : ' . $line['cms_categories'] . '</error>'
+                    '<error>cms_categories column is not valid : ' . $line['cms_categories'] . '</error>'
                 );
             } else {
                 $block->cms_categories = json_encode(explode(',', $line['cms_categories']));
@@ -384,7 +384,7 @@ class ImportFileCommand extends Command
         if (isset($line['obfuscate_link'])) {
             if (!Validate::isBool($line['obfuscate_link'])) {
                 $output->writeln(
-                '<error>obfuscate_link column is not valid : ' . $line['obfuscate_link'] . '</error>'
+                    '<error>obfuscate_link column is not valid : ' . $line['obfuscate_link'] . '</error>'
                 );
             } else {
                 $block->obfuscate_link = $line['obfuscate_link'];
@@ -393,7 +393,7 @@ class ImportFileCommand extends Command
         if (isset($line['add_container'])) {
             if (!Validate::isBool($line['add_container'])) {
                 $output->writeln(
-                '<error>add_container column is not valid : ' . $line['add_container'] . '</error>'
+                    '<error>add_container column is not valid : ' . $line['add_container'] . '</error>'
                 );
             } else {
                 $block->add_container = $line['add_container'];
@@ -402,7 +402,7 @@ class ImportFileCommand extends Command
         if (isset($line['lazyload'])) {
             if (!Validate::isBool($line['lazyload'])) {
                 $output->writeln(
-                '<error>lazyload column is not valid : ' . $line['lazyload'] . '</error>'
+                    '<error>lazyload column is not valid : ' . $line['lazyload'] . '</error>'
                 );
             } else {
                 $block->lazyload = $line['lazyload'];
@@ -411,7 +411,7 @@ class ImportFileCommand extends Command
         if (isset($line['modal'])) {
             if (!Validate::isBool($line['modal'])) {
                 $output->writeln(
-                '<error>modal column is not valid : ' . $line['modal'] . '</error>'
+                    '<error>modal column is not valid : ' . $line['modal'] . '</error>'
                 );
             } else {
                 $block->modal = $line['modal'];
@@ -420,7 +420,7 @@ class ImportFileCommand extends Command
         if (isset($line['delay'])) {
             if (!Validate::isUnsignedInt($line['delay'])) {
                 $output->writeln(
-                '<error>delay column is not valid : ' . $line['delay'] . '</error>'
+                    '<error>delay column is not valid : ' . $line['delay'] . '</error>'
                 );
             } else {
                 $block->delay = $line['delay'];
@@ -429,7 +429,7 @@ class ImportFileCommand extends Command
         if (isset($line['timeout'])) {
             if (!Validate::isUnsignedInt($line['timeout'])) {
                 $output->writeln(
-                '<error>timeout column is not valid : ' . $line['timeout'] . '</error>'
+                    '<error>timeout column is not valid : ' . $line['timeout'] . '</error>'
                 );
             } else {
                 $block->timeout = $line['timeout'];

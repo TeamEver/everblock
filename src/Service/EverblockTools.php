@@ -1176,7 +1176,7 @@ class EverblockTools
         foreach ($matches as $match) {
             // Charger et rendre le contenu du template
             $renderedContent = $context->smarty->fetch($templatePath);
-            
+
             // Remplacer chaque occurrence du shortcode par le contenu rendu du template
             $txt = str_replace($match[0], $renderedContent, $txt);
         }
@@ -1578,7 +1578,7 @@ class EverblockTools
             $productIdsArray = array_map('intval', explode(',', $match[1]));
             $carousel = isset($match[2]) && $match[2] === 'true';
             $everPresentProducts = static::everPresentProducts($productIdsArray, $context);
-            
+
             if (!empty($everPresentProducts)) {
                 // Assign products and carousel flag to the template
                 $context->smarty->assign([
@@ -1587,7 +1587,7 @@ class EverblockTools
                     'shortcodeClass' => 'product'
                 ]);
                 $renderedContent = $context->smarty->fetch($templatePath);
-                
+
                 $txt = str_replace($match[0], $renderedContent, $txt);
             }
         }
@@ -1606,11 +1606,11 @@ class EverblockTools
         if (strpos($txt, '[product_image') === false) {
             return $txt; // Pas de shortcode à traiter
         }
-        
+
         $templatePath = static::getTemplatePath('hook/product_image.tpl', $module);
         // Regex pour capturer [product_image id_product] ou [product_image id_product image_number]
         preg_match_all('/\[product_image\s+(\d+)(?:\s+(\d+))?\]/i', $txt, $matches, PREG_SET_ORDER);
-        
+
         // Debug: vérifier si des matches sont trouvés
         if (empty($matches)) {
             // Aucun match trouvé, retourner le texte original avec un debug
@@ -1620,7 +1620,7 @@ class EverblockTools
         foreach ($matches as $match) {
             $productId = (int) $match[1];
             $imageNumber = isset($match[2]) ? (int) $match[2] : 1; // Par défaut, première image
-            
+
 
             try {
                 // Vérifier que le produit existe et est actif
@@ -1630,7 +1630,7 @@ class EverblockTools
                     $txt = str_replace($match[0], '', $txt);
                     continue;
                 }
-                
+
                 // Récupérer les images du produit
                 $images = Image::getImages($context->language->id, $productId);
                 if (empty($images)) {
@@ -1638,35 +1638,35 @@ class EverblockTools
                     $txt = str_replace($match[0], '', $txt);
                     continue;
                 }
-                
+
                 // Sélectionner l'image demandée (ou la première si le numéro dépasse)
                 $imageIndex = min($imageNumber - 1, count($images) - 1); // Index basé sur 0
                 $imageIndex = max(0, $imageIndex); // S'assurer que l'index n'est pas négatif
                 $selectedImage = $images[$imageIndex];
-                
+
                 // Vérifier que nous avons les données nécessaires
                 if (!isset($selectedImage['id_image'])) {
                     $txt = str_replace($match[0], '', $txt);
                     continue;
                 }
-                
+
                 // Construire l'URL de l'image
                 $imageType = 'large_default'; // Type d'image par défaut
-                $linkRewrite = isset($product->link_rewrite[$context->language->id]) 
-                    ? $product->link_rewrite[$context->language->id] 
+                $linkRewrite = isset($product->link_rewrite[$context->language->id])
+                    ? $product->link_rewrite[$context->language->id]
                     : $product->link_rewrite[Configuration::get('PS_LANG_DEFAULT')];
-                    
+
                 $imageUrl = $context->link->getImageLink(
                     $linkRewrite,
                     $selectedImage['id_image'],
                     $imageType
                 );
-                
+
                 // Préparer le nom du produit
-                $productName = isset($product->name[$context->language->id]) 
-                    ? $product->name[$context->language->id] 
+                $productName = isset($product->name[$context->language->id])
+                    ? $product->name[$context->language->id]
                     : $product->name[Configuration::get('PS_LANG_DEFAULT')];
-                
+
                 // Préparer les données pour le template
                 $imageData = [
                     'id_product' => $productId,
@@ -1676,15 +1676,15 @@ class EverblockTools
                     'image_number' => $imageNumber,
                     'total_images' => count($images)
                 ];
-                
+
                 // Assigner les données au template
                 $context->smarty->assign([
                     'productImage' => $imageData
                 ]);
-                
+
                 $renderedContent = $context->smarty->fetch($templatePath);
                 $txt = str_replace($match[0], $renderedContent, $txt);
-                
+
             } catch (Exception $e) {
                 // En cas d'erreur, remplacer par une chaîne vide
                 $txt = str_replace($match[0], '', $txt);
@@ -2786,11 +2786,20 @@ class EverblockTools
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[random_product'];
-                    if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
-                    elseif (isset($match[2])) { $shortcodeParts[] = 'limit="' . $match[2] . '"'; }
-                    if (isset($match[3])) { $shortcodeParts[] = 'carousel=' . $match[3]; }
-                    if (isset($match[4])) { $shortcodeParts[] = 'orderby=' . $match[4]; }
-                    if (isset($match[5])) { $shortcodeParts[] = 'orderway=' . $match[5]; }
+                    if (isset($match[1])) {
+                        $shortcodeParts[] = 'nb="' . $match[1] . '"';
+                    } elseif (isset($match[2])) {
+                        $shortcodeParts[] = 'limit="' . $match[2] . '"';
+                    }
+                    if (isset($match[3])) {
+                        $shortcodeParts[] = 'carousel=' . $match[3];
+                    }
+                    if (isset($match[4])) {
+                        $shortcodeParts[] = 'orderby=' . $match[4];
+                    }
+                    if (isset($match[5])) {
+                        $shortcodeParts[] = 'orderway=' . $match[5];
+                    }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
@@ -2843,12 +2852,22 @@ class EverblockTools
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[last-products'];
-                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
-                    elseif (isset($match[1]) && $match[1] !== '') { $shortcodeParts[] = $match[1]; }
-                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
-                    if (isset($match[4])) { $shortcodeParts[] = 'carousel=' . $match[4]; }
-                    if (isset($match[5])) { $shortcodeParts[] = 'orderby=' . $match[5]; }
-                    if (isset($match[6])) { $shortcodeParts[] = 'orderway=' . $match[6]; }
+                    if (isset($match[2]) && $match[2] !== '') {
+                        $shortcodeParts[] = 'nb=' . $match[2];
+                    } elseif (isset($match[1]) && $match[1] !== '') {
+                        $shortcodeParts[] = $match[1];
+                    } elseif (isset($match[3])) {
+                        $shortcodeParts[] = 'limit=' . $match[3];
+                    }
+                    if (isset($match[4])) {
+                        $shortcodeParts[] = 'carousel=' . $match[4];
+                    }
+                    if (isset($match[5])) {
+                        $shortcodeParts[] = 'orderby=' . $match[5];
+                    }
+                    if (isset($match[6])) {
+                        $shortcodeParts[] = 'orderway=' . $match[6];
+                    }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
@@ -2886,8 +2905,12 @@ class EverblockTools
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[recently_viewed'];
-                    if (isset($match[1])) { $shortcodeParts[] = 'nb=' . $match[1]; }
-                    if (isset($match[2])) { $shortcodeParts[] = 'carousel=' . $match[2]; }
+                    if (isset($match[1])) {
+                        $shortcodeParts[] = 'nb=' . $match[1];
+                    }
+                    if (isset($match[2])) {
+                        $shortcodeParts[] = 'carousel=' . $match[2];
+                    }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
@@ -2941,12 +2964,22 @@ class EverblockTools
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[promo-products'];
-                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
-                    elseif (isset($match[1]) && $match[1] !== '') { $shortcodeParts[] = $match[1]; }
-                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
-                    if (isset($match[4])) { $shortcodeParts[] = 'carousel=' . $match[4]; }
-                    if (isset($match[5])) { $shortcodeParts[] = 'orderby=' . $match[5]; }
-                    if (isset($match[6])) { $shortcodeParts[] = 'orderway=' . $match[6]; }
+                    if (isset($match[2]) && $match[2] !== '') {
+                        $shortcodeParts[] = 'nb=' . $match[2];
+                    } elseif (isset($match[1]) && $match[1] !== '') {
+                        $shortcodeParts[] = $match[1];
+                    } elseif (isset($match[3])) {
+                        $shortcodeParts[] = 'limit=' . $match[3];
+                    }
+                    if (isset($match[4])) {
+                        $shortcodeParts[] = 'carousel=' . $match[4];
+                    }
+                    if (isset($match[5])) {
+                        $shortcodeParts[] = 'orderby=' . $match[5];
+                    }
+                    if (isset($match[6])) {
+                        $shortcodeParts[] = 'orderway=' . $match[6];
+                    }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
                     $txt = str_replace($shortcode, $replacement, $txt);
                 }
@@ -2987,10 +3020,10 @@ class EverblockTools
                 $orderWay = 'DESC';
             }
 
-            $cacheId = 'getBestSalesShortcode_' 
-                . (int)$context->shop->id 
-                . "_{$limit}_" 
-                . ($days ?? 'all') 
+            $cacheId = 'getBestSalesShortcode_'
+                . (int)$context->shop->id
+                . "_{$limit}_"
+                . ($days ?? 'all')
                 . "_{$orderBy}_{$orderWay}";
 
             if (!EverblockCache::isCacheStored($cacheId)) {
@@ -3085,12 +3118,23 @@ class EverblockTools
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[categorybestsales', 'id=' . $categoryId];
-                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
-                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
-                    if (isset($match[4])) { $shortcodeParts[] = 'days=' . $match[4]; }
-                    if (isset($match[5])) { $shortcodeParts[] = 'carousel=' . $match[5]; }
-                    if (isset($match[6])) { $shortcodeParts[] = 'orderby=' . $match[6]; }
-                    if (isset($match[7])) { $shortcodeParts[] = 'orderway=' . $match[7]; }
+                    if (isset($match[2]) && $match[2] !== '') {
+                        $shortcodeParts[] = 'nb=' . $match[2];
+                    } elseif (isset($match[3])) {
+                        $shortcodeParts[] = 'limit=' . $match[3];
+                    }
+                    if (isset($match[4])) {
+                        $shortcodeParts[] = 'days=' . $match[4];
+                    }
+                    if (isset($match[5])) {
+                        $shortcodeParts[] = 'carousel=' . $match[5];
+                    }
+                    if (isset($match[6])) {
+                        $shortcodeParts[] = 'orderby=' . $match[6];
+                    }
+                    if (isset($match[7])) {
+                        $shortcodeParts[] = 'orderway=' . $match[7];
+                    }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
@@ -3148,12 +3192,23 @@ class EverblockTools
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[brandbestsales', 'id=' . $brandId];
-                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
-                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
-                    if (isset($match[4])) { $shortcodeParts[] = 'days=' . $match[4]; }
-                    if (isset($match[5])) { $shortcodeParts[] = 'carousel=' . $match[5]; }
-                    if (isset($match[6])) { $shortcodeParts[] = 'orderby=' . $match[6]; }
-                    if (isset($match[7])) { $shortcodeParts[] = 'orderway=' . $match[7]; }
+                    if (isset($match[2]) && $match[2] !== '') {
+                        $shortcodeParts[] = 'nb=' . $match[2];
+                    } elseif (isset($match[3])) {
+                        $shortcodeParts[] = 'limit=' . $match[3];
+                    }
+                    if (isset($match[4])) {
+                        $shortcodeParts[] = 'days=' . $match[4];
+                    }
+                    if (isset($match[5])) {
+                        $shortcodeParts[] = 'carousel=' . $match[5];
+                    }
+                    if (isset($match[6])) {
+                        $shortcodeParts[] = 'orderby=' . $match[6];
+                    }
+                    if (isset($match[7])) {
+                        $shortcodeParts[] = 'orderway=' . $match[7];
+                    }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
@@ -3211,12 +3266,23 @@ class EverblockTools
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[featurebestsales', 'id=' . $featureId];
-                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
-                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
-                    if (isset($match[4])) { $shortcodeParts[] = 'days=' . $match[4]; }
-                    if (isset($match[5])) { $shortcodeParts[] = 'carousel=' . $match[5]; }
-                    if (isset($match[6])) { $shortcodeParts[] = 'orderby=' . $match[6]; }
-                    if (isset($match[7])) { $shortcodeParts[] = 'orderway=' . $match[7]; }
+                    if (isset($match[2]) && $match[2] !== '') {
+                        $shortcodeParts[] = 'nb=' . $match[2];
+                    } elseif (isset($match[3])) {
+                        $shortcodeParts[] = 'limit=' . $match[3];
+                    }
+                    if (isset($match[4])) {
+                        $shortcodeParts[] = 'days=' . $match[4];
+                    }
+                    if (isset($match[5])) {
+                        $shortcodeParts[] = 'carousel=' . $match[5];
+                    }
+                    if (isset($match[6])) {
+                        $shortcodeParts[] = 'orderby=' . $match[6];
+                    }
+                    if (isset($match[7])) {
+                        $shortcodeParts[] = 'orderway=' . $match[7];
+                    }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
@@ -3274,12 +3340,23 @@ class EverblockTools
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[featurevaluebestsales', 'id=' . $featureValueId];
-                    if (isset($match[2]) && $match[2] !== '') { $shortcodeParts[] = 'nb=' . $match[2]; }
-                    elseif (isset($match[3])) { $shortcodeParts[] = 'limit=' . $match[3]; }
-                    if (isset($match[4])) { $shortcodeParts[] = 'days=' . $match[4]; }
-                    if (isset($match[5])) { $shortcodeParts[] = 'carousel=' . $match[5]; }
-                    if (isset($match[6])) { $shortcodeParts[] = 'orderby=' . $match[6]; }
-                    if (isset($match[7])) { $shortcodeParts[] = 'orderway=' . $match[7]; }
+                    if (isset($match[2]) && $match[2] !== '') {
+                        $shortcodeParts[] = 'nb=' . $match[2];
+                    } elseif (isset($match[3])) {
+                        $shortcodeParts[] = 'limit=' . $match[3];
+                    }
+                    if (isset($match[4])) {
+                        $shortcodeParts[] = 'days=' . $match[4];
+                    }
+                    if (isset($match[5])) {
+                        $shortcodeParts[] = 'carousel=' . $match[5];
+                    }
+                    if (isset($match[6])) {
+                        $shortcodeParts[] = 'orderby=' . $match[6];
+                    }
+                    if (isset($match[7])) {
+                        $shortcodeParts[] = 'orderway=' . $match[7];
+                    }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
@@ -3359,10 +3436,17 @@ class EverblockTools
                     $replacement = $context->smarty->fetch($templatePath);
 
                     $shortcodeParts = ['[linkedproducts'];
-                    if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
-                    elseif (isset($match[2])) { $shortcodeParts[] = 'limit="' . $match[2] . '"'; }
-                    if (isset($match[3])) { $shortcodeParts[] = 'orderby="' . $match[3] . '"'; }
-                    if (isset($match[4])) { $shortcodeParts[] = 'orderway="' . $match[4] . '"'; }
+                    if (isset($match[1])) {
+                        $shortcodeParts[] = 'nb="' . $match[1] . '"';
+                    } elseif (isset($match[2])) {
+                        $shortcodeParts[] = 'limit="' . $match[2] . '"';
+                    }
+                    if (isset($match[3])) {
+                        $shortcodeParts[] = 'orderby="' . $match[3] . '"';
+                    }
+                    if (isset($match[4])) {
+                        $shortcodeParts[] = 'orderway="' . $match[4] . '"';
+                    }
                     $shortcode = implode(' ', $shortcodeParts) . ']';
 
                     $txt = str_replace($shortcode, $replacement, $txt);
@@ -3409,10 +3493,17 @@ class EverblockTools
             }
 
             $shortcodeParts = ['[accessories'];
-            if (isset($match[1])) { $shortcodeParts[] = 'nb="' . $match[1] . '"'; }
-            elseif (isset($match[2])) { $shortcodeParts[] = 'limit="' . $match[2] . '"'; }
-            if (isset($match[3])) { $shortcodeParts[] = 'orderby="' . $match[3] . '"'; }
-            if (isset($match[4])) { $shortcodeParts[] = 'orderway="' . $match[4] . '"'; }
+            if (isset($match[1])) {
+                $shortcodeParts[] = 'nb="' . $match[1] . '"';
+            } elseif (isset($match[2])) {
+                $shortcodeParts[] = 'limit="' . $match[2] . '"';
+            }
+            if (isset($match[3])) {
+                $shortcodeParts[] = 'orderby="' . $match[3] . '"';
+            }
+            if (isset($match[4])) {
+                $shortcodeParts[] = 'orderway="' . $match[4] . '"';
+            }
             $shortcode = implode(' ', $shortcodeParts) . ']';
 
             $productId = (int) Tools::getValue('id_product');
@@ -3841,7 +3932,7 @@ class EverblockTools
             'querySuccess' => $querySuccess,
         ];
     }
-    
+
     /**
      * Gère le shortcode associé à `getVideoShortcode`.
      *
@@ -4558,7 +4649,7 @@ class EverblockTools
     public static function getAllManufacturers(int $shopId, int $langId): array
     {
         $cacheId = 'EverblockTools::getAllManufacturers_' . (int) $shopId . '_' . $langId;
-        
+
         if (!EverblockCache::isCacheStored($cacheId)) {
             $sql = 'SELECT m.id_manufacturer, m.name
                     FROM ' . _DB_PREFIX_ . 'manufacturer AS m
@@ -4818,7 +4909,7 @@ class EverblockTools
             }
             $llorem = implode("\n\n", $paragraphs);
             EverblockCache::cacheStore($cacheId, $llorem);
-        } else{
+        } else {
             $llorem = EverblockCache::cacheRetrieve($cacheId);
         }
         $txt = str_replace('[llorem]', $llorem, $txt);
@@ -5235,7 +5326,7 @@ class EverblockTools
 
     /**
      * Exporte les données des tables de module dans un fichier SQL.
-     * 
+     *
      * @return bool True en cas de succès, sinon False.
      */
     public static function exportModuleTablesSQL(): bool
@@ -5370,7 +5461,7 @@ class EverblockTools
     protected static function getTableStructure(string $tableName)
     {
         $db = Db::getInstance();
-        $sql ='SHOW CREATE TABLE ' . $tableName;
+        $sql = 'SHOW CREATE TABLE ' . $tableName;
         $result = $db->executeS($sql);
         if ($result && isset($result[0]['Create Table'])) {
             return $result[0]['Create Table'];
@@ -5441,7 +5532,9 @@ class EverblockTools
 
         $sqlData = 'DELETE FROM `' . _DB_PREFIX_ . 'everblock` WHERE `id_everblock` = ' . (int) $idBlock . ';' . PHP_EOL;
         $columns = array_keys($block);
-        $escapedCols = array_map(function ($col) { return '`' . bqSQL($col) . '`'; }, $columns);
+        $escapedCols = array_map(function ($col) {
+            return '`' . bqSQL($col) . '`';
+        }, $columns);
         $values = [];
         foreach ($block as $value) {
             if (is_null($value)) {
@@ -5461,7 +5554,9 @@ class EverblockTools
             $sqlData .= 'DELETE FROM `' . _DB_PREFIX_ . 'everblock_lang` WHERE `id_everblock` = ' . (int) $idBlock . ';' . PHP_EOL;
             foreach ($rows as $row) {
                 $cols = array_keys($row);
-                $cols = array_map(function ($c) { return '`' . bqSQL($c) . '`'; }, $cols);
+                $cols = array_map(function ($c) {
+                    return '`' . bqSQL($c) . '`';
+                }, $cols);
                 $vals = [];
                 foreach ($row as $val) {
                     if (is_null($val)) {
@@ -5735,7 +5830,6 @@ class EverblockTools
         $cacheId = 'fetchInstagramImages';
         if (!EverblockCache::isCacheStored($cacheId)) {
             $request = static::getInstagramRequest();
-            // $request = Tools::file_get_contents('https://graph.instagram.com/me/media?access_token=IGQWRNTDdaUnFyaFNway14eTJ0NFpiSDlSZAlNNemV0U3hwNmlma3laMC01WUVxdVlucnJOM2JReF9Oblg2SmdHRlVwLXdPWXRPNVNLb1RZASjMtN0JHMW4zemNnYzZA6MVpYSGEwcHEtOG5MQQZDZD&fields=id,caption,media_type,media_url,permalink,thumbnail_url,username,timestamp');
             $result = json_decode($request, true);
             $imgs = [];
             $baseDir = _PS_IMG_DIR_ . 'cms/instagram/';

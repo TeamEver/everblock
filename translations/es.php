@@ -19,5 +19,5 @@ $_MODULE['<{everblock}prestashop>front_guides'] = 'Guías y tutoriales';
 $_MODULE['<{everblock}prestashop>front_guides_description'] = 'Descubre nuestras guías prácticas.';
 $_MODULE['<{everblock}prestashop>front_all_faqs'] = 'Todas las preguntas frecuentes de todos los grupos.';
 $_MODULE['<{everblock}prestashop>front_faqs_by_tag'] = 'Preguntas frecuentes agrupadas por etiqueta.';
- 
+
 include __DIR__ . '/modern_es.php';

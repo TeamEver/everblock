@@ -43,7 +43,7 @@ class ExportFileCommand extends Command
     public const FAILURE = 1;
     public const INVALID = 2;
     public const ABORTED = 3;
-    
+
     protected $filename;
     protected $logFile;
     protected $module;

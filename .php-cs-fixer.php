@@ -6,6 +6,7 @@ $finder = PhpCsFixer\Finder::create()
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
+    ->setUsingCache(false)
     ->setRules([
         '@PSR12' => true,
     ])

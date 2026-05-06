@@ -115,7 +115,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '8.3.1';
+        $this->version = '9.0.0';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -985,7 +985,7 @@ class Everblock extends Module
         $this->registerHook('actionObjectCmsUpdateAfter');
         $this->registerHook('displayMaintenance');
         $this->registerHook('displayPDFInvoice');
-        $this->registerHook('displayPDFDeliverySlip');        
+        $this->registerHook('displayPDFDeliverySlip');
         $this->registerHook('displayAdminOrder');
         $this->registerHook('actionCheckoutRender');
         $this->registerHook('displayOrderConfirmation');
@@ -2112,7 +2112,7 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERBLOCK_MAINTENANCE_PSSWD',
             Tools::getValue('EVERBLOCK_MAINTENANCE_PSSWD')
-        );        
+        );
         Configuration::updateValue(
             'EVERINSTA_ACCESS_TOKEN',
             Tools::getValue('EVERINSTA_ACCESS_TOKEN')
@@ -2686,7 +2686,7 @@ class Everblock extends Module
                     $steps[3]
                 ];
                 break;
-            
+
             case 2:
                 $newSteps = [
                     $steps[0],
@@ -2696,7 +2696,7 @@ class Everblock extends Module
                     $steps[3]
                 ];
                 break;
-            
+
             case 3:
                 $newSteps = [
                     $steps[0],
@@ -2907,7 +2907,7 @@ class Everblock extends Module
 
     public static function getCartSessionDatas($idCart)
     {
-        $sql = new DbQuery;
+        $sql = new DbQuery();
         $sql->select('checkout_session_data');
         $sql->from(
             'cart'
@@ -2920,7 +2920,7 @@ class Everblock extends Module
             return;
         }
         $checkout_session_data = json_decode(
-           $res
+            $res
         );
         foreach ($checkout_session_data as $key => $value) {
             if ($key == 'ever-checkout-step') {
@@ -2940,7 +2940,7 @@ class Everblock extends Module
         $shopId = (int) $this->context->shop->id;
         $tabsNumber = max((int) Configuration::get('EVERPS_TAB_NB'), 1);
         $flagsNumber = max((int) Configuration::get('EVERPS_FLAG_NB'), 1);
-        
+
         $everpstabs = EverblockTabsClass::getByIdProductInAdmin($productId, $shopId);
         $everpsflags = EverblockFlagsClass::getByIdProductInAdmin($productId, $shopId);
 
@@ -3213,7 +3213,7 @@ class Everblock extends Module
                     } else {
                         $everpstabs->title[$language['id_lang']] = $tabTitle;
                     }
-                    
+
                     $tabContent = Tools::getValue((int) $tab . '_everblock_content_' . $language['id_lang']);
                     if ($tabContent && !Validate::isCleanHtml($tabContent)) {
                         die(json_encode(
@@ -3257,7 +3257,7 @@ class Everblock extends Module
                     } else {
                         $everpsflags->title[$language['id_lang']] = $flagTitle;
                     }
-                    
+
                     $flagContent = Tools::getValue((int) $flag . '_everflag_content_' . $language['id_lang']);
                     if ($flagContent && !Validate::isCleanHtml($flagContent)) {
                         die(json_encode(
@@ -3458,7 +3458,7 @@ class Everblock extends Module
             $languageId = (int) Context::getContext()->language->id;
             // Current product flags
             $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
-        if ($everpsflags) {
+            if ($everpsflags) {
                 foreach ($everpsflags as $everpsflag) {
                     if (Validate::isLoadedObject($everpsflag) && $everpsflag->title && $everpsflag->content) {
                         $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
@@ -3694,7 +3694,9 @@ class Everblock extends Module
                 $bar = $params['actions_bar_buttons_collection'];
                 $bar->add(
                     new PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButton(
-                        'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
+                        'btn-info',
+                        ['href' => $connectLink, 'target' => '_blank'],
+                        $this->l('Connect to customer account')
                     )
                 );
             } else {
@@ -3702,7 +3704,9 @@ class Everblock extends Module
                 $bar = $params['actions_bar_buttons_collection'];
                 $bar->add(
                     new PrestaShop\PrestaShop\Core\Action\ActionsBarButton(
-                        'btn-info', ['href' => $connectLink, 'target' => '_blank'], $this->l('Connect to customer account')
+                        'btn-info',
+                        ['href' => $connectLink, 'target' => '_blank'],
+                        $this->l('Connect to customer account')
                     )
                 );
             }
@@ -4267,7 +4271,7 @@ class Everblock extends Module
 
     /**
      * Ajoute le fichier index.php récursivement dans tous les répertoires et sous-répertoires
-     * 
+     *
      * @param string $dir Le répertoire de départ
      * @param string $indexContent Le contenu à ajouter dans le fichier index.php
      */

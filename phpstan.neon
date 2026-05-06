@@ -12,7 +12,6 @@ parameters:
         - Cookie
         - Controller
     bootstrapFiles:
-        - ../../config/config.inc.php
         - vendor/autoload.php
         - stubs/phpstan-bootstrap.php
         - everblock.php

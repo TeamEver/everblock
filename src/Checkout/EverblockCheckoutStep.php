@@ -39,8 +39,7 @@ class EverblockCheckoutStep extends \AbstractCheckoutStep
         Context $context,
         TranslatorInterface $translator,
         Everblock $module
-    )
-    {
+    ) {
         parent::__construct($context, $translator);
         $this->context = $context;
         $this->module = $module;

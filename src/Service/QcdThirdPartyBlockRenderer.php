@@ -56,7 +56,7 @@ class QcdThirdPartyBlockRenderer
             return;
         }
 
-        $context =& $params['context'];
+        $context = & $params['context'];
         $this->ensureNormalizedContext($context);
 
         $blockType = $this->resolveBlockType($context);

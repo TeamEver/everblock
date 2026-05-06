@@ -41,7 +41,26 @@ namespace {
 
     class Module
     {
+        public mixed $version;
+
+        public static function getInstanceByName(string $name): ?self
+        {
+        }
+
         public function encrypt(mixed $data): string
+        {
+        }
+    }
+
+    abstract class AbstractCheckoutStep
+    {
+        public mixed $context;
+
+        public function __construct(mixed $context, mixed $translator)
+        {
+        }
+
+        public function setTitle(string $title): self
         {
         }
     }
@@ -52,6 +71,133 @@ namespace {
     }
 
     class AdminKernel extends AppKernel
+    {
+    }
+}
+
+namespace Symfony\Component\Console\Command {
+    use Symfony\Component\Console\Input\InputInterface;
+    use Symfony\Component\Console\Output\OutputInterface;
+
+    class Command
+    {
+        public const SUCCESS = 0;
+        public const FAILURE = 1;
+        public const INVALID = 2;
+
+        public function __construct(?string $name = null)
+        {
+        }
+
+        public function setName(string $name): static
+        {
+        }
+
+        public function setDescription(string $description): static
+        {
+        }
+
+        public function setHelp(string $help): static
+        {
+        }
+
+        protected function configure()
+        {
+        }
+
+        protected function execute(InputInterface $input, OutputInterface $output)
+        {
+        }
+    }
+}
+
+namespace Symfony\Component\Console\Input {
+    interface InputInterface
+    {
+    }
+}
+
+namespace Symfony\Component\Console\Output {
+    interface OutputInterface
+    {
+        public function writeln(mixed $messages, int $options = 0): void;
+
+        public function getFormatter(): mixed;
+    }
+}
+
+namespace Symfony\Component\Console\Formatter {
+    class OutputFormatterStyle
+    {
+        public function __construct(?string $foreground = null, ?string $background = null, array $options = [])
+        {
+        }
+    }
+}
+
+namespace Symfony\Component\Form {
+    use Symfony\Component\OptionsResolver\OptionsResolver;
+
+    abstract class AbstractType
+    {
+        public function buildForm(FormBuilderInterface $builder, array $options): void
+        {
+        }
+
+        public function configureOptions(OptionsResolver $resolver): void
+        {
+        }
+    }
+
+    interface FormBuilderInterface
+    {
+        public function add(string $child, mixed $type = null, array $options = []): self;
+    }
+}
+
+namespace Symfony\Component\Form\Extension\Core\Type {
+    class CheckboxType
+    {
+    }
+
+    class ChoiceType
+    {
+    }
+
+    class HiddenType
+    {
+    }
+
+    class IntegerType
+    {
+    }
+
+    class TextareaType
+    {
+    }
+
+    class TextType
+    {
+    }
+}
+
+namespace Symfony\Component\HttpKernel {
+    interface KernelInterface
+    {
+    }
+}
+
+namespace Symfony\Component\OptionsResolver {
+    class OptionsResolver
+    {
+        public function setDefaults(array $defaults): void
+        {
+        }
+    }
+}
+
+namespace Symfony\Contracts\Translation {
+    interface TranslatorInterface
     {
     }
 }

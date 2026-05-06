@@ -146,6 +146,7 @@ return [
     'upgrade/upgrade-8.1.1.php',
     'upgrade/upgrade-8.0.7.php',
     'upgrade/upgrade-8.3.1.php',
+    'upgrade/upgrade-9.0.0.php',
     'vendor/.htaccess',
     'vendor/autoload.php',
     'vendor/bin/index.php',
