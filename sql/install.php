@@ -198,3 +198,5 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_page_lang` (
         `content` text DEFAULT NULL,
         PRIMARY KEY (`id_everblock_page`, `id_lang`)
     ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+return $sql;

@@ -44,6 +44,9 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
             $this->assertValidToken();
             $this->block = $this->loadBlock();
             $previewParameters = $this->collectPreviewParameters();
+            if (!$this->module instanceof Everblock) {
+                throw new Exception('Invalid module instance.');
+            }
             $builder = new EverblockPreviewBuilder($this->module, $this->context);
             $previewData = $builder->buildPreview($this->block, $previewParameters);
         } catch (Exception $exception) {

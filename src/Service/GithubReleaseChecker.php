@@ -138,7 +138,7 @@ class GithubReleaseChecker
         }
 
         $payload['release'] = [
-            'tag_name' => (string) ($release['tag_name'] ?? ''),
+            'tag_name' => (string) $release['tag_name'],
             'published_at' => (string) ($release['published_at'] ?? ''),
             'body' => (string) ($release['body'] ?? ''),
         ];

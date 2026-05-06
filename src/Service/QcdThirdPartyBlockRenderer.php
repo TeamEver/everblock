@@ -112,18 +112,22 @@ class QcdThirdPartyBlockRenderer
             return true;
         }
 
-        /** @var Qcdpagebuilder|null $builder */
+        /** @var \Qcdpagebuilder|null $builder */
         $builder = $this->qcdBuilderModule;
-        $everblock->content = $builder
+        $blockContent = is_array($everblock->content)
+            ? (string) ($everblock->content[(int) $this->context->language->id] ?? '')
+            : (string) $everblock->content;
+
+        $everblock->content[(int) $this->context->language->id] = $builder
             ? (string) $builder->renderTargetField(
                 'everblock',
                 (int) $everblock->id,
                 'content',
-                (string) $everblock->content,
+                $blockContent,
                 (int) $this->context->shop->id,
                 (int) $this->context->language->id
             )
-            : (string) $everblock->content;
+            : $blockContent;
 
         $this->context->smarty->assign([
             'everblock' => [

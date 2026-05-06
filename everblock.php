@@ -86,6 +86,7 @@ use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContent;
 use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
 use ScssPhp\ScssPhp\Compiler;
+use Symfony\Component\Form\FormBuilderInterface;
 
 class_exists(EverblockTools::class);
 
@@ -262,8 +263,10 @@ class Everblock extends Module
      */
     private function installSql(): bool
     {
-        $sql = [];
-        include dirname(__FILE__) . '/sql/install.php';
+        $sql = require dirname(__FILE__) . '/sql/install.php';
+        if (!is_array($sql)) {
+            return false;
+        }
 
         foreach ($sql as $query) {
             if (!Db::getInstance()->execute($query)) {
@@ -782,7 +785,7 @@ class Everblock extends Module
         }
 
         $tab = new Tab();
-        $tab->active = 1;
+        $tab->active = true;
         $tab->class_name = $className;
         $tab->id_parent = $parentId;
         $tab->position = Tab::getNewLastPosition($tab->id_parent);
@@ -1991,14 +1994,14 @@ class Everblock extends Module
             $cssCode
         );
         // Create CSS file if need
-        if (!empty($custom_css)) {
+        if (!is_file($custom_css)) {
             $handle_css = fopen(
                 $custom_css,
                 'w+'
             );
             fclose($handle_css);
         }
-        if (!empty($compressedCss)) {
+        if (!is_file($compressedCss)) {
             $handle_css = fopen(
                 $compressedCss,
                 'w+'
@@ -2006,7 +2009,7 @@ class Everblock extends Module
             fclose($handle_css);
         }
         // Create JS file if need
-        if (!empty($custom_js)) {
+        if (!is_file($custom_js)) {
             $handle_js = fopen(
                 $custom_js,
                 'w+'
@@ -2115,9 +2118,7 @@ class Everblock extends Module
             Tools::getValue('EVERINSTA_ACCESS_TOKEN')
         );
         // Auto refresh Instagram token
-        if (Tools::getValue('EVERINSTA_ACCESS_TOKEN')
-            && !empty(Tools::getValue('EVERINSTA_ACCESS_TOKEN'))
-        ) {
+        if (Tools::getValue('EVERINSTA_ACCESS_TOKEN')) {
             EverblockTools::refreshInstagramToken();
         }
         Configuration::updateValue(
@@ -2524,12 +2525,10 @@ class Everblock extends Module
                 'all'
             );
             $this->context->controller->addJS(
-                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/codemirror.min.js',
-                'all'
+                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/codemirror.min.js'
             );
             $this->context->controller->addJS(
-                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/mode/javascript/javascript.min.js',
-                'all'
+                'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/mode/javascript/javascript.min.js'
             );
             $this->context->controller->addJs($this->_path . 'views/js/admin.js');
             if ((bool) Configuration::get('EVERBLOCK_TINYMCE') === true
@@ -2665,7 +2664,7 @@ class Everblock extends Module
         ) {
             return;
         }
-        $this->translator = Context::getContext()->getTranslator();
+        $translator = Context::getContext()->getTranslator();
 
         /** @var CheckoutProcess $process */
         $process = $params['checkoutProcess'];
@@ -2673,8 +2672,8 @@ class Everblock extends Module
 
         $everStep = new EverblockCheckoutStep(
             $this->context,
-            $this->translator,
-            Module::getInstanceByName($this->name)
+            $translator,
+            $this
         );
         $everStep->setCheckoutProcess($process);
         switch ((int) Configuration::get('EVEROPTIONS_POSITION')) {
@@ -2735,7 +2734,7 @@ class Everblock extends Module
             );
             if (isset($checkoutSessionData) && $checkoutSessionData) {
                 $checkoutSessionData = json_decode(json_encode($checkoutSessionData), true);
-                if (!$checkoutSessionData || empty($checkoutSessionData)) {
+                if (!$checkoutSessionData) {
                     return;
                 }
                 $hiddenKeys = [
@@ -2744,7 +2743,7 @@ class Everblock extends Module
                     'submitCustomStep',
                     'controller',
                 ];
-                if (is_array($checkoutSessionData) && !empty($checkoutSessionData)) {
+                if (is_array($checkoutSessionData)) {
                     foreach ($checkoutSessionData as $key => $value) {
                         if (in_array($key, $hiddenKeys)) {
                             unset($checkoutSessionData[$key]);
@@ -3135,15 +3134,17 @@ class Everblock extends Module
         $cachePattern = 'fetchInstagramImages';
         EverblockCache::cacheDropByPattern($cachePattern);
         $productIds = [];
-        if (!empty($params['object']->id)) {
-            EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, (int) $params['object']->id_shop);
-            $products = EverblockFaq::getProductsByFaq((int) $params['object']->id, (int) $params['object']->id_shop);
+        $objectShopId = (int) $this->context->shop->id;
+        if (isset($params['object']) && is_object($params['object']) && !empty($params['object']->id)) {
+            $objectShopId = property_exists($params['object'], 'id_shop') ? (int) $params['object']->id_shop : (int) $this->context->shop->id;
+            EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, $objectShopId);
+            $products = EverblockFaq::getProductsByFaq((int) $params['object']->id, $objectShopId);
             foreach ($products as $product) {
                 $productIds[] = (int) $product['id_product'];
             }
         }
         if (!empty($productIds)) {
-            $this->clearProductFaqCache($productIds, (int) $params['object']->id_shop);
+            $this->clearProductFaqCache($productIds, $objectShopId);
         }
     }
 
@@ -3162,15 +3163,17 @@ class Everblock extends Module
         $cachePattern = 'EverblockFaq_getByIds_';
         EverblockCache::cacheDropByPattern($cachePattern);
         $productIds = [];
-        if (!empty($params['object']->id)) {
-            EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, (int) $params['object']->id_shop);
-            $products = EverblockFaq::getProductsByFaq((int) $params['object']->id, (int) $params['object']->id_shop);
+        $objectShopId = (int) $this->context->shop->id;
+        if (isset($params['object']) && is_object($params['object']) && !empty($params['object']->id)) {
+            $objectShopId = property_exists($params['object'], 'id_shop') ? (int) $params['object']->id_shop : (int) $this->context->shop->id;
+            EverblockFaq::invalidateRelationsForFaq((int) $params['object']->id, $objectShopId);
+            $products = EverblockFaq::getProductsByFaq((int) $params['object']->id, $objectShopId);
             foreach ($products as $product) {
                 $productIds[] = (int) $product['id_product'];
             }
         }
         if (!empty($productIds)) {
-            $this->clearProductFaqCache($productIds, (int) $params['object']->id_shop);
+            $this->clearProductFaqCache($productIds, $objectShopId);
         }
     }
 
@@ -3455,7 +3458,7 @@ class Everblock extends Module
             $languageId = (int) Context::getContext()->language->id;
             // Current product flags
             $everpsflags = EverblockFlagsClass::getByIdProduct($productId, $shopId, $languageId);
-            if ($everpsflags && !empty($everpsflags)) {
+        if ($everpsflags) {
                 foreach ($everpsflags as $everpsflag) {
                     if (Validate::isLoadedObject($everpsflag) && $everpsflag->title && $everpsflag->content) {
                         $params['flags']['custom-flag-' . $everpsflag->id_flag] = [
@@ -3901,7 +3904,7 @@ class Everblock extends Module
             if ($isBypassed) {
                 $block['content'] = strip_tags($block['content']);
             }
-            /** @var Qcdpagebuilder|null $builder */
+            /** @var \Qcdpagebuilder|null $builder */
             $builder = $this->getQcdBuilderModule();
 
             $block['content'] = $builder
@@ -4050,8 +4053,7 @@ class Everblock extends Module
             if (Validate::isLoadedObject($product)) {
                 $presentedProducts = EverblockTools::everPresentProducts(
                     [$product->id],
-                    $this->context,
-                    $this
+                    $this->context
                 );
                 $presentedProduct = reset($presentedProducts);
 
@@ -4498,7 +4500,7 @@ class Everblock extends Module
                         true,
                         false,
                         1,
-                        $this->context
+                        true
                     );
                     if (!empty($products)) {
                         $info['min_price'] = $products[0]['price'];
@@ -4690,10 +4692,10 @@ class Everblock extends Module
     public function hookModuleRoutes($params)
     {
         $base = Configuration::get('EVERBLOCK_PAGES_BASE_URL') ?: 'guide';
-        $base = Tools::link_rewrite($base ? (string) $base : 'guide');
+        $base = Tools::link_rewrite((string) $base);
 
         $faqBase = Configuration::get('EVERBLOCK_FAQ_BASE_URL') ?: 'faq';
-        $faqBase = Tools::link_rewrite($faqBase ? (string) $faqBase : 'faq');
+        $faqBase = Tools::link_rewrite((string) $faqBase);
 
         return [
             'module-everblock-pages' => [

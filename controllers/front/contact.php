@@ -44,7 +44,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
         $formData = Tools::getAllValues();
 
         // Si vide ou si erreurs.
-        if (empty($formData) || sizeof($this->context->controller->errors)) {
+        if (sizeof($this->context->controller->errors)) {
             return $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/error.tpl');
         }
 

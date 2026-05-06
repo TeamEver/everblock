@@ -39,6 +39,8 @@ class SearchReplaceCommand extends Command
     public const FAILURE = 1;
     public const INVALID = 2;
 
+    protected $module;
+
     protected function configure()
     {
         $this->setName('everblock:tools:search-replace');

@@ -26,6 +26,7 @@ if (!defined('_PS_VERSION_')) {
 
 use Exception;
 use Everblock\Tools\Service\ImportFile;
+use EverblockTabsClass;
 use Language;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -42,9 +43,12 @@ class ImportTabCommand extends Command
     public const ABORTED = 3;
     
     protected $filename;
+    protected $logFile;
+    protected $module;
 
     public function __construct(KernelInterface $kernel)
     {
+        unset($kernel);
         parent::__construct();
     }
 
@@ -132,11 +136,12 @@ class ImportTabCommand extends Command
             return;
         }
         try {
-            $tab = \EverblockTabsClass::getByIdProduct(
-                $line['id_product'],
-                $line['id_shop']
+            $tab = EverblockTabsClass::getByIdProductIdTab(
+                (int) $line['id_product'],
+                (int) $line['id_shop'],
+                0
             );
-            foreach (Language::getLanguages(false, $line['id_shop']) as $lang) {
+            foreach (Language::getLanguages(false, (int) $line['id_shop']) as $lang) {
                 $tab->title[(int) $line['id_lang']] = $line['title'];
                 $tab->content[(int) $line['id_lang']] = $line['content'];
             }

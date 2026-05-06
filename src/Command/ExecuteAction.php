@@ -142,8 +142,11 @@ class ExecuteAction extends Command
         ],
     ];
 
+    protected $module;
+
     public function __construct(KernelInterface $kernel)
     {
+        unset($kernel);
         parent::__construct();
     }
 

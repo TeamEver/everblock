@@ -47,6 +47,10 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
         $blockId = (int) Tools::getValue('id_everblock');
         $cmsId = (int) Tools::getValue('id_cms');
         $productModalId = (int) Tools::getValue('id_everblock_modal');
+        if (!$this->module instanceof Everblock) {
+            die();
+        }
+        $module = $this->module;
 
         if ($cmsId && !$blockId && !$productModalId) {
             $cms = new CMS($cmsId, $this->context->language->id, $this->context->shop->id);
@@ -56,7 +60,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $cmsContent = EverblockTools::renderShortcodes(
                 $cms->content,
                 $this->context,
-                $this->module
+                $module
             );
             $this->context->smarty->assign([
                 'everblock_modal' => (object) ['content' => $cmsContent],
@@ -97,7 +101,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
                     'content' => EverblockTools::renderShortcodes(
                         $content,
                         $this->context,
-                        $this->module
+                        $module
                     ),
                     'file' => $fileUrl,
                     'file_render_type' => $fileRenderType,
@@ -118,8 +122,8 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
         }
         $modalDelay = (int) $block->delay;
         $showModal = false;
-        $cookieName = $this->module->encrypt(
-            $this->module->name
+        $cookieName = $module->encrypt(
+            $module->name
             . $this->context->shop->id
             . Configuration::get('PS_SHOP_NAME')
         );
@@ -149,7 +153,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $blockContent = EverBlockTools::renderShortcodes(
                 $blockContent,
                 $this->context,
-                $this->module
+                $module
             );
             $this->context->smarty->assign([
                 'everblock_modal' => (object) [

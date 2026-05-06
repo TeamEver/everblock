@@ -186,7 +186,7 @@ class EverblockTools
                 $args = [];
             } else {
                 $method = $handler['method'];
-                $args = $handler['args'] ?? [];
+                $args = $handler['args'];
             }
 
             $callArgs = array_merge([$txt], static::resolveShortcodeArgs($args, $context, $module));
@@ -405,7 +405,7 @@ class EverblockTools
 
                 $sql .= ' LIMIT ' . (int) $offset . ', ' . (int) $limit;
 
-                $rows = $db->executeS($sql, $params);
+                $rows = $db->executeS(self::interpolateSqlParams($sql, $params));
                 $productIds = [];
                 if (is_array($rows)) {
                     foreach ($rows as $row) {
@@ -625,7 +625,7 @@ class EverblockTools
 
                 $sql .= ' LIMIT :offset, :limit';
 
-                $rows = $db->executeS($sql, $params);
+                $rows = $db->executeS(self::interpolateSqlParams($sql, $params));
 
                 $products = [];
                 $variants = [];
@@ -673,7 +673,7 @@ class EverblockTools
                             );
                             $imageUrl = '';
                             if ($imageId && !empty($presented['link_rewrite'])) {
-                                $imageUrl = $context->link->getImageLink($presented['link_rewrite'], $imageId);
+                                $imageUrl = $context->link->getImageLink((string) $presented['link_rewrite'], (string) $imageId);
                             }
 
                             $variants[] = [
@@ -2619,7 +2619,7 @@ class EverblockTools
     {
         $quantity = 0;
         if (isset($context->cart) && $context->cart->id) {
-            $quantity = (int) $context->cart->getProductsQuantity();
+            $quantity = (int) $context->cart->nbProducts();
         }
         $txt = str_replace('[cart_quantity]', (string) $quantity, $txt);
         return $txt;
@@ -3524,11 +3524,7 @@ class EverblockTools
             $storeIds = explode(',', $match);
             $storeInfo = [];
             foreach ($storeIds as $storeId) {
-                $store = new Store(
-                    (int) $storeId,
-                    (int) $context->language->id,
-                    (int) $context->shop->id
-                );
+                $store = new Store((int) $storeId, (int) $context->language->id);
                 if (!Validate::isLoadedObject($store)) {
                     continue;
                 }
@@ -3568,8 +3564,8 @@ class EverblockTools
 
     /**
      * Search & replace QCD ACF shortcodes from 410 Gone module
-     * @param $txt : full DOM
-     * @return $txt : full DOM fixed
+     * @param string $txt Full DOM
+     * @return string Full DOM fixed
     */
     public static function getQcdAcfCode(string $txt, Context $context): string
     {
@@ -3672,7 +3668,7 @@ class EverblockTools
             $replacement = '';
             if (!empty($images)) {
                 // 🔹 Mode carousel Bootstrap
-                if ($carousel && count($images) > 1 && isset($context->smarty, $module)) {
+                if ($carousel && count($images) > 1 && isset($context->smarty)) {
                     $context->smarty->assign([
                         'images' => $images,
                         'carousel_id' => 'everImgCarousel-' . uniqid(),
@@ -3772,7 +3768,7 @@ class EverblockTools
         foreach ($templateVars as $key => $value) {
             $search = '$' . $key;
             if (is_array($value)) {
-                $txt = static::renderSmartyVarsInArray($txt, $search, $value);
+                $txt = self::renderSmartyVarsInArray($txt, $search, $value);
             } elseif (is_string($value)) {
                 $txt = str_replace($search, $value, $txt);
             }
@@ -3785,7 +3781,7 @@ class EverblockTools
         foreach ($array as $key => $value) {
             $elementSearch = $search . '.' . $key;
             if (is_array($value)) {
-                $txt = static::renderSmartyVarsInArray($txt, $elementSearch, $value);
+                $txt = self::renderSmartyVarsInArray($txt, $elementSearch, $value);
             } else {
                 $replacement = is_scalar($value) ? (string) $value : '';
                 $txt = str_replace($elementSearch, $replacement, $txt);
@@ -4892,7 +4888,7 @@ class EverblockTools
             'date_end' => 'DATETIME DEFAULT NULL',
             'active' => 'int(10) unsigned NOT NULL DEFAULT 1',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock',
             $columnsToAdd,
@@ -4904,7 +4900,7 @@ class EverblockTools
             'content' => 'text DEFAULT NULL',
             'custom_code' => 'text DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_lang',
             $columnsToAdd,
@@ -4915,7 +4911,7 @@ class EverblockTools
             'shortcode' => 'text DEFAULT NULL',
             'id_shop' => 'int(10) unsigned NOT NULL DEFAULT 1',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_shortcode',
             $columnsToAdd,
@@ -4927,7 +4923,7 @@ class EverblockTools
             'title' => 'text DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_shortcode_lang',
             $columnsToAdd,
@@ -4942,7 +4938,7 @@ class EverblockTools
             'date_add' => 'DATETIME DEFAULT NULL',
             'date_upd' => 'DATETIME DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_faq',
             $columnsToAdd,
@@ -4954,7 +4950,7 @@ class EverblockTools
             'title' => 'text DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_faq_lang',
             $columnsToAdd,
@@ -4967,7 +4963,7 @@ class EverblockTools
             'id_shop' => 'int(10) unsigned NOT NULL',
             'position' => 'int(10) unsigned NOT NULL DEFAULT 0',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_faq_product',
             $columnsToAdd,
@@ -4979,7 +4975,7 @@ class EverblockTools
             'id_tab' => 'int(10) unsigned DEFAULT 0',
             'id_shop' => 'int(10) unsigned DEFAULT 1',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_tabs',
             $columnsToAdd,
@@ -4992,7 +4988,7 @@ class EverblockTools
             'title' => 'varchar(255) DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_tabs_lang',
             $columnsToAdd,
@@ -5004,7 +5000,7 @@ class EverblockTools
             'id_flag' => 'int(10) unsigned DEFAULT 0',
             'id_shop' => 'int(10) unsigned DEFAULT 0',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_flags',
             $columnsToAdd,
@@ -5017,7 +5013,7 @@ class EverblockTools
             'title' => 'varchar(255) DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_flags_lang',
             $columnsToAdd,
@@ -5030,7 +5026,7 @@ class EverblockTools
             'file' => 'varchar(255) DEFAULT NULL',
             'button_file' => 'varchar(255) DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_modal',
             $columnsToAdd,
@@ -5043,7 +5039,7 @@ class EverblockTools
             'content' => 'text DEFAULT NULL',
             'button_label' => 'text DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_modal_lang',
             $columnsToAdd,
@@ -5058,7 +5054,7 @@ class EverblockTools
             'is_winner' => 'TINYINT(1) NOT NULL DEFAULT 0',
             'date_add' => 'DATETIME DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_game_play',
             $columnsToAdd,
@@ -5074,7 +5070,7 @@ class EverblockTools
             'date_add' => 'DATETIME DEFAULT NULL',
             'date_upd' => 'DATETIME DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_page',
             $columnsToAdd,
@@ -5090,7 +5086,7 @@ class EverblockTools
             'link_rewrite' => 'varchar(255) DEFAULT NULL',
             'content' => 'text DEFAULT NULL',
         ];
-        static::addMissingColumns(
+        self::addMissingColumns(
             $db,
             _DB_PREFIX_ . 'everblock_page_lang',
             $columnsToAdd,
@@ -5116,6 +5112,22 @@ class EverblockTools
                 }
             }
         }
+    }
+
+    /**
+     * @param array<string, int|string> $params
+     */
+    private static function interpolateSqlParams(string $sql, array $params): string
+    {
+        uksort($params, static fn (string $left, string $right): int => strlen($right) <=> strlen($left));
+        foreach ($params as $name => $value) {
+            $sqlValue = is_int($value) || ctype_digit((string) $value)
+                ? (string) (int) $value
+                : "'" . pSQL((string) $value) . "'";
+            $sql = str_replace(':' . $name, $sqlValue, $sql);
+        }
+
+        return $sql;
     }
 
     public static function everPresentProducts(array $result, Context $context): array
@@ -5469,7 +5481,7 @@ class EverblockTools
 
     /**
      * Create fake products
-     * @param shop id
+     * @param int $idShop Shop id
      * @return bool
     */
     public static function generateProducts(int $idShop): bool
@@ -5487,7 +5499,7 @@ class EverblockTools
                 // Générez d'autres propriétés de produit fictives selon vos besoins
                 $product->name = 'Product ' . ($i + 1);
                 $product->description = 'Description for Product ' . ($i + 1);
-                $product->reference = 'PRD_DUMMY' . str_pad($i + 1, 4, '0', STR_PAD_LEFT);
+                $product->reference = 'PRD_DUMMY' . str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT);
                 if ($product->add()) {
                     $categories = [2];
                     $product->addToCategories($categories);
@@ -5496,7 +5508,7 @@ class EverblockTools
                     $image = new Image();
                     $image->id_product = $product->id;
                     $image->position = Image::getHighestPosition($product->id) + 1;
-                    $image->cover = 1;
+                    $image->cover = true;
                     if ($image->add()) {
                         $image->associateTo([$idShop]);
                         $tmpFile = tempnam(_PS_TMP_IMG_DIR_, 'ever');
@@ -5604,7 +5616,7 @@ class EverblockTools
 
     /**
      * Check if module is on disk (PS issue when module has been deleted manually)
-     * @param module name
+     * @param string $moduleName Module name
      * @return bool
     */
     public static function moduleDirectoryExists(string $moduleName): bool
@@ -6390,7 +6402,7 @@ class EverblockTools
 
         $extension = strtolower($pathInfo['extension'] ?? '');
         $size = @getimagesize($imagePath);
-        $mime = is_array($size) ? (string) ($size['mime'] ?? '') : '';
+        $mime = is_array($size) ? (string) $size['mime'] : '';
         $mimeExtensions = [
             'image/jpeg' => 'jpg',
             'image/png' => 'png',
@@ -6398,7 +6410,7 @@ class EverblockTools
             'image/avif' => 'avif',
         ];
         if (isset($mimeExtensions[$mime])) {
-            $extension = $mimeExtensions[$mime] ?? $extension;
+            $extension = $mimeExtensions[$mime];
         }
 
         switch ($extension) {
@@ -6455,7 +6467,7 @@ class EverblockTools
             // Convert the URL path to a relative file path
             $relativePath = urldecode($parsedUrl['path']);
             $baseUri = defined('__PS_BASE_URI__') ? (string) __PS_BASE_URI__ : '/';
-            if ($baseUri !== '/' && strpos($relativePath, $baseUri) === 0) {
+            if (strlen($baseUri) > 1 && strpos($relativePath, $baseUri) === 0) {
                 $relativePath = substr($relativePath, strlen($baseUri) - 1);
             }
 
@@ -6540,7 +6552,7 @@ class EverblockTools
         return _PS_ROOT_DIR_ . '/' . ltrim($relativePath, '/');
     }
 
-    private static function replaceUrlsInJsonString($jsonString, $oldUrl, $newUrl)
+    public static function replaceUrlsInJsonString($jsonString, $oldUrl, $newUrl)
     {
         if (empty($jsonString)) {
             return $jsonString;
@@ -6551,7 +6563,7 @@ class EverblockTools
             return $jsonString;
         }
 
-        $data = static::replaceUrlsRecursively($data, $oldUrl, $newUrl);
+        $data = self::replaceUrlsRecursively($data, $oldUrl, $newUrl);
 
         return json_encode($data);
     }
@@ -6560,7 +6572,7 @@ class EverblockTools
     {
         foreach ($data as $key => $value) {
             if (is_array($value)) {
-                $data[$key] = static::replaceUrlsRecursively($value, $oldUrl, $newUrl);
+                $data[$key] = self::replaceUrlsRecursively($value, $oldUrl, $newUrl);
             } elseif (is_string($value)) {
                 $data[$key] = str_replace($oldUrl, $newUrl, $value);
             }

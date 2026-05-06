@@ -22,6 +22,7 @@ namespace Everblock\Tools\Service;
 
 use DOMDocument;
 use DOMElement;
+use DOMAttr;
 use DOMXPath;
 
 if (!defined('_PS_VERSION_')) {
@@ -200,7 +201,19 @@ class ElementorToBootstrapConverter
     {
         $query = sprintf('//*[contains(concat(" ", normalize-space(@class), " "), " %s ")]', $className);
 
-        return $xpath->query($query) ?: [];
+        $nodes = $xpath->query($query);
+        if (!$nodes) {
+            return [];
+        }
+
+        $elements = [];
+        foreach ($nodes as $node) {
+            if ($node instanceof DOMElement) {
+                $elements[] = $node;
+            }
+        }
+
+        return $elements;
     }
 
     protected function addClass(DOMElement $element, string $className): void
@@ -253,7 +266,7 @@ class ElementorToBootstrapConverter
                 continue;
             }
 
-            if (str_starts_with($attribute->nodeName, 'data-')) {
+            if ($attribute instanceof DOMAttr && str_starts_with($attribute->nodeName, 'data-')) {
                 $element->removeAttributeNode($attribute);
             }
         }

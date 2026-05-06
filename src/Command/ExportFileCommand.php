@@ -45,6 +45,8 @@ class ExportFileCommand extends Command
     public const ABORTED = 3;
     
     protected $filename;
+    protected $logFile;
+    protected $module;
 
     private $allowedActions = [
         'getrandomcomment',
@@ -53,6 +55,7 @@ class ExportFileCommand extends Command
 
     public function __construct(KernelInterface $kernel)
     {
+        unset($kernel);
         parent::__construct();
     }
 
@@ -225,11 +228,6 @@ class ExportFileCommand extends Command
                 'alignment' => [
                     'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
                 ],
-                'borders' => [
-                    'top' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    ],
-                ],
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
                     'rotation' => 90,
@@ -241,6 +239,9 @@ class ExportFileCommand extends Command
                     ],
                 ],
                 'borders' => [
+                    'top' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ],
                     'outline' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
                         'color' => ['argb' => 'FFFF0000'],
@@ -265,6 +266,8 @@ class ExportFileCommand extends Command
             );
             return self::SUCCESS;
         }
+
+        return self::INVALID;
     }
 
     protected function getAllBlocks($idShop, $idLang): array

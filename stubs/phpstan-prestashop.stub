@@ -1,0 +1,57 @@
+<?php
+
+namespace {
+    class AppKernel
+    {
+        public function boot(): void
+        {
+        }
+
+        public function getContainer(): object
+        {
+        }
+    }
+
+    class Cookie
+    {
+        public mixed $id_cart;
+        public mixed $id_shop;
+        public mixed $id_shop_group;
+        public mixed $id_currency;
+        public mixed $customer_lastname;
+        public mixed $customer_firstname;
+        public mixed $email;
+        public mixed $secure_key;
+    }
+
+    class Controller
+    {
+        public mixed $module;
+        public mixed $page_name;
+    }
+
+    class FrontController extends Controller
+    {
+    }
+
+    class ProductController extends FrontController
+    {
+        public mixed $product;
+    }
+
+    class Module
+    {
+        public function encrypt(mixed $data): string
+        {
+        }
+    }
+
+    class ModuleFrontController
+    {
+        public mixed $module;
+    }
+
+    class AdminKernel extends AppKernel
+    {
+    }
+}

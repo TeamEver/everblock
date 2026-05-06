@@ -39,6 +39,7 @@ class Modal
 
     public function __construct(?int $id = null, ?int $idLang = null, ?int $idShop = null)
     {
+        unset($idLang, $idShop);
         if ($id !== null && $id > 0) {
             $loaded = self::repository()->findModal($id);
             if ($loaded instanceof self) {

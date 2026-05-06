@@ -47,35 +47,31 @@ class EverblockcronModuleFrontController extends ModuleFrontController
 
     public function initContent()
     {
+        if (!$this->module instanceof Everblock) {
+            Tools::redirect('index.php');
+            return;
+        }
+        $module = $this->module;
         if (!Tools::getIsset('evertoken')
-            || $this->module->encrypt($this->module->name . '/evercron') != Tools::getValue('evertoken')
-            || !Module::isInstalled($this->module->name)
+            || $module->encrypt($module->name . '/evercron') != Tools::getValue('evertoken')
+            || !Module::isInstalled($module->name)
         ) {
             Tools::redirect('index.php');
         }
-        if (!Tools::getValue('action')
-            || empty(Tools::getValue('action'))
-        ) {
+        if (!Tools::getValue('action')) {
             Tools::redirect('index.php');
         }
         if (!in_array(Tools::getValue('action'), $this->allowedActions)) {
             Tools::redirect('index.php');
         }
         try {
-            if (defined('_PS_MODE_DEV_')
-                && _PS_MODE_DEV_ == true
-            ) {
-                $env = 'dev';
-                $debug = true;
-            } else {
-                $env = 'prod';
-                $debug = false;
-            }
-            if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
-                $kernel = new \AdminKernel($env, $debug);
-            } else {
-                $kernel = new \AppKernel($env, $debug);
-            }
+            $debug = defined('_PS_MODE_DEV_') ? (bool) constant('_PS_MODE_DEV_') : false;
+            $env = $debug ? 'dev' : 'prod';
+            $kernelClass = version_compare(_PS_VERSION_, '9.0.0', '>=') && class_exists('AdminKernel')
+                ? 'AdminKernel'
+                : 'AppKernel';
+            /** @var AppKernel $kernel */
+            $kernel = new $kernelClass($env, $debug);
             $kernel->boot();
 
             $container = $kernel->getContainer();

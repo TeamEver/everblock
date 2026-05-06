@@ -37,6 +37,7 @@ class ProductTab
 
     public function __construct(?int $id = null, ?int $idLang = null, ?int $idShop = null)
     {
+        unset($idShop);
         if ($id !== null && $id > 0) {
             $loaded = self::repository()->findTab($id, $idLang);
             if ($loaded instanceof self) {

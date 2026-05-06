@@ -1,9 +1,18 @@
 parameters:
     level: 5
+    treatPhpDocTypesAsCertain: false
     paths:
         - src
         - controllers
         - everblock.php
         - index.php
+    stubFiles:
+        - stubs/phpstan-prestashop.stub
+    universalObjectCratesClasses:
+        - Cookie
+        - Controller
     bootstrapFiles:
+        - ../../config/config.inc.php
         - vendor/autoload.php
+        - stubs/phpstan-bootstrap.php
+        - everblock.php

@@ -262,7 +262,9 @@ class EverblockPreviewBuilder
         $controller->page_name = isset($params['page_name']) && $params['page_name'] !== ''
             ? (string) $params['page_name']
             : $controllerName;
-        $this->context->controller = $controller;
+        if ($controller instanceof \FrontController || $controller instanceof \AdminController) {
+            $this->context->controller = $controller;
+        }
 
         return $controller;
     }

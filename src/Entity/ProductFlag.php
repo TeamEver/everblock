@@ -38,6 +38,7 @@ class ProductFlag
 
     public function __construct(?int $id = null, ?int $idLang = null, ?int $idShop = null)
     {
+        unset($idShop);
         if ($id !== null && $id > 0) {
             $loaded = self::repository()->findFlag($id, $idLang);
             if ($loaded instanceof self) {

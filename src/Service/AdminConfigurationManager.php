@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Everblock\Tools\Service;
 
 use Configuration;
+use Context;
 use Feature;
 use Language;
 use Store;
@@ -54,7 +55,7 @@ final class AdminConfigurationManager
 
     public function getViewContext(\Everblock $module): array
     {
-        $context = $module->context;
+        $context = Context::getContext();
         $idLang = (int) $context->language->id;
         $features = Feature::getFeatures($idLang);
         $featureChoices = [];
@@ -195,7 +196,7 @@ final class AdminConfigurationManager
             );
         }
         if (Tools::isSubmit('submitCreateProduct')) {
-            $created = EverblockTools::generateProducts((int) $module->context->shop->id);
+            $created = EverblockTools::generateProducts((int) Context::getContext()->shop->id);
             $this->appendBooleanResult(
                 $created,
                 $module->l('Products creation done'),
@@ -208,7 +209,7 @@ final class AdminConfigurationManager
             $this->appendToolResult(EverblockTools::migrateUrls(
                 Tools::getValue('EVERPS_OLD_URL'),
                 Tools::getValue('EVERPS_NEW_URL'),
-                (int) $module->context->shop->id
+                (int) Context::getContext()->shop->id
             ), $errors, $success);
         }
         if (Tools::isSubmit('submitEverblockUpdate')) {

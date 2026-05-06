@@ -24,7 +24,7 @@ use Context;
 use Configuration;
 use Everblock;
 use Hook;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -43,7 +43,6 @@ class EverblockCheckoutStep extends \AbstractCheckoutStep
     {
         parent::__construct($context, $translator);
         $this->context = $context;
-        $this->translator = $translator;
         $this->module = $module;
         $title = Configuration::get(
             'EVEROPTIONS_TITLE',
@@ -122,8 +121,8 @@ class EverblockCheckoutStep extends \AbstractCheckoutStep
                 'everdata' => $this->everdata,
             ]
         );
-        if (!$fields || empty($fields)) {
-            return;
+        if (!$fields) {
+            return '';
         }
         $fields = $this->processFieldsWithEverdata($fields);
         $this->context->smarty->assign([

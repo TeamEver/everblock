@@ -27,6 +27,7 @@ if (!defined('_PS_VERSION_')) {
 use Exception;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\ImportFile;
+use EverBlockClass;
 use Hook;
 use PrestaShopLogger;
 use Symfony\Component\Console\Command\Command;
@@ -44,9 +45,12 @@ class ImportFileCommand extends Command
     public const ABORTED = 3;
     
     protected $filename;
+    protected $logFile;
+    protected $module;
 
     public function __construct(KernelInterface $kernel)
     {
+        unset($kernel);
         parent::__construct();
     }
 
@@ -129,17 +133,17 @@ class ImportFileCommand extends Command
         }
         $create = false;
         if (isset($line['id_everblock']) && Validate::isUnsignedInt($line['id_everblock']) && (int)$line['id_everblock'] > 0) {
-            $block = new \Everblock(
+            $block = new EverBlockClass(
                 (int) $line['id_everblock'],
                 (int) $line['id_lang'],
                 (int) $line['id_shop']
             );
             if (!Validate::isLoadedObject($block)) {
-                $block = new \Everblock();
+                $block = new EverBlockClass();
                 $create = true;
             }
         } else {
-            $block = new \Everblock();
+            $block = new EverBlockClass();
             $create = true;
         }
         if ($create) {
@@ -176,7 +180,7 @@ class ImportFileCommand extends Command
                 '<error>active column is not valid : ' . $line['active'] . '</error>'
                 );
             } else {
-                $block->active = (int) $line['active'];
+                $block->active = (bool) $line['active'];
             }
         }
         if (isset($line['date_start'])) {
@@ -208,7 +212,7 @@ class ImportFileCommand extends Command
         }
         if (isset($line['custom_code'])) {
             // huh ?
-            if (!Validate::isAnything($line['custom_code'])) {
+            if (!Validate::isString((string) $line['custom_code'])) {
                 $output->writeln(
                 '<error>custom_code column is not valid : ' . $line['custom_code'] . '</error>'
                 );
