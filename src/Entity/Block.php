@@ -92,7 +92,11 @@ class Block
     public function __construct(?int $id = null, ?int $idLang = null, ?int $idShop = null)
     {
         if ($id !== null && $id > 0) {
-            $loaded = self::repository()->find($id, $idShop, $idLang);
+            try {
+                $loaded = self::repository()->find($id, $idShop, $idLang);
+            } catch (\RuntimeException $exception) {
+                $loaded = self::findOneLegacy($id, $idShop, $idLang);
+            }
             if ($loaded instanceof self) {
                 $this->copyFrom($loaded);
             }
@@ -179,7 +183,7 @@ class Block
     {
         $cacheId = 'EverBlockClass_getAllBlocks_' . $idLang . '_' . $idShop;
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $blocks = self::repository()->findAllForShop($idLang, $idShop);
+            $blocks = self::findAllForShopLegacy($idLang, $idShop);
             EverblockCache::cacheStore($cacheId, $blocks);
 
             return $blocks;
@@ -209,7 +213,7 @@ class Block
     {
         $cacheId = 'EverBlockClass_getBlocks_' . $idHook . '_' . $idLang . '_' . $idShop;
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $blocks = self::repository()->findActiveForHook($idHook, $idLang, $idShop);
+            $blocks = self::findActiveForHookLegacy($idHook, $idLang, $idShop);
             foreach ($blocks as &$block) {
                 $block['bootstrap_class'] = self::getBootstrapColClass((int) ($block['bootstrap_class'] ?? 0));
             }
@@ -220,6 +224,62 @@ class Block
         }
 
         return (array) EverblockCache::cacheRetrieve($cacheId);
+    }
+
+    private static function findAllForShopLegacy(int $idLang, int $idShop): array
+    {
+        return (array) \Db::getInstance()->executeS(
+            'SELECT b.*, bl.content, bl.custom_code
+            FROM `' . _DB_PREFIX_ . 'everblock` b
+            LEFT JOIN `' . _DB_PREFIX_ . 'everblock_lang` bl ON b.id_everblock = bl.id_everblock
+            WHERE bl.id_lang = ' . (int) $idLang . '
+              AND b.id_shop = ' . (int) $idShop . '
+            ORDER BY b.position ASC'
+        );
+    }
+
+    private static function findOneLegacy(int $id, ?int $idShop = null, ?int $idLang = null): ?self
+    {
+        $where = 'b.id_everblock = ' . (int) $id;
+        if ($idShop !== null && $idShop > 0) {
+            $where .= ' AND b.id_shop = ' . (int) $idShop;
+        }
+
+        $row = \Db::getInstance()->getRow(
+            'SELECT b.*
+            FROM `' . _DB_PREFIX_ . 'everblock` b
+            WHERE ' . $where
+        );
+        if (!$row) {
+            return null;
+        }
+
+        $langWhere = 'id_everblock = ' . (int) $id;
+        if ($idLang !== null && $idLang > 0) {
+            $langWhere .= ' AND id_lang = ' . (int) $idLang;
+        }
+
+        $langRows = (array) \Db::getInstance()->executeS(
+            'SELECT *
+            FROM `' . _DB_PREFIX_ . 'everblock_lang`
+            WHERE ' . $langWhere
+        );
+
+        return self::fromDatabase($row, $langRows);
+    }
+
+    private static function findActiveForHookLegacy(int $idHook, int $idLang, int $idShop): array
+    {
+        return (array) \Db::getInstance()->executeS(
+            'SELECT b.*, bl.content, bl.custom_code
+            FROM `' . _DB_PREFIX_ . 'everblock` b
+            LEFT JOIN `' . _DB_PREFIX_ . 'everblock_lang` bl ON b.id_everblock = bl.id_everblock
+            WHERE b.id_hook = ' . (int) $idHook . '
+              AND bl.id_lang = ' . (int) $idLang . '
+              AND b.id_shop = ' . (int) $idShop . '
+              AND b.active = 1
+            ORDER BY b.position ASC'
+        );
     }
 
     public static function getBootstrapColClass(int $colNumber): string

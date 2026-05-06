@@ -64,7 +64,7 @@ $(document).ready(function(){
             + '</div></div></div></div>';
         $('body').append(modal);
         var $modal = $('#everWheelModal');
-        $modal.modal('show');
+        everblockShowModal($modal);
         if (couponCode) {
             $modal.find('.ever-wheel-copy').on('click', function () {
                 var $feedback = $modal.find('.ever-wheel-copy-feedback');
@@ -125,6 +125,35 @@ $(document).ready(function(){
         }
         var node = $element.get(0);
         return !!(node && node.offsetParent !== null);
+    }
+
+    function everblockGetModalInstance($modal, options) {
+        if (!$modal || !$modal.length) {
+            return null;
+        }
+        if (typeof bootstrap === 'undefined' || typeof bootstrap.Modal === 'undefined') {
+            return null;
+        }
+        var modalElement = $modal.get(0);
+        if (typeof bootstrap.Modal.getOrCreateInstance === 'function') {
+            return bootstrap.Modal.getOrCreateInstance(modalElement, options || {});
+        }
+        var modalInstance = null;
+        if (typeof bootstrap.Modal.getInstance === 'function') {
+            modalInstance = bootstrap.Modal.getInstance(modalElement);
+        }
+        return modalInstance || new bootstrap.Modal(modalElement, options || {});
+    }
+
+    function everblockShowModal($modal, options) {
+        var modalInstance = everblockGetModalInstance($modal, options);
+        if (modalInstance && typeof modalInstance.show === 'function') {
+            modalInstance.show();
+            return;
+        }
+        if ($modal && typeof $modal.modal === 'function') {
+            $modal.modal('show');
+        }
     }
 
     function disposePrettyblocksCarousel($carousel) {
@@ -497,7 +526,7 @@ $(document).ready(function(){
         $('#everModalImage').attr('src', imageSrc);
 
         // Ouvrir la modal
-        $('#everImageModal').modal('show');
+        everblockShowModal($('#everImageModal'));
     });
     $(document).on('submit', '.evercontactform', function(e) {
         e.preventDefault();
@@ -513,7 +542,7 @@ $(document).ready(function(){
             success: function(modal) {
                 $('#everblockModal').remove();
                 $('body').append(modal);
-                $('#evercontactModal').modal('show');
+                everblockShowModal($('#evercontactModal'));
                 $('#evercontactModal').on('hidden.bs.modal', function () {
                     $(this).remove();
                     $('.modal-backdrop').remove();
@@ -525,23 +554,42 @@ $(document).ready(function(){
         });
     });
     $('div[data-evermodal]').each(function() {
-        let blockId = $(this).attr('id').replace('everblock-', '');
-        let timeout = $(this).data('evertimeout');
+        let $trigger = $(this);
+        let triggerId = $trigger.attr('id') || '';
+        let blockId = triggerId.indexOf('everblock-') === 0
+            ? triggerId.replace('everblock-', '')
+            : $trigger.data('evermodal');
+        let timeout = parseInt($trigger.data('evertimeout'), 10);
+        blockId = parseInt(blockId, 10);
+        if (!blockId || typeof evermodal_link === 'undefined' || typeof everblock_token === 'undefined') {
+            return;
+        }
+        if (isNaN(timeout) || timeout < 0) {
+            timeout = 0;
+        }
         $.ajax({
             url: atob(evermodal_link),
             type: 'POST',
             data: { id_everblock: blockId, token: everblock_token, everblock_origin_url: window.location.href },
             success: function(modal) {
-                $(modal).insertAfter($('body'));
+                if (!modal || !$.trim(modal)) {
+                    return;
+                }
+                $('#everblockModal').remove();
+                $('body').append(modal);
                 let $modal = $('#everblockModal');
+                if (!$modal.length) {
+                    return;
+                }
                 setTimeout(function() {
-                    $modal.modal('show');
+                    everblockShowModal($modal);
                 }, timeout);
                 $modal.on('shown.bs.modal', function () {
                     let windowHeight = $(window).height();
                     let modalHeaderHeight = $(this).find('.modal-header').outerHeight() || 0; // S'il y a un en-tête
                     let modalFooterHeight = $(this).find('.modal-footer').outerHeight() || 0; // S'il y a un pied de page
-                    let modalBodyPadding = parseInt($(this).find('.modal-body').css('padding-top')) + parseInt($(this).find('.modal-body').css('padding-bottom'));
+                    let modalBodyPadding = (parseInt($(this).find('.modal-body').css('padding-top'), 10) || 0)
+                        + (parseInt($(this).find('.modal-body').css('padding-bottom'), 10) || 0);
                     
                     let maxModalBodyHeight = windowHeight - modalHeaderHeight - modalFooterHeight - modalBodyPadding - 20; // 20px pour un peu d'espace
                     
@@ -585,10 +633,17 @@ $(document).ready(function(){
             type: 'POST',
             data: data,
             success: function(modal) {
+                if (!modal || !$.trim(modal)) {
+                    return;
+                }
                 $('#everblockModal').remove();
                 $('body').append(modal);
-                $('#everblockModal').modal('show');
-                $('#everblockModal').on('hidden.bs.modal', function () {
+                let $modal = $('#everblockModal');
+                if (!$modal.length) {
+                    return;
+                }
+                everblockShowModal($modal);
+                $modal.on('hidden.bs.modal', function () {
                     $(this).remove();
                 });
             },
@@ -597,11 +652,11 @@ $(document).ready(function(){
             }
         });
     });
-    $('.everModalAutoTrigger').modal('show');
+    everblockShowModal($('.everModalAutoTrigger'));
     // Wheel login modal handlers
     $(document).on('click', '.ever-wheel-login-btn', function(e){
         e.preventDefault();
-        $('#everWheelLoginModal').modal('show');
+        everblockShowModal($('#everWheelLoginModal'));
     });
     $(document).on('hidden.bs.modal', '#everWheelLoginModal', function(){
         var form = $(this).find('form')[0];
@@ -611,7 +666,7 @@ $(document).ready(function(){
     });
     $(document).on('click', '.ever-scratch-login-btn', function(e){
         e.preventDefault();
-        $('#everScratchLoginModal').modal('show');
+        everblockShowModal($('#everScratchLoginModal'));
     });
     $(document).on('hidden.bs.modal', '#everScratchLoginModal', function(){
         var form = $(this).find('form')[0];
@@ -623,7 +678,7 @@ $(document).ready(function(){
         e.preventDefault();
         var target = $(this).data('target');
         if (typeof target === 'string' && target.length) {
-            $(target).modal('show');
+            everblockShowModal($(target));
         }
     });
     $(document).on('hidden.bs.modal', '.ever-mystery-login-modal', function(){
@@ -636,7 +691,7 @@ $(document).ready(function(){
         e.preventDefault();
         var target = $(this).data('target');
         if (typeof target === 'string' && target.length) {
-            $(target).modal('show');
+            everblockShowModal($(target));
         }
     });
     $(document).on('hidden.bs.modal', '.ever-slot-login-modal', function(){
@@ -706,10 +761,19 @@ $(document).ready(function(){
         $('#' + modalId + ' img').attr('src', imageSrc);
         $('#' + modalId + ' .modal-title').text(imageAlt); // Mets à jour le titre de la modal
     });
-    $('.everblock-gallery .modal').modal({
-        backdrop: true,
-        show: false
-    });
+    let $everblockGalleryModals = $('.everblock-gallery .modal');
+    if ($everblockGalleryModals.length) {
+        if (typeof $everblockGalleryModals.modal === 'function') {
+            $everblockGalleryModals.modal({
+                backdrop: true,
+                show: false
+            });
+        } else {
+            $everblockGalleryModals.each(function () {
+                everblockGetModalInstance($(this), { backdrop: true });
+            });
+        }
+    }
 
     // Masonry gallery modal generation
     $(document).on('click', '.everblock-masonry-gallery img', function () {
@@ -748,8 +812,9 @@ $(document).ready(function(){
             $carouselInner.append('<div class="carousel-item' + active + '"><img src="' + src + '" class="d-block w-100" alt="' + alt + '"></div>');
         });
 
-        $('#' + modalId).modal('show');
-        $('#' + modalId).on('hidden.bs.modal', function () {
+        let $modal = $('#' + modalId);
+        everblockShowModal($modal);
+        $modal.on('hidden.bs.modal', function () {
             $(this).remove();
         });
     });
@@ -762,7 +827,7 @@ $(document).ready(function(){
         modal.find('iframe').attr('src', makeLoopUrl($img.data('video-url')));
         modal.find('.modal-title').text($img.attr('title'));
         modal.find('.video-description').text($img.data('description'));
-        modal.modal('show');
+        everblockShowModal(modal);
         modal.on('hidden.bs.modal', function () {
             modal.find('iframe').attr('src', '');
         });
@@ -814,7 +879,7 @@ $(document).ready(function(){
                 modal.find('.products-container .products').addClass('justify-content-center');
                 modal.find('iframe').attr('src', makeLoopUrl($img.data('video-url')));
                 $('body').append(modal);
-                modal.modal('show');
+                everblockShowModal(modal);
                 modal.on('hidden.bs.modal', function () {
                     modal.remove();
                 });
@@ -1094,7 +1159,7 @@ $(document).ready(function(){
             var productId = $(this).data('product-id');
             $.get(ajaxUrl + '&id_product=' + productId, function(html) {
                 $modalBody.html(html);
-                $modal.modal('show');
+                everblockShowModal($modal);
             });
         });
     });
@@ -2578,7 +2643,7 @@ $(document).ready(function(){
         e.preventDefault();
         var target = $(this).data('target');
         if (typeof target === 'string' && target.length) {
-            $(target).modal('show');
+            everblockShowModal($(target));
         }
     });
     $(document).on('hidden.bs.modal', '.ever-advent-login-modal', function () {
@@ -3553,7 +3618,7 @@ $(document).ready(function(){
             } else {
                 $caption.addClass('d-none').text('');
             }
-            $everblockImageModal.modal('show');
+            everblockShowModal($everblockImageModal);
         });
     }
 
@@ -3563,7 +3628,7 @@ $(document).ready(function(){
         if (e.clientY <= 0 && !exitIntentShown) {
             var $modal = $('.ever-exit-intent-modal').first();
             if ($modal.length) {
-                $modal.modal('show');
+                everblockShowModal($modal);
                 exitIntentShown = true;
             }
         }

@@ -133,22 +133,29 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $showModal = true;
         }
         if ($showModal) {
+            $idLang = (int) $this->context->language->id;
+            $blockContent = is_array($block->content)
+                ? (string) ($block->content[$idLang] ?? '')
+                : (string) $block->content;
             // Hooks not allowed here
-            if (strpos($block->content, '{hook h=') !== false) {
+            if (strpos($blockContent, '{hook h=') !== false) {
                 $pattern = '/\{hook h=[^}]*\}/';
-                $block->content = preg_replace($pattern, '', $block->content);
+                $blockContent = preg_replace($pattern, '', $blockContent);
             }
             // Store locator not allowed here
-            if (strpos($block->content, '[storelocator]') !== false) {
-                $block->content = str_replace('[storelocator]', '', $block->content);
+            if (strpos($blockContent, '[storelocator]') !== false) {
+                $blockContent = str_replace('[storelocator]', '', $blockContent);
             }
-            $block->content = EverBlockTools::renderShortcodes(
-                $block->content,
+            $blockContent = EverBlockTools::renderShortcodes(
+                $blockContent,
                 $this->context,
                 $this->module
             );
             $this->context->smarty->assign([
-                'everblock_modal' => $block,
+                'everblock_modal' => (object) [
+                    'content' => $blockContent,
+                    'background' => $block->background,
+                ],
             ]);
             $response = $this->context->smarty->fetch(_PS_MODULE_DIR_ . '/everblock/views/templates/front/modal.tpl');
             die($response);

@@ -109,7 +109,10 @@ class Shortcode
     {
         $cacheId = 'EverblockShortcode_getAllShortcodes_' . $idShop . '_' . $langId;
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $shortcodes = self::repository()->findAll($idShop, $langId);
+            $shortcodes = array_map(
+                static fn (array $row): self => self::fromDatabase($row, [], $langId),
+                self::findAllLegacy($idShop, $langId)
+            );
             EverblockCache::cacheStore($cacheId, $shortcodes);
 
             return $shortcodes;
@@ -122,7 +125,11 @@ class Shortcode
     {
         $cacheId = 'EverblockShortcode_getAllShortcodeIds_' . $idShop;
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $ids = self::repository()->findIds($idShop);
+            $ids = (array) \Db::getInstance()->executeS(
+                'SELECT id_everblock_shortcode
+                FROM `' . _DB_PREFIX_ . 'everblock_shortcode`
+                WHERE id_shop = ' . (int) $idShop
+            );
             EverblockCache::cacheStore($cacheId, $ids);
 
             return $ids;
@@ -135,12 +142,33 @@ class Shortcode
     {
         $cacheId = 'EverblockShortcode_getEverShortcode_' . trim($shortcode) . '_' . $shopId . '_' . $langId;
         if (!EverblockCache::isCacheStored($cacheId)) {
-            $content = self::repository()->findContentByShortcode($shortcode, $shopId, $langId);
+            $content = (string) \Db::getInstance()->getValue(
+                'SELECT sl.content
+                FROM `' . _DB_PREFIX_ . 'everblock_shortcode` s
+                INNER JOIN `' . _DB_PREFIX_ . 'everblock_shortcode_lang` sl
+                    ON s.id_everblock_shortcode = sl.id_everblock_shortcode
+                WHERE s.shortcode = "' . pSQL($shortcode) . '"
+                  AND s.id_shop = ' . (int) $shopId . '
+                  AND sl.id_lang = ' . (int) $langId
+            );
             EverblockCache::cacheStore($cacheId, $content);
 
             return $content;
         }
 
         return (string) EverblockCache::cacheRetrieve($cacheId);
+    }
+
+    private static function findAllLegacy(int $idShop, int $langId): array
+    {
+        return (array) \Db::getInstance()->executeS(
+            'SELECT s.*, sl.title, sl.content, sl.id_lang
+            FROM `' . _DB_PREFIX_ . 'everblock_shortcode` s
+            INNER JOIN `' . _DB_PREFIX_ . 'everblock_shortcode_lang` sl
+                ON s.id_everblock_shortcode = sl.id_everblock_shortcode
+               AND sl.id_lang = ' . (int) $langId . '
+            WHERE s.id_shop = ' . (int) $idShop . '
+            ORDER BY s.shortcode ASC'
+        );
     }
 }

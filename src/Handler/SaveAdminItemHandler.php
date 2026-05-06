@@ -72,7 +72,10 @@ final class SaveAdminItemHandler
         $block->content = $this->localized($data, 'content', $command->languages, true);
         $block->custom_code = $this->localized($data, 'custom_code', $command->languages, true);
 
-        return $this->blockRepository->save($block, $command->languages);
+        $id = $this->blockRepository->save($block, $command->languages);
+        $this->registerModuleInHook((int) $block->id_hook);
+
+        return $id;
     }
 
     private function saveShortcode(SaveAdminItemCommand $command): int
@@ -238,5 +241,24 @@ final class SaveAdminItemHandler
                 EverblockCache::cacheDropByPattern('EverblockPage_countPages_' . $langId . '_' . $command->shopId . '_');
             }
         }
+    }
+
+    private function registerModuleInHook(int $hookId): void
+    {
+        if ($hookId <= 0) {
+            return;
+        }
+
+        $hookName = \Hook::getNameById($hookId);
+        if (!$hookName || !\Validate::isHookName($hookName)) {
+            return;
+        }
+
+        $module = \Module::getInstanceByName('everblock');
+        if (!$module instanceof \Module || $module->isRegisteredInHook($hookName)) {
+            return;
+        }
+
+        $module->registerHook($hookName);
     }
 }

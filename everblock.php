@@ -1011,9 +1011,41 @@ class Everblock extends Module
         $this->registerHook('displayWrapperBottom');
         $this->registerHook('displayWrapperTop');
         $this->registerQcdBuilderHooks();
+        $this->registerStoredBlockHooks();
         $this->updateProductFlagsHook();
         $this->registerHook('actionEmailAddAfterContent');
         $this->installTabs();
+    }
+
+    protected function registerStoredBlockHooks(): void
+    {
+        try {
+            $blocksHooks = Db::getInstance()->executeS(
+                'SELECT DISTINCT h.`name`
+                FROM `' . _DB_PREFIX_ . 'everblock` b
+                INNER JOIN `' . _DB_PREFIX_ . 'hook` h ON h.`id_hook` = b.`id_hook`
+                WHERE b.`id_hook` > 0
+                  AND h.`name` NOT LIKE "action%"
+                  AND h.`name` NOT LIKE "filter%"'
+            );
+        } catch (Exception $exception) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+
+            return;
+        }
+
+        if (!is_array($blocksHooks)) {
+            return;
+        }
+
+        foreach ($blocksHooks as $hook) {
+            $hookName = (string) ($hook['name'] ?? '');
+            if (!$hookName || !Validate::isHookName($hookName) || $this->isRegisteredInHook($hookName)) {
+                continue;
+            }
+
+            $this->registerHook($hookName);
+        }
     }
 
     protected function updateProductFlagsHook()
