@@ -10,10 +10,24 @@
         <p class="everblock-bo-kicker">{{ config.title }}</p>
         <h2 class="everblock-bo-title">{{ id ? 'Edit'|trans({}, 'Admin.Actions') : 'Add new'|trans({}, 'Admin.Actions') }}</h2>
       </div>
-      <a class="btn btn-outline-secondary" href="{{ path(config.route) }}">
-        <i class="material-icons">arrow_back</i>
-        {{ 'Back to list'|trans({}, 'Admin.Actions') }}
-      </a>
+      <div class="everblock-bo-header__actions">
+        {% if section == 'blocks' and preview_url is defined and preview_url %}
+          <button
+            type="button"
+            class="btn btn-outline-info mr-2"
+            data-everblock-preview-open="1"
+            data-everblock-preview-url="{{ preview_url }}"
+            title="{{ 'Preview this block'|trans({}, 'Modules.Everblock.Admin') }}"
+          >
+            <i class="material-icons">visibility</i>
+            {{ 'Preview'|trans({}, 'Modules.Everblock.Admin') }}
+          </button>
+        {% endif %}
+        <a class="btn btn-outline-secondary" href="{{ path(config.route) }}">
+          <i class="material-icons">arrow_back</i>
+          {{ 'Back to list'|trans({}, 'Admin.Actions') }}
+        </a>
+      </div>
     </div>
 
     {{ form_start(form, {attr: {class: 'everblock-bo-symfony-form'}}) }}
@@ -157,4 +171,8 @@
       </div>
     {{ form_end(form, {render_rest: section != 'blocks'}) }}
   </div>
+
+  {% if section == 'blocks' and preview_url is defined and preview_url %}
+    {% include '@Modules/everblock/templates/admin/_preview_modal.html.twig' %}
+  {% endif %}
 {% endblock %}

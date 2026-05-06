@@ -4097,8 +4097,9 @@ class Everblock extends Module
         $controller = Tools::getValue('controller');
         $isModuleConfiguration = Tools::getValue('configure') === $this->name;
         $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '');
-        $isSymfonyContentForm = (bool) preg_match('#/modules/everblock/(blocks|pages|faqs|shortcodes)/(new|[0-9]+/edit)#', $requestUri);
-        $isSymfonyEverblockAdmin = strpos($requestUri, '/modules/everblock/') !== false;
+        $isSymfonyContentForm = (bool) preg_match('#/(?:modules/)?everblock/(blocks|pages|faqs|shortcodes)/(new|[0-9]+/edit)#', $requestUri);
+        $isSymfonyEverblockAdmin = strpos($requestUri, '/modules/everblock/') !== false
+            || (bool) preg_match('#/everblock/(blocks|pages|faqs|shortcodes|hooks|configuration|clear-cache)#', $requestUri);
         $moduleControllers = [
             'AdminEverBlock',
             'AdminEverBlockConfiguration',

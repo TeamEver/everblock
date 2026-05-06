@@ -119,28 +119,93 @@ $(document).ready(function() {
 
   $(document).on('click', '[data-everblock-preview-open]', function (e) {
     e.preventDefault();
+    e.stopPropagation();
 
     const $btn = $(this);
-    const previewUrl = $btn.data('everblockPreviewUrl');
+    const previewUrl = $btn.attr('data-everblock-preview-url') || $btn.data('everblockPreviewUrl');
     const $modal = $('#everblock-preview-modal');
     const $iframe = $('#everblock-preview-iframe');
+    const $loader = $modal.find('[data-everblock-preview-loader]');
+    const $openTab = $modal.find('#everblock-preview-open-tab');
 
     if (!previewUrl || !$modal.length || !$iframe.length) return;
 
     // Retire le focus du bouton pour éviter le warning ARIA
     $btn.blur();
 
-    // Reset iframe
-    $iframe.attr('src', 'about:blank');
+    // Reset iframe et loader
+    $iframe.attr('src', 'about:blank').css('opacity', 0);
+    $loader.removeClass('d-none');
+    if ($openTab.length) {
+      $openTab.attr('href', previewUrl);
+    }
 
     // Ouvre la modale
-    $modal.modal('show');
+    if (typeof $modal.modal === 'function') {
+      $modal.modal('show');
+    } else {
+      $modal.addClass('show').css('display', 'block');
+    }
 
     // Charge la preview après l'ouverture complète (transition Bootstrap)
-    setTimeout(() => {
+    setTimeout(function () {
       $iframe.attr('src', previewUrl);
-    }, 400);
+    }, 200);
+
+    $iframe.off('load.everblockPreview').on('load.everblockPreview', function () {
+      $loader.addClass('d-none');
+      $iframe.css('opacity', 1);
+    });
   });
+
+  $(document).on('hidden.bs.modal', '#everblock-preview-modal', function () {
+    const $iframe = $('#everblock-preview-iframe');
+    $iframe.attr('src', 'about:blank');
+  });
+
+  $(document).on('click', '[data-everblock-row-href]', function (event) {
+    if (event.defaultPrevented) {
+      return;
+    }
+    const $target = $(event.target);
+    if ($target.closest('[data-everblock-row-no-click]').length) {
+      return;
+    }
+    if ($target.closest('a, button, input, select, textarea, label').length) {
+      return;
+    }
+
+    const href = $(this).attr('data-everblock-row-href');
+    if (!href) {
+      return;
+    }
+
+    if (event.metaKey || event.ctrlKey || event.button === 1) {
+      window.open(href, '_blank');
+      return;
+    }
+
+    window.location.href = href;
+  });
+
+  $(document).on('keydown', '[data-everblock-row-href]', function (event) {
+    if (event.key !== 'Enter') {
+      return;
+    }
+    if ($(event.target).closest('[data-everblock-row-no-click]').length) {
+      return;
+    }
+    if ($(event.target).closest('a, button, input, select, textarea, label').length) {
+      return;
+    }
+    const href = $(this).attr('data-everblock-row-href');
+    if (href) {
+      event.preventDefault();
+      window.location.href = href;
+    }
+  });
+
+  initEverblockFriendlyUrlAutoFill();
 
   $(document).on('click', '[data-everblock-copy]', function () {
     const button = this;
@@ -237,6 +302,85 @@ $(document).ready(function() {
       .prop('indeterminate', $checkedRows.length > 0 && $checkedRows.length < $rows.length);
   });
 });
+
+function everblockSlugify(value) {
+  if (!value) {
+    return '';
+  }
+
+  let slug = String(value).toString();
+  if (typeof slug.normalize === 'function') {
+    slug = slug.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+  slug = slug.toLowerCase();
+  slug = slug.replace(/[^a-z0-9]+/g, '-');
+  slug = slug.replace(/^-+|-+$/g, '');
+  slug = slug.replace(/-{2,}/g, '-');
+
+  return slug;
+}
+
+function initEverblockFriendlyUrlAutoFill() {
+  const slugFields = document.querySelectorAll('input[name*="[link_rewrite_"], input[id*="link_rewrite_"]');
+  if (!slugFields.length) {
+    return;
+  }
+
+  slugFields.forEach(function (slugField) {
+    if (slugField.dataset.everblockSlugInit === '1') {
+      return;
+    }
+    slugField.dataset.everblockSlugInit = '1';
+    slugField.dataset.everblockManuallyEdited = slugField.value && slugField.value.trim() !== '' ? '1' : '0';
+
+    slugField.addEventListener('input', function () {
+      slugField.dataset.everblockManuallyEdited = slugField.value && slugField.value.trim() !== '' ? '1' : '0';
+    });
+
+    slugField.addEventListener('blur', function () {
+      if (slugField.value && slugField.value.trim() !== '') {
+        slugField.value = everblockSlugify(slugField.value);
+      }
+    });
+
+    let langId = '';
+    const idMatch = (slugField.id || '').match(/link_rewrite_(\d+)$/);
+    const nameMatch = (slugField.name || '').match(/\[link_rewrite_(\d+)\]/);
+    if (idMatch) {
+      langId = idMatch[1];
+    } else if (nameMatch) {
+      langId = nameMatch[1];
+    }
+    if (!langId) {
+      return;
+    }
+
+    let nameField = null;
+    if (slugField.id) {
+      const candidateId = slugField.id.replace(/link_rewrite_(\d+)$/, 'name_$1');
+      nameField = document.getElementById(candidateId);
+    }
+    if (!nameField) {
+      const allCandidates = document.querySelectorAll('input[name*="[name_' + langId + ']"], input[id$="name_' + langId + '"]');
+      if (allCandidates.length) {
+        nameField = allCandidates[0];
+      }
+    }
+    if (!nameField) {
+      return;
+    }
+
+    function syncFromName() {
+      if (slugField.dataset.everblockManuallyEdited === '1' && slugField.value.trim() !== '') {
+        return;
+      }
+      slugField.value = everblockSlugify(nameField.value);
+    }
+
+    nameField.addEventListener('input', syncFromName);
+    nameField.addEventListener('blur', syncFromName);
+  });
+}
 
 function enhanceEverblockMultiselect(select) {
   const $select = $(select);

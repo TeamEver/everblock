@@ -125,10 +125,14 @@ final class SaveAdminItemHandler
             $page->{$field} = $this->localized($command->data, $field, $command->languages, $field === 'content');
         }
         foreach ($page->link_rewrite as $langId => $rewrite) {
-            if (!$rewrite) {
-                $rewrite = $page->name[$langId] ?? '';
+            $rewrite = trim((string) $rewrite);
+            if ($rewrite === '') {
+                $rewrite = trim((string) ($page->name[$langId] ?? ''));
             }
-            $page->link_rewrite[$langId] = Tools::link_rewrite((string) $rewrite);
+            if ($rewrite === '' && is_array($page->title) && isset($page->title[$langId])) {
+                $rewrite = trim((string) $page->title[$langId]);
+            }
+            $page->link_rewrite[$langId] = Tools::link_rewrite($rewrite);
         }
 
         return $this->pageRepository->save($page, $command->languages);

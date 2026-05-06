@@ -1856,6 +1856,67 @@ details[open] > .everblock-doc-accordion__summary::after {
     max-width: 90px;
 }
 
+.everblock-bo-list-table__row {
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.everblock-bo-list-table__row:hover {
+    background-color: #f1f5fb;
+}
+
+.everblock-bo-list-table__row:focus-visible {
+    background-color: #e0ecff;
+    box-shadow: inset 0 0 0 2px #3b82f6;
+    outline: none;
+}
+
+.everblock-bo-list-table__row td[data-everblock-row-no-click] {
+    cursor: default;
+}
+
+.everblock-bo-header__actions {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.everblock-preview-modal .modal-dialog {
+    max-width: 95vw;
+}
+
+.everblock-preview-modal .modal-content {
+    height: 90vh;
+}
+
+.everblock-preview-modal__body {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+.everblock-preview-modal__body iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #ffffff;
+    transition: opacity 0.2s ease;
+}
+
+.everblock-preview-modal__loader {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    position: absolute;
+    z-index: 2;
+}
+
+.everblock-preview-modal__loader.d-none {
+    display: none !important;
+}
+
 .everblock-shortcode-docs {
     margin-bottom: 4rem;
 }

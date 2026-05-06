@@ -117,9 +117,16 @@
         <tbody>
           {% for row in rows %}
             {% set row_id = attribute(row, config.id)|default(0) %}
-            <tr>
+            {% set row_edit_url = path(config.route ~ '_edit', {id: row_id}) %}
+            <tr
+              class="everblock-bo-list-table__row"
+              data-everblock-row-href="{{ row_edit_url }}"
+              tabindex="0"
+              role="link"
+              aria-label="{{ 'Open record %id% for edition'|trans({'%id%': row_id}, 'Modules.Everblock.Admin') }}"
+            >
               {% if section == 'blocks' %}
-                <td class="everblock-bo-list-table__select">
+                <td class="everblock-bo-list-table__select" data-everblock-row-no-click="1">
                   <input type="checkbox" name="selected[]" value="{{ row_id }}" data-everblock-row-check aria-label="{{ 'Select row'|trans({}, 'Modules.Everblock.Admin') }}" />
                 </td>
               {% endif %}
@@ -154,8 +161,8 @@
                 </td>
               {% endfor %}
 
-              <td class="everblock-bo-row-actions text-right">
-                <a class="btn btn-sm btn-outline-primary everblock-icon-btn" href="{{ path(config.route ~ '_edit', {id: row_id}) }}" title="{{ 'Edit'|trans({}, 'Admin.Actions') }}" aria-label="{{ 'Edit'|trans({}, 'Admin.Actions') }}">
+              <td class="everblock-bo-row-actions text-right" data-everblock-row-no-click="1">
+                <a class="btn btn-sm btn-outline-primary everblock-icon-btn" href="{{ row_edit_url }}" title="{{ 'Edit'|trans({}, 'Admin.Actions') }}" aria-label="{{ 'Edit'|trans({}, 'Admin.Actions') }}">
                   <i class="material-icons">edit</i>
                   <span class="sr-only">{{ 'Edit'|trans({}, 'Admin.Actions') }}</span>
                 </a>
@@ -163,6 +170,20 @@
                 {% if section == 'blocks' %}
                   {% set active_value = attribute(row, 'active')|default(false) %}
                   {% set is_active = active_value == true or active_value == 1 or active_value == '1' %}
+                  {% set preview_url = preview_urls[row_id]|default('') %}
+                  {% if preview_url %}
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-info everblock-icon-btn"
+                      data-everblock-preview-open="1"
+                      data-everblock-preview-url="{{ preview_url }}"
+                      title="{{ 'Preview'|trans({}, 'Modules.Everblock.Admin') }}"
+                      aria-label="{{ 'Preview'|trans({}, 'Modules.Everblock.Admin') }}"
+                    >
+                      <i class="material-icons">visibility</i>
+                      <span class="sr-only">{{ 'Preview'|trans({}, 'Modules.Everblock.Admin') }}</span>
+                    </button>
+                  {% endif %}
                   <a class="btn btn-sm {{ is_active ? 'btn-outline-warning' : 'btn-success' }} everblock-icon-btn" href="{{ path('admin_everblock_blocks_toggle', {id: row_id}) }}" title="{{ is_active ? 'Disable'|trans({}, 'Admin.Actions') : 'Enable'|trans({}, 'Admin.Actions') }}" aria-label="{{ is_active ? 'Disable'|trans({}, 'Admin.Actions') : 'Enable'|trans({}, 'Admin.Actions') }}">
                     <i class="material-icons">{{ is_active ? 'toggle_off' : 'toggle_on' }}</i>
                     {% if is_active %}
@@ -200,5 +221,7 @@
 
   {% if section == 'blocks' %}
     </form>
+
+    {% include '@Modules/everblock/templates/admin/_preview_modal.html.twig' %}
   {% endif %}
 {% endblock %}

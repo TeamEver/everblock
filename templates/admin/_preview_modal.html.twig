@@ -1,0 +1,42 @@
+<div class="modal fade everblock-preview-modal" id="everblock-preview-modal" tabindex="-1" role="dialog" aria-labelledby="everblockPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl everblock-preview-full" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="everblockPreviewModalLabel">
+          <i class="material-icons" aria-hidden="true">visibility</i>
+          <span>{{ 'Block preview'|trans({}, 'Modules.Everblock.Admin') }}</span>
+        </h4>
+        <div class="ml-auto d-flex align-items-center">
+          <a
+            href="#"
+            id="everblock-preview-open-tab"
+            class="btn btn-sm btn-outline-secondary mr-2"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="{{ 'Open in new tab'|trans({}, 'Modules.Everblock.Admin') }}"
+          >
+            <i class="material-icons">open_in_new</i>
+            <span class="sr-only">{{ 'Open in new tab'|trans({}, 'Modules.Everblock.Admin') }}</span>
+          </a>
+          <button type="button" class="close" data-dismiss="modal" aria-label="{{ 'Close'|trans({}, 'Admin.Actions') }}">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body p-0 everblock-preview-modal__body">
+        <div class="everblock-preview-modal__loader" data-everblock-preview-loader>
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">{{ 'Loading...'|trans({}, 'Admin.Global') }}</span>
+          </div>
+        </div>
+        <iframe
+          id="everblock-preview-iframe"
+          src="about:blank"
+          frameborder="0"
+          loading="lazy"
+          title="{{ 'Block preview'|trans({}, 'Modules.Everblock.Admin') }}"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+</div>

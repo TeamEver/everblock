@@ -277,6 +277,16 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         $filterColumns = $config['filter_columns'] ?? $config['columns'];
         $rows = $this->applyFilters($rows, $filters, $filterColumns, $config['boolean_columns'] ?? []);
 
+        $previewUrls = [];
+        if ($section === 'blocks') {
+            foreach ($rows as $row) {
+                $rowId = (int) ($row[$config['id']] ?? 0);
+                if ($rowId > 0) {
+                    $previewUrls[$rowId] = $this->buildPreviewUrl($rowId);
+                }
+            }
+        }
+
         return $this->render('@Modules/everblock/templates/admin/list.html.twig', [
             'layoutTitle' => 'Ever Block - ' . $config['title'],
             'section' => $section,
@@ -285,6 +295,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             'filter_columns' => $filterColumns,
             'rows' => $rows,
             'sections' => self::SECTION_CONFIG,
+            'preview_urls' => $previewUrls,
         ]);
     }
 
@@ -475,7 +486,29 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             'tab_help' => $section === 'blocks' ? BlockType::tabHelp() : [],
             'tinymce_enabled' => in_array($section, ['blocks', 'shortcodes', 'faqs', 'pages'], true) && (bool) \Configuration::get('EVERBLOCK_TINYMCE'),
             'id' => $id,
+            'preview_url' => ($section === 'blocks' && $id !== null && $id > 0) ? $this->buildPreviewUrl((int) $id) : null,
         ]);
+    }
+
+    private function buildPreviewUrl(int $blockId): string
+    {
+        if ($blockId <= 0) {
+            return '';
+        }
+
+        $context = \Context::getContext();
+        if (!$context || !$context->link) {
+            return '';
+        }
+
+        $params = [
+            'id_everblock' => $blockId,
+            'id_lang' => $this->languageId(),
+            'id_shop' => $this->shopId(),
+            'token' => \Tools::getAdminTokenLite('AdminEverBlock'),
+        ];
+
+        return (string) $context->link->getModuleLink('everblock', 'preview', $params);
     }
 
     private function formOptions(string $section): array
