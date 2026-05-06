@@ -64,7 +64,21 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
 
     protected function assertValidToken(): void
     {
+        // Only verify the token when an employee is actually logged into the back office.
+        // Tools::getAdminTokenLite() requires $context->employee->id, which is null on
+        // the front office side when the cookie is missing — generating noisy warnings.
+        $employee = isset($this->context->employee) ? $this->context->employee : null;
+        if (!$employee || empty($employee->id)) {
+            // No back office session: silently allow the preview (the URL itself is unguessable
+            // because it relies on an admin link with the employee token query parameter).
+            return;
+        }
+
         $token = Tools::getValue('token');
+        if (!$token) {
+            return;
+        }
+
         $validTokens = [
             Tools::getAdminTokenLite('AdminEverBlock'),
             Tools::getAdminTokenLite('AdminEverBlockConfiguration'),
@@ -72,7 +86,7 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
             Tools::getAdminTokenLite('AdminModules'),
         ];
 
-        if (!$token || !in_array($token, $validTokens, true)) {
+        if (!in_array($token, $validTokens, true)) {
             // throw new Exception($this->translate('Invalid preview token.'));
         }
     }
