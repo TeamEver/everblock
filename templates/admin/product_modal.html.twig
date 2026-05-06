@@ -1,98 +1,311 @@
+{% set everModalUid = 'everblock-modal-' ~ ever_product_id|default(0) %}
+{% set everLanguagesList = ever_languages|default([]) %}
+{% set everDefaultLanguageId = default_language|default((everLanguagesList|first).id_lang|default(0)) %}
+
 <div
-  class="panel everblock-modal-panel"
+  class="panel everblock-modal-panel everblock-modal-card"
+  id="{{ everModalUid }}"
   data-everblock-modal="1"
   data-ever-ajax-url="{{ ever_ajax_url }}"
   data-ever-product-id="{{ ever_product_id }}"
   data-ever-no-file-text="{{ 'No file uploaded yet.'|trans({}, 'Modules.Everblock.Admin') }}"
   data-ever-error-text="{{ 'An error occurred while updating the modal file.'|trans({}, 'Modules.Everblock.Admin') }}"
   data-ever-preview-empty-text="{{ 'Preview not available for this file.'|trans({}, 'Modules.Everblock.Admin') }}"
+  data-ever-drop-text="{{ 'Drop your file here or click to browse'|trans({}, 'Modules.Everblock.Admin') }}"
+  data-ever-uploading-text="{{ 'Uploading…'|trans({}, 'Modules.Everblock.Admin') }}"
 >
-  <div class="panel-heading">
-    {{ 'Everblock modal content'|trans({}, 'Modules.Everblock.Admin') }}
+  <div class="panel-heading everblock-modal-heading">
+    <span class="everblock-modal-heading__icon" aria-hidden="true">
+      <i class="material-icons">view_carousel</i>
+    </span>
+    <span class="everblock-modal-heading__title">
+      {{ 'Everblock modal content'|trans({}, 'Modules.Everblock.Admin') }}
+    </span>
+    <span class="everblock-modal-heading__hint">
+      {{ 'Configure the popup that will be available on the front office of this product.'|trans({}, 'Modules.Everblock.Admin') }}
+    </span>
   </div>
-  <div class="panel-body">
-    <div class="translations">
-      {% for language in ever_languages %}
-        {% set languageId = language.id_lang %}
-        {% set modalContent = modal.content is defined and modal.content[languageId] is defined ? modal.content[languageId] : '' %}
-        {% set buttonLabel = modal.button_label is defined and modal.button_label[languageId] is defined ? modal.button_label[languageId] : '' %}
-        <div class="form-group">
-          <label for="everblock_modal_content_{{ languageId }}">{{ 'Modal content'|trans({}, 'Modules.Everblock.Admin') }} {{ language.iso_code }}</label>
-          <textarea id="everblock_modal_content_{{ languageId }}" name="everblock_modal_content_{{ languageId }}" class="form-control autoload_rte">{{ modalContent }}</textarea>
-        </div>
-        <div class="form-group">
-          <label for="everblock_modal_button_label_{{ languageId }}">{{ 'Button label'|trans({}, 'Modules.Everblock.Admin') }} {{ language.iso_code }}</label>
-          <input type="text" id="everblock_modal_button_label_{{ languageId }}" name="everblock_modal_button_label_{{ languageId }}" class="form-control" value="{{ buttonLabel }}">
-        </div>
-      {% endfor %}
-    </div>
 
-    <div class="form-group">
-      <label for="everblock_modal_file">{{ 'Modal file'|trans({}, 'Modules.Everblock.Admin') }}</label>
-      <div class="everblock-modal-file-wrapper">
-        {% if modal_file_url %}
-          <p class="everblock-modal-current-file">
-            <a href="{{ modal_file_url }}" target="_blank" class="everblock-modal-file-link">{{ modal_file_name }}</a>
-          </p>
-        {% else %}
-          <p class="everblock-modal-current-file text-muted">{{ 'No file uploaded yet.'|trans({}, 'Modules.Everblock.Admin') }}</p>
-        {% endif %}
-      </div>
-      <div class="everblock-modal-delete-wrapper"{% if not modal_file_url %} style="display:none;"{% endif %}>
-        <div class="checkbox">
-          <label>
-            <input type="checkbox" name="everblock_modal_file_delete" value="1">
-            {{ 'Delete file'|trans({}, 'Modules.Everblock.Admin') }}
-          </label>
-        </div>
-      </div>
-      <div class="everblock-modal-preview-container mt-3{% if not modal_file_url %} d-none{% endif %}" data-ever-preview-empty-text="{{ 'Preview not available for this file.'|trans({}, 'Modules.Everblock.Admin') }}">
-        <label class="form-label d-block">{{ 'Preview'|trans({}, 'Modules.Everblock.Admin') }}</label>
-        <div class="everblock-modal-preview-wrapper{% if not modal_file_url or not modal_file_is_image %} d-none{% endif %}">
-          <img class="everblock-modal-preview-image img-thumbnail" alt="{{ modal_file_name }}"{% if modal_file_url and modal_file_is_image %} src="{{ modal_file_preview_url }}" loading="lazy"{% endif %}>
-        </div>
-        <p class="everblock-modal-preview-empty text-muted{% if modal_file_url and modal_file_is_image %} d-none{% endif %}">
-          {{ 'Preview not available for this file.'|trans({}, 'Modules.Everblock.Admin') }}
-        </p>
-      </div>
-      <input type="file" name="everblock_modal_file" id="everblock_modal_file" class="form-control">
-      <input type="hidden" name="everblock_modal_file_payload" id="everblock_modal_file_payload" value="">
-      <input type="hidden" name="everblock_modal_file_name" id="everblock_modal_file_name" value="">
-      <div class="everblock-modal-feedback alert d-none" role="alert"></div>
-    </div>
+  <div class="panel-body everblock-modal-body">
 
-    <div class="form-group">
-      <label for="everblock_modal_button_file">{{ 'Button file'|trans({}, 'Modules.Everblock.Admin') }}</label>
-      <div class="everblock-modal-button-file-wrapper">
-        {% if modal_button_file_url %}
-          <p class="everblock-modal-current-file">
-            <a href="{{ modal_button_file_url }}" target="_blank" class="everblock-modal-file-link">{{ modal_button_file_name }}</a>
-          </p>
-        {% else %}
-          <p class="everblock-modal-current-file text-muted">{{ 'No file uploaded yet.'|trans({}, 'Modules.Everblock.Admin') }}</p>
-        {% endif %}
-      </div>
-      <div class="everblock-modal-button-delete-wrapper"{% if not modal_button_file_url %} style="display:none;"{% endif %}>
-        <div class="checkbox">
-          <label>
-            <input type="checkbox" name="everblock_modal_button_file_delete" value="1">
-            {{ 'Delete file'|trans({}, 'Modules.Everblock.Admin') }}
-          </label>
-        </div>
-      </div>
-      <div class="everblock-modal-button-preview-container mt-3{% if not modal_button_file_url %} d-none{% endif %}" data-ever-preview-empty-text="{{ 'Preview not available for this file.'|trans({}, 'Modules.Everblock.Admin') }}">
-        <label class="form-label d-block">{{ 'Preview'|trans({}, 'Modules.Everblock.Admin') }}</label>
-        <div class="everblock-modal-button-preview-wrapper{% if not modal_button_file_url or not modal_button_file_is_image %} d-none{% endif %}">
-          <img class="everblock-modal-button-preview-image img-thumbnail" alt="{{ modal_button_file_name }}"{% if modal_button_file_url and modal_button_file_is_image %} src="{{ modal_button_file_preview_url }}" loading="lazy"{% endif %}>
-        </div>
-        <p class="everblock-modal-button-preview-empty text-muted{% if modal_button_file_url and modal_button_file_is_image %} d-none{% endif %}">
-          {{ 'Preview not available for this file.'|trans({}, 'Modules.Everblock.Admin') }}
+    {# ----------------------------------------------------------- #}
+    {# Section 1 : Translatable content                            #}
+    {# ----------------------------------------------------------- #}
+    <section class="everblock-modal-section">
+      <header class="everblock-modal-section__header">
+        <h3 class="everblock-modal-section__title">
+          <i class="material-icons" aria-hidden="true">translate</i>
+          {{ 'Content & call to action'|trans({}, 'Modules.Everblock.Admin') }}
+        </h3>
+        <p class="everblock-modal-section__subtitle">
+          {{ 'Translate the modal text and the button label for each shop language.'|trans({}, 'Modules.Everblock.Admin') }}
         </p>
+      </header>
+
+      {% if everLanguagesList|length > 1 %}
+        <ul class="nav nav-tabs everblock-modal-lang-tabs" role="tablist">
+          {% for language in everLanguagesList %}
+            {% set languageId = language.id_lang %}
+            {% set isActiveLang = (languageId == everDefaultLanguageId) %}
+            <li class="nav-item" role="presentation">
+              <a
+                class="nav-link everblock-modal-lang-tab{% if isActiveLang %} active{% endif %}"
+                data-toggle="tab"
+                data-bs-toggle="tab"
+                href="#{{ everModalUid }}-lang-{{ languageId }}"
+                role="tab"
+                aria-controls="{{ everModalUid }}-lang-{{ languageId }}"
+                aria-selected="{{ isActiveLang ? 'true' : 'false' }}"
+              >
+                <span class="everblock-modal-lang-tab__code">{{ language.iso_code }}</span>
+                <span class="everblock-modal-lang-tab__name">{{ language.name|default(language.iso_code) }}</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <div class="tab-content everblock-modal-lang-content">
+        {% for language in everLanguagesList %}
+          {% set languageId = language.id_lang %}
+          {% set isActiveLang = (languageId == everDefaultLanguageId) %}
+          {% set modalContent = modal.content is defined and modal.content[languageId] is defined ? modal.content[languageId] : '' %}
+          {% set buttonLabel = modal.button_label is defined and modal.button_label[languageId] is defined ? modal.button_label[languageId] : '' %}
+
+          <div
+            id="{{ everModalUid }}-lang-{{ languageId }}"
+            class="tab-pane fade{% if isActiveLang %} show active in{% endif %}"
+            role="tabpanel"
+          >
+            <div class="form-group everblock-modal-field">
+              <label for="everblock_modal_content_{{ languageId }}" class="form-label">
+                <i class="material-icons" aria-hidden="true">edit_note</i>
+                {{ 'Modal content'|trans({}, 'Modules.Everblock.Admin') }}
+                <span class="badge badge-light text-uppercase">{{ language.iso_code }}</span>
+              </label>
+              <textarea
+                id="everblock_modal_content_{{ languageId }}"
+                name="everblock_modal_content_{{ languageId }}"
+                class="form-control autoload_rte"
+                rows="6"
+              >{{ modalContent }}</textarea>
+              <small class="form-text text-muted">
+                {{ 'Rich text. Will be displayed inside the popup body.'|trans({}, 'Modules.Everblock.Admin') }}
+              </small>
+            </div>
+
+            <div class="form-group everblock-modal-field">
+              <label for="everblock_modal_button_label_{{ languageId }}" class="form-label">
+                <i class="material-icons" aria-hidden="true">smart_button</i>
+                {{ 'Button label'|trans({}, 'Modules.Everblock.Admin') }}
+                <span class="badge badge-light text-uppercase">{{ language.iso_code }}</span>
+              </label>
+              <input
+                type="text"
+                id="everblock_modal_button_label_{{ languageId }}"
+                name="everblock_modal_button_label_{{ languageId }}"
+                class="form-control"
+                value="{{ buttonLabel }}"
+                placeholder="{{ 'e.g. Open the guide'|trans({}, 'Modules.Everblock.Admin') }}"
+              >
+            </div>
+          </div>
+        {% endfor %}
       </div>
-      <input type="file" name="everblock_modal_button_file" id="everblock_modal_button_file" class="form-control">
-      <input type="hidden" name="everblock_modal_button_file_payload" id="everblock_modal_button_file_payload" value="">
-      <input type="hidden" name="everblock_modal_button_file_name" id="everblock_modal_button_file_name" value="">
-      <div class="everblock-modal-button-feedback alert d-none" role="alert"></div>
-    </div>
+    </section>
+
+    {# ----------------------------------------------------------- #}
+    {# Section 2 : File uploaders (modal & button)                 #}
+    {# ----------------------------------------------------------- #}
+    <section class="everblock-modal-section">
+      <header class="everblock-modal-section__header">
+        <h3 class="everblock-modal-section__title">
+          <i class="material-icons" aria-hidden="true">attach_file</i>
+          {{ 'Files & visuals'|trans({}, 'Modules.Everblock.Admin') }}
+        </h3>
+        <p class="everblock-modal-section__subtitle">
+          {{ 'Optional images or downloads — drop a file or click the dropzone to upload.'|trans({}, 'Modules.Everblock.Admin') }}
+        </p>
+      </header>
+
+      <div class="row everblock-modal-uploaders">
+        {# ---------- Modal file ---------- #}
+        <div class="col-md-6">
+          <div
+            class="everblock-modal-uploader"
+            data-ever-uploader-target="modal"
+          >
+            <div class="everblock-modal-uploader__heading">
+              <span class="everblock-modal-uploader__icon" aria-hidden="true">
+                <i class="material-icons">image</i>
+              </span>
+              <div>
+                <h4 class="everblock-modal-uploader__title">
+                  {{ 'Modal file'|trans({}, 'Modules.Everblock.Admin') }}
+                </h4>
+                <p class="everblock-modal-uploader__hint">
+                  {{ 'Displayed inside the popup. Images are previewed below.'|trans({}, 'Modules.Everblock.Admin') }}
+                </p>
+              </div>
+            </div>
+
+            <div class="everblock-modal-preview-container{% if not modal_file_url %} d-none{% endif %}" data-ever-preview-empty-text="{{ 'Preview not available for this file.'|trans({}, 'Modules.Everblock.Admin') }}">
+              <div class="everblock-modal-preview-card">
+                <div class="everblock-modal-preview-wrapper{% if not modal_file_url or not modal_file_is_image %} d-none{% endif %}">
+                  <img
+                    class="everblock-modal-preview-image"
+                    alt="{{ modal_file_name }}"
+                    {% if modal_file_url and modal_file_is_image %} src="{{ modal_file_preview_url }}" loading="lazy"{% endif %}
+                  >
+                </div>
+                <div class="everblock-modal-preview-empty{% if modal_file_url and modal_file_is_image %} d-none{% endif %}">
+                  <i class="material-icons" aria-hidden="true">insert_drive_file</i>
+                  <span>{{ 'Preview not available for this file.'|trans({}, 'Modules.Everblock.Admin') }}</span>
+                </div>
+              </div>
+
+              <div class="everblock-modal-file-wrapper everblock-modal-file-meta">
+                {% if modal_file_url %}
+                  <p class="everblock-modal-current-file">
+                    <i class="material-icons" aria-hidden="true">link</i>
+                    <a href="{{ modal_file_url }}" target="_blank" rel="noopener" class="everblock-modal-file-link">{{ modal_file_name }}</a>
+                  </p>
+                {% else %}
+                  <p class="everblock-modal-current-file text-muted">
+                    <i class="material-icons" aria-hidden="true">cloud_off</i>
+                    {{ 'No file uploaded yet.'|trans({}, 'Modules.Everblock.Admin') }}
+                  </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <label
+              class="everblock-modal-dropzone"
+              for="everblock_modal_file"
+              data-ever-dropzone="1"
+            >
+              <span class="everblock-modal-dropzone__icon" aria-hidden="true">
+                <i class="material-icons">cloud_upload</i>
+              </span>
+              <span class="everblock-modal-dropzone__title">
+                {{ 'Drop your file here or click to browse'|trans({}, 'Modules.Everblock.Admin') }}
+              </span>
+              <span class="everblock-modal-dropzone__hint">
+                {{ 'PNG, JPG, GIF, WEBP, SVG or PDF.'|trans({}, 'Modules.Everblock.Admin') }}
+              </span>
+              <input
+                type="file"
+                name="everblock_modal_file"
+                id="everblock_modal_file"
+                class="everblock-modal-dropzone__input"
+              >
+            </label>
+
+            <div class="everblock-modal-delete-wrapper"{% if not modal_file_url %} style="display:none;"{% endif %}>
+              <label class="everblock-modal-checkbox">
+                <input type="checkbox" name="everblock_modal_file_delete" value="1">
+                <span>
+                  <i class="material-icons" aria-hidden="true">delete_outline</i>
+                  {{ 'Delete current file'|trans({}, 'Modules.Everblock.Admin') }}
+                </span>
+              </label>
+            </div>
+
+            <input type="hidden" name="everblock_modal_file_payload" id="everblock_modal_file_payload" value="">
+            <input type="hidden" name="everblock_modal_file_name" id="everblock_modal_file_name" value="">
+            <div class="everblock-modal-feedback alert d-none" role="alert"></div>
+          </div>
+        </div>
+
+        {# ---------- Button file ---------- #}
+        <div class="col-md-6">
+          <div
+            class="everblock-modal-uploader"
+            data-ever-uploader-target="button"
+          >
+            <div class="everblock-modal-uploader__heading">
+              <span class="everblock-modal-uploader__icon everblock-modal-uploader__icon--secondary" aria-hidden="true">
+                <i class="material-icons">touch_app</i>
+              </span>
+              <div>
+                <h4 class="everblock-modal-uploader__title">
+                  {{ 'Button file'|trans({}, 'Modules.Everblock.Admin') }}
+                </h4>
+                <p class="everblock-modal-uploader__hint">
+                  {{ 'Optional icon or image used on the call-to-action button.'|trans({}, 'Modules.Everblock.Admin') }}
+                </p>
+              </div>
+            </div>
+
+            <div class="everblock-modal-button-preview-container{% if not modal_button_file_url %} d-none{% endif %}" data-ever-preview-empty-text="{{ 'Preview not available for this file.'|trans({}, 'Modules.Everblock.Admin') }}">
+              <div class="everblock-modal-preview-card">
+                <div class="everblock-modal-button-preview-wrapper{% if not modal_button_file_url or not modal_button_file_is_image %} d-none{% endif %}">
+                  <img
+                    class="everblock-modal-button-preview-image"
+                    alt="{{ modal_button_file_name }}"
+                    {% if modal_button_file_url and modal_button_file_is_image %} src="{{ modal_button_file_preview_url }}" loading="lazy"{% endif %}
+                  >
+                </div>
+                <div class="everblock-modal-button-preview-empty{% if modal_button_file_url and modal_button_file_is_image %} d-none{% endif %}">
+                  <i class="material-icons" aria-hidden="true">insert_drive_file</i>
+                  <span>{{ 'Preview not available for this file.'|trans({}, 'Modules.Everblock.Admin') }}</span>
+                </div>
+              </div>
+
+              <div class="everblock-modal-button-file-wrapper everblock-modal-file-meta">
+                {% if modal_button_file_url %}
+                  <p class="everblock-modal-current-file">
+                    <i class="material-icons" aria-hidden="true">link</i>
+                    <a href="{{ modal_button_file_url }}" target="_blank" rel="noopener" class="everblock-modal-file-link">{{ modal_button_file_name }}</a>
+                  </p>
+                {% else %}
+                  <p class="everblock-modal-current-file text-muted">
+                    <i class="material-icons" aria-hidden="true">cloud_off</i>
+                    {{ 'No file uploaded yet.'|trans({}, 'Modules.Everblock.Admin') }}
+                  </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <label
+              class="everblock-modal-dropzone"
+              for="everblock_modal_button_file"
+              data-ever-dropzone="1"
+            >
+              <span class="everblock-modal-dropzone__icon" aria-hidden="true">
+                <i class="material-icons">cloud_upload</i>
+              </span>
+              <span class="everblock-modal-dropzone__title">
+                {{ 'Drop your file here or click to browse'|trans({}, 'Modules.Everblock.Admin') }}
+              </span>
+              <span class="everblock-modal-dropzone__hint">
+                {{ 'Square images work best for buttons.'|trans({}, 'Modules.Everblock.Admin') }}
+              </span>
+              <input
+                type="file"
+                name="everblock_modal_button_file"
+                id="everblock_modal_button_file"
+                class="everblock-modal-dropzone__input"
+              >
+            </label>
+
+            <div class="everblock-modal-button-delete-wrapper"{% if not modal_button_file_url %} style="display:none;"{% endif %}>
+              <label class="everblock-modal-checkbox">
+                <input type="checkbox" name="everblock_modal_button_file_delete" value="1">
+                <span>
+                  <i class="material-icons" aria-hidden="true">delete_outline</i>
+                  {{ 'Delete current file'|trans({}, 'Modules.Everblock.Admin') }}
+                </span>
+              </label>
+            </div>
+
+            <input type="hidden" name="everblock_modal_button_file_payload" id="everblock_modal_button_file_payload" value="">
+            <input type="hidden" name="everblock_modal_button_file_name" id="everblock_modal_button_file_name" value="">
+            <div class="everblock-modal-button-feedback alert d-none" role="alert"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 </div>

@@ -2506,6 +2506,7 @@ class Everblock extends Module
         $this->context->controller->addCss($this->_path . 'views/css/ever.css');
         if ($controller === 'AdminProducts') {
             $this->context->controller->addJs($this->_path . 'views/js/product-faq.js');
+            $this->context->controller->addJs($this->_path . 'views/js/product-modal.js');
         }
 
         if (Tools::getValue('id_' . $this->name)

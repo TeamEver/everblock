@@ -29,10 +29,14 @@
     var productId = container.getAttribute('data-ever-product-id');
     var noFileText = container.getAttribute('data-ever-no-file-text') || '';
     var defaultErrorMessage = container.getAttribute('data-ever-error-text') || '';
+    var defaultDropText = container.getAttribute('data-ever-drop-text') || '';
+    var uploadingText = container.getAttribute('data-ever-uploading-text') || '';
 
     if (!ajaxUrl || !productId) {
       return;
     }
+
+    initLanguageTabs(container);
 
     function initUploader(options) {
       var fileInput = container.querySelector(options.fileInputSelector);
@@ -46,9 +50,13 @@
       var previewWrapper = container.querySelector(options.previewWrapperSelector);
       var previewImage = container.querySelector(options.previewImageSelector);
       var previewEmpty = container.querySelector(options.previewEmptySelector);
+      var dropzone = fileInput ? fileInput.closest('.everblock-modal-dropzone') : null;
+      var dropzoneTitle = dropzone ? dropzone.querySelector('.everblock-modal-dropzone__title') : null;
+      var initialDropTitle = dropzoneTitle ? dropzoneTitle.textContent : defaultDropText;
       var previewEmptyText = container.getAttribute('data-ever-preview-empty-text')
         || (previewContainer && previewContainer.getAttribute('data-ever-preview-empty-text'))
         || '';
+      var feedbackTimeout = null;
       var isProcessing = false;
 
       if (!fileInput) {
@@ -70,11 +78,22 @@
         if (deleteCheckbox) {
           deleteCheckbox.disabled = state;
         }
+        if (dropzone) {
+          dropzone.classList.toggle('is-uploading', state);
+        }
+        if (dropzoneTitle) {
+          dropzoneTitle.textContent = state && uploadingText ? uploadingText : initialDropTitle;
+        }
       }
 
       function showFeedback(type, message) {
         if (!feedback) {
           return;
+        }
+
+        if (feedbackTimeout) {
+          clearTimeout(feedbackTimeout);
+          feedbackTimeout = null;
         }
 
         feedback.classList.remove('alert-success', 'alert-danger', 'd-none');
@@ -90,6 +109,10 @@
         if (type === 'success') {
           feedback.classList.add('alert-success');
           feedback.classList.remove('alert-danger');
+          feedbackTimeout = setTimeout(function () {
+            feedback.classList.add('d-none');
+            feedback.textContent = '';
+          }, 4000);
         } else {
           feedback.classList.add('alert-danger');
           feedback.classList.remove('alert-success');
@@ -122,18 +145,28 @@
 
         current.innerHTML = '';
 
+        var icon = document.createElement('i');
+        icon.className = 'material-icons';
+        icon.setAttribute('aria-hidden', 'true');
+
         if (url) {
           current.classList.remove('text-muted');
+          icon.textContent = 'link';
+          current.appendChild(icon);
           var link = document.createElement('a');
           link.href = url;
           link.target = '_blank';
+          link.rel = 'noopener';
           link.className = 'everblock-modal-file-link';
           var linkLabel = name || url;
           link.textContent = linkLabel;
           current.appendChild(link);
         } else {
           current.classList.add('text-muted');
-          current.textContent = noFileText;
+          icon.textContent = 'cloud_off';
+          current.appendChild(icon);
+          var emptyText = document.createTextNode(' ' + noFileText);
+          current.appendChild(emptyText);
         }
 
         if (previewContainer) {
@@ -171,8 +204,9 @@
             previewEmpty.classList.add('d-none');
           } else {
             previewEmpty.classList.remove('d-none');
-            if (previewEmptyText) {
-              previewEmpty.textContent = previewEmptyText;
+            var emptyLabel = previewEmpty.querySelector('span');
+            if (emptyLabel && previewEmptyText) {
+              emptyLabel.textContent = previewEmptyText;
             }
           }
         }
@@ -266,17 +300,26 @@
         xhr.send(formData);
       }
 
+      function uploadFile(file) {
+        if (!file) {
+          return;
+        }
+
+        var formData = buildFormData();
+        formData.append(options.fileField, file);
+
+        resetPayload();
+        sendRequest(formData, 'upload');
+      }
+
       fileInput.addEventListener('change', function () {
         if (!fileInput.files || fileInput.files.length === 0) {
           resetPayload();
           return;
         }
 
-        var formData = buildFormData();
-        formData.append(options.fileField, fileInput.files[0]);
-
-        resetPayload();
-        sendRequest(formData, 'upload');
+        uploadFile(fileInput.files[0]);
+        // Reset the native input so picking the same file again still triggers change.
         fileInput.value = '';
       });
 
@@ -289,6 +332,53 @@
           var formData = buildFormData();
           formData.append('delete', '1');
           sendRequest(formData, 'delete');
+        });
+      }
+
+      // ----- Drag & drop on the dropzone -----
+      if (dropzone) {
+        var dragEnterCount = 0;
+
+        var preventDefaults = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        };
+
+        ['dragenter', 'dragover'].forEach(function (eventName) {
+          dropzone.addEventListener(eventName, function (e) {
+            preventDefaults(e);
+            if (eventName === 'dragenter') {
+              dragEnterCount++;
+            }
+            dropzone.classList.add('is-dragover');
+          });
+        });
+
+        ['dragleave', 'dragend'].forEach(function (eventName) {
+          dropzone.addEventListener(eventName, function (e) {
+            preventDefaults(e);
+            dragEnterCount = Math.max(0, dragEnterCount - 1);
+            if (dragEnterCount === 0) {
+              dropzone.classList.remove('is-dragover');
+            }
+          });
+        });
+
+        dropzone.addEventListener('drop', function (e) {
+          preventDefaults(e);
+          dragEnterCount = 0;
+          dropzone.classList.remove('is-dragover');
+
+          if (isProcessing) {
+            return;
+          }
+
+          var dt = e.dataTransfer;
+          if (!dt || !dt.files || !dt.files.length) {
+            return;
+          }
+
+          uploadFile(dt.files[0]);
         });
       }
     }
@@ -323,6 +413,48 @@
       previewWrapperSelector: '.everblock-modal-button-preview-wrapper',
       previewImageSelector: '.everblock-modal-button-preview-image',
       previewEmptySelector: '.everblock-modal-button-preview-empty',
+    });
+  }
+
+  function initLanguageTabs(container) {
+    var tabs = container.querySelectorAll('.everblock-modal-lang-tab');
+    if (!tabs.length) {
+      return;
+    }
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function (event) {
+        var targetSelector = tab.getAttribute('href');
+        if (!targetSelector || targetSelector.charAt(0) !== '#') {
+          return;
+        }
+
+        var target = document.querySelector(targetSelector);
+        if (!target) {
+          return;
+        }
+
+        // Avoid relying on a specific Bootstrap version: handle the toggle ourselves.
+        event.preventDefault();
+        event.stopPropagation();
+
+        var siblingsContent = target.parentElement
+          ? target.parentElement.querySelectorAll('.tab-pane')
+          : [];
+
+        Array.prototype.forEach.call(siblingsContent, function (pane) {
+          pane.classList.remove('show', 'active', 'in');
+        });
+
+        target.classList.add('show', 'active', 'in');
+
+        Array.prototype.forEach.call(tabs, function (other) {
+          other.classList.remove('active');
+          other.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+      });
     });
   }
 
