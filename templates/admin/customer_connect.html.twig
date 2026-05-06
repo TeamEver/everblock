@@ -1,0 +1,17 @@
+<div class="card col-lg-6 p-3">
+  <h3 class="bootstrap cardheader everblock">
+    {{ 'Connect as this customer'|trans({}, 'Modules.Everblock.Admin') }}
+  </h3>
+  <div class="bootstrap cardbody everblock">
+    <div class="panel-heading">
+      {% if login_link is defined and login_customer %}
+        <p>
+          <a href="{{ login_link }}" target="_blank" class="btn btn-primary">
+            <i class="icon-user"></i>
+            {{ 'Log in as'|trans({}, 'Modules.Everblock.Admin') }} {{ login_customer.firstname }} {{ login_customer.lastname }}
+          </a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>

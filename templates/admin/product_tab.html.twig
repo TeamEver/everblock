@@ -1,0 +1,96 @@
+<div id="everblock" class="panel">
+  <fieldset class="form-group">
+    {% if everblock_faq_selector is defined %}
+      {% set selectedOptions = everblock_faq_selector.selected_options|default([]) %}
+      {% set faqSelectedCount = selectedOptions|length %}
+      <div class="container border rounded p-3 mb-3 everblock-faq-selector-card">
+        <div class="row">
+          <div class="col-lg-12 col-xl-12">
+            <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2 mb-2">
+              <div>
+                <h4 class="h4 mb-2">{{ 'FAQ associations'|trans({}, 'Modules.Everblock.Admin') }}</h4>
+                <p class="text-muted mb-0">{{ 'Select the FAQ entries that should be displayed with this product. Use the search bar to quickly find them by tag or title.'|trans({}, 'Modules.Everblock.Admin') }}</p>
+              </div>
+              {% if faqSelectedCount > 0 %}
+                <span class="badge bg-primary everblock-faq-selected-counter">{{ '%count% FAQ selected'|trans({'%count%': faqSelectedCount}, 'Modules.Everblock.Admin') }}</span>
+              {% endif %}
+            </div>
+            <div class="everblock-faq-search-tip alert alert-info py-2 px-3 mb-3">
+              <i class="icon-search" aria-hidden="true"></i>
+              <span>{{ 'Start typing to highlight the search bar and filter the FAQs by tag or title.'|trans({}, 'Modules.Everblock.Admin') }}</span>
+            </div>
+            <div class="everblock-faq-selector-wrapper">
+              <label for="everblock_faq_selector" class="form-label fw-semibold">{{ 'Search and select FAQ entries'|trans({}, 'Modules.Everblock.Admin') }}</label>
+              <select
+                id="everblock_faq_selector"
+                name="everblock_faq_ids[]"
+                class="form-control js-everblock-faq-selector"
+                multiple="multiple"
+                data-ajax-url="{{ everblock_faq_selector.ajax_url }}"
+                data-placeholder="{{ everblock_faq_selector.placeholder }}"
+                aria-describedby="everblock_faq_selector_hint"
+              >
+                {% for faqOption in selectedOptions %}
+                  <option value="{{ faqOption.id|default(0) }}" selected="selected" data-active="{{ faqOption.active|default(false) ? 1 : 0 }}">
+                    {{ faqOption.text|default('') }}{% if not faqOption.active|default(false) %} ({{ 'Inactive'|trans({}, 'Modules.Everblock.Admin') }}){% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+              <p id="everblock_faq_selector_hint" class="help-block mt-2 mb-0">{{ 'The order of the selected items will be used when displaying the FAQ on the product page.'|trans({}, 'Modules.Everblock.Admin') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% for tabNumber, everpstabs in tabsData %}
+      <div class="container border rounded p-3 mb-3">
+        <div class="row">
+          <div class="col-lg-12 col-xl-12">
+            <input type="hidden" name="{{ tabNumber }}_everblock_id" value="{{ everpstabs ? everpstabs.id_tab|default('') : '' }}">
+            <div class="translations">
+              {% for language in ever_languages %}
+                {% set languageId = language.id_lang %}
+                {% set tabTitle = everpstabs and everpstabs.title is defined and everpstabs.title[languageId] is defined ? everpstabs.title[languageId] : '' %}
+                {% set tabContent = everpstabs and everpstabs.content is defined and everpstabs.content[languageId] is defined ? everpstabs.content[languageId] : '' %}
+                <div class="form-group">
+                  <label for="{{ tabNumber }}_everblock_title_{{ languageId }}">{{ 'Tab title for lang'|trans({}, 'Modules.Everblock.Admin') }} {{ language.iso_code }} ({{ 'Tab number'|trans({}, 'Modules.Everblock.Admin') }} {{ tabNumber }})</label>
+                  <input type="text" id="{{ tabNumber }}_everblock_title_{{ languageId }}" name="{{ tabNumber }}_everblock_title_{{ languageId }}" class="form-control" value="{{ tabTitle }}">
+                </div>
+                <div class="form-group">
+                  <label for="{{ tabNumber }}_everblock_content_{{ languageId }}">{{ 'Tab content for lang'|trans({}, 'Modules.Everblock.Admin') }} {{ language.iso_code }} ({{ 'Tab number'|trans({}, 'Modules.Everblock.Admin') }} {{ tabNumber }})</label>
+                  <textarea id="{{ tabNumber }}_everblock_content_{{ languageId }}" name="{{ tabNumber }}_everblock_content_{{ languageId }}" class="form-control autoload_rte">{{ tabContent }}</textarea>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+
+    {% for flagNumber, everpsflags in flagsData %}
+      <div class="container border rounded p-3 mb-3">
+        <div class="row">
+          <div class="col-lg-12 col-xl-12">
+            <input type="hidden" name="{{ flagNumber }}_everflag_id" value="{{ everpsflags ? everpsflags.id_flag|default('') : '' }}">
+            <div class="translations">
+              {% for language in ever_languages %}
+                {% set languageId = language.id_lang %}
+                {% set flagTitle = everpsflags and everpsflags.title is defined and everpsflags.title[languageId] is defined ? everpsflags.title[languageId] : '' %}
+                {% set flagContent = everpsflags and everpsflags.content is defined and everpsflags.content[languageId] is defined ? everpsflags.content[languageId] : '' %}
+                <div class="form-group">
+                  <label for="{{ flagNumber }}_everflag_title_{{ languageId }}">{{ 'Flag HTML class for lang'|trans({}, 'Modules.Everblock.Admin') }} {{ language.iso_code }} ({{ 'Flag number'|trans({}, 'Modules.Everblock.Admin') }} {{ flagNumber }})</label>
+                  <input type="text" id="{{ flagNumber }}_everflag_title_{{ languageId }}" name="{{ flagNumber }}_everflag_title_{{ languageId }}" class="form-control" value="{{ flagTitle }}">
+                </div>
+                <div class="form-group">
+                  <label for="{{ flagNumber }}_everflag_content_{{ languageId }}">{{ 'Flag content for lang'|trans({}, 'Modules.Everblock.Admin') }} {{ language.iso_code }} ({{ 'Flag number'|trans({}, 'Modules.Everblock.Admin') }} {{ flagNumber }})</label>
+                  <textarea id="{{ flagNumber }}_everflag_content_{{ languageId }}" name="{{ flagNumber }}_everflag_content_{{ languageId }}" class="form-control">{{ flagContent }}</textarea>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </fieldset>
+</div>
