@@ -23,9 +23,6 @@ namespace Everblock\Tools\Service;
 use Cache;
 use Configuration;
 use Context;
-use Exception;
-use PrestaShopLogger;
-use Tools;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -33,151 +30,142 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockCache
 {
-    protected const TTL = 86400; // 24 hours
-    protected static function useNativeCache(): bool
-    {
-        return Configuration::get('EVERBLOCK_CACHE') !== '1';
-    }
+    /** @var array<string, mixed> */
+    private static array $runtimeCache = [];
+    /** @var array<string, true> */
+    private static array $runtimeStored = [];
+
+    private const MODULE_CACHE_PREFIXES = [
+        'everblock',
+        'Everblock',
+        'EverBlock',
+        'fetchInstagramImages',
+        'generateLoremIpsum_',
+        'getAccessoriesShortcode_',
+        'getBestSalesShortcode_',
+        'getCrossSellingShortcode_',
+        'getLinkedProductsShortcode_',
+        'store_coordinates_',
+    ];
 
     public static function getModuleConfiguration(string $key): string
     {
         $context = Context::getContext();
+        $controllerType = is_object($context->controller ?? null) && isset($context->controller->controller_type)
+            ? (string) $context->controller->controller_type
+            : '';
 
-        if ($context->controller->controller_type == 'admin'
-            || $context->controller->controller_type == 'moduleadmin'
-        ) {
+        if ($controllerType === 'admin' || $controllerType === 'moduleadmin') {
             return '';
         }
 
-        if (static::useNativeCache()) {
-            if (!Cache::isStored($key)) {
-                $value = Configuration::get($key);
-                Cache::store($key, $value);
-            }
-            return (string) Cache::retrieve($key);
+        if (!self::isCacheStored($key)) {
+            self::cacheStore($key, Configuration::get($key));
         }
 
-        static::createCacheDir();
-
-        if (!static::isCacheStored($key)) {
-            $value = Configuration::get($key);
-            static::cacheStore($key, $value);
-        }
-        return (string) static::cacheRetrieve($key);
+        return (string) self::cacheRetrieve($key);
     }
 
     public static function isCacheStored(string $cacheKey): bool
     {
-        if (static::useNativeCache()) {
-            return Cache::isStored($cacheKey);
-        }
-
-        static::createCacheDir();
-        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
-        if (file_exists($cacheFilePath)) {
-            if (time() - filemtime($cacheFilePath) > self::TTL) {
-                unlink($cacheFilePath);
-                return false;
-            }
+        if (isset(self::$runtimeStored[$cacheKey])) {
             return true;
         }
-        return false;
+
+        if (!Cache::isStored($cacheKey)) {
+            return false;
+        }
+
+        self::$runtimeStored[$cacheKey] = true;
+
+        return true;
     }
 
-    public static function cacheStore(string $cacheKey, $cacheValue)
+    public static function cacheStore(string $cacheKey, $cacheValue): void
     {
-        if (static::useNativeCache()) {
-            Cache::store($cacheKey, $cacheValue);
-            return;
-        }
-
-        $context = Context::getContext();
-        if ($context->controller->controller_type == 'admin'
-            || $context->controller->controller_type == 'moduleadmin'
-        ) {
-            return;
-        }
-
-        static::createCacheDir();
-        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
-        file_put_contents($cacheFilePath, serialize($cacheValue));
+        self::$runtimeCache[$cacheKey] = $cacheValue;
+        self::$runtimeStored[$cacheKey] = true;
+        Cache::store($cacheKey, $cacheValue);
     }
 
     public static function cacheRetrieve(string $cacheKey)
     {
-        if (static::useNativeCache()) {
-            return Cache::retrieve($cacheKey);
+        if (array_key_exists($cacheKey, self::$runtimeCache)) {
+            return self::$runtimeCache[$cacheKey];
         }
 
-        static::createCacheDir();
-        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
-        if (file_exists($cacheFilePath)) {
-            if (time() - filemtime($cacheFilePath) > self::TTL) {
-                unlink($cacheFilePath);
-                return '';
-            }
-            $cachedData = Tools::file_get_contents($cacheFilePath);
-            return unserialize($cachedData);
+        if (!Cache::isStored($cacheKey)) {
+            return '';
         }
-        return '';
+
+        $value = Cache::retrieve($cacheKey);
+        self::$runtimeCache[$cacheKey] = $value;
+        self::$runtimeStored[$cacheKey] = true;
+
+        return $value;
     }
 
-    public static function cacheDrop(string $cacheKey)
+    public static function cacheDrop(string $cacheKey): void
     {
-        if (static::useNativeCache()) {
-            Cache::clean($cacheKey);
+        unset(self::$runtimeCache[$cacheKey], self::$runtimeStored[$cacheKey]);
+        Cache::clean($cacheKey);
+    }
+
+    public static function cacheDropByPattern(string $cacheKeyStart): void
+    {
+        $prefix = rtrim($cacheKeyStart, '*');
+
+        foreach (array_keys(self::$runtimeStored) as $cacheKey) {
+            if ($prefix === '' || str_starts_with($cacheKey, $prefix)) {
+                unset(self::$runtimeStored[$cacheKey]);
+            }
+        }
+        foreach (array_keys(self::$runtimeCache) as $cacheKey) {
+            if ($prefix === '' || str_starts_with($cacheKey, $prefix)) {
+                unset(self::$runtimeCache[$cacheKey]);
+            }
+        }
+
+        Cache::clean($cacheKeyStart);
+        Cache::clean($prefix . '*');
+    }
+
+    public static function getObjectCacheVersion(string $objectType, int $objectId): int
+    {
+        if ($objectId <= 0) {
+            return 1;
+        }
+
+        $cacheKey = self::buildObjectVersionCacheKey($objectType, $objectId);
+        if (!self::isCacheStored($cacheKey)) {
+            self::cacheStore($cacheKey, 1);
+
+            return 1;
+        }
+
+        return max(1, (int) self::cacheRetrieve($cacheKey));
+    }
+
+    public static function refreshObjectCacheVersion(string $objectType, int $objectId): void
+    {
+        if ($objectId <= 0) {
             return;
         }
 
-        static::createCacheDir();
-        $cacheFilePath = _PS_CACHE_DIR_ . 'everblock/' . $cacheKey . '.cache';
-        if (file_exists($cacheFilePath)) {
-            unlink($cacheFilePath);
-        }
+        $cacheKey = self::buildObjectVersionCacheKey($objectType, $objectId);
+        $version = self::isCacheStored($cacheKey) ? (int) self::cacheRetrieve($cacheKey) : 0;
+        self::cacheStore($cacheKey, $version + 1);
     }
 
-    public static function cacheDropByPattern(string $cacheKeyStart)
+    private static function buildObjectVersionCacheKey(string $objectType, int $objectId): string
     {
-        if (static::useNativeCache()) {
-            Cache::clean($cacheKeyStart);
-            Cache::clean($cacheKeyStart . '*');
-            // Pas de gestion native par motif → on pourrait itérer manuellement sur les clés si nécessaire
-            return;
-        }
-
-        static::createCacheDir();
-        $cacheDir = _PS_CACHE_DIR_ . 'everblock/';
-        $pattern = $cacheDir . $cacheKeyStart . '*.cache';
-        $matchingFiles = glob($pattern);
-        if (!empty($matchingFiles)) {
-            foreach ($matchingFiles as $file) {
-                unlink($file);
-            }
-        }
+        return 'everblock-version-' . preg_replace('/[^A-Za-z0-9_]/', '_', $objectType) . '-' . $objectId;
     }
 
-    protected static function createCacheDir()
+    public static function clearAllModuleCache(): void
     {
-        try {
-            $cacheDir = _PS_CACHE_DIR_ . 'everblock';
-            if (!is_dir($cacheDir)) {
-                mkdir($cacheDir, 0755, true);
-            }
-            static::cleanOldFiles($cacheDir);
-        } catch (Exception $e) {
-            PrestaShopLogger::addLog('Unable to create Everblock cache dir');
-        }
-    }
-
-    protected static function cleanOldFiles(string $cacheDir)
-    {
-        $files = glob($cacheDir . '/*.cache');
-        if ($files !== false) {
-            foreach ($files as $file) {
-                if (time() - filemtime($file) > self::TTL) {
-                    unlink($file);
-                }
-            }
+        foreach (self::MODULE_CACHE_PREFIXES as $prefix) {
+            self::cacheDropByPattern($prefix);
         }
     }
 }

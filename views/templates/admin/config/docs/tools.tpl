@@ -22,7 +22,7 @@
         </h3>
         <p>{l s='The quick actions in this tab help you maintain the module without leaving the page:' mod='everblock'}</p>
         <ul>
-            <li>{l s='Empty cache or logs when you need to refresh rendered blocks or clean debug files.' mod='everblock'}</li>
+            <li>{l s='Empty Everblock cache or logs when you need to refresh rendered blocks or clean debug files.' mod='everblock'}</li>
             <li>{l s='Drop unused languages to remove orphaned translations created by imports or deletions.' mod='everblock'}</li>
             <li>{l s='Secure module folders with Apache rules if your server uses an .htaccess compatible stack.' mod='everblock'}</li>
             <li>{l s='Backup or restore blocks so you can export content between shops or roll back changes.' mod='everblock'}</li>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Everblock\Tools\Handler;
 
 use Everblock\Tools\Command\DeleteAdminItemCommand;
+use Everblock\Tools\Entity\Block;
 use Everblock\Tools\Repository\BlockRepository;
 use Everblock\Tools\Repository\FaqRepository;
 use Everblock\Tools\Repository\HookRepository;
@@ -53,19 +54,7 @@ final class DeleteAdminItemHandler
         $languages = \Language::getLanguages(false);
         if ($command->section === 'blocks') {
             $hookId = $previous && isset($previous->id_hook) ? (int) $previous->id_hook : 0;
-            foreach ($languages as $language) {
-                $langId = (int) ($language['id_lang'] ?? 0);
-                if ($langId <= 0) {
-                    continue;
-                }
-                EverblockCache::cacheDrop('EverBlockClass_getAllBlocks_' . $langId . '_' . $command->shopId);
-                if ($hookId > 0) {
-                    EverblockCache::cacheDrop('EverBlockClass_getBlocks_' . $hookId . '_' . $langId . '_' . $command->shopId);
-                }
-            }
-            if ($hookId > 0) {
-                EverblockCache::cacheDropByPattern('everblock-id_hook-' . $hookId);
-            }
+            Block::clearCache($command->id, $command->shopId, $languages, $hookId > 0 ? [$hookId] : []);
 
             return;
         }

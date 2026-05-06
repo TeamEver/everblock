@@ -184,7 +184,7 @@ Only image and media assets should be stored inside `views/img/`. The automated 
 | `fetchwordpressposts` | Fetch WordPress posts | Fetches the configured WordPress posts. | — |
 | `checkdatabase` | Check module database | Installs missing tables and columns, removes obsolete files. | — |
 | `dropunusedlangs` | Drop unused languages | Removes orphan translations from core multilingual tables. | — |
-| `clearcache` | Clear PrestaShop cache | Flushes all native caches (Smarty, XML, filesystem). | — |
+| `clearcache` | Clear Everblock cache | Flushes module cache entries without clearing the whole shop cache. | — |
 
 ## Shortcodes
 The module allows you to use many shortcodes anywhere in your store. However, restrictions may be in place, such as not allowing a hook shortcode or store locator to be used in a modal.
@@ -389,14 +389,12 @@ display it using Bootstrap.
 
 ## Cache & logs
 
-The module uses its own cache system in addition to the PrestaShop one.
-
-The cache directory is located in /var/cache/dev?prod/everblock/
+The module stores its cache entries in the native PrestaShop cache layer and does not create module cache files.
 
 The logs directory is located in /var/logs/
 Log files are created only when there is content to log.
 
-Clearing the native PrestaShop cache will also clear the module cache, but the module will clear its own cache on a block expiry automatically.
+Saving a block clears that block cache automatically. The `clearcache` command only clears Everblock cache entries.
 
 ---
 
@@ -507,7 +505,7 @@ Exécutez `php bin/console everblock:tools:execute --list` pour afficher les act
 | `fetchwordpressposts` | Récupérer les articles WordPress | Récupère les articles WordPress configurés. | — |
 | `checkdatabase` | Vérifier la base du module | Installe les tables/colonnes manquantes et supprime les fichiers obsolètes. | — |
 | `dropunusedlangs` | Supprimer les langues inutilisées | Retire les traductions orphelines des tables multilingues natives. | — |
-| `clearcache` | Vider le cache PrestaShop | Vide tous les caches natifs (Smarty, XML, fichiers). | — |
+| `clearcache` | Vider le cache Everblock | Vide les entrées de cache du module sans vider tout le cache de la boutique. | — |
 
 ## Shortcodes
 Le module vous permet d'utiliser de nombreux shortcodes partout dans votre boutique. Certaines restrictions peuvent s'appliquer, par exemple un hook ou un store locator ne peuvent pas être utilisés dans une modale.
@@ -733,7 +731,7 @@ Ejecuta `php bin/console everblock:tools:execute --list` para mostrar las accion
 | `fetchwordpressposts` | Obtener entradas de WordPress | Recupera las entradas de WordPress configuradas. | — |
 | `checkdatabase` | Comprobar la base de datos del módulo | Instala tablas y columnas faltantes y elimina archivos obsoletos. | — |
 | `dropunusedlangs` | Eliminar idiomas sin uso | Elimina traducciones huérfanas de las tablas multilingües nativas. | — |
-| `clearcache` | Vaciar la caché de PrestaShop | Limpia todas las cachés nativas (Smarty, XML, archivos). | — |
+| `clearcache` | Vaciar la caché de Everblock | Limpia las entradas de caché del módulo sin vaciar toda la caché de la tienda. | — |
 
 ## Shortcodes
 El módulo permite usar muchos shortcodes en cualquier lugar de la tienda. Pueden existir restricciones, por ejemplo un hook o un store locator no pueden usarse en una modal.
@@ -958,7 +956,7 @@ Esegui `php bin/console everblock:tools:execute --list` per visualizzare le azio
 | `fetchwordpressposts` | Recuperare articoli WordPress | Recupera gli articoli WordPress configurati. | — |
 | `checkdatabase` | Controllare il database del modulo | Installa tabelle e colonne mancanti ed elimina i file obsoleti. | — |
 | `dropunusedlangs` | Eliminare lingue inutilizzate | Rimuove le traduzioni orfane dalle tabelle multilingue native. | — |
-| `clearcache` | Svuotare la cache di PrestaShop | Svuota tutte le cache native (Smarty, XML, file). | — |
+| `clearcache` | Svuotare la cache Everblock | Svuota le voci cache del modulo senza svuotare tutta la cache del negozio. | — |
 
 ## Shortcode
 Il modulo consente di utilizzare molti shortcode in qualsiasi parte del negozio. Possono esserci restrizioni, ad esempio un hook o uno store locator non possono essere usati in una modale.

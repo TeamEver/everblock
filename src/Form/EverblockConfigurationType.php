@@ -44,7 +44,6 @@ final class EverblockConfigurationType extends AbstractType
                 'EVEROPTIONS_POSITION',
                 'EVERBLOCK_MAINTENANCE_PSSWD',
                 'EVERPSCSS_CACHE',
-                'EVERBLOCK_CACHE',
                 'EVERBLOCK_LOAD_FRONT_CSS',
                 'EVERBLOCK_USE_OBF',
                 'EVERBLOCK_TINYMCE',
@@ -143,7 +142,7 @@ final class EverblockConfigurationType extends AbstractType
                 ['name' => 'submitCreateProduct', 'title' => 'Create fake products', 'icon' => 'auto_fix_high'],
             ],
             'tools' => [
-                ['name' => 'submitEmptyCache', 'title' => 'Empty cache', 'icon' => 'cached'],
+                ['name' => 'submitEmptyCache', 'title' => 'Empty Everblock cache', 'icon' => 'cached'],
                 ['name' => 'submitEmptyLogs', 'title' => 'Empty logs', 'icon' => 'delete_sweep'],
                 ['name' => 'submitDropUnusedLangs', 'title' => 'Drop unused langs', 'icon' => 'translate'],
                 ['name' => 'submitSecureModuleFoldersWithApache', 'title' => 'Secure all modules folders using Apache', 'icon' => 'security'],
@@ -217,8 +216,7 @@ final class EverblockConfigurationType extends AbstractType
                 'help' => 'People with the password will be able to access the store in maintenance mode.',
             ]);
 
-        $this->addSwitch($builder, 'EVERPSCSS_CACHE', 'Empty cache on saving ?');
-        $this->addSwitch($builder, 'EVERBLOCK_CACHE', 'Use module cache system instead of Prestashop native cache ?');
+        $this->addSwitch($builder, 'EVERPSCSS_CACHE', 'Refresh Everblock cache on saving ?');
         $this->addSwitch($builder, 'EVERBLOCK_LOAD_FRONT_CSS', 'Load everblock.css on the front office ?');
         $this->addSwitch($builder, 'EVERBLOCK_USE_OBF', 'Enable front-office script for obfuscation ?');
         $this->addSwitch($builder, 'EVERBLOCK_TINYMCE', 'Extends TinyMCE on blocks management ?');

@@ -1359,7 +1359,6 @@ class Everblock extends Module
 
         foreach ([
             'EVERPSCSS_CACHE',
-            'EVERBLOCK_CACHE',
             'EVERBLOCK_LOAD_FRONT_CSS',
             'EVERBLOCK_USE_OBF',
             'EVERBLOCK_TINYMCE',
@@ -1844,9 +1843,9 @@ class Everblock extends Module
 
         $tagName = (string) $release['tag_name'];
         $downloadUrl = 'https://github.com/TeamEver/everblock/archive/refs/tags/' . rawurlencode($tagName) . '.zip';
-        $tmpBase = rtrim(_PS_CACHE_DIR_, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'everblock_update' . DIRECTORY_SEPARATOR;
+        $tmpBase = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'everblock_update' . DIRECTORY_SEPARATOR;
         if (!is_dir($tmpBase) && !@mkdir($tmpBase, 0755, true)) {
-            $this->postErrors[] = $this->l('Unable to prepare the update cache directory.');
+            $this->postErrors[] = $this->l('Unable to prepare the temporary update directory.');
             return;
         }
 
@@ -2396,7 +2395,7 @@ class Everblock extends Module
                 'type' => 'submit',
                 'class' => 'btn btn-light',
                 'icon' => 'process-icon-refresh',
-                'title' => $this->l('Empty cache'),
+                'title' => $this->l('Empty Everblock cache'),
             ],
             [
                 'name' => 'submitEmptyLogs',
@@ -2477,30 +2476,10 @@ class Everblock extends Module
             ],
             [
                 'type' => 'switch',
-                'label' => $this->l('Empty cache on saving ?'),
-                'desc' => $this->l('Set yes to empty cache on saving'),
-                'hint' => $this->l('Else cache will not be emptied'),
+                'label' => $this->l('Refresh Everblock cache on saving ?'),
+                'desc' => $this->l('Set yes to refresh the module cache on saving'),
+                'hint' => $this->l('Block saves always refresh their own cache'),
                 'name' => 'EVERPSCSS_CACHE',
-                'is_bool' => true,
-                'values' => [
-                    [
-                        'id' => 'active_on',
-                        'value' => true,
-                        'label' => $this->l('Yes'),
-                    ],
-                    [
-                        'id' => 'active_off',
-                        'value' => false,
-                        'label' => $this->l('No'),
-                    ],
-                ],
-            ],
-            [
-                'type' => 'switch',
-                'label' => $this->l('Use module cache system instead of Prestashop native cache ?'),
-                'desc' => $this->l('Set yes to use module cache, this will generate cache files on your server'),
-                'hint' => $this->l('Else Prestashop native cache will be used'),
-                'name' => 'EVERBLOCK_CACHE',
                 'is_bool' => true,
                 'values' => [
                     [
@@ -3404,7 +3383,6 @@ class Everblock extends Module
             'EVERBLOCK_MARKER_ICON' => Configuration::get('EVERBLOCK_MARKER_ICON'),
             'EVERBLOCK_STORELOCATOR_TOGGLE' => Configuration::get('EVERBLOCK_STORELOCATOR_TOGGLE'),
             'EVERPSCSS_CACHE' => Configuration::get('EVERPSCSS_CACHE'),
-            'EVERBLOCK_CACHE' => Configuration::get('EVERBLOCK_CACHE'),
             'EVERBLOCK_USE_OBF' => Configuration::get('EVERBLOCK_USE_OBF'),
             'EVERBLOCK_SOLDOUT_FLAG' => Configuration::get('EVERBLOCK_SOLDOUT_FLAG'),
             'EVER_SOLDOUT_COLOR' => Configuration::get('EVER_SOLDOUT_COLOR'),
@@ -3665,10 +3643,6 @@ class Everblock extends Module
         Configuration::updateValue(
             'EVERPSCSS_CACHE',
             Tools::getValue('EVERPSCSS_CACHE')
-        );
-        Configuration::updateValue(
-            'EVERBLOCK_CACHE',
-            Tools::getValue('EVERBLOCK_CACHE')
         );
         Configuration::updateValue(
             'EVERBLOCK_LOAD_FRONT_CSS',
@@ -4114,8 +4088,8 @@ class Everblock extends Module
 
     protected function emptyAllCache()
     {
-        Tools::clearAllCache();
-        $this->postSuccess[] = $this->l('Cache has been cleared');
+        EverblockCache::clearAllModuleCache();
+        $this->postSuccess[] = $this->l('Everblock cache has been cleared');
     }
 
     public function hookActionAdminControllerSetMedia()
@@ -4714,22 +4688,22 @@ class Everblock extends Module
 
     public function hookActionObjectEverBlockClassDeleteAfter($params)
     {
-        $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverBlockClass_getBlocks_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'fetchInstagramImages';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        $this->clearBlockObjectCacheFromHook($params);
     }
 
     public function hookActionObjectEverBlockClassUpdateAfter($params)
     {
-        $cachePattern = $this->name . '-id_hook-';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'EverBlockClass_getBlocks_';
-        EverblockCache::cacheDropByPattern($cachePattern);
-        $cachePattern = 'fetchInstagramImages';
-        EverblockCache::cacheDropByPattern($cachePattern);
+        $this->clearBlockObjectCacheFromHook($params);
+    }
+
+    private function clearBlockObjectCacheFromHook(array $params): void
+    {
+        $object = $params['object'] ?? null;
+        $blockId = is_object($object) && isset($object->id) ? (int) $object->id : null;
+        $shopId = is_object($object) && isset($object->id_shop) ? (int) $object->id_shop : (int) $this->context->shop->id;
+        $hookId = is_object($object) && isset($object->id_hook) ? (int) $object->id_hook : 0;
+
+        EverBlockClass::clearCache($blockId, $shopId, Language::getLanguages(false), $hookId > 0 ? [$hookId] : []);
     }
 
     public function hookActionObjectEverBlockFlagsDeleteAfter($params)
@@ -5176,23 +5150,10 @@ class Everblock extends Module
         return 'module:' . $this->name . '/views/templates/hook/faq.tpl';
     }
 
-    protected function getProductFaqCacheId(int $productId, int $shopId, int $langId): string
-    {
-        return implode('|', [
-            $this->name,
-            'product_faq',
-            (int) $shopId,
-            (int) $langId,
-            (int) $productId,
-        ]);
-    }
-
     protected function clearProductFaqCache(array $productIds = [], ?int $shopId = null): void
     {
-        $template = $this->getProductFaqTemplatePath();
-
         if (empty($productIds)) {
-            $this->_clearCache($template);
+            EverblockCache::cacheDropByPattern('EverblockFaq_');
             return;
         }
 
@@ -5200,20 +5161,13 @@ class Everblock extends Module
             $shopId = (int) Context::getContext()->shop->id;
         }
 
-        $languages = Language::getLanguages(false, $shopId);
-        if (empty($languages)) {
-            $languages = Language::getLanguages(false);
-        }
-
         foreach ($productIds as $productId) {
             $productId = (int) $productId;
             if ($productId <= 0) {
                 continue;
             }
-            foreach ($languages as $language) {
-                $cacheId = $this->getProductFaqCacheId($productId, (int) $shopId, (int) $language['id_lang']);
-                $this->_clearCache($template, $cacheId);
-            }
+
+            EverblockCache::cacheDrop('EverblockFaq_getFaqIdsByProduct_' . (int) $shopId . '_' . $productId);
         }
     }
 
@@ -5268,17 +5222,10 @@ class Everblock extends Module
             );
             if (!empty($everFaqs)) {
                 $template = $this->getProductFaqTemplatePath();
-                $cacheId = $this->getProductFaqCacheId(
-                    (int) $product->id,
-                    (int) $context->shop->id,
-                    (int) $context->language->id
-                );
-                if (!$this->isCached($template, $cacheId)) {
-                    $this->context->smarty->assign([
-                        'everFaqs' => $everFaqs,
-                    ]);
-                }
-                $faqContent = $this->fetch($template, $cacheId);
+                $this->context->smarty->assign([
+                    'everFaqs' => $everFaqs,
+                ]);
+                $faqContent = $this->fetch($template);
                 $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
                     ->setTitle($this->l('FAQ'))
                     ->setContent($faqContent);
@@ -5379,11 +5326,6 @@ class Everblock extends Module
     {
         $position = isset($args[0]['position']) ? (int) $args[0]['position'] : null;
         $context = Context::getContext();
-        // Drop cache if needed
-        EverblockClass::cleanBlocksCacheOnDate(
-            $context->language->id,
-            $context->shop->id
-        );
         $id_hook = (int) Hook::getIdByName(lcfirst(str_replace('hook', '', $method)));
         $hookName = lcfirst(str_replace('hook', '', $method));
         $idObj = 0;
@@ -5407,230 +5349,277 @@ class Everblock extends Module
             (int) $context->language->id,
             (int) $context->shop->id
         );
-        $cacheId = $this->name
-        . '-id_hook-'
-        . (int) $id_hook
-        . '-controller-'
-        . trim(Tools::getValue('controller'))
-        . '-hookName-'
-        . trim($hookName)
-        . '-idObj-'
-        . (int) $idObj
-        . '-idLang-'
-        . (int) $context->language->id
-        . '-idShop-'
-        . (int) $context->shop->id
-        . '-idCurrency-'
-        . (int) $context->currency->id
-        . '-device-'
-        . (int) $context->getDevice()
-        . $position;
         $isPreview = isset($args[0]['everblock_preview']) && (bool) $args[0]['everblock_preview'];
+        $isBypassed = in_array($method, $this->bypassedControllers, true);
+        $id_entity = isset($context->customer->id) && $context->customer->id ? (int) $context->customer->id : false;
+        $customerGroups = $id_entity
+            ? Customer::getGroupsStatic((int) $id_entity)
+            : array_values(array_unique(array_filter([
+                (int) Configuration::get('PS_UNIDENTIFIED_GROUP'),
+                (int) Configuration::get('PS_GUEST_GROUP'),
+                (int) Configuration::get('PS_CUSTOMER_GROUP'),
+            ])));
+        $currentBlock = [];
+        $visibleBlocks = [];
+        $visibleCacheIds = [];
 
-        if ($isPreview || !EverblockCache::isCacheStored(str_replace('|', '-', $cacheId))) {
-            if (isset($context->customer->id) && $context->customer->id) {
-                $id_entity = (int) $context->customer->id;
-            } else {
-                $id_entity = false;
+        foreach ($everblock as $block) {
+            if ((bool) $block['modal'] === true
+                && (bool) EverblockTools::isBot() === true
+            ) {
+                continue;
             }
-            $everblock = EverblockClass::getBlocks(
-                (int) $id_hook,
-                (int) $context->language->id,
-                (int) $context->shop->id
-            );
-            $currentBlock = [];
-            foreach ($everblock as $block) {
-                if ((bool) $block['modal'] === true
-                    && (bool) EverblockTools::isBot() === true
-                ) {
-                    continue;
-                }
-                if (Validate::isInt($position) && (int) $block['position'] != (int) $position) {
-                    continue;
-                }
-                // Check device
-                if ((int) $block['device'] > 0
-                    && (int) $context->getDevice() != (int) $block['device']
-                ) {
-                    continue;
-                }
-                if ((bool) $block['only_home'] === true
-                    && Tools::getValue('controller') != 'index'
-                ) {
-                    continue;
-                }
-                // Only category management
-                if ((bool) $block['only_category'] === true
-                    && Tools::getValue('controller') != 'category'
-                ) {
-                    continue;
-                }
-                // Only manufacturer management
-                if ((bool) $block['only_manufacturer'] === true
-                    && Tools::getValue('controller') != 'manufacturer'
-                ) {
-                    continue;
-                }
-                // Only supplier management
-                if ((bool) $block['only_supplier'] === true
-                    && Tools::getValue('controller') != 'supplier'
-                ) {
-                    continue;
-                }
-                // Only CMS category management
-                if ((bool) $block['only_cms_category'] === true
-                    && !Tools::getValue('id_cms_category')
-                ) {
-                    continue;
-                }
-                $continue = false;
-                // Only category pages
-                if ((bool) $block['only_category'] === true
-                    && Tools::getValue('controller') === 'category'
-                ) {
-                    $categories = json_decode($block['categories']);
-                    if (!in_array((int) Tools::getValue('id_category'), $categories)) {
-                        $continue = true;
-                    } else {
-                        $continue = false;
-                    }
-                }
-                // Only manufacturer pages
-                if ((bool) $block['only_manufacturer'] === true
-                    && Tools::getValue('controller') === 'manufacturer'
-                ) {
-                    $manufacturers = json_decode($block['manufacturers']);
-                    if (!in_array((int) Tools::getValue('id_manufacturer'), $manufacturers)) {
-                        $continue = true;
-                    } else {
-                        $continue = false;
-                    }
-                }
-                // Only supplier pages
-                if ((bool) $block['only_supplier'] === true
-                    && Tools::getValue('controller') === 'supplier'
-                ) {
-                    $suppliers = json_decode($block['suppliers']);
-                    if (!in_array((int) Tools::getValue('id_supplier'), $suppliers)) {
-                        $continue = true;
-                    } else {
-                        $continue = false;
-                    }
-                }
-                // Only CMS category pages
-                if ((bool) $block['only_cms_category'] === true
-                    && Tools::getValue('controller') === 'cms'
-                    && Tools::getValue('id_cms_category')
-                ) {
-                    $cms_categories = json_decode($block['cms_categories']);
-                    if (!in_array((int) Tools::getValue('id_cms_category'), $cms_categories)) {
-                        $continue = true;
-                    } else {
-                        $continue = false;
-                    }
-                }
-                // Only products pages with specific category
-                if (
-                    Tools::getValue('id_product')
-                    && Tools::getValue('controller') === 'product'
-                    && (bool) $block['only_category_product'] === true
-                ) {
-                    $product = new Product((int) Tools::getValue('id_product'));
-                    $categories = json_decode($block['categories']);
-                    $defaultCategory = (int) $product->id_category_default;
-                    if ($categories && is_array($categories)) {
-                        $continue = !in_array($defaultCategory, $categories);
-                    }
-                }
-                if ((bool) $continue === true) {
-                    continue;
-                }
-                // Date start and date end management
-                $now = new DateTime();
-                $now = $now->format('Y-m-d H:i:s');
-                if (!empty($block['date_start'])
-                    && $block['date_start'] !== '0000-00-00 00:00:00'
-                    && $block['date_start'] > $now
-                ) {
-                    continue;
-                }
-                if (!empty($block['date_end'])
-                    && $block['date_end'] !== '0000-00-00 00:00:00'
-                    && $block['date_end'] < $now
-                ) {
-                    continue;
-                }
-                $customerGroups = $id_entity
-                    ? Customer::getGroupsStatic((int) $id_entity)
-                    : array_values(array_unique(array_filter([
-                        (int) Configuration::get('PS_UNIDENTIFIED_GROUP'),
-                        (int) Configuration::get('PS_GUEST_GROUP'),
-                        (int) Configuration::get('PS_CUSTOMER_GROUP'),
-                    ])));
-                $allowedGroups = json_decode($block['groups'], true);
-                if (isset($customerGroups)
-                    && !empty($allowedGroups)
-                    && !array_intersect($allowedGroups, $customerGroups)
-                ) {
-                    continue;
-                }
-                if ((bool) $block['obfuscate_link'] === true) {
-                    $block['content'] = EverblockTools::obfuscateText(
-                        $block['content']
-                    );
-                }
-                if ((bool) $block['lazyload'] === true) {
-                    $block['content'] = EverblockTools::addLazyLoadToImages(
-                        $block['content']
-                    );
-                }
-                if (in_array($method, $this->bypassedControllers)) {
-                    $block['content'] = strip_tags($block['content']);
-                    $context->smarty->assign([
-                        'is_bypassed' => true,
-                    ]);
-                }
-                /** @var Qcdpagebuilder|null $builder */
-                $builder = $this->getQcdBuilderModule();
-
-                $block['content'] = $builder
-                    ? (string) $builder->renderTargetField(
-                        'everblock',                  // target_type
-                        (int) $block['id_everblock'],           // target_id
-                        'content',                    // target_field
-                        (string) $block['content'],  // fallback natif (ex: content_2)
-                        (int) $context->shop->id,
-                        (int) $context->language->id
-                    )
-                    : (string) $block['content'];
-                $currentBlock[] = ['block' => $block];
+            if (Validate::isInt($position) && (int) $block['position'] != (int) $position) {
+                continue;
             }
-            Hook::exec(
-                'actionRenderBlockBefore',
-                [
-                    'everhook' => trim($method),
-                    $this->name => &$currentBlock,
-                    'args' => $args,
-                ]
-            );
+            // Check device
+            if ((int) $block['device'] > 0
+                && (int) $context->getDevice() != (int) $block['device']
+            ) {
+                continue;
+            }
+            if ((bool) $block['only_home'] === true
+                && Tools::getValue('controller') != 'index'
+            ) {
+                continue;
+            }
+            // Only category management
+            if ((bool) $block['only_category'] === true
+                && Tools::getValue('controller') != 'category'
+            ) {
+                continue;
+            }
+            // Only manufacturer management
+            if ((bool) $block['only_manufacturer'] === true
+                && Tools::getValue('controller') != 'manufacturer'
+            ) {
+                continue;
+            }
+            // Only supplier management
+            if ((bool) $block['only_supplier'] === true
+                && Tools::getValue('controller') != 'supplier'
+            ) {
+                continue;
+            }
+            // Only CMS category management
+            if ((bool) $block['only_cms_category'] === true
+                && !Tools::getValue('id_cms_category')
+            ) {
+                continue;
+            }
+            $continue = false;
+            // Only category pages
+            if ((bool) $block['only_category'] === true
+                && Tools::getValue('controller') === 'category'
+            ) {
+                $categories = json_decode($block['categories']);
+                $continue = !is_array($categories) || !in_array((int) Tools::getValue('id_category'), $categories);
+            }
+            // Only manufacturer pages
+            if ((bool) $block['only_manufacturer'] === true
+                && Tools::getValue('controller') === 'manufacturer'
+            ) {
+                $manufacturers = json_decode($block['manufacturers']);
+                $continue = !is_array($manufacturers) || !in_array((int) Tools::getValue('id_manufacturer'), $manufacturers);
+            }
+            // Only supplier pages
+            if ((bool) $block['only_supplier'] === true
+                && Tools::getValue('controller') === 'supplier'
+            ) {
+                $suppliers = json_decode($block['suppliers']);
+                $continue = !is_array($suppliers) || !in_array((int) Tools::getValue('id_supplier'), $suppliers);
+            }
+            // Only CMS category pages
+            if ((bool) $block['only_cms_category'] === true
+                && Tools::getValue('controller') === 'cms'
+                && Tools::getValue('id_cms_category')
+            ) {
+                $cms_categories = json_decode($block['cms_categories']);
+                $continue = !is_array($cms_categories) || !in_array((int) Tools::getValue('id_cms_category'), $cms_categories);
+            }
+            // Only products pages with specific category
+            if (
+                Tools::getValue('id_product')
+                && Tools::getValue('controller') === 'product'
+                && (bool) $block['only_category_product'] === true
+            ) {
+                $product = new Product((int) Tools::getValue('id_product'));
+                $categories = json_decode($block['categories']);
+                $defaultCategory = (int) $product->id_category_default;
+                if ($categories && is_array($categories)) {
+                    $continue = !in_array($defaultCategory, $categories);
+                }
+            }
+            if ((bool) $continue === true) {
+                continue;
+            }
+            // Date start and date end management
+            $now = new DateTime();
+            $now = $now->format('Y-m-d H:i:s');
+            if (!empty($block['date_start'])
+                && $block['date_start'] !== '0000-00-00 00:00:00'
+                && $block['date_start'] > $now
+            ) {
+                continue;
+            }
+            if (!empty($block['date_end'])
+                && $block['date_end'] !== '0000-00-00 00:00:00'
+                && $block['date_end'] < $now
+            ) {
+                continue;
+            }
+            $allowedGroups = json_decode($block['groups'], true);
+            if (isset($customerGroups)
+                && !empty($allowedGroups)
+                && !array_intersect($allowedGroups, $customerGroups)
+            ) {
+                continue;
+            }
 
-            $context->smarty->assign([
-                'everhook' => trim($method),
-                $this->name => $currentBlock,
-                'args' => $args,
-            ]);
-            $tpl = $this->display(__FILE__, $this->name . '.tpl');
-            if (!$isPreview) {
-                EverblockCache::cacheStore(
-                    str_replace('|', '-', $cacheId),
-                    $tpl
+            $visibleBlocks[] = $block;
+            $visibleCacheIds[] = $this->buildBlockRenderCacheId($block, $method, $hookName, $context, $idObj, $position);
+        }
+
+        if (!$isPreview && !empty($visibleCacheIds)) {
+            $cachedHtml = '';
+            $allBlocksCached = true;
+            foreach ($visibleCacheIds as $cacheId) {
+                if (!EverblockCache::isCacheStored($cacheId)) {
+                    $allBlocksCached = false;
+                    break;
+                }
+                $cachedHtml .= (string) EverblockCache::cacheRetrieve($cacheId);
+            }
+
+            if ($allBlocksCached) {
+                return $cachedHtml;
+            }
+        }
+
+        foreach ($visibleBlocks as $index => $block) {
+            if ((bool) $block['obfuscate_link'] === true) {
+                $block['content'] = EverblockTools::obfuscateText(
+                    $block['content']
                 );
             }
-            return $tpl;
+            if ((bool) $block['lazyload'] === true) {
+                $block['content'] = EverblockTools::addLazyLoadToImages(
+                    $block['content']
+                );
+            }
+            if ($isBypassed) {
+                $block['content'] = strip_tags($block['content']);
+            }
+            /** @var Qcdpagebuilder|null $builder */
+            $builder = $this->getQcdBuilderModule();
+
+            $block['content'] = $builder
+                ? (string) $builder->renderTargetField(
+                    'everblock',
+                    (int) $block['id_everblock'],
+                    'content',
+                    (string) $block['content'],
+                    (int) $context->shop->id,
+                    (int) $context->language->id
+                )
+                : (string) $block['content'];
+            $currentBlock[] = [
+                'block' => $block,
+                '_everblock_cache_id' => $visibleCacheIds[$index] ?? null,
+            ];
         }
-        return EverblockCache::cacheRetrieve(
-            str_replace('|', '-', $cacheId)
+
+        Hook::exec(
+            'actionRenderBlockBefore',
+            [
+                'everhook' => trim($method),
+                $this->name => &$currentBlock,
+                'args' => $args,
+            ]
         );
+
+        return $this->renderCachedBlockItems($currentBlock, $method, $hookName, $args, $context, $idObj, $position, $isPreview, $isBypassed);
+    }
+
+    private function renderCachedBlockItems(array $items, string $method, string $hookName, array $args, Context $context, int $idObj, ?int $position, bool $isPreview, bool $isBypassed): string
+    {
+        $html = '';
+        foreach ($items as $item) {
+            if (!isset($item['block'])) {
+                continue;
+            }
+            if (!is_array($item['block'])) {
+                $html .= $this->renderBlockItems([$item], $method, $args, $isBypassed);
+                continue;
+            }
+
+            $cacheId = isset($item['_everblock_cache_id']) && is_string($item['_everblock_cache_id'])
+                ? $item['_everblock_cache_id']
+                : $this->buildBlockRenderCacheId($item['block'], $method, $hookName, $context, $idObj, $position);
+            if ($isPreview || !EverblockCache::isCacheStored($cacheId)) {
+                $rendered = $this->renderBlockItems([$item], $method, $args, $isBypassed);
+                if (!$isPreview) {
+                    EverblockCache::cacheStore($cacheId, $rendered);
+                }
+                $html .= $rendered;
+                continue;
+            }
+
+            $html .= (string) EverblockCache::cacheRetrieve($cacheId);
+        }
+
+        return $html;
+    }
+
+    private function renderBlockItems(array $items, string $method, array $args, bool $isBypassed): string
+    {
+        $this->context->smarty->assign([
+            'everhook' => trim($method),
+            $this->name => $items,
+            'args' => $args,
+            'is_bypassed' => $isBypassed,
+        ]);
+
+        return $this->display(__FILE__, $this->name . '.tpl');
+    }
+
+    private function buildBlockRenderCacheId(array $block, string $method, string $hookName, Context $context, int $idObj, ?int $position): string
+    {
+        $blockId = (int) ($block['id_everblock'] ?? 0);
+        $fingerprintSource = json_encode($block);
+        if (!is_string($fingerprintSource)) {
+            $fingerprintSource = serialize($block);
+        }
+
+        return str_replace('|', '-', implode('-', [
+            $this->name,
+            'block',
+            $blockId,
+            'id_hook',
+            (int) ($block['id_hook'] ?? 0),
+            'version',
+            EverblockCache::getObjectCacheVersion('block', $blockId),
+            'controller',
+            trim((string) Tools::getValue('controller')),
+            'method',
+            trim($method),
+            'hookName',
+            trim($hookName),
+            'idObj',
+            (int) $idObj,
+            'idLang',
+            (int) $context->language->id,
+            'idShop',
+            (int) $context->shop->id,
+            'idCurrency',
+            (int) $context->currency->id,
+            'device',
+            (int) $context->getDevice(),
+            'position',
+            $position === null ? 'all' : (int) $position,
+            'hash',
+            md5($fingerprintSource),
+        ]));
     }
 
     public function hookDisplayHeader()
@@ -6037,7 +6026,7 @@ class Everblock extends Module
             $this->createBlockFromExcel($line);
         }
         unlink($blocksFile);
-        Tools::clearAllCache();
+        EverblockCache::clearAllModuleCache();
     }
 
     protected function updateProductTabs($line)
@@ -6090,7 +6079,7 @@ class Everblock extends Module
                 }
             }
             $tab->save();
-            Tools::clearAllCache();
+            EverblockCache::clearAllModuleCache();
         } catch (Exception $e) {
             PrestaShopLogger::addLog($this->name . ' | ' . $e->getMessage());
             EverblockTools::setLog(

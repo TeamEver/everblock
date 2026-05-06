@@ -7,6 +7,7 @@ namespace Everblock\Tools\Controller\Admin;
 use Everblock\Tools\Command\ClearEverblockCacheCommand;
 use Everblock\Tools\Command\DeleteAdminItemCommand;
 use Everblock\Tools\Command\SaveAdminItemCommand;
+use Everblock\Tools\Entity\Block;
 use Everblock\Tools\Form\BlockType;
 use Everblock\Tools\Form\EverblockConfigurationType;
 use Everblock\Tools\Form\FaqType;
@@ -17,7 +18,6 @@ use Everblock\Tools\Query\GetAdminItemQuery;
 use Everblock\Tools\Query\ListAdminItemsQuery;
 use Everblock\Tools\Repository\BlockRepository;
 use Everblock\Tools\Repository\HookRepository;
-use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use Language;
@@ -325,16 +325,8 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     public function deleteAction(string $section, int $id): RedirectResponse
     {
         $config = $this->config($section);
-        $hookId = null;
-        if ($section === 'blocks') {
-            $block = $this->blockRepository->find($id, $this->shopId());
-            $hookId = $block ? (int) $block->id_hook : null;
-        }
 
         $this->commandBus->handle(new DeleteAdminItemCommand($section, $id, $this->shopId()));
-        if ($section === 'blocks') {
-            $this->clearBlockCache($hookId);
-        }
         $this->addFlash('success', $this->transAdmin('Item deleted successfully.'));
 
         return $this->redirectToRoute($config['route']);
@@ -364,7 +356,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         }
 
         $this->blockRepository->setActive($id, $this->shopId(), !$block->active);
-        $this->clearBlockCache((int) $block->id_hook);
+        $this->clearBlockCache($id, (int) $block->id_hook);
         $this->addFlash('success', $block->active ? $this->transAdmin('Block disabled successfully.') : $this->transAdmin('Block enabled successfully.'));
 
         return $this->redirectToRoute('admin_everblock_blocks');
@@ -383,7 +375,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         }
 
         $duplicated = $this->blockRepository->find($newId, $this->shopId());
-        $this->clearBlockCache($duplicated ? (int) $duplicated->id_hook : null);
+        $this->clearBlockCache($newId, $duplicated ? (int) $duplicated->id_hook : null);
         $this->addFlash('success', $this->transAdmin('Block duplicated successfully.'));
 
         return $this->redirectToRoute('admin_everblock_blocks_edit', ['id' => $newId]);
@@ -410,14 +402,13 @@ final class EverblockAdminController extends FrameworkBundleAdminController
 
             if ($bulkAction === 'enable' || $bulkAction === 'disable') {
                 $this->blockRepository->setActive($id, $this->shopId(), $bulkAction === 'enable');
-                $this->clearBlockCache((int) $block->id_hook);
+                $this->clearBlockCache($id, (int) $block->id_hook);
                 ++$count;
                 continue;
             }
 
             if ($bulkAction === 'delete') {
                 $this->commandBus->handle(new DeleteAdminItemCommand('blocks', $id, $this->shopId()));
-                $this->clearBlockCache((int) $block->id_hook);
                 ++$count;
                 continue;
             }
@@ -425,7 +416,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             if ($bulkAction === 'duplicate') {
                 $newId = $this->blockRepository->duplicate($id, $this->shopId(), Language::getLanguages(false));
                 if ($newId > 0) {
-                    $this->clearBlockCache((int) $block->id_hook);
+                    $this->clearBlockCache($newId, (int) $block->id_hook);
                     ++$count;
                 }
             }
@@ -672,22 +663,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         }
     }
 
-    private function clearBlockCache(?int $hookId = null): void
+    private function clearBlockCache(?int $blockId = null, ?int $hookId = null): void
     {
-        foreach (Language::getLanguages(false) as $language) {
-            $langId = (int) ($language['id_lang'] ?? 0);
-            if ($langId <= 0) {
-                continue;
-            }
-            EverblockCache::cacheDrop('EverBlockClass_getAllBlocks_' . $langId . '_' . $this->shopId());
-            if ($hookId !== null && $hookId > 0) {
-                EverblockCache::cacheDrop('EverBlockClass_getBlocks_' . $hookId . '_' . $langId . '_' . $this->shopId());
-            }
-        }
-
-        if ($hookId !== null && $hookId > 0) {
-            EverblockCache::cacheDropByPattern('everblock-id_hook-' . $hookId);
-        }
+        Block::clearCache($blockId, $this->shopId(), Language::getLanguages(false), $hookId !== null && $hookId > 0 ? [$hookId] : []);
     }
 
     private function transAdmin(string $message, array $parameters = []): string

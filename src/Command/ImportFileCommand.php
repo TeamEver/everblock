@@ -25,6 +25,7 @@ if (!defined('_PS_VERSION_')) {
 }
 
 use Exception;
+use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\ImportFile;
 use Hook;
 use PrestaShopLogger;
@@ -85,11 +86,11 @@ class ImportFileCommand extends Command
             ));
             unlink($this->filename);
             $output->writeln(sprintf(
-                '<comment>Everblock file deleted. Clearing cache</comment>'
+                '<comment>Everblock file deleted. Clearing Everblock cache</comment>'
             ));
-            \Tools::clearAllCache();
+            EverblockCache::clearAllModuleCache();
             $output->writeln(sprintf(
-                '<comment>Cache cleared</comment>'
+                '<comment>Everblock cache cleared</comment>'
             ));
             return self::SUCCESS;
         } else {

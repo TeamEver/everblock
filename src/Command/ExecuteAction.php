@@ -136,8 +136,8 @@ class ExecuteAction extends Command
             'parameters' => [],
         ],
         'clearcache' => [
-            'label' => 'Clear PrestaShop cache',
-            'description' => 'Flushes all native caches (Smarty, XML, filesystem).',
+            'label' => 'Clear Everblock cache',
+            'description' => 'Flushes module cache entries without clearing the whole shop cache.',
             'parameters' => [],
         ],
     ];
@@ -551,8 +551,8 @@ class ExecuteAction extends Command
             return $hasErrors ? self::FAILURE : self::SUCCESS;
         }
         if ($action === 'clearcache') {
-            \Tools::clearAllCache();
-            $output->writeln('<success>All PrestaShop caches cleared</success>');
+            EverblockCache::clearAllModuleCache();
+            $output->writeln('<success>Everblock cache cleared</success>');
 
             return self::SUCCESS;
         }

@@ -170,19 +170,7 @@ final class SaveAdminItemHandler
                 $hookIds[] = (int) $command->data['id_hook'];
             }
 
-            foreach ($command->languages as $language) {
-                $langId = (int) ($language['id_lang'] ?? $language['id'] ?? 0);
-                if ($langId <= 0) {
-                    continue;
-                }
-                EverblockCache::cacheDrop('EverBlockClass_getAllBlocks_' . $langId . '_' . $command->shopId);
-                foreach (array_unique($hookIds) as $hookId) {
-                    EverblockCache::cacheDrop('EverBlockClass_getBlocks_' . $hookId . '_' . $langId . '_' . $command->shopId);
-                }
-            }
-            foreach (array_unique($hookIds) as $hookId) {
-                EverblockCache::cacheDropByPattern('everblock-id_hook-' . $hookId);
-            }
+            Block::clearCache($id, $command->shopId, $command->languages, $hookIds);
 
             return;
         }

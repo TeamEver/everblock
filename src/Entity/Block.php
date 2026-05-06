@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Everblock\Tools\Entity;
 
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Everblock\Tools\Repository\BlockRepository;
 use Everblock\Tools\Repository\RepositoryProvider;
@@ -164,8 +163,17 @@ class Block
 
     public function save(): bool
     {
+        $previous = $this->id ? self::repository()->find((int) $this->id, $this->id_shop) : null;
         $this->id = self::repository()->save($this, Language::getLanguages(false));
         $this->id_everblock = $this->id;
+
+        if ($this->id > 0) {
+            $hookIds = [(int) $this->id_hook];
+            if ($previous instanceof self) {
+                $hookIds[] = (int) $previous->id_hook;
+            }
+            self::clearCache((int) $this->id, (int) $this->id_shop, Language::getLanguages(false), $hookIds);
+        }
 
         return $this->id > 0;
     }
@@ -176,7 +184,41 @@ class Block
             return true;
         }
 
-        return self::repository()->delete($this->id, $this->id_shop);
+        $blockId = (int) $this->id;
+        $hookIds = [(int) $this->id_hook];
+        $deleted = self::repository()->delete($blockId, $this->id_shop);
+        if ($deleted) {
+            self::clearCache($blockId, (int) $this->id_shop, Language::getLanguages(false), $hookIds);
+        }
+
+        return $deleted;
+    }
+
+    public static function clearCache(?int $blockId, int $shopId, array $languages = [], array $hookIds = []): void
+    {
+        $languages = $languages ?: Language::getLanguages(false);
+        $hookIds = array_values(array_unique(array_filter(array_map('intval', $hookIds))));
+
+        foreach ($languages as $language) {
+            $langId = (int) ($language['id_lang'] ?? $language['id'] ?? 0);
+            if ($langId <= 0) {
+                continue;
+            }
+
+            EverblockCache::cacheDrop('EverBlockClass_getAllBlocks_' . $langId . '_' . $shopId);
+            foreach ($hookIds as $hookId) {
+                EverblockCache::cacheDrop('EverBlockClass_getBlocks_' . $hookId . '_' . $langId . '_' . $shopId);
+            }
+        }
+
+        if ($blockId !== null && $blockId > 0) {
+            EverblockCache::refreshObjectCacheVersion('block', $blockId);
+            EverblockCache::cacheDropByPattern('everblock-block-' . $blockId . '-');
+        }
+
+        foreach ($hookIds as $hookId) {
+            EverblockCache::cacheDropByPattern('everblock-id_hook-' . $hookId);
+        }
     }
 
     public static function getAllBlocks(int $idLang, int $idShop): array
@@ -194,19 +236,8 @@ class Block
 
     public static function cleanBlocksCacheOnDate(int $idLang, int $idShop): void
     {
-        $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
-        foreach (self::getAllBlocks($idLang, $idShop) as $block) {
-            $shouldFlush = false;
-            if (!empty($block['date_start']) && $block['date_start'] !== '0000-00-00 00:00:00' && $block['date_start'] > $now) {
-                $shouldFlush = true;
-            }
-            if (!empty($block['date_end']) && $block['date_end'] !== '0000-00-00 00:00:00' && $block['date_end'] < $now) {
-                $shouldFlush = true;
-            }
-            if ($shouldFlush) {
-                EverblockCache::cacheDropByPattern('everblock-id_hook-' . (int) $block['id_hook']);
-            }
-        }
+        // Block visibility dates are evaluated at render time, so no hook-wide
+        // rendered cache has to be flushed on each front-office request.
     }
 
     public static function getBlocks(int $idHook, int $idLang, int $idShop): array
