@@ -14,6 +14,16 @@ admin_everblock_clear_cache:
     _legacy_controller: AdminEverBlockConfiguration
     _legacy_link: AdminEverBlockConfiguration
 
+admin_everblock_translation_download:
+  path: /everblock/translations/{file}/download
+  methods: [GET]
+  defaults:
+    _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::downloadTranslationAction'
+    _legacy_controller: AdminEverBlockConfiguration
+    _legacy_link: AdminEverBlockConfiguration
+  requirements:
+    file: '(?:modern_)?[a-z]{2,3}\.php'
+
 admin_everblock_blocks:
   path: /everblock/blocks
   methods: [GET]

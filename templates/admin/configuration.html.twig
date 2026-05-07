@@ -124,6 +124,25 @@
                     </div>
                   {% endif %}
 
+                  {% if tab_key == 'translations' %}
+                    <div class="list-group mb-3">
+                      {% for translation_file in translation_files %}
+                        <a
+                          class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                          href="{{ path('admin_everblock_translation_download', {file: translation_file.name}) }}"
+                        >
+                          <span>
+                            {{ translation_file.name }}
+                            <small class="text-muted">({{ translation_file.iso_code }})</small>
+                          </span>
+                          <i class="material-icons">download</i>
+                        </a>
+                      {% else %}
+                        <p class="text-muted">{{ 'No translation file is available yet.'|trans({}, 'Modules.Everblock.Admin') }}</p>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+
                   {% if action_buttons[tab_key] is defined %}
                     <div class="d-flex flex-wrap gap-2 mt-3">
                       {% for button in action_buttons[tab_key] %}

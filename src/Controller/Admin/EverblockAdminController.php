@@ -222,6 +222,8 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             'languages' => $viewContext['languages'],
             'shop_id' => $this->shopId(),
             'stores' => $viewContext['stores'],
+            'translation_file_choices' => $this->translationFileChoices($viewContext['translation_files']),
+            'translation_language_choices' => $this->translationLanguageChoices($viewContext['languages']),
         ];
         $form = $this->formFactory->createNamed('', EverblockConfigurationType::class, $this->adminConfigurationManager->getFormData($module), $formOptions);
         $form->handleRequest($request);
@@ -263,7 +265,30 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             'module_version' => $viewContext['module_version'],
             'sections' => self::SECTION_CONFIG,
             'stats' => $viewContext['stats'],
+            'translation_files' => $viewContext['translation_files'],
         ]);
+    }
+
+    /**
+     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
+     */
+    public function downloadTranslationAction(string $file): Response
+    {
+        $module = Module::getInstanceByName('everblock');
+        $manager = new \Everblock\Tools\Service\ModuleTranslationManager();
+        $path = $manager->resolveTranslationFile($module, $file);
+        if ($path === null) {
+            throw $this->createNotFoundException('Translation file not found.');
+        }
+
+        return new Response(
+            (string) file_get_contents($path),
+            200,
+            [
+                'Content-Type' => 'application/x-php',
+                'Content-Disposition' => 'attachment; filename="' . basename($path) . '"',
+            ]
+        );
     }
 
     /**
@@ -708,6 +733,34 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     private function transAdmin(string $message, array $parameters = []): string
     {
         return $this->translator->trans($message, $parameters, 'Modules.Everblock.Admin');
+    }
+
+    private function translationLanguageChoices(array $languages): array
+    {
+        $choices = [];
+        foreach ($languages as $language) {
+            $isoCode = (string) ($language['iso_code'] ?? '');
+            if ($isoCode === '') {
+                continue;
+            }
+            $label = trim((string) ($language['name'] ?? $isoCode));
+            $choices[$label . ' (' . $isoCode . ')'] = $isoCode;
+        }
+
+        return $choices;
+    }
+
+    private function translationFileChoices(array $files): array
+    {
+        $choices = ['Choose a file' => ''];
+        foreach ($files as $file) {
+            if (empty($file['name'])) {
+                continue;
+            }
+            $choices[(string) $file['name']] = (string) $file['name'];
+        }
+
+        return $choices;
     }
 
     private function config(string $section): array

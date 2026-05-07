@@ -643,7 +643,7 @@ class Everblock extends Module
 
     private function loadDefaultLegacyTranslations($legacyDir)
     {
-        $candidates = ['en.php', 'gb.php', 'us.php'];
+        $candidates = ['en.php', 'gb.php', 'us.php', 'modern_gb.php', 'modern_en.php'];
 
         foreach ($candidates as $candidate) {
             $path = $legacyDir . '/' . $candidate;
@@ -667,11 +667,13 @@ class Everblock extends Module
     private function resolveLegacyFileForIso($legacyDir, $isoCode)
     {
         $iso = Tools::strtolower($isoCode);
-        $candidates = [$iso . '.php'];
+        $candidates = [$iso . '.php', 'modern_' . $iso . '.php'];
 
         if ($iso === 'en') {
             $candidates[] = 'gb.php';
             $candidates[] = 'us.php';
+            $candidates[] = 'modern_gb.php';
+            $candidates[] = 'modern_us.php';
         }
 
         foreach ($candidates as $candidate) {

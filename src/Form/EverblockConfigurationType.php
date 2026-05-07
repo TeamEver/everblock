@@ -21,6 +21,7 @@ final class EverblockConfigurationType extends AbstractType
             'meta_tools' => 'Meta Tools',
             'wordpress_tools' => 'WordPress Tools',
             'google_maps' => 'Google Tools',
+            'translations' => 'Translations',
             'migration' => 'Migration des URL',
             'tools' => 'Outils',
             'files' => 'Gestionnaire de fichiers',
@@ -74,6 +75,11 @@ final class EverblockConfigurationType extends AbstractType
                 'EVERBLOCK_GMAP_KEY',
                 'EVERBLOCK_MARKER_ICON',
                 'EVERBLOCK_STORELOCATOR_TOGGLE',
+            ],
+            'translations' => [
+                'EVERBLOCK_TRANSLATION_TARGET_LANG',
+                'EVERBLOCK_TRANSLATION_IMPORT_FILE',
+                'EVERBLOCK_TRANSLATION_UPLOAD_FILE',
             ],
             'migration' => [
                 'EVERPS_OLD_URL',
@@ -153,6 +159,11 @@ final class EverblockConfigurationType extends AbstractType
             'files' => [
                 ['name' => 'submitUploadTabsFile', 'title' => 'Upload file', 'icon' => 'upload_file'],
             ],
+            'translations' => [
+                ['name' => 'submitGenerateModuleTranslation', 'title' => 'Generate with Google Translate', 'icon' => 'g_translate'],
+                ['name' => 'submitImportModuleTranslation', 'title' => 'Import selected translation', 'icon' => 'sync'],
+                ['name' => 'submitUploadModuleTranslation', 'title' => 'Upload and import translation', 'icon' => 'upload_file'],
+            ],
         ];
     }
 
@@ -163,6 +174,7 @@ final class EverblockConfigurationType extends AbstractType
             'meta_tools' => 'Configure Meta integrations, including Instagram access and display options.',
             'wordpress_tools' => 'Configure the WordPress REST endpoint and the latest posts block.',
             'google_maps' => 'Configure Google Places reviews, Google Maps keys and store locator marker options.',
+            'translations' => 'Generate, import, upload and download module translations for front office and back office strings.',
             'migration' => 'Replace old URLs with new URLs in shop content for migration work.',
             'tools' => 'Run maintenance tools such as cache cleanup, log cleanup, backups and restores.',
             'files' => 'Import product tab data from an Excel file.',
@@ -332,6 +344,31 @@ final class EverblockConfigurationType extends AbstractType
                 'required' => false,
                 'mapped' => false,
                 'help' => 'Only SVG files are allowed.',
+            ])
+            ->add('EVERBLOCK_TRANSLATION_TARGET_LANG', ChoiceType::class, [
+                'label' => 'Target language',
+                'choices' => $options['translation_language_choices'],
+                'required' => true,
+                'attr' => [
+                    'class' => 'everblock-enhanced-select',
+                    'data-everblock-placeholder' => 'Search language',
+                ],
+                'help' => 'Google Translate will translate from the module English source into this language.',
+            ])
+            ->add('EVERBLOCK_TRANSLATION_IMPORT_FILE', ChoiceType::class, [
+                'label' => 'Translation file to import',
+                'choices' => $options['translation_file_choices'],
+                'required' => false,
+                'attr' => [
+                    'class' => 'everblock-enhanced-select',
+                    'data-everblock-placeholder' => 'Search translation file',
+                ],
+            ])
+            ->add('EVERBLOCK_TRANSLATION_UPLOAD_FILE', FileType::class, [
+                'label' => 'Upload a module translation file',
+                'required' => false,
+                'mapped' => false,
+                'help' => 'The file must use the PrestaShop module PHP translation format.',
             ]);
 
         $this->addSwitch($builder, 'EVERBLOCK_STORELOCATOR_TOGGLE', 'Display map toggle button');
@@ -464,6 +501,8 @@ final class EverblockConfigurationType extends AbstractType
             'shop_id' => 1,
             'stores' => [],
             'translation_domain' => 'Modules.Everblock.Admin',
+            'translation_file_choices' => [],
+            'translation_language_choices' => [],
         ]);
     }
 

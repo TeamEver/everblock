@@ -28,6 +28,9 @@ final class AdminConfigurationManager
 
         $featuresAsFlags = json_decode((string) Configuration::get('EVERPS_FEATURES_AS_FLAGS'), true);
         $data['EVERPS_FEATURES_AS_FLAGS'] = is_array($featuresAsFlags) ? array_map('intval', $featuresAsFlags) : [];
+        $data['EVERBLOCK_TRANSLATION_TARGET_LANG'] = (string) (Context::getContext()->language->iso_code ?? ($languages[0]['iso_code'] ?? 'en'));
+        $data['EVERBLOCK_TRANSLATION_IMPORT_FILE'] = '';
+        $data['EVERBLOCK_TRANSLATION_UPLOAD_FILE'] = '';
         unset(
             $data['EVEROPTIONS_TITLE'],
             $data['EVER_TAB_TITLE'],
@@ -108,6 +111,7 @@ final class AdminConfigurationManager
             'module_version' => $module->version,
             'stats' => $module->getAdminConfigurationModuleStatistics(),
             'stores' => $stores,
+            'translation_files' => (new ModuleTranslationManager())->getAvailableTranslationFiles($module),
         ];
     }
 
@@ -214,6 +218,38 @@ final class AdminConfigurationManager
         }
         if (Tools::isSubmit('submitEverblockUpdate')) {
             $this->appendMessages($this->processUpdate($module, new GithubReleaseChecker($module->version)), $errors, $success);
+        }
+        if (Tools::isSubmit('submitGenerateModuleTranslation')) {
+            $this->appendTranslationResult(
+                (new ModuleTranslationManager())->generateWithGoogleTranslate(
+                    $module,
+                    (string) Tools::getValue('EVERBLOCK_TRANSLATION_TARGET_LANG')
+                ),
+                $errors,
+                $success
+            );
+        }
+        if (Tools::isSubmit('submitImportModuleTranslation')) {
+            $this->appendTranslationResult(
+                (new ModuleTranslationManager())->importExistingTranslation(
+                    $module,
+                    (string) Tools::getValue('EVERBLOCK_TRANSLATION_TARGET_LANG'),
+                    (string) Tools::getValue('EVERBLOCK_TRANSLATION_IMPORT_FILE')
+                ),
+                $errors,
+                $success
+            );
+        }
+        if (Tools::isSubmit('submitUploadModuleTranslation')) {
+            $this->appendTranslationResult(
+                (new ModuleTranslationManager())->uploadAndImportTranslation(
+                    $module,
+                    (string) Tools::getValue('EVERBLOCK_TRANSLATION_TARGET_LANG'),
+                    $_FILES['EVERBLOCK_TRANSLATION_UPLOAD_FILE'] ?? []
+                ),
+                $errors,
+                $success
+            );
         }
 
         $moduleMessages = $module->getAdminConfigurationMessages();
@@ -331,6 +367,21 @@ final class AdminConfigurationManager
         foreach ($messages['success'] ?? [] as $message) {
             $success[] = $message;
         }
+    }
+
+    private function appendTranslationResult(array $result, array &$errors, array &$success): void
+    {
+        if (!empty($result['success'])) {
+            $message = (string) ($result['message'] ?? '');
+            if (isset($result['imported'])) {
+                $message .= ' ' . sprintf('%d translations saved.', (int) $result['imported']);
+            }
+            $success[] = trim($message);
+
+            return;
+        }
+
+        $errors[] = (string) ($result['message'] ?? 'Translation action failed.');
     }
 
     private function locateEverblockSource(string $extractDir)
