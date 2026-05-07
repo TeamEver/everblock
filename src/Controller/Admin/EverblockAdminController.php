@@ -220,6 +220,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             'has_instagram_token' => $viewContext['has_instagram_token'],
             'holidays' => $viewContext['holidays'],
             'languages' => $viewContext['languages'],
+            'shop_id' => $this->shopId(),
             'stores' => $viewContext['stores'],
         ];
         $form = $this->formFactory->createNamed('', EverblockConfigurationType::class, $this->adminConfigurationManager->getFormData($module), $formOptions);

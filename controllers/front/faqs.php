@@ -80,6 +80,7 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
             );
         }
 
+        $faqs = $this->applyQcdBuilderToFaqs($faqs);
         $faqsWithLinks = $this->attachTagLinks($faqs);
 
         $title = $this->isAllFaqsPage
@@ -220,6 +221,30 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
             if (!isset($faq->tag_link)) {
                 $faq->tag_link = $this->buildFaqsLink((string) $faq->tag_name);
             }
+        }
+
+        return $faqs;
+    }
+
+    protected function applyQcdBuilderToFaqs(array $faqs): array
+    {
+        if (!$this->module instanceof Everblock) {
+            return $faqs;
+        }
+
+        foreach ($faqs as $faq) {
+            if (!is_object($faq) || empty($faq->id)) {
+                continue;
+            }
+
+            $faq->content = $this->module->renderQcdBuilderTargetField(
+                'everblock_faq',
+                (int) $faq->id,
+                'content',
+                (string) ($faq->content ?? ''),
+                (int) $this->context->shop->id,
+                (int) $this->context->language->id
+            );
         }
 
         return $faqs;

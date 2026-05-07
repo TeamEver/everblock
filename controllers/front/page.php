@@ -62,7 +62,17 @@ class EverblockPageModuleFrontController extends ModuleFrontController
         $metaTitle = isset($page->meta_title) && $page->meta_title ? $page->meta_title : $page->title;
         $metaDescription = $page->meta_description ?: $page->short_description;
 
-        $renderedContent = $page->content;
+        $renderedContent = (string) $page->content;
+        if ($this->module instanceof Everblock) {
+            $renderedContent = $this->module->renderQcdBuilderTargetField(
+                'everblock_page',
+                (int) $page->id,
+                'content',
+                $renderedContent,
+                (int) $this->context->shop->id,
+                (int) $this->context->language->id
+            );
+        }
 
         $pages = EverblockPage::getPages(
             (int) $this->context->language->id,

@@ -80,6 +80,14 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $content = isset($modal->content[$this->context->language->id])
                 ? $modal->content[$this->context->language->id]
                 : '';
+            $content = $module->renderQcdBuilderTargetField(
+                'everblock_product_modal',
+                (int) $modal->id_product,
+                'content',
+                (string) $content,
+                (int) $this->context->shop->id,
+                (int) $this->context->language->id
+            );
             $fileUrl = '';
             $fileRenderType = '';
             $fileExtension = '';
@@ -140,6 +148,14 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $blockContent = is_array($block->content)
                 ? (string) ($block->content[$idLang] ?? '')
                 : (string) $block->content;
+            $blockContent = $module->renderQcdBuilderTargetField(
+                'everblock',
+                (int) $block->id,
+                'content',
+                $blockContent,
+                (int) $this->context->shop->id,
+                (int) $this->context->language->id
+            );
             // Hooks not allowed here
             if (strpos($blockContent, '{hook h=') !== false) {
                 $pattern = '/\{hook h=[^}]*\}/';

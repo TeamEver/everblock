@@ -59,7 +59,7 @@
                 </div>
                 <div class="form-group">
                   <label for="{{ tabNumber }}_everblock_content_{{ languageId }}">{{ 'Tab content for lang'|trans({}, 'Modules.Everblock.Admin') }} {{ language.iso_code }} ({{ 'Tab number'|trans({}, 'Modules.Everblock.Admin') }} {{ tabNumber }})</label>
-                  <textarea id="{{ tabNumber }}_everblock_content_{{ languageId }}" name="{{ tabNumber }}_everblock_content_{{ languageId }}" class="form-control autoload_rte">{{ tabContent }}</textarea>
+                  <textarea id="{{ tabNumber }}_everblock_content_{{ languageId }}" name="{{ tabNumber }}_everblock_content_{{ languageId }}" class="form-control autoload_rte" data-ever-product-id="{{ ever_product_id }}">{{ tabContent }}</textarea>
                 </div>
               {% endfor %}
             </div>

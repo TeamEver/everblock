@@ -122,7 +122,7 @@ class EverblockTools
             'front',
             'modulefront',
         ];
-        $txt = static::getEverShortcodes($txt, $context);
+        $txt = static::getEverShortcodes($txt, $context, $module);
         $shortcodeHandlers = [
             '[alert' => 'getAlertShortcode',
             '[everfaq_product' => ['method' => 'getProductFaqShortcodes', 'args' => ['context', 'module']],
@@ -1062,10 +1062,11 @@ class EverblockTools
         $templatePath = static::getTemplatePath('hook/faq.tpl', $module);
         $pattern = '/\[everfaq tag="([^"]+)"\]/';
 
-        $txt = preg_replace_callback($pattern, function ($matches) use ($context, $templatePath) {
+        $txt = preg_replace_callback($pattern, function ($matches) use ($context, $module, $templatePath) {
             $tagName = $matches[1];
 
             $faqs = EverblockFaq::getFaqByTagName($context->shop->id, $context->language->id, $tagName);
+            $faqs = static::renderQcdBuilderFaqs($faqs, $context, $module);
 
             $context->smarty->assign('everFaqs', $faqs);
 
@@ -1086,7 +1087,7 @@ class EverblockTools
         $templatePath = static::getTemplatePath('hook/faq.tpl', $module);
         $pattern = '/\[everfaq_product(?:\s+([^\]]+))?\]/';
 
-        $txt = (string) preg_replace_callback($pattern, function ($matches) use ($context, $templatePath) {
+        $txt = (string) preg_replace_callback($pattern, function ($matches) use ($context, $module, $templatePath) {
             $attrString = isset($matches[1]) ? trim($matches[1]) : '';
             if ($attrString === '') {
                 return '';
@@ -1111,6 +1112,7 @@ class EverblockTools
             if (empty($faqs)) {
                 return '';
             }
+            $faqs = static::renderQcdBuilderFaqs($faqs, $context, $module);
 
             $context->smarty->assign('everFaqs', $faqs);
 
@@ -4864,18 +4866,47 @@ class EverblockTools
      *
      * @example $html = EverblockTools::getEverShortcodes('Bienvenue sur [shop_name]', $context);
      */
-    public static function getEverShortcodes(string $txt, Context $context): string
+    public static function getEverShortcodes(string $txt, Context $context, ?Everblock $module = null): string
     {
         $customShortcodes = EverblockShortcode::getAllShortcodes(
             $context->shop->id,
             $context->language->id
         );
-        $returnedShortcodes = [];
         foreach ($customShortcodes as $sc) {
             $content = $sc->content ?? '';
+            if ($module instanceof Everblock && !empty($sc->id)) {
+                $content = $module->renderQcdBuilderTargetField(
+                    'everblock_shortcode',
+                    (int) $sc->id,
+                    'content',
+                    (string) $content,
+                    (int) $context->shop->id,
+                    (int) $context->language->id
+                );
+            }
             $txt = str_replace($sc->shortcode, (string) $content, $txt);
         }
         return $txt;
+    }
+
+    private static function renderQcdBuilderFaqs(array $faqs, Context $context, Everblock $module): array
+    {
+        foreach ($faqs as $faq) {
+            if (!is_object($faq) || empty($faq->id)) {
+                continue;
+            }
+
+            $faq->content = $module->renderQcdBuilderTargetField(
+                'everblock_faq',
+                (int) $faq->id,
+                'content',
+                (string) ($faq->content ?? ''),
+                (int) $context->shop->id,
+                (int) $context->language->id
+            );
+        }
+
+        return $faqs;
     }
 
     public static function generateLoremIpsum(string $txt, Context $context): string

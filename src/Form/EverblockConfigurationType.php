@@ -175,6 +175,8 @@ final class EverblockConfigurationType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $qcdBuilderTargetId = max(1, (int) $options['shop_id']);
+
         foreach ($options['languages'] as $language) {
             $langId = (int) $language['id_lang'];
             $label = (string) ($language['iso_code'] ?? $langId);
@@ -193,7 +195,11 @@ final class EverblockConfigurationType extends AbstractType
                 ->add('EVER_TAB_CONTENT_' . $langId, TextareaType::class, [
                     'label' => 'Text shown on global catalog tab (' . $label . ')',
                     'required' => false,
-                    'attr' => ['rows' => 8, 'class' => 'autoload_rte'],
+                    'attr' => [
+                        'rows' => 8,
+                        'class' => 'autoload_rte',
+                        'data-everblock-qcd-target-id' => (string) $qcdBuilderTargetId,
+                    ],
                     'help' => 'Leaving empty will hide tab.',
                 ]);
         }
@@ -455,6 +461,7 @@ final class EverblockConfigurationType extends AbstractType
             'has_instagram_token' => false,
             'holidays' => [],
             'languages' => [],
+            'shop_id' => 1,
             'stores' => [],
             'translation_domain' => 'Modules.Everblock.Admin',
         ]);

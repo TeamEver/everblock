@@ -115,7 +115,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '9.0.0';
+        $this->version = '9.0.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -1093,86 +1093,156 @@ class Everblock extends Module
             $params['targets'] = [];
         }
 
-        $supportedControllers = [
-            'admineverblock',
-            'admineverblockconfiguration',
-            'admineverblockfaq',
-            'admineverblockhook',
-            'admineverblockpage',
-            'admineverblockshortcode',
-        ];
-
-        $currentController = Tools::strtolower((string) Tools::getValue('controller'));
-        if (!$currentController && isset($this->context->controller->controller_name)) {
-            $currentController = Tools::strtolower((string) $this->context->controller->controller_name);
-        }
-
-        if (!in_array($currentController, $supportedControllers, true)) {
-            return $params;
-        }
-
-        $params['targets'][] = [
-            // Identifiants techniques obligatoires [a-z0-9_]{2,64}
-            'target_type' => 'everblock',
-            'target_field' => 'content',
-
-            // Le nom de contrôleur est comparé en minuscule côté registry
-            'controllers' => $supportedControllers,
-
-            // Sélecteurs du textarea réel (pas l'iframe TinyMCE)
-            'selectors' => [
-                'body.admineverblock textarea[name="content_2"]',
-                'body.admineverblockpage form textarea[name="content_2"]',
-                'body.admineverblockfaq form textarea[name="content_2"]',
-                'form#everblock_form textarea[name="content_2"]',
-                'form[name="everblock_form"] textarea[name="content_2"]',
-                'form[action*="AdminEverBlock"] textarea[name="content_2"]',
-                'form[action*="AdminEverBlockPage"] textarea[name="content_2"]',
-                'form[action*="AdminEverBlockFaq"] textarea[name="content_2"]',
+        $targets = [
+            [
+                'target_type' => 'everblock',
+                'target_field' => 'content',
+                'controllers' => ['admineverblock'],
+                'selectors' => $this->buildQcdBuilderLocalizedSelectors('content'),
+                'id_resolver' => $this->buildQcdBuilderEntityResolver(
+                    ['id_everblock', 'everblockId', 'id'],
+                    ['input[name="id_everblock"]', 'input[name="block[id]"]', 'input[name="block[id_everblock]"]'],
+                    ['input[name="block[name]"]', 'input[name="name"]']
+                ),
             ],
-
-            // Stratégie de résolution de l'ID objet
-            'id_resolver' => [
-                // 1) hidden/input ID (source principale)
-                'input_selectors' => [
-                    'input[name="id_everblock"]',
-                    'input[name="everblock[id_everblock]"]',
-                    'input[name="everblock[id]"]',
+            [
+                'target_type' => 'everblock_shortcode',
+                'target_field' => 'content',
+                'controllers' => ['admineverblockshortcode'],
+                'selectors' => $this->buildQcdBuilderLocalizedSelectors('content'),
+                'id_resolver' => $this->buildQcdBuilderEntityResolver(
+                    ['id_everblock_shortcode', 'shortcodeId', 'id'],
+                    ['input[name="id_everblock_shortcode"]', 'input[name="shortcode[id]"]', 'input[name="shortcode[id_everblock_shortcode]"]'],
+                    ['input[name="shortcode[shortcode]"]', 'input[name="shortcode"]']
+                ),
+            ],
+            [
+                'target_type' => 'everblock_faq',
+                'target_field' => 'content',
+                'controllers' => ['admineverblockfaq'],
+                'selectors' => $this->buildQcdBuilderLocalizedSelectors('content'),
+                'id_resolver' => $this->buildQcdBuilderEntityResolver(
+                    ['id_everblock_faq', 'faqId', 'id'],
+                    ['input[name="id_everblock_faq"]', 'input[name="faq[id]"]', 'input[name="faq[id_everblock_faq]"]'],
+                    ['input[name="faq[tag_name]"]', 'input[name="tag_name"]']
+                ),
+            ],
+            [
+                'target_type' => 'everblock_page',
+                'target_field' => 'content',
+                'controllers' => ['admineverblockpage'],
+                'selectors' => $this->buildQcdBuilderLocalizedSelectors('content'),
+                'id_resolver' => $this->buildQcdBuilderEntityResolver(
+                    ['id_everblock_page', 'pageId', 'id'],
+                    ['input[name="id_everblock_page"]', 'input[name="page[id]"]', 'input[name="page[id_everblock_page]"]'],
+                    ['input[name^="page[link_rewrite_"]', 'input[name^="page[name_"]', 'input[name^="link_rewrite_"]', 'input[name^="name_"]']
+                ),
+            ],
+            [
+                'target_type' => 'everblock_global_tab',
+                'target_field' => 'content',
+                'controllers' => ['admineverblockconfiguration'],
+                'selectors' => $this->buildQcdBuilderLocalizedSelectors('EVER_TAB_CONTENT'),
+                'id_resolver' => [
+                    'input_selectors' => [],
+                    'data_attributes' => ['data-everblock-qcd-target-id', 'data-id-object', 'data-id'],
+                    'meta_selectors' => [],
+                    'query_params' => ['id_shop'],
+                    'custom_extractors' => [],
+                    'draft_key' => ['enabled' => false],
+                    'path_fallback' => false,
                 ],
-
-                // 2) fallback data-* si votre template les expose
-                'data_attributes' => [
-                    'data-id-everblock',
-                    'data-everblock-id',
-                    'data-id-object',
-                    'data-id',
-                ],
-
-                // 3) fallback meta optionnel
-                'meta_selectors' => [
-                    'meta[name="qcdpb:id_everblock"]',
-                    'meta[name="everblock:id"]',
-                ],
-
-                // 4) fallback querystring et action du formulaire
-                'query_params' => ['id_everblock', 'everblockId', 'id'],
-                'custom_extractors' => ['closest_form_action_query'],
-
-                // 5) draft optionnel: autorise un ID pseudo-stable avant 1er save
-                // Recommandation: conserver la règle "enregistrer d'abord" pour un rattachement définitif
-                'draft_key' => [
-                    'enabled' => true,
-                    'input_selectors' => ['input[name="title_2"]', 'input[name="name"]'],
-                    'data_attributes' => ['data-draft-key'],
-                    'query_params' => ['draft_key', 'draft'],
-                ],
-
-                // 6) fallback final sur segments d'URL (legacy utile)
-                'path_fallback' => true,
+            ],
+            [
+                'target_type' => 'everblock_product_modal',
+                'target_field' => 'content',
+                'controllers' => ['adminproducts', 'adminproductscontroller'],
+                'selectors' => $this->buildQcdBuilderLocalizedSelectors('everblock_modal_content'),
+                'id_resolver' => $this->buildQcdBuilderProductResolver(),
             ],
         ];
+
+        $tabsNumber = max((int) Configuration::get('EVERPS_TAB_NB'), 1);
+        for ($tabNumber = 1; $tabNumber <= $tabsNumber; ++$tabNumber) {
+            $targets[] = [
+                'target_type' => 'everblock_product_tab',
+                'target_field' => 'tab_' . $tabNumber . '_content',
+                'controllers' => ['adminproducts', 'adminproductscontroller'],
+                'selectors' => $this->buildQcdBuilderLocalizedSelectors($tabNumber . '_everblock_content'),
+                'id_resolver' => $this->buildQcdBuilderProductResolver(),
+            ];
+        }
+
+        foreach ($targets as $target) {
+            $params['targets'][] = $target;
+        }
 
         return $params;
+    }
+
+    private function buildQcdBuilderLocalizedSelectors(string $baseName): array
+    {
+        $selectors = [];
+        foreach (Language::getLanguages(false) as $language) {
+            $langId = (int) ($language['id_lang'] ?? 0);
+            if ($langId <= 0) {
+                continue;
+            }
+
+            $fieldName = $baseName . '_' . $langId;
+            $selectors[] = 'textarea[name="' . $fieldName . '"]';
+            $selectors[] = 'textarea[name$="[' . $fieldName . ']"]';
+            $selectors[] = 'textarea[id="' . $fieldName . '"]';
+            $selectors[] = 'textarea[id$="_' . $fieldName . '"]';
+        }
+
+        return array_values(array_unique($selectors));
+    }
+
+    private function buildQcdBuilderEntityResolver(array $queryParams, array $inputSelectors, array $draftInputSelectors): array
+    {
+        return [
+            'input_selectors' => $inputSelectors,
+            'data_attributes' => ['data-id-object', 'data-id', 'data-everblock-id'],
+            'meta_selectors' => [],
+            'query_params' => $queryParams,
+            'custom_extractors' => ['closest_form_action_query'],
+            'draft_key' => [
+                'enabled' => true,
+                'input_selectors' => $draftInputSelectors,
+                'data_attributes' => ['data-draft-key'],
+                'query_params' => ['draft_key', 'draft'],
+            ],
+            'path_fallback' => true,
+        ];
+    }
+
+    private function buildQcdBuilderProductResolver(): array
+    {
+        return [
+            'input_selectors' => [
+                'input[name="id_product"]',
+                'input[name="product[id]"]',
+                'input[name="form[id_product]"]',
+            ],
+            'data_attributes' => [
+                'data-ever-product-id',
+                'data-id-product',
+                'data-product-id',
+                'data-id-object',
+                'data-id',
+            ],
+            'meta_selectors' => ['meta[name="qcdpb:id_product"]', 'meta[name="product:id"]'],
+            'query_params' => ['id_product', 'productId', 'id'],
+            'custom_extractors' => ['closest_form_action_query'],
+            'draft_key' => [
+                'enabled' => true,
+                'input_selectors' => ['input[name="product[reference]"]', 'input[name="form[step1][reference]"]'],
+                'data_attributes' => ['data-draft-key', 'data-reference'],
+                'query_params' => ['draft_key', 'draft', 'reference'],
+            ],
+            'path_fallback' => true,
+        ];
     }
 
     public function hookFilterQcdPageBuilderDeclarativeBlocks(array $params)
@@ -1316,6 +1386,46 @@ class Everblock extends Module
         $this->qcdBuilderModuleResolved = true;
 
         return $this->qcdBuilderModule;
+    }
+
+    public function renderQcdBuilderTargetField(
+        string $targetType,
+        int $targetId,
+        string $targetField,
+        string $nativeContent = '',
+        ?int $idShop = null,
+        ?int $idLang = null
+    ): string {
+        if ($targetId <= 0 || trim($targetType) === '' || trim($targetField) === '') {
+            return $nativeContent;
+        }
+
+        if (!Module::isEnabled('qcdpagebuilder')) {
+            return $nativeContent;
+        }
+
+        $builder = $this->getQcdBuilderModule();
+        if (!$builder || !method_exists($builder, 'renderTargetField')) {
+            return $nativeContent;
+        }
+
+        try {
+            return (string) $builder->renderTargetField(
+                $targetType,
+                $targetId,
+                $targetField,
+                $nativeContent,
+                $idShop,
+                $idLang
+            );
+        } catch (Throwable $exception) {
+            PrestaShopLogger::addLog(
+                'Ever Block QCD Page Builder render failed: ' . $exception->getMessage(),
+                2
+            );
+
+            return $nativeContent;
+        }
     }
 
     public function getContent()
@@ -3586,7 +3696,14 @@ class Everblock extends Module
         foreach ($everpstabs as $everpstab) {
             if (Validate::isLoadedObject($everpstab)) {
                 $title = $everpstab->title;
-                $content = $everpstab->content;
+                $content = $this->renderQcdBuilderTargetField(
+                    'everblock_product_tab',
+                    (int) $product->id,
+                    'tab_' . (int) $everpstab->id_tab . '_content',
+                    (string) $everpstab->content,
+                    (int) $context->shop->id,
+                    (int) $context->language->id
+                );
                 if (!empty($title) || !empty($content)) {
                     $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
                         ->setTitle($title)
@@ -3603,6 +3720,14 @@ class Everblock extends Module
         $content = $contentLangs[
             (int) $context->language->id
         ];
+        $content = $this->renderQcdBuilderTargetField(
+            'everblock_global_tab',
+            (int) $context->shop->id,
+            'content',
+            (string) $content,
+            (int) $context->shop->id,
+            (int) $context->language->id
+        );
         if (!empty($title) && !empty($content)) {
             $tab[] = (new PrestaShop\PrestaShop\Core\Product\ProductExtraContent())
                 ->setTitle($title)
@@ -3617,6 +3742,18 @@ class Everblock extends Module
                 (int) $context->shop->id
             );
             if (!empty($everFaqs)) {
+                foreach ($everFaqs as $everFaq) {
+                    if (is_object($everFaq) && !empty($everFaq->id)) {
+                        $everFaq->content = $this->renderQcdBuilderTargetField(
+                            'everblock_faq',
+                            (int) $everFaq->id,
+                            'content',
+                            (string) ($everFaq->content ?? ''),
+                            (int) $context->shop->id,
+                            (int) $context->language->id
+                        );
+                    }
+                }
                 $template = $this->getProductFaqTemplatePath();
                 $this->context->smarty->assign([
                     'everFaqs' => $everFaqs,
@@ -3909,19 +4046,14 @@ class Everblock extends Module
             if ($isBypassed) {
                 $block['content'] = strip_tags($block['content']);
             }
-            /** @var \Qcdpagebuilder|null $builder */
-            $builder = $this->getQcdBuilderModule();
-
-            $block['content'] = $builder
-                ? (string) $builder->renderTargetField(
-                    'everblock',
-                    (int) $block['id_everblock'],
-                    'content',
-                    (string) $block['content'],
-                    (int) $context->shop->id,
-                    (int) $context->language->id
-                )
-                : (string) $block['content'];
+            $block['content'] = $this->renderQcdBuilderTargetField(
+                'everblock',
+                (int) $block['id_everblock'],
+                'content',
+                (string) $block['content'],
+                (int) $context->shop->id,
+                (int) $context->language->id
+            );
             $currentBlock[] = [
                 'block' => $block,
                 '_everblock_cache_id' => $visibleCacheIds[$index] ?? null,
@@ -4677,7 +4809,14 @@ class Everblock extends Module
         $this->smarty->assign([
             'everblock_modal_id' => (int) $modal->id_everblock_modal,
             'everblock_modal_file' => $modal->file,
-            'everblock_modal_content' => $modal->content[$idLang] ?? '',
+            'everblock_modal_content' => $this->renderQcdBuilderTargetField(
+                'everblock_product_modal',
+                $idProduct,
+                'content',
+                (string) ($modal->content[$idLang] ?? ''),
+                (int) $this->context->shop->id,
+                $idLang
+            ),
             'everblock_modal_button_label' => $buttonLabel,
             'everblock_modal_button_file_url' => $buttonFileUrl,
         ]);
