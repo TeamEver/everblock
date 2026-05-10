@@ -183,6 +183,10 @@ class Everblock extends Module
             return false;
         }
 
+        if (!$this->installExampleBlock()) {
+            return false;
+        }
+
         if (!$this->installTabs()) {
             return false;
         }
@@ -316,6 +320,162 @@ class Everblock extends Module
         }
 
         return true;
+    }
+
+    /**
+     * Cree un bloc d'exemple desactive sur la home avec tous les shortcodes documentes.
+     */
+    private function installExampleBlock(): bool
+    {
+        $idHook = (int) Hook::getIdByName('displayHome');
+        if ($idHook <= 0) {
+            return false;
+        }
+
+        if (!$this->isRegisteredInHook('displayHome') && !$this->registerHook('displayHome')) {
+            return false;
+        }
+
+        $content = $this->buildExampleBlockContent();
+        if ($content === '') {
+            return false;
+        }
+
+        $languages = Language::getLanguages(false);
+        if (empty($languages) && isset($this->context->language->id)) {
+            $languages = [
+                ['id_lang' => (int) $this->context->language->id],
+            ];
+        }
+
+        $shopIds = $this->getInstallShopIds();
+        if (empty($shopIds)) {
+            return false;
+        }
+
+        foreach ($shopIds as $idShop) {
+            $existingBlockId = (int) Db::getInstance()->getValue(
+                'SELECT `id_everblock`
+                FROM `' . _DB_PREFIX_ . 'everblock`
+                WHERE `id_shop` = ' . (int) $idShop . '
+                  AND `name` = "' . pSQL('exemple') . '"'
+            );
+            if ($existingBlockId > 0) {
+                continue;
+            }
+
+            $position = (int) Db::getInstance()->getValue(
+                'SELECT COALESCE(MAX(`position`), 0) + 1
+                FROM `' . _DB_PREFIX_ . 'everblock`
+                WHERE `id_shop` = ' . (int) $idShop . '
+                  AND `id_hook` = ' . (int) $idHook
+            );
+
+            if (!Db::getInstance()->insert('everblock', [
+                'name' => 'exemple',
+                'id_hook' => (int) $idHook,
+                'only_home' => 1,
+                'only_category' => 0,
+                'only_category_product' => 0,
+                'only_manufacturer' => 0,
+                'only_supplier' => 0,
+                'only_cms_category' => 0,
+                'obfuscate_link' => 0,
+                'add_container' => 1,
+                'lazyload' => 0,
+                'device' => 0,
+                'id_shop' => (int) $idShop,
+                'position' => $position,
+                'categories' => json_encode([]),
+                'manufacturers' => json_encode([]),
+                'suppliers' => json_encode([]),
+                'cms_categories' => json_encode([]),
+                'groups' => json_encode([]),
+                'background' => null,
+                'css_class' => null,
+                'data_attribute' => null,
+                'bootstrap_class' => '0',
+                'modal' => 0,
+                'delay' => 0,
+                'timeout' => 0,
+                'date_start' => null,
+                'date_end' => null,
+                'active' => 0,
+            ], true)) {
+                return false;
+            }
+
+            $idBlock = (int) Db::getInstance()->Insert_ID();
+            foreach ($languages as $language) {
+                $idLang = (int) ($language['id_lang'] ?? $language['id'] ?? 0);
+                if ($idLang <= 0) {
+                    continue;
+                }
+
+                if (!Db::getInstance()->execute(
+                    'INSERT INTO `' . _DB_PREFIX_ . 'everblock_lang`
+                    (`id_everblock`, `id_lang`, `content`, `custom_code`)
+                    VALUES (
+                        ' . (int) $idBlock . ',
+                        ' . (int) $idLang . ',
+                        "' . pSQL($content, true) . '",
+                        ""
+                    )'
+                )) {
+                    Db::getInstance()->delete('everblock_lang', '`id_everblock` = ' . (int) $idBlock);
+                    Db::getInstance()->delete('everblock', '`id_everblock` = ' . (int) $idBlock . ' AND `id_shop` = ' . (int) $idShop);
+
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private function buildExampleBlockContent(): string
+    {
+        $shortcodes = [];
+        foreach (ShortcodeDocumentationProvider::getDocumentation($this) as $group) {
+            foreach ((array) ($group['entries'] ?? []) as $entry) {
+                $code = trim((string) ($entry['code'] ?? ''));
+                if ($code === '' || $code === '[storelocator]') {
+                    continue;
+                }
+
+                $shortcodes[] = $code;
+            }
+        }
+
+        $shortcodes = array_values(array_unique($shortcodes));
+        if (empty($shortcodes)) {
+            return '';
+        }
+
+        return '<h2>Exemple shortcodes Ever Block</h2>' . PHP_EOL
+            . implode(PHP_EOL, array_map(static function (string $shortcode): string {
+                return '<p>' . $shortcode . '</p>';
+            }, $shortcodes));
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function getInstallShopIds(): array
+    {
+        $shopIds = [];
+        try {
+            $shopIds = class_exists('Shop') ? (array) Shop::getShops(false, null, true) : [];
+        } catch (Throwable $exception) {
+            $shopIds = [];
+        }
+
+        if (empty($shopIds)) {
+            $shopIds[] = (int) ($this->context->shop->id ?? 0);
+            $shopIds[] = (int) Configuration::get('PS_SHOP_DEFAULT');
+        }
+
+        return array_values(array_unique(array_filter(array_map('intval', $shopIds))));
     }
 
     /**
