@@ -14,6 +14,22 @@ use ZipArchive;
 
 final class AdminConfigurationManager
 {
+    private ?ModuleTranslationManager $translationManager;
+
+    public function __construct(?ModuleTranslationManager $translationManager = null)
+    {
+        $this->translationManager = $translationManager;
+    }
+
+    private function getTranslationManager(): ModuleTranslationManager
+    {
+        if ($this->translationManager === null) {
+            $this->translationManager = new ModuleTranslationManager();
+        }
+
+        return $this->translationManager;
+    }
+
     public function getFormData(\Everblock $module): array
     {
         $data = $module->getAdminConfigurationLegacyFormValues();
@@ -111,7 +127,7 @@ final class AdminConfigurationManager
             'module_version' => $module->version,
             'stats' => $module->getAdminConfigurationModuleStatistics(),
             'stores' => $stores,
-            'translation_files' => (new ModuleTranslationManager())->getAvailableTranslationFiles($module),
+            'translation_files' => $this->getTranslationManager()->getAvailableTranslationFiles($module),
         ];
     }
 
@@ -221,7 +237,7 @@ final class AdminConfigurationManager
         }
         if (Tools::isSubmit('submitGenerateModuleTranslation')) {
             $this->appendTranslationResult(
-                (new ModuleTranslationManager())->generateWithGoogleTranslate(
+                $this->getTranslationManager()->generateWithGoogleTranslate(
                     $module,
                     (string) Tools::getValue('EVERBLOCK_TRANSLATION_TARGET_LANG')
                 ),
@@ -231,7 +247,7 @@ final class AdminConfigurationManager
         }
         if (Tools::isSubmit('submitImportModuleTranslation')) {
             $this->appendTranslationResult(
-                (new ModuleTranslationManager())->importExistingTranslation(
+                $this->getTranslationManager()->importExistingTranslation(
                     $module,
                     (string) Tools::getValue('EVERBLOCK_TRANSLATION_TARGET_LANG'),
                     (string) Tools::getValue('EVERBLOCK_TRANSLATION_IMPORT_FILE')
@@ -242,7 +258,7 @@ final class AdminConfigurationManager
         }
         if (Tools::isSubmit('submitUploadModuleTranslation')) {
             $this->appendTranslationResult(
-                (new ModuleTranslationManager())->uploadAndImportTranslation(
+                $this->getTranslationManager()->uploadAndImportTranslation(
                     $module,
                     (string) Tools::getValue('EVERBLOCK_TRANSLATION_TARGET_LANG'),
                     $_FILES['EVERBLOCK_TRANSLATION_UPLOAD_FILE'] ?? []
