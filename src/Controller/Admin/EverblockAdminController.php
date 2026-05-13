@@ -196,12 +196,12 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     ];
 
     public function __construct(
-        private readonly CommandBusInterface $commandBus,
-        private readonly BlockRepository $blockRepository,
-        private readonly HookRepository $hookRepository,
-        private readonly FormFactoryInterface $formFactory,
-        private readonly AdminConfigurationManager $adminConfigurationManager,
-        private readonly TranslatorInterface $translator
+        private CommandBusInterface $commandBus,
+        private BlockRepository $blockRepository,
+        private HookRepository $hookRepository,
+        private FormFactoryInterface $formFactory,
+        private AdminConfigurationManager $adminConfigurationManager,
+        private TranslatorInterface $translator
     ) {
     }
 

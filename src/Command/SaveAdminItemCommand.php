@@ -7,11 +7,11 @@ namespace Everblock\Tools\Command;
 final class SaveAdminItemCommand
 {
     public function __construct(
-        public readonly string $section,
-        public readonly ?int $id,
-        public readonly int $shopId,
-        public readonly array $data,
-        public readonly array $languages
+        public string $section,
+        public ?int $id,
+        public int $shopId,
+        public array $data,
+        public array $languages
     ) {
     }
 }

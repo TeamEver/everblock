@@ -23,7 +23,7 @@ use Symfony\Component\Form\FormFactoryInterface;
 
 final class AdminSectionGridFactory
 {
-    public function __construct(private readonly FormFactoryInterface $formFactory)
+    public function __construct(private FormFactoryInterface $formFactory)
     {
     }
 

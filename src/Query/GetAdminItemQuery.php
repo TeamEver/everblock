@@ -7,10 +7,10 @@ namespace Everblock\Tools\Query;
 final class GetAdminItemQuery
 {
     public function __construct(
-        public readonly string $section,
-        public readonly ?int $id,
-        public readonly int $shopId,
-        public readonly int $langId
+        public string $section,
+        public ?int $id,
+        public int $shopId,
+        public int $langId
     ) {
     }
 }

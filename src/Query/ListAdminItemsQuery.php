@@ -7,9 +7,9 @@ namespace Everblock\Tools\Query;
 final class ListAdminItemsQuery
 {
     public function __construct(
-        public readonly string $section,
-        public readonly int $shopId,
-        public readonly int $langId
+        public string $section,
+        public int $shopId,
+        public int $langId
     ) {
     }
 }

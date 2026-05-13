@@ -18,11 +18,11 @@ use Everblock\Tools\Repository\ShortcodeRepository;
 final class GetAdminItemHandler
 {
     public function __construct(
-        private readonly BlockRepository $blockRepository,
-        private readonly ShortcodeRepository $shortcodeRepository,
-        private readonly FaqRepository $faqRepository,
-        private readonly PageRepository $pageRepository,
-        private readonly HookRepository $hookRepository
+        private BlockRepository $blockRepository,
+        private ShortcodeRepository $shortcodeRepository,
+        private FaqRepository $faqRepository,
+        private PageRepository $pageRepository,
+        private HookRepository $hookRepository
     ) {
     }
 
