@@ -9,6 +9,11 @@ use Everblock\Tools\Service\EverblockCache;
 
 final class ClearEverblockCacheHandler
 {
+    public function __invoke(ClearEverblockCacheCommand $command): void
+    {
+        $this->handle($command);
+    }
+
     public function handle(ClearEverblockCacheCommand $command): void
     {
         EverblockCache::clearAllModuleCache();

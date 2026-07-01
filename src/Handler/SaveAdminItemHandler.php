@@ -29,6 +29,11 @@ final class SaveAdminItemHandler
     ) {
     }
 
+    public function __invoke(SaveAdminItemCommand $command): int
+    {
+        return $this->handle($command);
+    }
+
     public function handle(SaveAdminItemCommand $command): int
     {
         $previous = $command->id ? $this->previousItem($command) : null;
@@ -132,7 +137,7 @@ final class SaveAdminItemHandler
             if ($rewrite === '' && is_array($page->title) && isset($page->title[$langId])) {
                 $rewrite = trim((string) $page->title[$langId]);
             }
-            $page->link_rewrite[$langId] = Tools::link_rewrite($rewrite);
+            $page->link_rewrite[$langId] = Tools::str2url($rewrite);
         }
 
         return $this->pageRepository->save($page, $command->languages);

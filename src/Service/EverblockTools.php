@@ -6423,7 +6423,7 @@ class EverblockTools
 
         $filenameBase = pathinfo($path, PATHINFO_FILENAME);
         if (!$filenameBase) {
-            $filenameBase = Tools::link_rewrite($title) ?: 'image';
+            $filenameBase = Tools::str2url($title) ?: 'image';
         }
         $filenameBase = self::sanitizeFileName($filenameBase);
         if ($filenameBase === '') {
@@ -6488,7 +6488,7 @@ class EverblockTools
 
     private static function sanitizeFileName(string $fileName): string
     {
-        $normalized = Tools::link_rewrite($fileName);
+        $normalized = Tools::str2url($fileName);
         $normalized = preg_replace('/[^a-z0-9\-]+/i', '-', (string) $normalized);
         $normalized = preg_replace('/-+/', '-', (string) $normalized);
 

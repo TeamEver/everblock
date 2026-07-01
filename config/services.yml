@@ -73,18 +73,23 @@ services:
     Everblock\Tools\Handler\ListAdminItemsHandler:
         tags:
             - { name: tactician.handler, command: Everblock\Tools\Query\ListAdminItemsQuery }
+            - { name: messenger.message_handler, handles: Everblock\Tools\Query\ListAdminItemsQuery }
     Everblock\Tools\Handler\GetAdminItemHandler:
         tags:
             - { name: tactician.handler, command: Everblock\Tools\Query\GetAdminItemQuery }
+            - { name: messenger.message_handler, handles: Everblock\Tools\Query\GetAdminItemQuery }
     Everblock\Tools\Handler\SaveAdminItemHandler:
         tags:
             - { name: tactician.handler, command: Everblock\Tools\Command\SaveAdminItemCommand }
+            - { name: messenger.message_handler, handles: Everblock\Tools\Command\SaveAdminItemCommand }
     Everblock\Tools\Handler\DeleteAdminItemHandler:
         tags:
             - { name: tactician.handler, command: Everblock\Tools\Command\DeleteAdminItemCommand }
+            - { name: messenger.message_handler, handles: Everblock\Tools\Command\DeleteAdminItemCommand }
     Everblock\Tools\Handler\ClearEverblockCacheHandler:
         tags:
             - { name: tactician.handler, command: Everblock\Tools\Command\ClearEverblockCacheCommand }
+            - { name: messenger.message_handler, handles: Everblock\Tools\Command\ClearEverblockCacheCommand }
 
     everblock.tools.import:
         class: Everblock\Tools\Command\ImportFileCommand

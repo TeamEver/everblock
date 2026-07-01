@@ -267,7 +267,7 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
         }
 
         $params = array_merge([
-            'tag' => Tools::link_rewrite($tagName),
+            'tag' => Tools::str2url($tagName),
         ], $params);
 
         return $this->context->link->getPageLink(
@@ -290,9 +290,9 @@ class EverblockFaqsModuleFrontController extends ModuleFrontController
             return $tagName;
         }
 
-        $tagRewrite = Tools::link_rewrite($tagName);
+        $tagRewrite = Tools::str2url($tagName);
         foreach (EverblockFaq::getAllFaq($shopId, (int) $this->context->language->id) as $faq) {
-            if (Tools::link_rewrite((string) $faq->tag_name) === $tagRewrite) {
+            if (Tools::str2url((string) $faq->tag_name) === $tagRewrite) {
                 return (string) $faq->tag_name;
             }
         }

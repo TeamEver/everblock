@@ -24,6 +24,11 @@ final class DeleteAdminItemHandler
     ) {
     }
 
+    public function __invoke(DeleteAdminItemCommand $command): bool
+    {
+        return $this->handle($command);
+    }
+
     public function handle(DeleteAdminItemCommand $command): bool
     {
         $previous = match ($command->section) {

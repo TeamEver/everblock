@@ -277,7 +277,7 @@ class Page
             if (!$rewrite && is_array($this->name)) {
                 $rewrite = $this->name[$langId] ?? '';
             }
-            $this->link_rewrite[$langId] = Tools::link_rewrite((string) $rewrite);
+            $this->link_rewrite[$langId] = Tools::str2url((string) $rewrite);
         }
     }
 }

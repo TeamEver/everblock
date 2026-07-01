@@ -22,6 +22,11 @@ final class ListAdminItemsHandler
     ) {
     }
 
+    public function __invoke(ListAdminItemsQuery $query): array
+    {
+        return $this->handle($query);
+    }
+
     public function handle(ListAdminItemsQuery $query): array
     {
         return match ($query->section) {
