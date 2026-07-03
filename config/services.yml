@@ -27,6 +27,10 @@ services:
 
     Everblock\Tools\Service\AdminConfigurationManager:
         public: true
+        arguments:
+            $translationManager: '@Everblock\Tools\Service\ModuleTranslationManager'
+
+    Everblock\Tools\Service\ModuleTranslationManager: ~
 
     Everblock\Tools\Repository\BlockRepository:
         public: true
