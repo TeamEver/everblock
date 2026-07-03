@@ -9,6 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class HookType extends AbstractType
 {
@@ -19,5 +20,10 @@ final class HookType extends AbstractType
             ->add('title', TextType::class, ['label' => 'Title'])
             ->add('description', TextareaType::class, ['label' => 'Description', 'required' => false])
             ->add('active', CheckboxType::class, ['label' => 'Active', 'required' => false]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults(['languages' => []]);
     }
 }

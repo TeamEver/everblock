@@ -20,6 +20,7 @@ use Everblock\Tools\Repository\BlockRepository;
 use Everblock\Tools\Repository\HookRepository;
 use Everblock\Tools\Service\AdminConfigurationManager;
 use Everblock\Tools\Service\EverblockTools;
+use Everblock\Tools\Service\ModuleTranslationManager;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use Language;
 use Module;
@@ -272,10 +273,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     /**
      * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
      */
-    public function downloadTranslationAction(string $file): Response
+    public function downloadTranslationAction(string $file, ModuleTranslationManager $manager): Response
     {
         $module = Module::getInstanceByName('everblock');
-        $manager = new \Everblock\Tools\Service\ModuleTranslationManager();
         $path = $manager->resolveTranslationFile($module, $file);
         if ($path === null) {
             throw $this->createNotFoundException('Translation file not found.');

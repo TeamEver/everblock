@@ -28,6 +28,9 @@ services:
     Everblock\Tools\Service\AdminConfigurationManager:
         public: true
 
+    Everblock\Tools\Service\ModuleTranslationManager:
+        public: true
+
     Everblock\Tools\Repository\BlockRepository:
         public: true
         arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
