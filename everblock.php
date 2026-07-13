@@ -2423,7 +2423,7 @@ class Everblock extends Module
         }
         Configuration::updateValue(
             'EVERBLOCK_PAGES_BASE_URL',
-            Tools::str2url($pagesBaseUrl)
+            EverblockTools::linkRewrite($pagesBaseUrl)
         );
         $pagesPerPage = (int) Tools::getValue('EVERBLOCK_PAGES_PER_PAGE');
         if ($pagesPerPage <= 0) {
@@ -2439,7 +2439,7 @@ class Everblock extends Module
         }
         Configuration::updateValue(
             'EVERBLOCK_FAQ_BASE_URL',
-            Tools::str2url($faqBaseUrl)
+            EverblockTools::linkRewrite($faqBaseUrl)
         );
         $faqPerPage = (int) Tools::getValue('EVERBLOCK_FAQ_PER_PAGE');
         if ($faqPerPage <= 0) {
@@ -4998,10 +4998,10 @@ class Everblock extends Module
     public function hookModuleRoutes($params)
     {
         $base = Configuration::get('EVERBLOCK_PAGES_BASE_URL') ?: 'guide';
-        $base = Tools::str2url((string) $base);
+        $base = EverblockTools::linkRewrite((string) $base);
 
         $faqBase = Configuration::get('EVERBLOCK_FAQ_BASE_URL') ?: 'faq';
-        $faqBase = Tools::str2url((string) $faqBase);
+        $faqBase = EverblockTools::linkRewrite((string) $faqBase);
 
         return [
             'module-everblock-pages' => [

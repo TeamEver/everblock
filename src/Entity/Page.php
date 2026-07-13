@@ -11,8 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Everblock\Tools\Repository\PageRepository;
 use Everblock\Tools\Repository\RepositoryProvider;
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Service\EverblockTools;
 use Language;
-use Tools;
 
 /**
  * @ORM\Table(name="everblock_page")
@@ -277,7 +277,7 @@ class Page
             if (!$rewrite && is_array($this->name)) {
                 $rewrite = $this->name[$langId] ?? '';
             }
-            $this->link_rewrite[$langId] = Tools::str2url((string) $rewrite);
+            $this->link_rewrite[$langId] = EverblockTools::linkRewrite((string) $rewrite);
         }
     }
 }

@@ -75,6 +75,15 @@ if (!defined('_PS_VERSION_')) {
 
 class EverblockTools
 {
+    public static function linkRewrite(string $value): string
+    {
+        if (method_exists(Tools::class, 'str2url')) {
+            return (string) Tools::str2url($value);
+        }
+
+        return (string) Tools::link_rewrite($value);
+    }
+
     /**
      * Fast pre-check used to avoid running the shortcode engine on pages that
      * do not contain any known token.
@@ -6423,7 +6432,7 @@ class EverblockTools
 
         $filenameBase = pathinfo($path, PATHINFO_FILENAME);
         if (!$filenameBase) {
-            $filenameBase = Tools::str2url($title) ?: 'image';
+            $filenameBase = self::linkRewrite($title) ?: 'image';
         }
         $filenameBase = self::sanitizeFileName($filenameBase);
         if ($filenameBase === '') {
@@ -6488,7 +6497,7 @@ class EverblockTools
 
     private static function sanitizeFileName(string $fileName): string
     {
-        $normalized = Tools::str2url($fileName);
+        $normalized = self::linkRewrite($fileName);
         $normalized = preg_replace('/[^a-z0-9\-]+/i', '-', (string) $normalized);
         $normalized = preg_replace('/-+/', '-', (string) $normalized);
 

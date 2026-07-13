@@ -16,7 +16,6 @@ use Everblock\Tools\Repository\PageRepository;
 use Everblock\Tools\Repository\ShortcodeRepository;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockTools;
-use Tools;
 
 final class SaveAdminItemHandler
 {
@@ -137,7 +136,7 @@ final class SaveAdminItemHandler
             if ($rewrite === '' && is_array($page->title) && isset($page->title[$langId])) {
                 $rewrite = trim((string) $page->title[$langId]);
             }
-            $page->link_rewrite[$langId] = Tools::str2url($rewrite);
+            $page->link_rewrite[$langId] = EverblockTools::linkRewrite($rewrite);
         }
 
         return $this->pageRepository->save($page, $command->languages);
