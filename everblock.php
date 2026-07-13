@@ -92,6 +92,8 @@ class_exists(EverblockTools::class);
 
 class Everblock extends Module
 {
+    private const ADMIN_MENU_ICON = 'view_quilt';
+
     private $postErrors = [];
     private $postSuccess = [];
     private $allowedActions = [
@@ -115,7 +117,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '9.0.2';
+        $this->version = '9.0.3';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -930,15 +932,25 @@ class Everblock extends Module
     {
         $existingId = (int) Tab::getIdFromClassName($className);
         if ($existingId > 0) {
+            $existingTab = new Tab($existingId);
+            $shouldSave = false;
+
             if ($routeName) {
-                $existingTab = new Tab($existingId);
                 if (property_exists($existingTab, 'route_name')) {
                     $existingTab->route_name = $routeName;
-                    $existingTab->save();
+                    $shouldSave = true;
                 }
             }
 
-            return true;
+            if ($className === 'AdminEverBlockParent'
+                && property_exists($existingTab, 'icon')
+                && $existingTab->icon !== self::ADMIN_MENU_ICON
+            ) {
+                $existingTab->icon = self::ADMIN_MENU_ICON;
+                $shouldSave = true;
+            }
+
+            return $shouldSave ? (bool) $existingTab->save() : true;
         }
 
         $parentId = (int) Tab::getIdFromClassName($parentClassName);
@@ -956,8 +968,8 @@ class Everblock extends Module
             $tab->route_name = $routeName;
         }
 
-        if ($className === 'AdminEverBlockParent') {
-            $tab->icon = 'icon-team-ever';
+        if ($className === 'AdminEverBlockParent' && property_exists($tab, 'icon')) {
+            $tab->icon = self::ADMIN_MENU_ICON;
         }
 
         foreach (Language::getLanguages(false) as $lang) {
