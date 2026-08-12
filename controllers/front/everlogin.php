@@ -26,11 +26,18 @@ class EverblockEverloginModuleFrontController extends ModuleFrontController
 {
     public function initContent()
     {
+        if (!$this->module instanceof Everblock) {
+            Tools::redirect('index.php');
+            return;
+        }
+
+        $module = $this->module;
+
         // 🔐 Sécurité du token
         if (
             !Tools::getIsset('evertoken')
-            || Tools::encrypt($this->module->name . '/everlogin') !== Tools::getValue('evertoken')
-            || !Module::isInstalled($this->module->name)
+            || $module->encrypt($module->name . '/everlogin') !== Tools::getValue('evertoken')
+            || !Module::isInstalled($module->name)
         ) {
             Tools::redirect('index.php');
         }

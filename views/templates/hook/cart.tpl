@@ -17,11 +17,11 @@
 *}
 
 <div id="_desktop_cart" class="ever-shopping-cart dropdown blockcart">
-  <a rel="nofollow" aria-label="{l s='Shopping cart link containing %nbProducts% product(s)' sprintf=['%nbProducts%' => $cart.products_count] d='Modules.Everblock.Front'}" href="{$urls.pages.cart}" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown">
+  <span rel="nofollow" aria-label="{l s='Shopping cart link containing %nbProducts% product(s)' sprintf=['%nbProducts%' => $cart.products_count] d='Modules.Everblock.Front'}" data-obflink="{$urls.pages.cart|base64_encode}" class="btn btn-outline-primary dropdown-toggle obflink" data-toggle="dropdown" role="link" tabindex="0">
     <i class="material-icons shopping-cart" aria-hidden="true">shopping_cart</i>
     <span class="hidden-sm-down">{l s='Cart' d='Modules.Everblock.Front'}</span>
     <span class="cart-products-count">({$cart.products_count})</span>
-  </a>
+  </span>
   <div class="dropdown-menu cart-dropdown-content">
     {foreach from=$cart.products item=product}
       <div class="cart-product">
@@ -45,7 +45,7 @@
       <span class="total-label">{l s='Total' d='Modules.Everblock.Front'}</span>
       <span class="total-value">{$cart.totals.total.value}</span>
     </div>
-    <a href="{$urls.pages.cart}" class="btn btn-primary btn-block text-white">{l s='View Cart' d='Modules.Everblock.Front'}</a>
+    <span data-obflink="{$urls.pages.cart|base64_encode}" class="btn btn-primary btn-block text-white obflink" role="link" tabindex="0">{l s='View Cart' d='Modules.Everblock.Front'}</span>
     <a href="{$urls.pages.order}" class="btn btn-primary btn-block text-white">{l s='Checkout' d='Modules.Everblock.Front'}</a>
     {else}
     <div class="cart-total">

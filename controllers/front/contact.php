@@ -179,7 +179,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
                 $decodedRecipients = base64_decode($encodedRecipients, true);
 
                 if ($decodedRecipients !== false && $signature !== '') {
-                    $expectedSignature = Tools::encrypt($decodedRecipients . '|' . (int) $this->context->shop->id);
+                    $expectedSignature = $this->module->encrypt($decodedRecipients . '|' . (int) $this->context->shop->id);
 
                     if ($expectedSignature
                         && Tools::strlen($expectedSignature) === Tools::strlen($signature)

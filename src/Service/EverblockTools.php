@@ -2500,7 +2500,7 @@ class EverblockTools
             if (!empty($validEmails)) {
                 $emailString = implode(',', $validEmails);
                 $encodedEmails = base64_encode($emailString);
-                $signature = Tools::encrypt($emailString . '|' . (int) $context->shop->id);
+                $signature = $module->encrypt($emailString . '|' . (int) $context->shop->id);
                 $field['secure_value'] = $encodedEmails . '::' . $signature;
             }
         }

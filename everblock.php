@@ -5000,11 +5000,15 @@ class Everblock extends Module
 
     public function encrypt($data)
     {
-        if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
+        if (method_exists('Tools', 'encrypt')) {
+            return Tools::encrypt($data);
+        }
+
+        if (method_exists('Tools', 'hash')) {
             return Tools::hash($data);
         }
 
-        return Tools::encrypt($data);
+        return hash('sha256', (string) $data);
     }
 
     public function hookModuleRoutes($params)
