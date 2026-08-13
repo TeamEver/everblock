@@ -227,8 +227,21 @@
         }, 150);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    let resizeListenerBound = false;
+    function bootEverblockSliders() {
         initEverblockSliders();
-        window.addEventListener('resize', handleResize);
-    });
+        if (!resizeListenerBound) {
+            window.addEventListener('resize', handleResize);
+            resizeListenerBound = true;
+        }
+    }
+
+    window.everblockInitSliders = initEverblockSliders;
+    document.addEventListener('everblock:refresh', initEverblockSliders);
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootEverblockSliders);
+    } else {
+        bootEverblockSliders();
+    }
 })();

@@ -528,6 +528,7 @@ $(document).ready(function(){
         // Ouvrir la modal
         everblockShowModal($('#everImageModal'));
     });
+    if (!window.everblockModalFeatureLoaded) {
     $(document).on('submit', '.evercontactform', function(e) {
         e.preventDefault();
         let $form = $(this);
@@ -653,6 +654,7 @@ $(document).ready(function(){
         });
     });
     everblockShowModal($('.everModalAutoTrigger'));
+    }
     // Wheel login modal handlers
     $(document).on('click', '.ever-wheel-login-btn', function(e){
         e.preventDefault();
@@ -3599,6 +3601,7 @@ $(document).ready(function(){
         });
     }
 
+    if (!window.everblockModalFeatureLoaded) {
     var $everblockImageModal = $('#everblockImageModal');
     if ($everblockImageModal.length) {
         $(document).on('click', '.everblock-page__content img', function (event) {
@@ -3633,5 +3636,6 @@ $(document).ready(function(){
             }
         }
     });
+    }
 
 });

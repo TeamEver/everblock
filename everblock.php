@@ -563,19 +563,12 @@ class Everblock extends Module
             ],
             'javascripts' => [
                 [
-                    'id' => 'module-' . $this->name . '-builder-blocks-js',
-                    'path' => 'modules/' . $this->name . '/views/js/' . $this->name . '.js',
+                    'id' => 'module-' . $this->name . '-builder-blocks-loader-js',
+                    'path' => 'modules/' . $this->name . '/views/js/' . $this->name . '-loader.js',
                     'options' => [
                         'position' => 'bottom',
                         'priority' => 200,
-                    ],
-                ],
-                [
-                    'id' => 'module-' . $this->name . '-builder-blocks-slider-js',
-                    'path' => 'modules/' . $this->name . '/views/js/everblock-slider.js',
-                    'options' => [
-                        'position' => 'bottom',
-                        'priority' => 210,
+                        'version' => $this->version,
                     ],
                 ],
             ],
@@ -4414,14 +4407,9 @@ class Everblock extends Module
             );
         }
         $this->context->controller->registerJavascript(
-            'module-' . $this->name . '-js',
-            'modules/' . $this->name . '/views/js/' . $this->name . '.js',
-            ['position' => 'bottom', 'priority' => 200]
-        );
-        $this->context->controller->registerJavascript(
-            'module-' . $this->name . '-slider-js',
-            'modules/' . $this->name . '/views/js/everblock-slider.js',
-            ['position' => 'bottom', 'priority' => 200]
+            'module-' . $this->name . '-loader-js',
+            'modules/' . $this->name . '/views/js/' . $this->name . '-loader.js',
+            ['position' => 'bottom', 'priority' => 200, 'version' => $this->version]
         );
         if ((bool) EverblockCache::getModuleConfiguration('EVERBLOCK_USE_OBF') === true) {
             $this->context->controller->registerJavascript(
@@ -4516,6 +4504,8 @@ class Everblock extends Module
             'evermodal_link' => $modalLink,
             'everblock_token' => Tools::getToken(),
             'everblock_is_employee' => $employeeLogged,
+            'everblock_js_base_url' => $this->_path . 'views/js/',
+            'everblock_js_version' => $this->version,
         ]);
         $filePath = _PS_MODULE_DIR_ . $this->name . '/views/js/header-scripts-' . $this->context->shop->id . '.js';
         if (file_exists($filePath) && filesize($filePath) > 0) {
