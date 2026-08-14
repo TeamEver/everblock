@@ -2733,21 +2733,28 @@ class EverblockTools
     {
         preg_match_all('/\[everblock\s+(\d+)\]/i', $txt, $matches);
 
+        $idLang = (int) $context->language->id;
+        $idShop = (int) $context->shop->id;
+
         foreach ($matches[1] as $match) {
             $everblockId = (int) $match;
+
             $everblock = new EverblockClass(
-                (int) $everblockId,
-                (int) $context->language->id,
-                (int) $context->shop->id
+                $everblockId,
+                $idLang,
+                $idShop
             );
+
             $shortcode = '[everblock ' . $everblockId . ']';
+
             if (Validate::isLoadedObject($everblock)) {
-                $replacement = $everblock->content;
+                $replacement = (string) ($everblock->content[$idLang] ?? '');
                 $txt = str_replace($shortcode, $replacement, $txt);
             } else {
                 $txt = str_replace($shortcode, '', $txt);
             }
         }
+
         return $txt;
     }
 
