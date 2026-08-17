@@ -15,6 +15,8 @@ use Language;
  */
 class Modal
 {
+    use MultilangFields;
+
     /**
      * @ORM\Id
      * @ORM\Column(name="id_everblock_modal", type="integer")
@@ -39,9 +41,11 @@ class Modal
 
     public function __construct(?int $id = null, ?int $idLang = null, ?int $idShop = null)
     {
-        unset($idLang, $idShop);
+        // $idLang n'est pas utilise ici : les champs traduits restent des tableaux,
+        // ils se lisent via getContent() / getButtonLabel().
+        unset($idLang);
         if ($id !== null && $id > 0) {
-            $loaded = self::repository()->findModal($id);
+            $loaded = self::repository()->findModal($id, $idShop);
             if ($loaded instanceof self) {
                 foreach (get_object_vars($loaded) as $property => $value) {
                     $this->{$property} = $value;
@@ -90,6 +94,22 @@ class Modal
     public function delete(): bool
     {
         return !$this->id || self::repository()->deleteModal($this->id);
+    }
+
+    /**
+     * Retourne le contenu traduit du modal.
+     */
+    public function getContent(?int $idLang = null): string
+    {
+        return $this->translated($this->content, $idLang);
+    }
+
+    /**
+     * Retourne le libelle de bouton traduit du modal.
+     */
+    public function getButtonLabel(?int $idLang = null): string
+    {
+        return $this->translated($this->button_label, $idLang);
     }
 
     public static function getByProductId(int $idProduct, int $idShop): self

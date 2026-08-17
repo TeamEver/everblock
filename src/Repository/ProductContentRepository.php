@@ -185,11 +185,18 @@ final class ProductContentRepository extends AbstractEverblockRepository
         return $this->connection->delete($this->databasePrefix . 'everblock_flags', ['id_everblock_flags' => $id]) > 0;
     }
 
-    public function findModal(int $id): ?Modal
+    public function findModal(int $id, ?int $shopId = null): ?Modal
     {
+        $where = 'id_everblock_modal = :id';
+        $params = ['id' => $id];
+        if ($shopId !== null && $shopId > 0) {
+            $where .= ' AND id_shop = :shopId';
+            $params['shopId'] = $shopId;
+        }
+
         $row = $this->connection->fetchAssociative(
-            'SELECT * FROM ' . $this->table('everblock_modal') . ' WHERE id_everblock_modal = :id',
-            ['id' => $id]
+            'SELECT * FROM ' . $this->table('everblock_modal') . ' WHERE ' . $where,
+            $params
         );
         if (!$row) {
             return null;
@@ -206,7 +213,7 @@ final class ProductContentRepository extends AbstractEverblockRepository
             ['productId' => $productId, 'shopId' => $shopId]
         );
 
-        return $id ? $this->findModal((int) $id) : null;
+        return $id ? $this->findModal((int) $id, $shopId) : null;
     }
 
     public function saveModal(Modal $modal, array $languages): int

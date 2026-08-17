@@ -16,6 +16,8 @@ use Language;
  */
 class Block
 {
+    use MultilangFields;
+
     /**
      * @ORM\Id
      * @ORM\Column(name="id_everblock", type="integer")
@@ -120,26 +122,6 @@ class Block
     public function getCustomCode(?int $idLang = null): string
     {
         return $this->translated($this->custom_code, $idLang);
-    }
-
-    /**
-     * Resout une valeur multilang : langue demandee, puis langue par defaut,
-     * puis premiere traduction disponible.
-     *
-     * @param array<int, string> $values
-     */
-    private function translated(array $values, ?int $idLang): string
-    {
-        if ($idLang !== null && isset($values[$idLang])) {
-            return (string) $values[$idLang];
-        }
-
-        $default = (int) \Configuration::get('PS_LANG_DEFAULT');
-        if ($default > 0 && isset($values[$default])) {
-            return (string) $values[$default];
-        }
-
-        return $values !== [] ? (string) reset($values) : '';
     }
 
     public static function repository(): BlockRepository
@@ -299,12 +281,18 @@ class Block
 
     private static function findAllForShopLegacy(int $idLang, int $idShop): array
     {
+        $idLangDefault = (int) \Configuration::get('PS_LANG_DEFAULT');
+
         return (array) \Db::getInstance()->executeS(
-            'SELECT b.*, bl.content, bl.custom_code
+            'SELECT b.*,
+                COALESCE(NULLIF(bl.content, \'\'), NULLIF(bld.content, \'\'), \'\') AS content,
+                COALESCE(NULLIF(bl.custom_code, \'\'), NULLIF(bld.custom_code, \'\'), \'\') AS custom_code
             FROM `' . _DB_PREFIX_ . 'everblock` b
-            LEFT JOIN `' . _DB_PREFIX_ . 'everblock_lang` bl ON b.id_everblock = bl.id_everblock
-            WHERE bl.id_lang = ' . (int) $idLang . '
-              AND b.id_shop = ' . (int) $idShop . '
+            LEFT JOIN `' . _DB_PREFIX_ . 'everblock_lang` bl
+                ON b.id_everblock = bl.id_everblock AND bl.id_lang = ' . (int) $idLang . '
+            LEFT JOIN `' . _DB_PREFIX_ . 'everblock_lang` bld
+                ON b.id_everblock = bld.id_everblock AND bld.id_lang = ' . $idLangDefault . '
+            WHERE b.id_shop = ' . (int) $idShop . '
             ORDER BY b.position ASC'
         );
     }
@@ -341,12 +329,18 @@ class Block
 
     private static function findActiveForHookLegacy(int $idHook, int $idLang, int $idShop): array
     {
+        $idLangDefault = (int) \Configuration::get('PS_LANG_DEFAULT');
+
         return (array) \Db::getInstance()->executeS(
-            'SELECT b.*, bl.content, bl.custom_code
+            'SELECT b.*,
+                COALESCE(NULLIF(bl.content, \'\'), NULLIF(bld.content, \'\'), \'\') AS content,
+                COALESCE(NULLIF(bl.custom_code, \'\'), NULLIF(bld.custom_code, \'\'), \'\') AS custom_code
             FROM `' . _DB_PREFIX_ . 'everblock` b
-            LEFT JOIN `' . _DB_PREFIX_ . 'everblock_lang` bl ON b.id_everblock = bl.id_everblock
+            LEFT JOIN `' . _DB_PREFIX_ . 'everblock_lang` bl
+                ON b.id_everblock = bl.id_everblock AND bl.id_lang = ' . (int) $idLang . '
+            LEFT JOIN `' . _DB_PREFIX_ . 'everblock_lang` bld
+                ON b.id_everblock = bld.id_everblock AND bld.id_lang = ' . $idLangDefault . '
             WHERE b.id_hook = ' . (int) $idHook . '
-              AND bl.id_lang = ' . (int) $idLang . '
               AND b.id_shop = ' . (int) $idShop . '
               AND b.active = 1
             ORDER BY b.position ASC'

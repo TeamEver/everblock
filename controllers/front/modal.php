@@ -77,9 +77,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             if (!Validate::isLoadedObject($modal)) {
                 die();
             }
-            $content = isset($modal->content[$this->context->language->id])
-                ? $modal->content[$this->context->language->id]
-                : '';
+            $content = $modal->getContent((int) $this->context->language->id);
             $content = $module->renderQcdBuilderTargetField(
                 'everblock_product_modal',
                 (int) $modal->id_product,
@@ -145,9 +143,7 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
         }
         if ($showModal) {
             $idLang = (int) $this->context->language->id;
-            $blockContent = is_array($block->content)
-                ? (string) ($block->content[$idLang] ?? '')
-                : (string) $block->content;
+            $blockContent = $block->getContent($idLang);
             $blockContent = $module->renderQcdBuilderTargetField(
                 'everblock',
                 (int) $block->id,

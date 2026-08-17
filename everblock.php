@@ -4712,7 +4712,9 @@ class Everblock extends Module
                 (int) $this->context->shop->id
             );
 
-            $state['content'] = Validate::isLoadedObject($everblock) ? $everblock->content : '';
+            $state['content'] = Validate::isLoadedObject($everblock)
+                ? $everblock->getContent((int) $this->context->language->id)
+                : '';
         }
         unset($state);
 
@@ -4951,7 +4953,8 @@ class Everblock extends Module
         $idLang = (int) $this->context->language->id;
 
         // Cas 1 : contenu texte dispo
-        $hasContent = !empty($modal->content[$idLang]);
+        $modalContent = $modal->getContent($idLang);
+        $hasContent = $modalContent !== '';
 
         // Cas 2 : fichier image dispo
         $hasFile = !empty($modal->file);
@@ -4960,10 +4963,7 @@ class Everblock extends Module
             return;
         }
 
-        $buttonLabel = '';
-        if (is_array($modal->button_label) && isset($modal->button_label[$idLang])) {
-            $buttonLabel = (string) $modal->button_label[$idLang];
-        }
+        $buttonLabel = $modal->getButtonLabel($idLang);
 
         $buttonFileUrl = '';
         if (!empty($modal->button_file)) {
@@ -4977,7 +4977,7 @@ class Everblock extends Module
                 'everblock_product_modal',
                 $idProduct,
                 'content',
-                (string) ($modal->content[$idLang] ?? ''),
+                $modalContent,
                 (int) $this->context->shop->id,
                 $idLang
             ),

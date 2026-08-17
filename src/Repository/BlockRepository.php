@@ -49,27 +49,45 @@ final class BlockRepository extends AbstractEverblockRepository
     public function findAllForShop(int $langId, int $shopId): array
     {
         return $this->connection->fetchAllAssociative(
-            'SELECT b.*, bl.content, bl.custom_code
+            'SELECT b.*,
+                COALESCE(NULLIF(bl.content, \'\'), NULLIF(bld.content, \'\'), \'\') AS content,
+                COALESCE(NULLIF(bl.custom_code, \'\'), NULLIF(bld.custom_code, \'\'), \'\') AS custom_code
             FROM ' . $this->table('everblock') . ' b
-            LEFT JOIN ' . $this->table('everblock_lang') . ' bl ON b.id_everblock = bl.id_everblock
-            WHERE bl.id_lang = :langId AND b.id_shop = :shopId
+            LEFT JOIN ' . $this->table('everblock_lang') . ' bl
+                ON b.id_everblock = bl.id_everblock AND bl.id_lang = :langId
+            LEFT JOIN ' . $this->table('everblock_lang') . ' bld
+                ON b.id_everblock = bld.id_everblock AND bld.id_lang = :langIdDefault
+            WHERE b.id_shop = :shopId
             ORDER BY b.position ASC',
-            ['langId' => $langId, 'shopId' => $shopId]
+            [
+                'langId' => $langId,
+                'langIdDefault' => (int) \Configuration::get('PS_LANG_DEFAULT'),
+                'shopId' => $shopId,
+            ]
         );
     }
 
     public function findActiveForHook(int $hookId, int $langId, int $shopId): array
     {
         return $this->connection->fetchAllAssociative(
-            'SELECT b.*, bl.content, bl.custom_code
+            'SELECT b.*,
+                COALESCE(NULLIF(bl.content, \'\'), NULLIF(bld.content, \'\'), \'\') AS content,
+                COALESCE(NULLIF(bl.custom_code, \'\'), NULLIF(bld.custom_code, \'\'), \'\') AS custom_code
             FROM ' . $this->table('everblock') . ' b
-            LEFT JOIN ' . $this->table('everblock_lang') . ' bl ON b.id_everblock = bl.id_everblock
+            LEFT JOIN ' . $this->table('everblock_lang') . ' bl
+                ON b.id_everblock = bl.id_everblock AND bl.id_lang = :langId
+            LEFT JOIN ' . $this->table('everblock_lang') . ' bld
+                ON b.id_everblock = bld.id_everblock AND bld.id_lang = :langIdDefault
             WHERE b.id_hook = :hookId
-              AND bl.id_lang = :langId
               AND b.id_shop = :shopId
               AND b.active = 1
             ORDER BY b.position ASC',
-            ['hookId' => $hookId, 'langId' => $langId, 'shopId' => $shopId]
+            [
+                'hookId' => $hookId,
+                'langId' => $langId,
+                'langIdDefault' => (int) \Configuration::get('PS_LANG_DEFAULT'),
+                'shopId' => $shopId,
+            ]
         );
     }
 

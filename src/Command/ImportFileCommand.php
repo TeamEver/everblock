@@ -131,11 +131,14 @@ class ImportFileCommand extends Command
             );
             return;
         }
+        $idLang = (int) $line['id_lang'];
         $create = false;
         if (isset($line['id_everblock']) && Validate::isUnsignedInt($line['id_everblock']) && (int)$line['id_everblock'] > 0) {
+            // Aucun id_lang transmis volontairement : le bloc doit etre charge avec
+            // toutes ses traductions, sinon save() ecraserait les autres langues.
             $block = new EverBlockClass(
                 (int) $line['id_everblock'],
-                (int) $line['id_lang'],
+                null,
                 (int) $line['id_shop']
             );
             if (!Validate::isLoadedObject($block)) {
@@ -207,17 +210,16 @@ class ImportFileCommand extends Command
                     '<error>content column is not valid : ' . $line['content'] . '</error>'
                 );
             } else {
-                $block->content = $line['content'];
+                $block->content[$idLang] = (string) $line['content'];
             }
         }
         if (isset($line['custom_code'])) {
-            // huh ?
             if (!Validate::isString((string) $line['custom_code'])) {
                 $output->writeln(
                     '<error>custom_code column is not valid : ' . $line['custom_code'] . '</error>'
                 );
             } else {
-                $block->custom_code = $line['custom_code'];
+                $block->custom_code[$idLang] = (string) $line['custom_code'];
             }
         }
         if (isset($line['only_category'])) {
