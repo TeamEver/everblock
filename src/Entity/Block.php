@@ -102,6 +102,46 @@ class Block
         }
     }
 
+    /**
+     * Retourne le contenu traduit du bloc.
+     *
+     * Les champs multilang sont stockes sous forme de tableaux indexes par
+     * id_lang : cette classe n'est pas un ObjectModel, passer un id_lang au
+     * constructeur restreint les lignes chargees mais ne les aplatit pas.
+     */
+    public function getContent(?int $idLang = null): string
+    {
+        return $this->translated($this->content, $idLang);
+    }
+
+    /**
+     * Retourne le code personnalise traduit du bloc.
+     */
+    public function getCustomCode(?int $idLang = null): string
+    {
+        return $this->translated($this->custom_code, $idLang);
+    }
+
+    /**
+     * Resout une valeur multilang : langue demandee, puis langue par defaut,
+     * puis premiere traduction disponible.
+     *
+     * @param array<int, string> $values
+     */
+    private function translated(array $values, ?int $idLang): string
+    {
+        if ($idLang !== null && isset($values[$idLang])) {
+            return (string) $values[$idLang];
+        }
+
+        $default = (int) \Configuration::get('PS_LANG_DEFAULT');
+        if ($default > 0 && isset($values[$default])) {
+            return (string) $values[$default];
+        }
+
+        return $values !== [] ? (string) reset($values) : '';
+    }
+
     public static function repository(): BlockRepository
     {
         /** @var BlockRepository $repository */

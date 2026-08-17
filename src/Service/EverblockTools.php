@@ -2731,31 +2731,26 @@ class EverblockTools
      */
     public static function getEverBlockShortcode(string $txt, Context $context): string
     {
-        preg_match_all('/\[everblock\s+(\d+)\]/i', $txt, $matches);
-
         $idLang = (int) $context->language->id;
         $idShop = (int) $context->shop->id;
 
-        foreach ($matches[1] as $match) {
-            $everblockId = (int) $match;
+        return (string) preg_replace_callback(
+            '/\[everblock\s+(\d+)\]/i',
+            static function (array $matches) use ($idLang, $idShop): string {
+                $everblock = new EverblockClass(
+                    (int) $matches[1],
+                    $idLang,
+                    $idShop
+                );
 
-            $everblock = new EverblockClass(
-                $everblockId,
-                $idLang,
-                $idShop
-            );
+                if (!Validate::isLoadedObject($everblock)) {
+                    return '';
+                }
 
-            $shortcode = '[everblock ' . $everblockId . ']';
-
-            if (Validate::isLoadedObject($everblock)) {
-                $replacement = (string) ($everblock->content[$idLang] ?? '');
-                $txt = str_replace($shortcode, $replacement, $txt);
-            } else {
-                $txt = str_replace($shortcode, '', $txt);
-            }
-        }
-
-        return $txt;
+                return $everblock->getContent($idLang);
+            },
+            $txt
+        );
     }
 
     /**
