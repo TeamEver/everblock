@@ -71,7 +71,7 @@ everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Faq::class, 'EverblockFaq',
 everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Modal::class, 'EverblockModal', 'src/Entity/Modal.php');
 everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Page::class, 'EverblockPage', 'src/Entity/Page.php');
 
-use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\AdminConfigurationManager;
 use Everblock\Tools\Service\EverblockCache;
@@ -84,7 +84,7 @@ use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 use PrestaShop\PrestaShop\Core\Product\ProductExtraContent;
-use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
+use PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter;
 use ScssPhp\ScssPhp\Compiler;
 use Symfony\Component\Form\FormBuilderInterface;
 
@@ -126,7 +126,7 @@ class Everblock extends Module
         $this->description = $this->l('Add HTML block everywhere !');
         $this->confirmUninstall = $this->l('Do yo really want to uninstall this module ?');
         $this->ps_versions_compliancy = [
-            'min' => '1.7',
+            'min' => '8.0.0',
             'max' => _PS_VERSION_,
         ];
     }

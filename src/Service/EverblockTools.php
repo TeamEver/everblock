@@ -51,11 +51,11 @@ use NewsletterProSubscription;
 use Manufacturer;
 use PrestaShop\Module\PrestashopCheckout\Order\PaymentStepCheckoutOrderBuilder;
 use PrestaShop\PrestaShop\Adapter\Configuration as ConfigurationAdapter;
-use PrestaShop\PrestaShop\Core\Product\ProductPresenter;
+use PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
-use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
+use PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter;
 use PrestaShop\PrestaShop\Adapter\StockManager as StockManagerAdapter;
 use PrestaShopDatabaseException;
 use PrestaShopException;
@@ -2616,7 +2616,11 @@ class EverblockTools
         if (isset($context->cart) && $context->cart->id) {
             $total = $context->cart->getOrderTotal(true, Cart::BOTH);
         }
-        $formatted = Tools::displayPrice($total, $context->currency);
+        // Tools::displayPrice a ete supprime en PS9 ; getContextLocale existe en PS8 comme en PS9.
+        $currencyIso = isset($context->currency->iso_code)
+            ? (string) $context->currency->iso_code
+            : (string) Currency::getIsoCodeById((int) Configuration::get('PS_CURRENCY_DEFAULT'));
+        $formatted = Tools::getContextLocale($context)->formatPrice($total, $currencyIso);
         $txt = str_replace('[cart_total]', $formatted, $txt);
         return $txt;
     }
@@ -5272,28 +5276,15 @@ class EverblockTools
             $presenterFactory = new \ProductPresenterFactory($context);
             $presentationSettings = $presenterFactory->getPresentationSettings();
 
-            // compatibilité PS 8 et PS 9
-            if (class_exists(\PrestaShop\PrestaShop\Core\Product\ProductListingPresenter::class)) {
-                // PS 1.7 / 8
-                $presenter = new \PrestaShop\PrestaShop\Core\Product\ProductListingPresenter(
-                    new ImageRetriever($context->link),
-                    $context->link,
-                    new PriceFormatter(),
-                    new ProductColorsRetriever(),
-                    $context->getTranslator()
-                );
-            } elseif (class_exists(\PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter::class)) {
-                // PS 9
-                $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter(
-                    new ImageRetriever($context->link),
-                    $context->link,
-                    new PriceFormatter(),
-                    new ProductColorsRetriever(),
-                    $context->getTranslator()
-                );
-            } else {
-                throw new \Exception('No suitable product presenter class found for this PrestaShop version.');
-            }
+            // Presenter commun a PS8 et PS9 : les alias Core\Product\* etaient deprecies
+            // depuis 1.7.4 et ont ete supprimes en PS9, l'implementation Adapter existe dans les deux.
+            $presenter = new ProductListingPresenter(
+                new ImageRetriever($context->link),
+                $context->link,
+                new PriceFormatter(),
+                new ProductColorsRetriever(),
+                $context->getTranslator()
+            );
 
             $presentationSettings->showPrices = true;
 

@@ -92,6 +92,7 @@ return [
     'src/Entity/Block.php',
     'src/Entity/Faq.php',
     'src/Entity/Modal.php',
+    'src/Entity/MultilangFields.php',
     'src/Entity/Page.php',
     'src/Entity/ProductFlag.php',
     'src/Entity/ProductTab.php',
