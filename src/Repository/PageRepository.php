@@ -41,25 +41,43 @@ final class PageRepository extends AbstractEverblockRepository
         return Page::fromDatabase($row, $this->langRows('everblock_page_lang', 'id_everblock_page', $id), $langId);
     }
 
-    public function findPages(int $langId, int $shopId, bool $onlyActive = true, int $page = 1, ?int $perPage = null): array
+    public function findPages(
+        int $langId,
+        int $shopId,
+        bool $onlyActive = true,
+        int $page = 1,
+        ?int $perPage = null,
+        ?int $fallbackLangId = null
+    ): array
     {
         $where = 'p.id_shop = :shopId';
         if ($onlyActive) {
             $where .= ' AND p.active = 1';
         }
+        $fallbackLangId = $fallbackLangId !== null && $fallbackLangId > 0 ? $fallbackLangId : $langId;
         $limitSql = '';
         if ($perPage !== null && $perPage > 0) {
             $limitSql = ' LIMIT ' . (int) $perPage . ' OFFSET ' . max(0, ($page - 1) * $perPage);
         }
 
         $rows = $this->connection->fetchAllAssociative(
-            'SELECT p.*, pl.*, pl.id_lang
+            'SELECT p.*,
+                :langId AS id_lang,
+                COALESCE(NULLIF(pl.name, \'\'), fallback_pl.name, \'\') AS name,
+                COALESCE(NULLIF(pl.title, \'\'), fallback_pl.title, \'\') AS title,
+                COALESCE(NULLIF(pl.meta_description, \'\'), fallback_pl.meta_description, \'\') AS meta_description,
+                COALESCE(NULLIF(pl.short_description, \'\'), fallback_pl.short_description, \'\') AS short_description,
+                COALESCE(NULLIF(pl.link_rewrite, \'\'), fallback_pl.link_rewrite, \'\') AS link_rewrite,
+                COALESCE(NULLIF(pl.content, \'\'), fallback_pl.content, \'\') AS content
             FROM ' . $this->table('everblock_page') . ' p
-            INNER JOIN ' . $this->table('everblock_page_lang') . ' pl
+            LEFT JOIN ' . $this->table('everblock_page_lang') . ' pl
                 ON p.id_everblock_page = pl.id_everblock_page AND pl.id_lang = :langId
+            LEFT JOIN ' . $this->table('everblock_page_lang') . ' fallback_pl
+                ON p.id_everblock_page = fallback_pl.id_everblock_page AND fallback_pl.id_lang = :fallbackLangId
             WHERE ' . $where . '
+                AND (pl.id_everblock_page IS NOT NULL OR fallback_pl.id_everblock_page IS NOT NULL)
             ORDER BY p.position ASC, p.date_add DESC' . $limitSql,
-            ['shopId' => $shopId, 'langId' => $langId]
+            ['shopId' => $shopId, 'langId' => $langId, 'fallbackLangId' => $fallbackLangId]
         );
 
         return array_map(static fn (array $row): Page => Page::fromDatabase($row, [], $langId), $rows);

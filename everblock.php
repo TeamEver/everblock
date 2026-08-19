@@ -117,7 +117,7 @@ class Everblock extends Module
     {
         $this->name = 'everblock';
         $this->tab = 'front_office_features';
-        $this->version = '9.0.3';
+        $this->version = '9.0.5';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -490,15 +490,46 @@ class Everblock extends Module
             'filterQcdPageBuilderDeclarativeBlocks',
             'filterQcdPageBuilderThirdPartyBlockFrontRender',
             'filterQcdPageBuilderThirdPartyBlockFrontAssets',
+            'actionQcdPageBuilderRenderBlock',
+            'actionQcdPageBuilderBeforeRenderBlockEverblockLatestPages',
         ];
 
         foreach ($hooksToRegister as $hookName) {
+            if (!$this->createHookIfNotExists(
+                $hookName,
+                $hookName,
+                'QCD Page Builder integration hook'
+            )) {
+                return false;
+            }
+
             if (!$this->isRegisteredInHook($hookName) && !$this->registerHook($hookName)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private function ensureQcdBuilderHooksRegistered(): void
+    {
+        static $checked = false;
+
+        if ($checked) {
+            return;
+        }
+
+        $checked = true;
+
+        try {
+            if (class_exists('Module') && method_exists('Module', 'isEnabled') && !Module::isEnabled('qcdpagebuilder')) {
+                return;
+            }
+
+            $this->registerQcdBuilderHooks();
+        } catch (Throwable $exception) {
+            PrestaShopLogger::addLog($this->name . ' | QCD Builder hooks registration failed: ' . $exception->getMessage(), 2);
+        }
     }
 
     public function hookFilterQcdPageBuilderThirdPartyBlockFrontAssets(array $params)
@@ -1414,6 +1445,8 @@ class Everblock extends Module
 
     public function hookFilterQcdPageBuilderDeclarativeBlocks(array $params)
     {
+        $this->ensureQcdBuilderHooksRegistered();
+
         $everblockLogo = 'modules/' . $this->name . '/views/img/svg/grid.svg';
         $shortcodeLogo = 'modules/' . $this->name . '/views/img/svg/copy.svg';
         $faqLogo = 'modules/' . $this->name . '/views/img/svg/help.svg';
@@ -1422,7 +1455,7 @@ class Everblock extends Module
         $everblockTemplate = 'views/templates/hook/everblock.tpl';
         $shortcodeTemplate = 'views/templates/hook/everblock.tpl';
         $faqTemplate = 'views/templates/hook/faq.tpl';
-        $pagesTemplate = 'views/templates/front/pages.tpl';
+        $pagesTemplate = 'views/templates/front/pages-alt.tpl';
 
         return [
             [
@@ -1532,6 +1565,26 @@ class Everblock extends Module
             $this->getQcdBuilderModule()
         );
         $renderer->renderFromHookFilterQcdPageBuilderThirdPartyBlockFrontRender($params);
+    }
+
+    public function hookActionQcdPageBuilderRenderBlock(array $params)
+    {
+        $renderer = new QcdThirdPartyBlockRenderer(
+            $this,
+            $this->context,
+            $this->getQcdBuilderModule()
+        );
+        $renderer->renderFromHookActionQcdPageBuilderRenderBlock($params);
+    }
+
+    public function hookActionQcdPageBuilderBeforeRenderBlockEverblockLatestPages(array $params)
+    {
+        $renderer = new QcdThirdPartyBlockRenderer(
+            $this,
+            $this->context,
+            $this->getQcdBuilderModule()
+        );
+        $renderer->renderFromHookActionQcdPageBuilderBeforeRenderBlockEverblockLatestPages($params);
     }
 
     private function getQcdBuilderModule(): ?Module
@@ -4322,6 +4375,8 @@ class Everblock extends Module
 
     public function hookDisplayHeader()
     {
+        $this->ensureQcdBuilderHooksRegistered();
+
         if (Tools::getValue('eac')
             && Validate::isInt(Tools::getValue('eac'))
         ) {
@@ -5003,6 +5058,8 @@ class Everblock extends Module
 
     public function hookModuleRoutes($params)
     {
+        $this->ensureQcdBuilderHooksRegistered();
+
         $base = Configuration::get('EVERBLOCK_PAGES_BASE_URL') ?: 'guide';
         $base = EverblockTools::linkRewrite((string) $base);
 

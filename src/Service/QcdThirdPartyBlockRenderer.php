@@ -21,6 +21,7 @@
 namespace Everblock\Tools\Service;
 
 use Context;
+use Configuration;
 use EverBlockClass;
 use Everblock;
 use EverblockPage;
@@ -51,6 +52,21 @@ class QcdThirdPartyBlockRenderer
     }
 
     public function renderFromHookFilterQcdPageBuilderThirdPartyBlockFrontRender(array &$params): void
+    {
+        $this->renderFromQcdPageBuilderContext($params);
+    }
+
+    public function renderFromHookActionQcdPageBuilderRenderBlock(array &$params): void
+    {
+        $this->renderFromQcdPageBuilderContext($params);
+    }
+
+    public function renderFromHookActionQcdPageBuilderBeforeRenderBlockEverblockLatestPages(array &$params): void
+    {
+        $this->renderFromQcdPageBuilderContext($params);
+    }
+
+    private function renderFromQcdPageBuilderContext(array &$params): void
     {
         if (!isset($params['context']) || !is_array($params['context'])) {
             return;
@@ -146,9 +162,7 @@ class QcdThirdPartyBlockRenderer
         }
 
         $context['owner_module'] = $this->module->name;
-        if ($this->shouldUseAlternatePagesTemplate($context)) {
-            $context['template'] = 'views/templates/front/pages-alt.tpl';
-        }
+        $context['template'] = 'views/templates/front/pages-alt.tpl';
 
         $limit = (int) $this->getContextValue($context, [
             ['normalized', 'attributes', 'limit'],
@@ -173,14 +187,7 @@ class QcdThirdPartyBlockRenderer
         ]);
 
         if (!isset($latestPagesCache[$cacheKey])) {
-            $latestPagesCache[$cacheKey] = EverblockPage::getPages(
-                (int) $this->context->language->id,
-                (int) $this->context->shop->id,
-                true,
-                $customerGroups,
-                1,
-                $limit
-            );
+            $latestPagesCache[$cacheKey] = $this->getLatestPages($customerGroups, $limit);
         }
 
         $pages = $latestPagesCache[$cacheKey];
@@ -199,22 +206,42 @@ class QcdThirdPartyBlockRenderer
             $page->cover_image_data = $page->getCoverImageData($this->context);
         }
 
-        $this->context->smarty->assign([
+        $templateData = [
             'everblock_pages' => $pages,
             'everblock_page_links' => $pageLinks,
-        ]);
+        ];
+
+        $this->assignTemplateDataToContext($context, $templateData);
+        $this->context->smarty->assign($templateData);
 
         return true;
     }
 
-    private function shouldUseAlternatePagesTemplate(array $context): bool
+    private function getLatestPages(array $customerGroups, int $limit): array
     {
-        $templateVariant = (string) $this->getContextValue($context, [
-            ['normalized', 'attributes', 'template_variant'],
-            ['attributes', 'template_variant'],
-        ], '');
+        $pages = EverblockPage::repository()->findPages(
+            (int) $this->context->language->id,
+            (int) $this->context->shop->id,
+            true,
+            1,
+            null,
+            (int) Configuration::get('PS_LANG_DEFAULT')
+        );
 
-        return Tools::strtolower(trim($templateVariant)) === 'alt';
+        $pages = array_values(array_filter(
+            $pages,
+            static fn ($page): bool => $page instanceof EverblockPage && EverblockPage::isGroupAllowed($page, $customerGroups)
+        ));
+
+        return array_slice($pages, 0, $limit);
+    }
+
+    private function assignTemplateDataToContext(array &$context, array $templateData): void
+    {
+        foreach ($templateData as $name => $value) {
+            $context[$name] = $value;
+            $context['normalized']['attributes'][$name] = $value;
+        }
     }
 
     private function ensureNormalizedContext(array &$context): void

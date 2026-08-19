@@ -191,7 +191,14 @@ class Page
         $cacheId = 'EverblockPage_getPages_' . $langId . '_' . $shopId . '_' . (int) $onlyActive . '_' . md5(json_encode($allowedGroups)) . '_' . $page . '_' . (int) $perPage;
         if (!EverblockCache::isCacheStored($cacheId)) {
             $pages = array_values(array_filter(
-                self::repository()->findPages($langId, $shopId, $onlyActive, $page, $perPage),
+                self::repository()->findPages(
+                    $langId,
+                    $shopId,
+                    $onlyActive,
+                    $page,
+                    $perPage,
+                    (int) Configuration::get('PS_LANG_DEFAULT')
+                ),
                 static fn (self $page): bool => self::isGroupAllowed($page, $allowedGroups)
             ));
             EverblockCache::cacheStore($cacheId, $pages);
@@ -208,7 +215,14 @@ class Page
         $cacheId = 'EverblockPage_countPages_' . $langId . '_' . $shopId . '_' . (int) $onlyActive . '_' . md5(json_encode($allowedGroups));
         if (!EverblockCache::isCacheStored($cacheId)) {
             $count = count(array_filter(
-                self::repository()->findPages($langId, $shopId, $onlyActive),
+                self::repository()->findPages(
+                    $langId,
+                    $shopId,
+                    $onlyActive,
+                    1,
+                    null,
+                    (int) Configuration::get('PS_LANG_DEFAULT')
+                ),
                 static fn (self $page): bool => self::isGroupAllowed($page, $allowedGroups)
             ));
             EverblockCache::cacheStore($cacheId, $count);

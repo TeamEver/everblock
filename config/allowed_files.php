@@ -152,6 +152,8 @@ return [
     'upgrade/upgrade-9.0.0.php',
     'upgrade/upgrade-9.0.1.php',
     'upgrade/upgrade-9.0.3.php',
+    'upgrade/upgrade-9.0.4.php',
+    'upgrade/upgrade-9.0.5.php',
     'vendor/.htaccess',
     'vendor/autoload.php',
     'vendor/bin/index.php',

@@ -1,4 +1,8 @@
 {foreach from=$everblock_pages item=page}
+  {assign var='pageLink' value='#'}
+  {if isset($everblock_page_links[$page->id])}
+    {assign var='pageLink' value=$everblock_page_links[$page->id]}
+  {/if}
   <div class="col-md-6 col-lg-4 mb-4">
     <article class="card h-100 shadow-sm border-0">
       {assign var='coverImage' value=$page->cover_image_data|default:null}
@@ -16,7 +20,7 @@
       {/if}
       <div class="card-body d-flex flex-column">
         <h3 class="h5 card-title text-primary">
-          <a href="{$everblock_page_links[$page->id]|escape:'htmlall':'UTF-8'}" class="stretched-link text-decoration-none">
+          <a href="{$pageLink|escape:'htmlall':'UTF-8'}" class="stretched-link text-decoration-none">
             {$page->title|default:''|escape:'htmlall':'UTF-8'}
           </a>
         </h3>
