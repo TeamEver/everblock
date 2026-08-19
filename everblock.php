@@ -74,6 +74,7 @@ everblockRegisterLegacyAlias(\Everblock\Tools\Entity\Page::class, 'EverblockPage
 use PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductPresenter;
 use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\AdminConfigurationManager;
+use Everblock\Tools\Service\AdminTwigRenderer;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\QcdThirdPartyBlockRenderer;
 use Everblock\Tools\Service\EverblockTools;
@@ -1762,12 +1763,16 @@ class Everblock extends Module
     private function renderAdminTwig(string $template, array $parameters = []): string
     {
         try {
-            $container = SymfonyContainer::getInstance();
-            if (!$container || !$container->has('twig')) {
+            $renderer = $this->getAdminTwigRenderer();
+            if ($renderer === null) {
+                PrestaShopLogger::addLog(
+                    $this->name . ' | Twig environment unavailable, cannot render ' . $template
+                );
+
                 return '';
             }
 
-            return (string) $container->get('twig')->render(
+            return $renderer->render(
                 '@Modules/' . $this->name . '/templates/admin/' . $template,
                 $parameters
             );
@@ -1776,6 +1781,51 @@ class Everblock extends Module
 
             return '';
         }
+    }
+
+    /**
+     * Resolves the Twig renderer used by the legacy admin hooks.
+     *
+     * PrestaShop 8 (Symfony 4.4) declares the "twig" service public, so
+     * $container->get('twig') used to be enough. PrestaShop 9 (Symfony 6.4)
+     * dropped that publicity: has('twig') always returns false from a legacy
+     * context, because a compiled container only maps public services. We
+     * therefore go through everblock.twig_renderer, a module-owned public
+     * service that receives the environment by injection, and only fall back
+     * to the raw "twig" id for setups where our own services are not loaded.
+     */
+    private function getAdminTwigRenderer(): ?AdminTwigRenderer
+    {
+        $container = SymfonyContainer::getInstance();
+        if (!$container) {
+            return null;
+        }
+
+        foreach (['everblock.twig_renderer', AdminTwigRenderer::class] as $serviceId) {
+            try {
+                if ($container->has($serviceId)) {
+                    $service = $container->get($serviceId);
+                    if ($service instanceof AdminTwigRenderer) {
+                        return $service;
+                    }
+                }
+            } catch (Throwable $exception) {
+                // Keep looking, the fallback below may still succeed.
+            }
+        }
+
+        try {
+            if ($container->has('twig')) {
+                $twig = $container->get('twig');
+                if ($twig instanceof \Twig\Environment) {
+                    return new AdminTwigRenderer($twig);
+                }
+            }
+        } catch (Throwable $exception) {
+            PrestaShopLogger::addLog($this->name . ' | ' . $exception->getMessage());
+        }
+
+        return null;
     }
 
     protected function isProductModalAjaxRequest()
@@ -3508,6 +3558,32 @@ class Everblock extends Module
         }
     }
 
+    /**
+     * Tells whether the current request actually carries the fields of our
+     * product panel (tabs, flags, FAQ associations, modal).
+     *
+     * hookActionObjectProductUpdateAfter reads those fields with
+     * Tools::getValue() and writes the result back unconditionally, so an
+     * absent panel used to be indistinguishable from a panel submitted empty.
+     */
+    protected function hasSubmittedProductPanel(): bool
+    {
+        $keys = array_merge(array_keys($_POST), array_keys($_GET));
+        foreach ($keys as $key) {
+            $key = (string) $key;
+            if (strncmp($key, 'everblock_', 10) === 0
+                || strncmp($key, 'everflag_', 9) === 0
+            ) {
+                return true;
+            }
+            if (preg_match('/^\d+_ever(block|flag)_/', $key) === 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function hookActionObjectProductUpdateAfter($params)
     {
         if (php_sapi_name() == 'cli') {
@@ -3516,6 +3592,12 @@ class Everblock extends Module
         $controllerTypes = ['admin', 'moduleadmin'];
         $context = Context::getContext();
         if (!in_array($context->controller->controller_type, $controllerTypes)) {
+            return;
+        }
+        // Never overwrite stored data when our own product panel was not submitted:
+        // a bulk action, a quick edit, a stock update or a failed render of the
+        // panel would otherwise blank every tab, flag and FAQ association.
+        if (!$this->hasSubmittedProductPanel()) {
             return;
         }
         try {

@@ -31,6 +31,17 @@ services:
     Everblock\Tools\Service\ModuleTranslationManager:
         public: true
 
+    # The "twig" service is public in Symfony 4.4 (PS8) but private in Symfony 6.4
+    # (PS9), so the legacy module class cannot fetch it from the container anymore.
+    # Depending on a private service is fine, so we expose it through a service of
+    # our own. Keep this public: everblock.php resolves it at runtime.
+    Everblock\Tools\Service\AdminTwigRenderer:
+        public: true
+        arguments: ['@twig']
+    everblock.twig_renderer:
+        alias: Everblock\Tools\Service\AdminTwigRenderer
+        public: true
+
     Everblock\Tools\Repository\BlockRepository:
         public: true
         arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
