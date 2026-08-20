@@ -14,6 +14,41 @@ use ZipArchive;
 
 final class AdminConfigurationManager
 {
+    public const PERMISSION_CREATE = 'create';
+    public const PERMISSION_UPDATE = 'update';
+    public const PERMISSION_DELETE = 'delete';
+
+    /**
+     * Native PrestaShop permission required by each mutating operation of the configuration
+     * page, mapped on what the operation really does. Keys are the submit names tested with
+     * Tools::isSubmit() in processRequest(), so this map and the execution stay in sync.
+     *
+     * The main "Save" button is handled apart because its name embeds the module name.
+     *
+     * @var array<string, string>
+     */
+    private const OPERATION_PERMISSIONS = [
+        // Destructive: removes files, truncates tables or overwrites existing data.
+        'deleteEVERBLOCK_MARKER_ICON' => self::PERMISSION_DELETE,
+        'deleteEVERWP_POSTS_BG_IMAGE' => self::PERMISSION_DELETE,
+        'submitEmptyLogs' => self::PERMISSION_DELETE,
+        'submitDropUnusedLangs' => self::PERMISSION_DELETE,
+        'submitRestoreBackup' => self::PERMISSION_DELETE,
+        // Replaces the whole module directory with a GitHub release: the most destructive one.
+        'submitEverblockUpdate' => self::PERMISSION_DELETE,
+        // Creates new catalog objects.
+        'submitCreateProduct' => self::PERMISSION_CREATE,
+        'submitUploadTabsFile' => self::PERMISSION_CREATE,
+        // Writes configuration, files on disk or shop content.
+        'submitEmptyCache' => self::PERMISSION_UPDATE,
+        'submitSecureModuleFoldersWithApache' => self::PERMISSION_UPDATE,
+        'submitBackupBlocks' => self::PERMISSION_UPDATE,
+        'submitMigrateUrls' => self::PERMISSION_UPDATE,
+        'submitGenerateModuleTranslation' => self::PERMISSION_UPDATE,
+        'submitImportModuleTranslation' => self::PERMISSION_UPDATE,
+        'submitUploadModuleTranslation' => self::PERMISSION_UPDATE,
+    ];
+
     private ?ModuleTranslationManager $translationManager;
 
     public function __construct(?ModuleTranslationManager $translationManager = null)
@@ -129,6 +164,37 @@ final class AdminConfigurationManager
             'stores' => $stores,
             'translation_files' => $this->getTranslationManager()->getAvailableTranslationFiles($module),
         ];
+    }
+
+    /**
+     * Native PrestaShop permissions required by the operations submitted in the current request.
+     *
+     * Detection uses Tools::isSubmit(), exactly like processRequest(), so an operation can never
+     * be executed without its permission having been evaluated — including when the submit name
+     * is passed in the query string, which Tools::isSubmit() also honours.
+     *
+     * @return string[] Distinct permissions, 'update' as the baseline for any other write
+     */
+    public function getRequiredPermissions(\Everblock $module): array
+    {
+        $permissions = [];
+
+        foreach (self::OPERATION_PERMISSIONS as $submitName => $permission) {
+            if (Tools::isSubmit($submitName)) {
+                $permissions[$permission] = $permission;
+            }
+        }
+
+        if (Tools::isSubmit('submit' . $module->name . 'Module')) {
+            $permissions[self::PERMISSION_UPDATE] = self::PERMISSION_UPDATE;
+        }
+
+        // Any other write reaching processRequest() still requires at least the update right.
+        if ($permissions === []) {
+            $permissions[self::PERMISSION_UPDATE] = self::PERMISSION_UPDATE;
+        }
+
+        return array_values($permissions);
     }
 
     public function processRequest(\Everblock $module): array

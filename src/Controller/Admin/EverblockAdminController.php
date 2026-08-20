@@ -230,6 +230,19 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         $form->handleRequest($request);
 
         if ($request->isMethod('POST') || $request->query->has('deleteEVERBLOCK_MARKER_ICON') || $request->query->has('deleteEVERWP_POSTS_BG_IMAGE')) {
+            // The @AdminSecurity annotation above only guarantees the "read" right, which is
+            // enough to display the page but not to mutate anything. Every submitted operation
+            // is therefore checked against the permission matching what it really does.
+            $missingPermissions = $this->getMissingConfigurationPermissions($request, $module);
+            if ($missingPermissions !== []) {
+                $this->addFlash('error', $this->transAdmin(
+                    'You do not have the required permission to perform this action (%permissions% needed).',
+                    ['%permissions%' => implode(', ', $missingPermissions)]
+                ));
+
+                return $this->redirectToRoute('admin_everblock_configuration');
+            }
+
             if ($request->isMethod('POST') && (!$form->isSubmitted() || !$form->isValid())) {
                 $this->addFlash('error', $this->transAdmin('The configuration form could not be validated.'));
 
@@ -728,6 +741,32 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     private function clearBlockCache(?int $blockId = null, ?int $hookId = null): void
     {
         Block::clearCache($blockId, $this->shopId(), Language::getLanguages(false), $hookId !== null && $hookId > 0 ? [$hookId] : []);
+    }
+
+    /**
+     * Permissions required by the submitted configuration operations that the current employee
+     * does not hold. Relies on the native PrestaShop voter (PageVoter) through is_granted, with
+     * the legacy controller of the route as subject — same mechanism as @AdminSecurity.
+     *
+     * @return string[]
+     */
+    private function getMissingConfigurationPermissions(Request $request, \Everblock $module): array
+    {
+        // Read from the route attributes only: a query string must not be able to substitute
+        // another legacy controller as the ACL subject.
+        $legacyController = (string) $request->attributes->get('_legacy_controller');
+        if ($legacyController === '') {
+            return [AdminConfigurationManager::PERMISSION_UPDATE];
+        }
+
+        $missing = [];
+        foreach ($this->adminConfigurationManager->getRequiredPermissions($module) as $permission) {
+            if (!$this->isGranted($permission, $legacyController)) {
+                $missing[] = $permission;
+            }
+        }
+
+        return $missing;
     }
 
     private function transAdmin(string $message, array $parameters = []): string
