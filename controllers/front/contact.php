@@ -18,12 +18,20 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
+use Everblock\Tools\Service\EverblockUploadGuard;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
 class EverblockcontactModuleFrontController extends ModuleFrontController
 {
+    /**
+     * Fallback whitelist, identical to the values written at installation. Used when the shop
+     * configuration is empty so the check can never end up disabled.
+     */
+    const DEFAULT_ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
+
     public function initContent()
     {
         $this->ajax = true;
@@ -92,6 +100,11 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
         $attachments = [];
         $maxFileSize = (int) Configuration::get('EVERBLOCK_CONTACT_MAX_UPLOAD_SIZE');
         $allowedExtensions = $this->getConfigurationList('EVERBLOCK_CONTACT_ALLOWED_EXTENSIONS');
+        if (empty($allowedExtensions)) {
+            // Fail closed: an empty configuration used to skip the extension check entirely,
+            // so an anonymous visitor could attach any file type.
+            $allowedExtensions = self::DEFAULT_ALLOWED_EXTENSIONS;
+        }
         $allowedMimeTypes = $this->getConfigurationList('EVERBLOCK_CONTACT_ALLOWED_MIME_TYPES', false);
         $uploadError = false;
 
@@ -120,8 +133,12 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
                 break;
             }
 
-            $extension = Tools::strtolower(pathinfo($fileData['name'], PATHINFO_EXTENSION));
-            if (!empty($allowedExtensions) && !in_array($extension, $allowedExtensions)) {
+            $extension = (string) Tools::strtolower(
+                (string) pathinfo(basename(str_replace('\\', '/', (string) $fileData['name'])), PATHINFO_EXTENSION)
+            );
+            if (!in_array($extension, $allowedExtensions, true)
+                || EverblockUploadGuard::isForbiddenExtension($extension)
+            ) {
                 $uploadError = true;
                 $this->context->controller->errors[] = $this->translate('The uploaded file type is not allowed.');
                 PrestaShopLogger::addLog(
@@ -141,7 +158,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
                 finfo_close($finfo);
             }
 
-            if (!empty($allowedMimeTypes) && (!is_string($mime) || !in_array($mime, $allowedMimeTypes))) {
+            if (!empty($allowedMimeTypes) && (!is_string($mime) || !in_array($mime, $allowedMimeTypes, true))) {
                 $uploadError = true;
                 $this->context->controller->errors[] = $this->translate('The uploaded file type is not allowed.');
                 PrestaShopLogger::addLog(
@@ -155,9 +172,17 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
                 break;
             }
 
+            // The attachment name ends up in MIME headers: strip any path segment and any
+            // control character before handing it to Mail::send().
+            $attachmentName = EverblockUploadGuard::buildSafeFileName(
+                (string) $fileData['name'],
+                $extension,
+                'attachment'
+            );
+
             $attachments[] = [
                 'content' => Tools::file_get_contents($fileData['tmp_name']),
-                'name' => $fileData['name'],
+                'name' => $attachmentName,
                 'mime' => $mime ?: (isset($fileData['type']) ? $fileData['type'] : 'application/octet-stream'),
             ];
         }

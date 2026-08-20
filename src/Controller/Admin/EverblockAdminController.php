@@ -20,6 +20,7 @@ use Everblock\Tools\Repository\BlockRepository;
 use Everblock\Tools\Repository\HookRepository;
 use Everblock\Tools\Service\AdminConfigurationManager;
 use Everblock\Tools\Service\EverblockTools;
+use Everblock\Tools\Service\EverblockUploadGuard;
 use Everblock\Tools\Service\ModuleTranslationManager;
 use Everblock\Tools\Service\ShortcodeDocumentationProvider;
 use Language;
@@ -635,12 +636,28 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             return null;
         }
 
-        $extension = $file->guessExtension() ?: $file->getClientOriginalExtension() ?: 'jpg';
-        $safeName = 'everblock-page-' . date('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.' . strtolower($extension);
+        // img/pages/ is served by the web server: the destination extension must come from the
+        // real image content. guessExtension() alone is not enough, and getClientOriginalExtension()
+        // is client controlled — "cover.php" used to be stored as everblock-page-....php.
+        $extension = EverblockUploadGuard::resolveSafeExtension(
+            (string) $file->getPathname(),
+            (string) $file->getClientOriginalName(),
+            EverblockUploadGuard::PROFILE_IMAGE
+        );
+
+        if ($extension === null) {
+            $this->addFlash('error', $this->transAdmin('The featured image must be a valid JPG, PNG, GIF, WEBP or AVIF image.'));
+
+            return null;
+        }
+
+        $safeName = 'everblock-page-' . date('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.' . $extension;
         $destination = _PS_IMG_DIR_ . 'pages/';
         if (!is_dir($destination)) {
             @mkdir($destination, 0755, true);
         }
+        // Secondary Apache hardening; the content whitelist above is the actual protection.
+        EverblockUploadGuard::protectDirectory($destination);
         $file->move($destination, $safeName);
 
         $webpUrl = EverblockTools::convertToWebP($destination . $safeName);

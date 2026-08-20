@@ -77,6 +77,7 @@ use Everblock\Tools\Service\AdminConfigurationManager;
 use Everblock\Tools\Service\AdminTwigRenderer;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockCustomerLoginToken;
+use Everblock\Tools\Service\EverblockUploadGuard;
 use Everblock\Tools\Service\QcdThirdPartyBlockRenderer;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ImportFile;
@@ -1846,26 +1847,110 @@ class Everblock extends Module
             && Tools::getValue('configure') === $this->name;
     }
 
-    protected function sanitizeModalFileName($originalName)
+    /**
+     * Builds the modal file name. The extension is imposed by the caller, which resolved it
+     * from the real content of the file: it is never taken from the client supplied name.
+     *
+     * @param string $originalName Client supplied name, used for the readable slug only
+     * @param string $extension Server resolved extension
+     */
+    protected function sanitizeModalFileName($originalName, $extension)
     {
-        $originalName = basename((string) $originalName);
-        $extension = Tools::strtolower((string) pathinfo($originalName, PATHINFO_EXTENSION));
-        $baseName = (string) pathinfo($originalName, PATHINFO_FILENAME);
+        return EverblockUploadGuard::buildSafeFileName(
+            (string) $originalName,
+            (string) $extension,
+            'modal-file'
+        );
+    }
 
-        $baseName = Tools::replaceAccentedChars($baseName);
-        $baseName = preg_replace('/[^A-Za-z0-9\-\. _]+/', '_', $baseName);
-        $baseName = preg_replace('/_{2,}/', '_', (string) $baseName);
-        $baseName = trim((string) $baseName, ' ._-');
+    /**
+     * Validates then stores a product modal file and returns its path relative to img/cms/,
+     * or null when the file must be refused.
+     *
+     * /img/cms/everblockmodal/ is served by the web server, so the whitelist has to be decided
+     * from the file content: sanitising the name is not enough ("shell.php" stays "shell.php").
+     *
+     * @param bool $isUpload True for a genuine PHP upload, false for a locally created temp file
+     */
+    protected function storeModalFile($productId, $sourcePath, $originalName, $isUpload)
+    {
+        $extension = EverblockUploadGuard::resolveSafeExtension(
+            (string) $sourcePath,
+            (string) $originalName,
+            EverblockUploadGuard::PROFILE_MODAL
+        );
 
-        if ($baseName === '') {
-            $baseName = 'modal_file';
+        if ($extension === null) {
+            return null;
         }
 
-        if ($extension !== '') {
-            return $baseName . '.' . $extension;
+        $targetDir = $this->ensureModalDirectory((int) $productId);
+        $fileName = $this->sanitizeModalFileName($originalName, $extension);
+        $destination = $targetDir . $fileName;
+
+        if ($isUpload) {
+            $stored = move_uploaded_file((string) $sourcePath, $destination);
+        } else {
+            // rename() fails across filesystems, hence the copy fallback.
+            $stored = @rename((string) $sourcePath, $destination)
+                || @copy((string) $sourcePath, $destination);
         }
 
-        return $baseName;
+        if (!$stored) {
+            return null;
+        }
+
+        @chmod($destination, 0644);
+
+        return 'everblockmodal/' . (int) $productId . '/' . $fileName;
+    }
+
+    /**
+     * Same as storeModalFile() for the base64 variant used by the product form: the payload is
+     * written to a temporary file first so it goes through exactly the same content validation.
+     */
+    protected function storeModalFilePayload($productId, $payload, $originalName)
+    {
+        $decoded = base64_decode(str_replace([' ', "\r", "\n", "\t"], '', (string) $payload), true);
+        if ($decoded === false || $decoded === '') {
+            return null;
+        }
+
+        $tmpFile = tempnam(_PS_TMP_IMG_DIR_, 'everblockmodal');
+        if ($tmpFile === false) {
+            return null;
+        }
+
+        if (file_put_contents($tmpFile, $decoded) === false) {
+            @unlink($tmpFile);
+
+            return null;
+        }
+
+        $stored = $this->storeModalFile($productId, $tmpFile, $originalName, false);
+
+        if (file_exists($tmpFile)) {
+            @unlink($tmpFile);
+        }
+
+        return $stored;
+    }
+
+    /**
+     * Removes a previously stored modal file, unless the new file took the very same path.
+     */
+    protected function deleteModalFile($relativePath, $keepPath = null)
+    {
+        $relativePath = (string) $relativePath;
+        if ($relativePath === '' || $relativePath === (string) $keepPath) {
+            return;
+        }
+
+        $oldFile = _PS_IMG_DIR_ . 'cms/' . $relativePath;
+        if (file_exists($oldFile)) {
+            @unlink($oldFile);
+            $this->cleanupModalDirectory(dirname($oldFile));
+        }
     }
 
     protected function ajaxProcessFaqSearch()
@@ -1928,6 +2013,9 @@ class Everblock extends Module
         if (!is_dir($baseDir) && !@mkdir($baseDir, 0755, true)) {
             throw new Exception($this->l('Unable to create modal directory.'));
         }
+
+        // Secondary Apache hardening; the content whitelist is the actual protection.
+        EverblockUploadGuard::protectDirectory($baseDir);
 
         $productDir = $baseDir . (int) $productId . '/';
         if (!is_dir($productDir) && !@mkdir($productDir, 0755, true)) {
@@ -2061,23 +2149,21 @@ class Everblock extends Module
                 die(json_encode($response));
             }
 
-            if (!empty($modal->{$fileProperty})) {
-                $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->{$fileProperty};
-                if (file_exists($oldFile)) {
-                    @unlink($oldFile);
-                    $this->cleanupModalDirectory(dirname($oldFile));
-                }
-            }
+            // Validate the content BEFORE removing the current file, so a refused upload does
+            // not destroy the file already in place.
+            $storedFile = $this->storeModalFile(
+                $productId,
+                $uploadedFile['tmp_name'],
+                $uploadedFile['name'],
+                true
+            );
 
-            $targetDir = $this->ensureModalDirectory($productId);
-
-            $fileName = $this->sanitizeModalFileName($uploadedFile['name']);
-            $destinationPath = $targetDir . $fileName;
-
-            if (!move_uploaded_file($uploadedFile['tmp_name'], $destinationPath)) {
-                $response['message'] = $this->l('Unable to move the uploaded file.');
+            if ($storedFile === null) {
+                $response['message'] = $this->l('This file type is not allowed. Use an image, an SVG, a video or a PDF file.');
                 die(json_encode($response));
             }
+
+            $this->deleteModalFile($modal->{$fileProperty}, $storedFile);
 
             if (!Validate::isLoadedObject($modal)) {
                 $languages = Language::getLanguages(true);
@@ -2087,10 +2173,12 @@ class Everblock extends Module
                 }
             }
 
-            $modal->{$fileProperty} = 'everblockmodal/' . (int) $productId . '/' . $fileName;
+            $modal->{$fileProperty} = $storedFile;
             $modal->id_product = $productId;
             $modal->id_shop = $shopId;
             $modal->save();
+
+            $destinationPath = _PS_IMG_DIR_ . 'cms/' . $storedFile;
 
             $response['success'] = true;
             $response['message'] = sprintf($this->l('%s uploaded successfully.'), $targetLabel);
@@ -2640,9 +2728,15 @@ class Everblock extends Module
             && !empty($_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'])
         ) {
             $filename = $_FILES['EVERBLOCK_MARKER_ICON']['name'];
-            $extension = Tools::strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            // The extension is resolved from the content: the document must really parse as an
+            // SVG, whatever the client supplied name says.
+            $extension = EverblockUploadGuard::resolveSafeExtension(
+                (string) $_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'],
+                (string) $filename,
+                EverblockUploadGuard::PROFILE_VECTOR
+            );
             if ($extension !== 'svg') {
-                $this->postErrors[] = $this->l('Marker icon must be an SVG file.');
+                $this->postErrors[] = $this->l('Marker icon must be a valid SVG file.');
             } elseif (!($tmpName = tempnam(_PS_TMP_IMG_DIR_, 'PS'))
                 || !move_uploaded_file($_FILES['EVERBLOCK_MARKER_ICON']['tmp_name'], $tmpName)
             ) {
@@ -2659,10 +2753,14 @@ class Everblock extends Module
             && !empty($_FILES['EVERWP_POSTS_BG_IMAGE']['tmp_name'])
         ) {
             $filename = $_FILES['EVERWP_POSTS_BG_IMAGE']['name'];
-            $extension = Tools::strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-            if (!in_array($extension, $allowedExtensions, true)) {
-                $this->postErrors[] = $this->l('WordPress background image must be a JPG, PNG, WEBP, or GIF file.');
+            // The destination extension comes from the real image content, not from the name.
+            $extension = EverblockUploadGuard::resolveSafeExtension(
+                (string) $_FILES['EVERWP_POSTS_BG_IMAGE']['tmp_name'],
+                (string) $filename,
+                EverblockUploadGuard::PROFILE_IMAGE
+            );
+            if ($extension === null) {
+                $this->postErrors[] = $this->l('WordPress background image must be a valid JPG, PNG, WEBP, GIF or AVIF image.');
             } elseif (!($tmpName = tempnam(_PS_TMP_IMG_DIR_, 'PS'))
                 || !move_uploaded_file($_FILES['EVERWP_POSTS_BG_IMAGE']['tmp_name'], $tmpName)
             ) {
@@ -3755,65 +3853,49 @@ class Everblock extends Module
             $modalFilePayload = Tools::getValue('everblock_modal_file_payload');
             $modalFileOriginalName = Tools::getValue('everblock_modal_file_name');
             if (!empty($modalFilePayload) && !empty($modalFileOriginalName)) {
-                $decodedPayload = base64_decode(str_replace([' ', "\r", "\n"], '', $modalFilePayload), true);
-                if ($decodedPayload !== false) {
-                    $targetDir = $this->ensureModalDirectory((int) $params['object']->id);
-                    if (!empty($modal->file)) {
-                        $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
-                        if (file_exists($oldFile)) {
-                            @unlink($oldFile);
-                            $this->cleanupModalDirectory(dirname($oldFile));
-                        }
-                    }
-                    $fileName = $this->sanitizeModalFileName($modalFileOriginalName);
-                    if (file_put_contents($targetDir . $fileName, $decodedPayload) !== false) {
-                        $modal->file = 'everblockmodal/' . (int) $params['object']->id . '/' . $fileName;
-                    }
+                $storedFile = $this->storeModalFilePayload(
+                    (int) $params['object']->id,
+                    (string) $modalFilePayload,
+                    (string) $modalFileOriginalName
+                );
+                if ($storedFile !== null) {
+                    $this->deleteModalFile($modal->file, $storedFile);
+                    $modal->file = $storedFile;
                 }
             } elseif (isset($_FILES['everblock_modal_file']) && is_uploaded_file($_FILES['everblock_modal_file']['tmp_name'])) {
-                $targetDir = $this->ensureModalDirectory((int) $params['object']->id);
-                if (!empty($modal->file)) {
-                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->file;
-                    if (file_exists($oldFile)) {
-                        @unlink($oldFile);
-                        $this->cleanupModalDirectory(dirname($oldFile));
-                    }
-                }
-                $fileName = $this->sanitizeModalFileName($_FILES['everblock_modal_file']['name']);
-                if (move_uploaded_file($_FILES['everblock_modal_file']['tmp_name'], $targetDir . $fileName)) {
-                    $modal->file = 'everblockmodal/' . (int) $params['object']->id . '/' . $fileName;
+                $storedFile = $this->storeModalFile(
+                    (int) $params['object']->id,
+                    $_FILES['everblock_modal_file']['tmp_name'],
+                    $_FILES['everblock_modal_file']['name'],
+                    true
+                );
+                if ($storedFile !== null) {
+                    $this->deleteModalFile($modal->file, $storedFile);
+                    $modal->file = $storedFile;
                 }
             }
             $buttonFilePayload = Tools::getValue('everblock_modal_button_file_payload');
             $buttonFileOriginalName = Tools::getValue('everblock_modal_button_file_name');
             if (!empty($buttonFilePayload) && !empty($buttonFileOriginalName)) {
-                $decodedPayload = base64_decode(str_replace([' ', "\r", "\n"], '', $buttonFilePayload), true);
-                if ($decodedPayload !== false) {
-                    $targetDir = $this->ensureModalDirectory((int) $params['object']->id);
-                    if (!empty($modal->button_file)) {
-                        $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->button_file;
-                        if (file_exists($oldFile)) {
-                            @unlink($oldFile);
-                            $this->cleanupModalDirectory(dirname($oldFile));
-                        }
-                    }
-                    $fileName = $this->sanitizeModalFileName($buttonFileOriginalName);
-                    if (file_put_contents($targetDir . $fileName, $decodedPayload) !== false) {
-                        $modal->button_file = 'everblockmodal/' . (int) $params['object']->id . '/' . $fileName;
-                    }
+                $storedFile = $this->storeModalFilePayload(
+                    (int) $params['object']->id,
+                    (string) $buttonFilePayload,
+                    (string) $buttonFileOriginalName
+                );
+                if ($storedFile !== null) {
+                    $this->deleteModalFile($modal->button_file, $storedFile);
+                    $modal->button_file = $storedFile;
                 }
             } elseif (isset($_FILES['everblock_modal_button_file']) && is_uploaded_file($_FILES['everblock_modal_button_file']['tmp_name'])) {
-                $targetDir = $this->ensureModalDirectory((int) $params['object']->id);
-                if (!empty($modal->button_file)) {
-                    $oldFile = _PS_IMG_DIR_ . 'cms/' . $modal->button_file;
-                    if (file_exists($oldFile)) {
-                        @unlink($oldFile);
-                        $this->cleanupModalDirectory(dirname($oldFile));
-                    }
-                }
-                $fileName = $this->sanitizeModalFileName($_FILES['everblock_modal_button_file']['name']);
-                if (move_uploaded_file($_FILES['everblock_modal_button_file']['tmp_name'], $targetDir . $fileName)) {
-                    $modal->button_file = 'everblockmodal/' . (int) $params['object']->id . '/' . $fileName;
+                $storedFile = $this->storeModalFile(
+                    (int) $params['object']->id,
+                    $_FILES['everblock_modal_button_file']['tmp_name'],
+                    $_FILES['everblock_modal_button_file']['name'],
+                    true
+                );
+                if ($storedFile !== null) {
+                    $this->deleteModalFile($modal->button_file, $storedFile);
+                    $modal->button_file = $storedFile;
                 }
             }
             $modal->id_product = (int) $params['object']->id;
@@ -4757,9 +4839,13 @@ class Everblock extends Module
             && !empty($_FILES['TABS_FILE']['tmp_name'])
         ) {
             $filename = $_FILES['TABS_FILE']['name'];
-            $exploded_filename = explode('.', $filename);
-            $ext = end($exploded_filename);
-            if (Tools::strtolower($ext) != 'xlsx') {
+            // Must really be an OOXML spreadsheet, not just a file named .xlsx.
+            $ext = EverblockUploadGuard::resolveSafeExtension(
+                (string) $_FILES['TABS_FILE']['tmp_name'],
+                (string) $filename,
+                EverblockUploadGuard::PROFILE_SPREADSHEET
+            );
+            if ($ext !== 'xlsx') {
                 $this->postErrors[] = $this->l('Error : File is not valid.');
                 return false;
             }
