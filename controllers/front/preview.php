@@ -26,6 +26,11 @@ use Everblock\Tools\Service\EverblockPreviewBuilder;
 
 class EverblockPreviewModuleFrontController extends ModuleFrontController
 {
+    /**
+     * Back office tab used as the ACL reference for the block preview.
+     */
+    const PREVIEW_TAB = 'AdminEverBlock';
+
     /** @var EverBlockClass|null */
     protected $block;
 
@@ -41,7 +46,7 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
         ];
 
         try {
-            $this->assertValidToken();
+            $this->assertBackOfficeAccess();
             $this->block = $this->loadBlock();
             $previewParameters = $this->collectPreviewParameters();
             if (!$this->module instanceof Everblock) {
@@ -65,21 +70,126 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
         $this->setTemplate('module:everblock/views/templates/front/preview.tpl');
     }
 
-    protected function assertValidToken(): void
+    /**
+     * The preview renders blocks in an arbitrary shop/language/customer context, so it must
+     * stay strictly reserved to an authenticated back office employee.
+     *
+     * $context->employee is never populated on the front office (config/config.inc.php only
+     * builds it when _PS_ADMIN_DIR_ is defined), and Employee::isLoggedBack() relies either on
+     * the front office cookie (PS 8) or on the admin Symfony firewall (PS 9): neither can be
+     * used from here. We therefore read the native `psAdmin` cookie, exactly like
+     * Tools::isAllowedToBypassMaintenance() does, and replay the checks of isLoggedBack().
+     */
+    protected function assertBackOfficeAccess(): void
     {
-        // Only verify the token when an employee is actually logged into the back office.
-        // Tools::getAdminTokenLite() requires $context->employee->id, which is null on
-        // the front office side when the cookie is missing — generating noisy warnings.
-        $employee = isset($this->context->employee) ? $this->context->employee : null;
-        if (!$employee || empty($employee->id)) {
-            // No back office session: silently allow the preview (the URL itself is unguessable
-            // because it relies on an admin link with the employee token query parameter).
-            return;
+        $employee = $this->resolveBackOfficeEmployee();
+
+        if (!$employee instanceof Employee) {
+            throw $this->accessDenied($this->translate('The block preview is restricted to logged-in back office employees.'));
         }
 
-        $token = Tools::getValue('token');
-        if (!$token) {
-            return;
+        // Expose the employee so the native token helpers compute the same token as the back office.
+        $this->context->employee = $employee;
+
+        if (!$this->isEmployeeGranted($employee)) {
+            throw $this->accessDenied($this->translate('You do not have permission to preview Ever Block blocks.'));
+        }
+
+        $this->assertValidToken();
+        $this->assertShopAccess($employee);
+    }
+
+    /**
+     * @return Employee|null The employee owning a valid back office session, null otherwise
+     */
+    protected function resolveBackOfficeEmployee()
+    {
+        try {
+            $adminCookie = new Cookie('psAdmin');
+        } catch (Exception $exception) {
+            return null;
+        }
+
+        // Read-only usage: never rewrite the back office cookie from a front office request.
+        $adminCookie->disallowWriting();
+
+        $employeeId = (int) $adminCookie->id_employee;
+        if ($employeeId <= 0) {
+            return null;
+        }
+
+        // Employee session must still be alive (ps_employee_session).
+        if (!method_exists($adminCookie, 'isSessionAlive') || !$adminCookie->isSessionAlive()) {
+            return null;
+        }
+
+        // The cookie password hash must still match the one stored in database.
+        $passwd = isset($adminCookie->passwd) ? (string) $adminCookie->passwd : '';
+        if ($passwd === '' || !Employee::checkPassword($employeeId, $passwd)) {
+            return null;
+        }
+
+        if (Configuration::get('PS_COOKIE_CHECKIP')
+            && isset($adminCookie->remote_addr)
+            && (int) $adminCookie->remote_addr !== (int) ip2long(Tools::getRemoteAddr())
+        ) {
+            return null;
+        }
+
+        $employee = new Employee($employeeId);
+        if (!Validate::isLoadedObject($employee) || !$employee->active) {
+            return null;
+        }
+
+        return $employee;
+    }
+
+    /**
+     * Native PrestaShop ACL check on the Ever Block tab (read permission).
+     */
+    protected function isEmployeeGranted(Employee $employee): bool
+    {
+        if (method_exists($employee, 'isSuperAdmin') && $employee->isSuperAdmin()) {
+            return true;
+        }
+
+        if (!class_exists('Access')) {
+            return true;
+        }
+
+        // When the tab is missing the authorization role does not exist either and the ACL
+        // cannot be evaluated: do not lock out employees because of a broken tab installation.
+        if ((int) Tab::getIdFromClassName(self::PREVIEW_TAB) <= 0) {
+            return true;
+        }
+
+        try {
+            return (bool) Access::isGranted(
+                'ROLE_MOD_TAB_' . Tools::strtoupper(self::PREVIEW_TAB) . '_READ',
+                (int) $employee->id_profile
+            );
+        } catch (Exception $exception) {
+            return false;
+        }
+    }
+
+    protected function assertShopAccess(Employee $employee): void
+    {
+        $shopId = (int) Tools::getValue('id_shop', (int) $this->context->shop->id);
+
+        if ($shopId > 0
+            && method_exists($employee, 'hasAuthOnShop')
+            && !$employee->hasAuthOnShop($shopId)
+        ) {
+            throw $this->accessDenied($this->translate('You do not have access to the requested shop.'));
+        }
+    }
+
+    protected function assertValidToken(): void
+    {
+        $token = (string) Tools::getValue('token');
+        if ($token === '') {
+            throw $this->accessDenied($this->translate('Missing preview token.'));
         }
 
         $validTokens = [
@@ -89,9 +199,26 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
             Tools::getAdminTokenLite('AdminModules'),
         ];
 
-        if (!in_array($token, $validTokens, true)) {
-            // throw new Exception($this->translate('Invalid preview token.'));
+        foreach ($validTokens as $validToken) {
+            if (is_string($validToken) && $validToken !== '' && hash_equals($validToken, $token)) {
+                return;
+            }
         }
+
+        throw $this->accessDenied($this->translate('Invalid preview token.'));
+    }
+
+    /**
+     * Flags the response as 403 and builds the exception the caller has to throw.
+     */
+    protected function accessDenied(string $message): Exception
+    {
+        if (!headers_sent()) {
+            header('HTTP/1.1 403 Forbidden');
+            header('Status: 403 Forbidden');
+        }
+
+        return new Exception($message);
     }
 
     protected function loadBlock(): EverBlockClass
