@@ -18,12 +18,20 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
+use Everblock\Tools\Service\EverblockBackOfficeGuard;
+use Everblock\Tools\Service\EverblockCustomerLoginToken;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
 class EverblockEverloginModuleFrontController extends ModuleFrontController
 {
+    /**
+     * Back office tabs from which "log in as this customer" is offered.
+     */
+    const ALLOWED_TABS = ['AdminCustomers', 'AdminOrders'];
+
     public function initContent()
     {
         if (!$this->module instanceof Everblock) {
@@ -31,19 +39,36 @@ class EverblockEverloginModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $module = $this->module;
-
-        // 🔐 Sécurité du token
-        if (
-            !Tools::getIsset('evertoken')
-            || $module->encrypt($module->name . '/everlogin') !== Tools::getValue('evertoken')
-            || !Module::isInstalled($module->name)
-        ) {
+        if (!Module::isInstalled($this->module->name)) {
             Tools::redirect('index.php');
         }
 
-        $idCustomer = (int) Tools::getValue('id_ever_customer');
-        if ($idCustomer <= 0) {
+        // 🔐 1. A real, live back office employee session is mandatory: a leaked URL replayed
+        // from a machine without a back office session must never impersonate a customer.
+        $employee = EverblockBackOfficeGuard::getLoggedEmployee();
+        if (!$employee instanceof Employee) {
+            Tools::redirect('index.php');
+            return;
+        }
+
+        // 🔐 2. Native ACL: the employee must be allowed to browse customers or orders.
+        if (!EverblockBackOfficeGuard::isGrantedOnAnyTab($employee, self::ALLOWED_TABS, 'READ')) {
+            Tools::redirect('index.php');
+        }
+
+        // 🔐 3. Signed token, scoped to one customer, one employee, with an expiry.
+        $idCustomer = (int) Tools::getValue(EverblockCustomerLoginToken::PARAM_CUSTOMER);
+        $idEmployee = (int) Tools::getValue(EverblockCustomerLoginToken::PARAM_EMPLOYEE);
+        $expires = (int) Tools::getValue(EverblockCustomerLoginToken::PARAM_EXPIRES);
+        $nonce = (string) Tools::getValue(EverblockCustomerLoginToken::PARAM_NONCE);
+        $providedToken = (string) Tools::getValue(EverblockCustomerLoginToken::PARAM_TOKEN);
+
+        if ($idCustomer <= 0
+            || $idEmployee <= 0
+            || $idEmployee !== (int) $employee->id
+            || !EverblockCustomerLoginToken::isFresh($expires)
+            || !EverblockCustomerLoginToken::verify($idCustomer, $idEmployee, $expires, $nonce, $providedToken)
+        ) {
             Tools::redirect('index.php');
         }
 
@@ -51,6 +76,29 @@ class EverblockEverloginModuleFrontController extends ModuleFrontController
         if (!Validate::isLoadedObject($customer)) {
             Tools::redirect('index.php');
         }
+
+        // 🔐 4. Multistore: the employee must be allowed on the customer shop.
+        if (method_exists($employee, 'hasAuthOnShop')
+            && (int) $customer->id_shop > 0
+            && !$employee->hasAuthOnShop((int) $customer->id_shop)
+        ) {
+            Tools::redirect('index.php');
+        }
+
+        // 🧾 Piste d'audit : une usurpation de compte client doit être traçable.
+        PrestaShopLogger::addLog(
+            sprintf(
+                'Everblock: employee #%d logged in as customer #%d',
+                (int) $employee->id,
+                (int) $customer->id
+            ),
+            2,
+            null,
+            'Customer',
+            (int) $customer->id,
+            true,
+            (int) $employee->id
+        );
 
         // 🔄 Déconnexion propre si déjà loggué
         if ($this->context->customer->isLogged()) {

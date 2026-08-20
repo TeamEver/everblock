@@ -76,6 +76,7 @@ use Everblock\Tools\Checkout\EverblockCheckoutStep;
 use Everblock\Tools\Service\AdminConfigurationManager;
 use Everblock\Tools\Service\AdminTwigRenderer;
 use Everblock\Tools\Service\EverblockCache;
+use Everblock\Tools\Service\EverblockCustomerLoginToken;
 use Everblock\Tools\Service\QcdThirdPartyBlockRenderer;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ImportFile;
@@ -681,6 +682,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_PAGES_PER_PAGE');
         Configuration::deleteByName('EVERBLOCK_FAQ_BASE_URL');
         Configuration::deleteByName('EVERBLOCK_FAQ_PER_PAGE');
+        Configuration::deleteByName(EverblockCustomerLoginToken::CONFIG_SECRET);
         $uninstalled = (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
             && $this->uninstallModuleTab('AdminEverBlock')
@@ -4088,7 +4090,7 @@ class Everblock extends Module
         }
 
         $link = new Link();
-        $everToken = $this->encrypt($this->name . '/everlogin');
+        $loginParams = $this->getEverloginLinkParameters($customer);
 
         return $this->renderAdminTwig('customer_connect.html.twig', [
             'login_customer' => $customer,
@@ -4097,16 +4099,33 @@ class Everblock extends Module
             'login_link' => $link->getModuleLink(
                 $this->name,
                 'everlogin',
-                [
-                    'id_ever_customer' => $customer->id,
-                    'evertoken' => $everToken,
-                    'ever_id_cart' => Cart::lastNoneOrderedCart($customer->id),
-                ]
+                $loginParams
             ),
             $this->name . '_dir' => $this->_path . 'views/img/',
-            'evertoken' => $everToken,
+            'evertoken' => $loginParams[EverblockCustomerLoginToken::PARAM_TOKEN],
             'base_uri' => __PS_BASE_URI__,
         ]);
+    }
+
+    /**
+     * Signed, short lived and employee scoped parameters of a "log in as this customer" link.
+     *
+     * @return array<string, int|string>
+     */
+    protected function getEverloginLinkParameters(Customer $customer): array
+    {
+        $employeeId = 0;
+        if (isset($this->context->employee) && $this->context->employee) {
+            $employeeId = (int) $this->context->employee->id;
+        }
+
+        $params = EverblockCustomerLoginToken::buildLinkParameters(
+            (int) $customer->id,
+            $employeeId
+        );
+        $params['ever_id_cart'] = (int) Cart::lastNoneOrderedCart((int) $customer->id);
+
+        return $params;
     }
 
     /**
@@ -4118,16 +4137,15 @@ class Everblock extends Module
             (int) $params['id_order']
         );
         if (Validate::isLoadedObject($order)) {
-            $everToken = $this->encrypt($this->name . '/everlogin');
+            $customer = new Customer((int) $order->id_customer);
+            if (!Validate::isLoadedObject($customer)) {
+                return;
+            }
             $link = new Link();
             $connectLink = $link->getModuleLink(
                 $this->name,
                 'everlogin',
-                [
-                    'id_ever_customer' => $order->id_customer,
-                    'evertoken' => $everToken,
-                    'ever_id_cart' => Cart::lastNoneOrderedCart($order->id_customer),
-                ]
+                $this->getEverloginLinkParameters($customer)
             );
             if (version_compare(_PS_VERSION_, '8.0', '<')) {
                 /** @var PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButtonsCollection $bar */

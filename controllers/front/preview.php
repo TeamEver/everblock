@@ -22,6 +22,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Everblock\Tools\Service\EverblockBackOfficeGuard;
 use Everblock\Tools\Service\EverblockPreviewBuilder;
 
 class EverblockPreviewModuleFrontController extends ModuleFrontController
@@ -104,44 +105,7 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
      */
     protected function resolveBackOfficeEmployee()
     {
-        try {
-            $adminCookie = new Cookie('psAdmin');
-        } catch (Exception $exception) {
-            return null;
-        }
-
-        // Read-only usage: never rewrite the back office cookie from a front office request.
-        $adminCookie->disallowWriting();
-
-        $employeeId = (int) $adminCookie->id_employee;
-        if ($employeeId <= 0) {
-            return null;
-        }
-
-        // Employee session must still be alive (ps_employee_session).
-        if (!method_exists($adminCookie, 'isSessionAlive') || !$adminCookie->isSessionAlive()) {
-            return null;
-        }
-
-        // The cookie password hash must still match the one stored in database.
-        $passwd = isset($adminCookie->passwd) ? (string) $adminCookie->passwd : '';
-        if ($passwd === '' || !Employee::checkPassword($employeeId, $passwd)) {
-            return null;
-        }
-
-        if (Configuration::get('PS_COOKIE_CHECKIP')
-            && isset($adminCookie->remote_addr)
-            && (int) $adminCookie->remote_addr !== (int) ip2long(Tools::getRemoteAddr())
-        ) {
-            return null;
-        }
-
-        $employee = new Employee($employeeId);
-        if (!Validate::isLoadedObject($employee) || !$employee->active) {
-            return null;
-        }
-
-        return $employee;
+        return EverblockBackOfficeGuard::getLoggedEmployee();
     }
 
     /**
@@ -149,28 +113,7 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
      */
     protected function isEmployeeGranted(Employee $employee): bool
     {
-        if (method_exists($employee, 'isSuperAdmin') && $employee->isSuperAdmin()) {
-            return true;
-        }
-
-        if (!class_exists('Access')) {
-            return true;
-        }
-
-        // When the tab is missing the authorization role does not exist either and the ACL
-        // cannot be evaluated: do not lock out employees because of a broken tab installation.
-        if ((int) Tab::getIdFromClassName(self::PREVIEW_TAB) <= 0) {
-            return true;
-        }
-
-        try {
-            return (bool) Access::isGranted(
-                'ROLE_MOD_TAB_' . Tools::strtoupper(self::PREVIEW_TAB) . '_READ',
-                (int) $employee->id_profile
-            );
-        } catch (Exception $exception) {
-            return false;
-        }
+        return EverblockBackOfficeGuard::isGrantedOnTab($employee, self::PREVIEW_TAB, 'READ');
     }
 
     protected function assertShopAccess(Employee $employee): void
