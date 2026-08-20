@@ -97,15 +97,25 @@ class Everblock extends Module
 {
     private const ADMIN_MENU_ICON = 'view_quilt';
 
+    /** Configuration key holding the random cron secret (shop independent). */
+    public const CRON_TOKEN_CONFIG_KEY = 'EVERBLOCK_CRON_TOKEN';
+
     private $postErrors = [];
     private $postSuccess = [];
+    /**
+     * Actions the front office cron controller is allowed to run.
+     *
+     * Single source of truth: controllers/front/cron.php reads this very list, so the HTTP
+     * surface and the links displayed in the back office can no longer diverge.
+     *
+     * Only genuinely periodic tasks belong here. Recovery and one-shot migration actions
+     * (restoreblocks, removeinlinecsstags, securewithapache) stay available through the CLI
+     * command everblock:tools:execute and through the back office buttons.
+     */
     private $allowedActions = [
         'saveblocks',
-        'restoreblocks',
-        'removeinlinecsstags',
         'droplogs',
         'refreshtokens',
-        'securewithapache',
         'fetchwordpressposts',
     ];
     private $bypassedControllers = [
@@ -247,6 +257,9 @@ class Everblock extends Module
                 return false;
             }
         }
+
+        // Random cron secret, one per install.
+        $this->regenerateAdminConfigurationCronToken();
 
         return true;
     }
@@ -684,6 +697,7 @@ class Everblock extends Module
         Configuration::deleteByName('EVERBLOCK_FAQ_BASE_URL');
         Configuration::deleteByName('EVERBLOCK_FAQ_PER_PAGE');
         Configuration::deleteByName(EverblockCustomerLoginToken::CONFIG_SECRET);
+        Configuration::deleteByName(self::CRON_TOKEN_CONFIG_KEY);
         $uninstalled = (parent::uninstall()
             && $this->uninstallModuleTab('AdminEverBlockConfiguration')
             && $this->uninstallModuleTab('AdminEverBlock')
@@ -1702,9 +1716,57 @@ class Everblock extends Module
         return $this->allowedActions;
     }
 
+    /**
+     * Secret shared with the cron scheduler.
+     *
+     * Used to be encrypt($this->name . '/evercron'), i.e. md5(_COOKIE_KEY_ . 'everblock/evercron'):
+     * fully derivable from the cookie key and identical on every install of the same shop, with
+     * no way to rotate it. It is now a dedicated random secret, created on first use so existing
+     * shops are covered without waiting for an upgrade script.
+     */
     public function getAdminConfigurationCronToken(): string
     {
-        return $this->encrypt($this->name . '/evercron');
+        $token = (string) Configuration::getGlobalValue(self::CRON_TOKEN_CONFIG_KEY);
+
+        if (Tools::strlen($token) >= 32) {
+            return $token;
+        }
+
+        return $this->regenerateAdminConfigurationCronToken();
+    }
+
+    /**
+     * Issues a brand new cron secret. Every previously generated cron URL stops working.
+     */
+    public function regenerateAdminConfigurationCronToken(): string
+    {
+        try {
+            $token = bin2hex(random_bytes(32));
+        } catch (Exception $exception) {
+            return '';
+        }
+
+        Configuration::updateGlobalValue(self::CRON_TOKEN_CONFIG_KEY, $token);
+
+        return $token;
+    }
+
+    /**
+     * Constant time comparison of a token supplied over HTTP.
+     */
+    public function isValidAdminConfigurationCronToken($provided): bool
+    {
+        $provided = (string) $provided;
+        if ($provided === '') {
+            return false;
+        }
+
+        $expected = $this->getAdminConfigurationCronToken();
+        if ($expected === '') {
+            return false;
+        }
+
+        return hash_equals($expected, $provided);
     }
 
     public function prepareAdminConfigurationEnvironment(): void

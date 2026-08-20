@@ -229,9 +229,10 @@ class ExecuteAction extends Command
             $newToken = EverblockTools::refreshInstagramToken();
             if ($newToken) {
                 EverblockCache::cacheDropByPattern('fetchInstagramImages');
-                $output->writeln(
-                    '<success>' . $newToken . '</success>'
-                );
+                // Never echo the token itself: this command is also reachable through the front
+                // office cron controller, whose output travels over HTTP and ends up in access
+                // logs, monitoring tools and cron mail.
+                $output->writeln('<success>Instagram token refreshed</success>');
             } else {
                 $output->writeln('<warning>Instagram token reset failed</warning>');
             }

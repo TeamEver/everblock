@@ -47,6 +47,7 @@ final class AdminConfigurationManager
         'submitGenerateModuleTranslation' => self::PERMISSION_UPDATE,
         'submitImportModuleTranslation' => self::PERMISSION_UPDATE,
         'submitUploadModuleTranslation' => self::PERMISSION_UPDATE,
+        'submitRegenerateCronToken' => self::PERMISSION_UPDATE,
     ];
 
     private ?ModuleTranslationManager $translationManager;
@@ -243,6 +244,15 @@ final class AdminConfigurationManager
         }
         if (Tools::isSubmit('submitEmptyCache')) {
             $module->runAdminConfigurationCacheCleanup();
+        }
+        if (Tools::isSubmit('submitRegenerateCronToken')) {
+            $this->appendBooleanResult(
+                $module->regenerateAdminConfigurationCronToken() !== '',
+                $module->l('A new cron token has been generated. Update your scheduled tasks with the URLs below.'),
+                $module->l('Unable to generate a new cron token.'),
+                $errors,
+                $success
+            );
         }
         if (Tools::isSubmit('submitEmptyLogs')) {
             $purged = EverblockTools::purgeNativePrestashopLogsTable();

@@ -164,6 +164,9 @@ final class EverblockConfigurationType extends AbstractType
                 ['name' => 'submitImportModuleTranslation', 'title' => 'Import selected translation', 'icon' => 'sync'],
                 ['name' => 'submitUploadModuleTranslation', 'title' => 'Upload and import translation', 'icon' => 'upload_file'],
             ],
+            'cron' => [
+                ['name' => 'submitRegenerateCronToken', 'title' => 'Generate a new cron token (invalidates the URLs above)', 'icon' => 'autorenew'],
+            ],
         ];
     }
 

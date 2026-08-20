@@ -34,17 +34,6 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 class EverblockcronModuleFrontController extends ModuleFrontController
 {
-    private $allowedActions = [
-        'getrandomcomment',
-        'saveblocks',
-        'restoreblocks',
-        'removeinlinecsstags',
-        'droplogs',
-        'refreshtokens',
-        'securewithapache',
-        'fetchwordpressposts',
-    ];
-
     public function initContent()
     {
         if (!$this->module instanceof Everblock) {
@@ -52,16 +41,21 @@ class EverblockcronModuleFrontController extends ModuleFrontController
             return;
         }
         $module = $this->module;
-        if (!Tools::getIsset('evertoken')
-            || $module->encrypt($module->name . '/evercron') != Tools::getValue('evertoken')
-            || !Module::isInstalled($module->name)
-        ) {
+        if (!Module::isInstalled($module->name)) {
             Tools::redirect('index.php');
         }
-        if (!Tools::getValue('action')) {
+        // Dedicated random secret, compared in constant time. The former token was
+        // encrypt('everblock/evercron'), derivable from the cookie key and impossible to rotate.
+        if (!$module->isValidAdminConfigurationCronToken(Tools::getValue('evertoken'))) {
             Tools::redirect('index.php');
         }
-        if (!in_array(Tools::getValue('action'), $this->allowedActions)) {
+        $action = trim((string) Tools::getValue('action'));
+        if ($action === '') {
+            Tools::redirect('index.php');
+        }
+        // Single source of truth, shared with the back office link generator. Recovery and
+        // one-shot migration actions are deliberately no longer exposed over HTTP.
+        if (!in_array($action, $module->getAdminConfigurationAllowedActions(), true)) {
             Tools::redirect('index.php');
         }
         try {
@@ -81,7 +75,7 @@ class EverblockcronModuleFrontController extends ModuleFrontController
 
             $input = new ArrayInput([
                 'command' => 'everblock:tools:execute',
-                'action' => trim(Tools::getValue('action')),
+                'action' => $action,
                 'idshop id' => (int) $this->context->shop->id,
             ]);
 
@@ -119,9 +113,11 @@ class EverblockcronModuleFrontController extends ModuleFrontController
 
         } catch (\Throwable $e) {
             PrestaShopLogger::addLog(
-                $e->getMessage()
+                'Everblock cron "' . $action . '": ' . $e->getMessage(),
+                3
             );
-            echo $e->getMessage();
+            // Do not echo the exception message: it can disclose absolute paths and internals.
+            echo 'Everblock cron failed, see the PrestaShop logs for details.';
         }
         die();
     }
