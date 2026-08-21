@@ -4233,20 +4233,35 @@ class Everblock extends Module
             return '';
         }
 
-        $link = new Link();
-        $loginParams = $this->getEverloginLinkParameters($customer);
+        // Building the signed link must never be able to blank the whole panel: a hardening
+        // feature that breaks a back office page is worse than the hardening is worth. Any
+        // failure is logged and the card is rendered without its login button instead.
+        $loginLink = '';
+        $loginToken = '';
+        try {
+            $loginParams = $this->getEverloginLinkParameters($customer);
+            $loginToken = (string) $loginParams[EverblockCustomerLoginToken::PARAM_TOKEN];
+            $link = new Link();
+            $loginLink = (string) $link->getModuleLink(
+                $this->name,
+                'everlogin',
+                $loginParams
+            );
+        } catch (Throwable $exception) {
+            PrestaShopLogger::addLog(
+                $this->name . ' | unable to build the everlogin link for customer #'
+                . (int) $customer->id . ': ' . $exception->getMessage(),
+                3
+            );
+        }
 
         return $this->renderAdminTwig('customer_connect.html.twig', [
             'login_customer' => $customer,
             'lastname' => $customer->lastname,
             'firstname' => $customer->firstname,
-            'login_link' => $link->getModuleLink(
-                $this->name,
-                'everlogin',
-                $loginParams
-            ),
+            'login_link' => $loginLink,
             $this->name . '_dir' => $this->_path . 'views/img/',
-            'evertoken' => $loginParams[EverblockCustomerLoginToken::PARAM_TOKEN],
+            'evertoken' => $loginToken,
             'base_uri' => __PS_BASE_URI__,
         ]);
     }
@@ -4285,12 +4300,24 @@ class Everblock extends Module
             if (!Validate::isLoadedObject($customer)) {
                 return;
             }
-            $link = new Link();
-            $connectLink = $link->getModuleLink(
-                $this->name,
-                'everlogin',
-                $this->getEverloginLinkParameters($customer)
-            );
+            // Same rule as hookDisplayAdminCustomers: never break the order page because the
+            // signed link could not be built.
+            try {
+                $link = new Link();
+                $connectLink = (string) $link->getModuleLink(
+                    $this->name,
+                    'everlogin',
+                    $this->getEverloginLinkParameters($customer)
+                );
+            } catch (Throwable $exception) {
+                PrestaShopLogger::addLog(
+                    $this->name . ' | unable to build the everlogin link for customer #'
+                    . (int) $customer->id . ': ' . $exception->getMessage(),
+                    3
+                );
+
+                return;
+            }
             if (version_compare(_PS_VERSION_, '8.0', '<')) {
                 /** @var PrestaShopBundle\Controller\Admin\Sell\Order\ActionsBarButtonsCollection $bar */
                 $bar = $params['actions_bar_buttons_collection'];
@@ -4351,14 +4378,8 @@ class Everblock extends Module
         );
         $isPreview = isset($args[0]['everblock_preview']) && (bool) $args[0]['everblock_preview'];
         $isBypassed = in_array($method, $this->bypassedControllers, true);
-        $id_entity = isset($context->customer->id) && $context->customer->id ? (int) $context->customer->id : false;
-        $customerGroups = $id_entity
-            ? Customer::getGroupsStatic((int) $id_entity)
-            : array_values(array_unique(array_filter([
-                (int) Configuration::get('PS_UNIDENTIFIED_GROUP'),
-                (int) Configuration::get('PS_GUEST_GROUP'),
-                (int) Configuration::get('PS_CUSTOMER_GROUP'),
-            ])));
+        // Shared with controllers/front/modal.php so both apply the very same rule.
+        $customerGroups = EverBlockClass::resolveCustomerGroups($context);
         $currentBlock = [];
         $visibleBlocks = [];
         $visibleCacheIds = [];
@@ -4453,26 +4474,15 @@ class Everblock extends Module
             if ((bool) $continue === true) {
                 continue;
             }
-            // Date start and date end management
-            $now = new DateTime();
-            $now = $now->format('Y-m-d H:i:s');
-            if (!empty($block['date_start'])
-                && $block['date_start'] !== '0000-00-00 00:00:00'
-                && $block['date_start'] > $now
-            ) {
+            // Date start and date end management, shared with controllers/front/modal.php
+            if (!EverBlockClass::isWithinPublicationDates(
+                $block['date_start'] ?? null,
+                $block['date_end'] ?? null
+            )) {
                 continue;
             }
-            if (!empty($block['date_end'])
-                && $block['date_end'] !== '0000-00-00 00:00:00'
-                && $block['date_end'] < $now
-            ) {
-                continue;
-            }
-            $allowedGroups = json_decode($block['groups'], true);
-            if (isset($customerGroups)
-                && !empty($allowedGroups)
-                && !array_intersect($allowedGroups, $customerGroups)
-            ) {
+            // Customer group restriction, shared with controllers/front/modal.php
+            if (!EverBlockClass::isAllowedForGroups($block['groups'] ?? null, $customerGroups)) {
                 continue;
             }
 

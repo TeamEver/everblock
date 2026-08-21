@@ -368,6 +368,99 @@ class Block
         return $class;
     }
 
+    /**
+     * Is the block inside its publication window?
+     *
+     * Single implementation shared by Everblock::everHook() (which renders blocks in a hook, from
+     * database rows) and by the front office modal controller (which loads a single block by id).
+     * Keeping one implementation is what guarantees the modal controller is never more permissive
+     * — nor more restrictive — than the page that opened it.
+     */
+    public static function isWithinPublicationDates($dateStart, $dateEnd, ?string $now = null): bool
+    {
+        if ($now === null) {
+            $now = (new \DateTime())->format('Y-m-d H:i:s');
+        }
+
+        $dateStart = (string) $dateStart;
+        $dateEnd = (string) $dateEnd;
+
+        if ($dateStart !== ''
+            && $dateStart !== '0000-00-00 00:00:00'
+            && $dateStart > $now
+        ) {
+            return false;
+        }
+
+        if ($dateEnd !== ''
+            && $dateEnd !== '0000-00-00 00:00:00'
+            && $dateEnd < $now
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Is the block allowed for the given customer groups?
+     *
+     * An empty or unreadable group restriction means "everyone", which is the historical
+     * behaviour of everHook().
+     *
+     * @param string|null $groupsJson JSON encoded list of allowed group ids
+     * @param int[] $customerGroups Groups resolved by resolveCustomerGroups()
+     */
+    public static function isAllowedForGroups($groupsJson, array $customerGroups): bool
+    {
+        $allowedGroups = json_decode((string) $groupsJson, true);
+
+        if (!is_array($allowedGroups) || $allowedGroups === []) {
+            return true;
+        }
+
+        $allowedGroups = array_map('intval', $allowedGroups);
+        $customerGroups = array_map('intval', $customerGroups);
+
+        return (bool) array_intersect($allowedGroups, $customerGroups);
+    }
+
+    /**
+     * Groups the current visitor belongs to, exactly as everHook() computes them.
+     *
+     * The fallback for a visitor who is not logged in is deliberately kept identical to the
+     * historical one (unidentified + guest + customer groups): making the modal controller
+     * stricter than the hook would hide modals whose block is displayed on the page.
+     *
+     * @return int[]
+     */
+    public static function resolveCustomerGroups(?\Context $context = null): array
+    {
+        if ($context === null) {
+            $context = \Context::getContext();
+        }
+
+        $customerId = isset($context->customer->id) && $context->customer->id
+            ? (int) $context->customer->id
+            : 0;
+
+        if ($customerId > 0) {
+            // An identified customer is never given the anonymous fallback groups: doing so
+            // would be more permissive than the historical everHook() behaviour.
+            $groups = \Customer::getGroupsStatic($customerId);
+
+            return is_array($groups)
+                ? array_values(array_unique(array_map('intval', $groups)))
+                : [];
+        }
+
+        return array_values(array_unique(array_filter([
+            (int) \Configuration::get('PS_UNIDENTIFIED_GROUP'),
+            (int) \Configuration::get('PS_GUEST_GROUP'),
+            (int) \Configuration::get('PS_CUSTOMER_GROUP'),
+        ])));
+    }
+
     private static function nullableString($value): ?string
     {
         if ($value === null || $value === '') {

@@ -90,7 +90,9 @@ class EverblockBackOfficeGuard
 
         try {
             $cookie = new Cookie('psAdmin');
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
+            // Catch Throwable, not Exception: a malformed cookie can surface as an Error in
+            // PHP 8, and this guard must never be the reason a page fails to render.
             return null;
         }
 
@@ -195,7 +197,7 @@ class EverblockBackOfficeGuard
                 self::ROLE_PREFIX . Tools::strtoupper($tabClassName) . '_' . Tools::strtoupper($authorization),
                 (int) $employee->id_profile
             );
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             return false;
         }
     }

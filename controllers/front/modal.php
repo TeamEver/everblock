@@ -40,8 +40,13 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
 
     protected function getModal()
     {
-        $validToken = Tools::getToken();
-        if (!Tools::getValue('token') || Tools::getValue('token') != $validToken) {
+        // Tools::getToken() is also published to the front office through
+        // Media::addJsDef(['everblock_token' => ...]) in Everblock::hookDisplayHeader(). It is a
+        // CSRF / session token, NOT an authorisation: every object loaded below therefore has to
+        // be checked against its own visibility rules, exactly as the page displaying it does.
+        $validToken = (string) Tools::getToken();
+        $submittedToken = (string) Tools::getValue('token');
+        if ($submittedToken === '' || $validToken === '' || !hash_equals($validToken, $submittedToken)) {
             Tools::redirect('index.php');
         }
         $blockId = (int) Tools::getValue('id_everblock');
@@ -54,7 +59,11 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
 
         if ($cmsId && !$blockId && !$productModalId) {
             $cms = new CMS($cmsId, $this->context->language->id, $this->context->shop->id);
-            if (!Validate::isLoadedObject($cms) || !(bool) $cms->active) {
+            // Same guard as the native CMSController: loaded, active and associated to this shop.
+            if (!Validate::isLoadedObject($cms)
+                || !(bool) $cms->active
+                || !$cms->isAssociatedToShop((int) $this->context->shop->id)
+            ) {
                 die();
             }
             $cmsContent = EverblockTools::renderShortcodes(
@@ -74,7 +83,11 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
                 $this->context->language->id,
                 $this->context->shop->id
             );
-            if (!Validate::isLoadedObject($modal)) {
+            // The repository already restricts the lookup to the current shop. What was missing is
+            // the visibility of the PRODUCT the modal belongs to: without it, incrementing
+            // id_everblock_modal exposed the modal content of disabled or group restricted
+            // products.
+            if (!Validate::isLoadedObject($modal) || !$this->isProductModalVisible($modal)) {
                 die();
             }
             $content = $modal->getContent((int) $this->context->language->id);
@@ -122,7 +135,11 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             $this->context->language->id,
             $this->context->shop->id
         );
-        if (!Validate::isLoadedObject($block)) {
+        // new EverBlockClass() loads by id and shop only: unlike EverBlockClass::getBlocks(), it
+        // filters neither on active nor on the publication window nor on the customer groups.
+        // Without the guard below, incrementing id_everblock rendered any block, including
+        // disabled, expired and group restricted ones.
+        if (!Validate::isLoadedObject($block) || !$this->isBlockModalVisible($block)) {
             die();
         }
         $modalDelay = (int) $block->delay;
@@ -176,5 +193,74 @@ class EverblockmodalModuleFrontController extends ModuleFrontController
             die($response);
         }
         die();
+    }
+
+    /**
+     * Visibility rules a block must satisfy to be rendered through this controller.
+     *
+     * Reuses the very methods Everblock::everHook() applies when rendering the same block in a
+     * hook, so the endpoint can never be more permissive than the page.
+     *
+     * Two families of flags are deliberately NOT re-applied here, because they are display
+     * settings rather than authorisation:
+     *  - page placement (only_home, only_category, only_manufacturer, only_supplier,
+     *    only_cms_category, device): already evaluated on the page that opened the modal, and
+     *    this controller has no page context to evaluate them against;
+     *  - the "modal" flag itself: the README documents opening ANY block in a modal with
+     *    <button class="everblock-modal-button" data-everclickmodal="12">, so requiring
+     *    modal = 1 would break a documented feature.
+     *
+     * @param EverBlockClass $block
+     */
+    protected function isBlockModalVisible($block): bool
+    {
+        if (!(bool) $block->active) {
+            return false;
+        }
+
+        if (!EverBlockClass::isWithinPublicationDates($block->date_start, $block->date_end)) {
+            return false;
+        }
+
+        return EverBlockClass::isAllowedForGroups(
+            $block->groups,
+            EverBlockClass::resolveCustomerGroups($this->context)
+        );
+    }
+
+    /**
+     * A product modal is only readable when its product is readable: active, associated to the
+     * current shop and allowed for the visitor groups. Product::checkAccess() is the native
+     * PrestaShop catalogue access check.
+     *
+     * @param EverblockModal $modal
+     */
+    protected function isProductModalVisible($modal): bool
+    {
+        $productId = (int) $modal->id_product;
+        if ($productId <= 0) {
+            return false;
+        }
+
+        $product = new Product(
+            $productId,
+            false,
+            (int) $this->context->language->id,
+            (int) $this->context->shop->id
+        );
+
+        if (!Validate::isLoadedObject($product)) {
+            return false;
+        }
+
+        if (!(bool) $product->active
+            || !$product->isAssociatedToShop((int) $this->context->shop->id)
+        ) {
+            return false;
+        }
+
+        $customerId = isset($this->context->customer->id) ? (int) $this->context->customer->id : 0;
+
+        return (bool) $product->checkAccess($customerId);
     }
 }
