@@ -130,6 +130,8 @@ $(document).ready(function() {
 
     if (!previewUrl || !$modal.length || !$iframe.length) return;
 
+    const cacheBustedPreviewUrl = previewUrl + (previewUrl.indexOf('?') === -1 ? '?' : '&') + 'everblock_preview_ts=' + Date.now();
+
     // Retire le focus du bouton pour éviter le warning ARIA
     $btn.blur();
 
@@ -137,7 +139,7 @@ $(document).ready(function() {
     $iframe.attr('src', 'about:blank').css('opacity', 0);
     $loader.removeClass('d-none');
     if ($openTab.length) {
-      $openTab.attr('href', previewUrl);
+      $openTab.attr('href', cacheBustedPreviewUrl);
     }
 
     // Ouvre la modale
@@ -149,7 +151,7 @@ $(document).ready(function() {
 
     // Charge la preview après l'ouverture complète (transition Bootstrap)
     setTimeout(function () {
-      $iframe.attr('src', previewUrl);
+      $iframe.attr('src', cacheBustedPreviewUrl);
     }, 200);
 
     $iframe.off('load.everblockPreview').on('load.everblockPreview', function () {

@@ -8,7 +8,7 @@ admin_everblock_configuration:
 
 admin_everblock_clear_cache:
   path: /everblock/clear-cache
-  methods: [POST, GET]
+  methods: [POST]
   defaults:
     _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::clearCacheAction'
     _legacy_controller: AdminEverBlockConfiguration
@@ -26,6 +26,32 @@ admin_everblock_customer_login:
     _legacy_link: AdminCustomers
   requirements:
     customerId: \d+
+
+# Same action, declared on AdminOrders: the "Connect to customer account" button of the order page
+# has always been usable by an employee holding the Orders permission, and
+# controllers/front/everlogin.php accepts AdminCustomers or AdminOrders. Keeping a dedicated route
+# preserves that behaviour while still letting the native ACL decide.
+admin_everblock_order_customer_login:
+  path: /everblock/orders/customers/{customerId}/login
+  methods: [GET]
+  defaults:
+    _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::customerLoginAction'
+    _legacy_controller: AdminOrders
+    _legacy_link: AdminOrders
+  requirements:
+    customerId: \d+
+
+# Renders the block preview directly in the back office. Keeping it BO-only avoids front office
+# maintenance mode and reverse-proxy/Varnish availability checks.
+admin_everblock_block_preview:
+  path: /everblock/blocks/{id}/preview
+  methods: [GET]
+  defaults:
+    _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::previewRedirectAction'
+    _legacy_controller: AdminEverBlock
+    _legacy_link: AdminEverBlock
+  requirements:
+    id: \d+
 
 admin_everblock_translation_download:
   path: /everblock/translations/{file}/download
@@ -68,7 +94,7 @@ admin_everblock_blocks_edit:
 
 admin_everblock_blocks_delete:
   path: /everblock/blocks/{id}/delete
-  methods: [POST, GET]
+  methods: [POST]
   defaults:
     _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::deleteAction'
     _legacy_controller: AdminEverBlock
@@ -79,7 +105,7 @@ admin_everblock_blocks_delete:
 
 admin_everblock_blocks_toggle:
   path: /everblock/blocks/{id}/toggle
-  methods: [POST, GET]
+  methods: [POST]
   defaults:
     _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::toggleBlockAction'
     _legacy_controller: AdminEverBlock
@@ -89,7 +115,7 @@ admin_everblock_blocks_toggle:
 
 admin_everblock_blocks_duplicate:
   path: /everblock/blocks/{id}/duplicate
-  methods: [POST, GET]
+  methods: [POST]
   defaults:
     _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::duplicateBlockAction'
     _legacy_controller: AdminEverBlock
@@ -164,7 +190,7 @@ admin_everblock_hooks_edit:
 
 admin_everblock_hooks_delete:
   path: /everblock/hooks/{id}/delete
-  methods: [POST, GET]
+  methods: [POST]
   defaults:
     _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::deleteAction'
     _legacy_controller: AdminEverBlockHook
@@ -212,7 +238,7 @@ admin_everblock_shortcodes_edit:
 
 admin_everblock_shortcodes_delete:
   path: /everblock/shortcodes/{id}/delete
-  methods: [POST, GET]
+  methods: [POST]
   defaults:
     _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::deleteAction'
     _legacy_controller: AdminEverBlockShortcode
@@ -252,7 +278,7 @@ admin_everblock_faqs_edit:
 
 admin_everblock_faqs_delete:
   path: /everblock/faqs/{id}/delete
-  methods: [POST, GET]
+  methods: [POST]
   defaults:
     _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::deleteAction'
     _legacy_controller: AdminEverBlockFaq
@@ -292,7 +318,7 @@ admin_everblock_pages_edit:
 
 admin_everblock_pages_delete:
   path: /everblock/pages/{id}/delete
-  methods: [POST, GET]
+  methods: [POST]
   defaults:
     _controller: 'Everblock\Tools\Controller\Admin\EverblockAdminController::deleteAction'
     _legacy_controller: AdminEverBlockPage

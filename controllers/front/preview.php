@@ -36,6 +36,9 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
     /** @var EverBlockClass|null */
     protected $block;
 
+    /** @var int|null Memoized result of verifyProofEmployeeId() */
+    protected $proofEmployeeId;
+
     public function initContent()
     {
         parent::initContent();
@@ -56,8 +59,24 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
             }
             $builder = new EverblockPreviewBuilder($this->module, $this->context);
             $previewData = $builder->buildPreview($this->block, $previewParameters);
-        } catch (Exception $exception) {
+        } catch (Throwable $exception) {
+            // Throwable, not Exception: rendering a block executes arbitrary module code and
+            // Smarty templates, and a PHP Error there used to escape this catch and kill the
+            // whole request instead of showing the message on the preview page.
             $error = $exception->getMessage();
+
+            if (class_exists('PrestaShopLogger')) {
+                PrestaShopLogger::addLog(
+                    sprintf(
+                        'Everblock preview: rendering failed for block #%d (%s in %s line %d)',
+                        (int) Tools::getValue(EverblockPreviewToken::PARAM_BLOCK),
+                        get_class($exception),
+                        basename($exception->getFile()),
+                        (int) $exception->getLine()
+                    ),
+                    3
+                );
+            }
         }
 
         $this->context->smarty->assign([
@@ -79,34 +98,57 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
      * $context->employee is never populated on the front office (config/config.inc.php only
      * builds it when _PS_ADMIN_DIR_ is defined), and Employee::isLoggedBack() relies either on
      * the front office cookie (PS 8) or on the admin Symfony firewall (PS 9): neither can be
-     * used from here. We therefore read the native `psAdmin` cookie, exactly like
-     * Tools::isAllowedToBypassMaintenance() does, and replay the checks of isLoggedBack().
+     * used from here.
+     *
+     * The gate is therefore the signed proof minted by
+     * EverblockAdminController::previewRedirectAction(), a back office route that runs inside the
+     * PrestaShop admin firewall (authenticated employee + Ever Block ACL + native CSRF token).
+     * The proof names the employee it was issued for, so the ACL and the multistore check below
+     * are evaluated against a real Employee object.
+     *
+     * The `psAdmin` cookie is deliberately NOT the gate: PrestaShop 9 only writes it on login
+     * success (EmployeeSessionSubscriber::updateLegacyCookie() is called with $write = false on
+     * every other request), so its content cannot be relied on from the front office. It is still
+     * used as a reinforcement when it happens to be readable.
      */
     protected function assertBackOfficeAccess(): void
     {
-        $employee = $this->resolveBackOfficeEmployee();
+        $employee = $this->assertValidToken();
 
-        if (!$employee instanceof Employee) {
-            throw $this->accessDenied($this->translate('The block preview is restricted to logged-in back office employees.'));
-        }
-
-        // Expose the employee so the native token helpers compute the same token as the back office.
+        // Expose the employee so downstream preview code sees the same actor as the back office.
         $this->context->employee = $employee;
 
         if (!$this->isEmployeeGranted($employee)) {
             throw $this->accessDenied($this->translate('You do not have permission to preview Ever Block blocks.'));
         }
 
-        $this->assertValidToken();
         $this->assertShopAccess($employee);
+        $this->assertCookieAgreesWithProof($employee);
     }
 
     /**
-     * @return Employee|null The employee owning a valid back office session, null otherwise
+     * Reinforcement, best effort: when the back office cookie does reach the front office, it
+     * must designate the very employee the proof was issued for. When it cannot be read, the
+     * signed proof stands on its own.
      */
-    protected function resolveBackOfficeEmployee()
+    protected function assertCookieAgreesWithProof(Employee $employee): void
     {
-        return EverblockBackOfficeGuard::getLoggedEmployee();
+        $cookieEmployee = EverblockBackOfficeGuard::getLoggedEmployee();
+
+        if ($cookieEmployee instanceof Employee && (int) $cookieEmployee->id !== (int) $employee->id) {
+            if (class_exists('PrestaShopLogger')) {
+                PrestaShopLogger::addLog(
+                    sprintf(
+                        'Everblock preview: proof issued for employee #%d but the back office cookie designates #%d',
+                        (int) $employee->id,
+                        (int) $cookieEmployee->id
+                    ),
+                    3
+                );
+            }
+
+            throw $this->accessDenied($this->translate('Invalid preview token.'));
+        }
     }
 
     /**
@@ -129,62 +171,110 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
         }
     }
 
-    protected function assertValidToken(): void
+    /**
+     * A block preview is a back office tool: it has to keep working while the shop is closed.
+     *
+     * PrestaShop's own rule is the same — Tools::isAllowedToBypassMaintenance() lets an employee
+     * through — but it relies on reading the `psAdmin` cookie, which PrestaShop 9 only writes on
+     * login success. On a shop in maintenance the preview would therefore answer 503 (an empty
+     * body that the web server replaces with its own "Service Unavailable" page).
+     *
+     * The signed proof is a stronger credential than the cookie check it replaces here: it is
+     * valid for 120 seconds and can only be minted by an authenticated employee holding the Ever
+     * Block permission. The full gate still runs in initContent().
+     */
+    protected function displayMaintenancePage()
+    {
+        if ($this->verifyProofEmployeeId() > 0) {
+            return;
+        }
+
+        parent::displayMaintenancePage();
+    }
+
+    /**
+     * Verifies the signed proof and returns the employee it was issued for.
+     *
+     * @return Employee
+     */
+    protected function assertValidToken(): Employee
     {
         $token = (string) Tools::getValue(EverblockPreviewToken::PARAM_TOKEN);
         if ($token === '') {
             throw $this->accessDenied($this->translate('Missing preview token.'));
         }
 
-        // Signature issued by EverblockAdminController::buildPreviewUrl(). Both sides compute
-        // the same HMAC over an explicit payload, unlike Tools::getAdminTokenLite() whose value
-        // depends on Context::getContext()->employee->id and on the tab id.
         $expires = (int) Tools::getValue(EverblockPreviewToken::PARAM_EXPIRES);
         $nonce = (string) Tools::getValue(EverblockPreviewToken::PARAM_NONCE);
-        $blockId = (int) Tools::getValue(EverblockPreviewToken::PARAM_BLOCK);
-        $shopId = (int) Tools::getValue(EverblockPreviewToken::PARAM_SHOP, (int) $this->context->shop->id);
-        $languageId = (int) Tools::getValue(EverblockPreviewToken::PARAM_LANG, (int) $this->context->language->id);
+        $employeeId = $this->verifyProofEmployeeId();
 
-        if ($expires > 0
-            && EverblockPreviewToken::isFresh($expires)
-            && EverblockPreviewToken::verify($blockId, $shopId, $languageId, $expires, $nonce, $token)
-        ) {
-            return;
+        if ($employeeId <= 0) {
+            $this->logTokenMismatch($token, $expires, $nonce, (int) Tools::getValue(EverblockPreviewToken::PARAM_EMPLOYEE));
+
+            throw $this->accessDenied($this->translate('Invalid preview token.'));
         }
 
-        // Legacy fallback: preview links generated before the signed token was introduced, and
-        // still open in a back office tab. Kept because it can only widen acceptance for an
-        // already authenticated employee, never narrow it.
-        $legacyTokens = [
-            Tools::getAdminTokenLite('AdminEverBlock'),
-            Tools::getAdminTokenLite('AdminEverBlockConfiguration'),
-            Tools::getAdminTokenLite('AdminEverBlockHook'),
-            Tools::getAdminTokenLite('AdminModules'),
-        ];
+        $employee = new Employee($employeeId);
 
-        foreach ($legacyTokens as $legacyToken) {
-            if (is_string($legacyToken) && $legacyToken !== '' && hash_equals($legacyToken, $token)) {
-                return;
+        if (!Validate::isLoadedObject($employee) || !$employee->active) {
+            $this->logTokenMismatch($token, $expires, $nonce, $employeeId);
+
+            throw $this->accessDenied($this->translate('The block preview is restricted to logged-in back office employees.'));
+        }
+
+        return $employee;
+    }
+
+    /**
+     * Signature check only, no side effect and no exception: returns the id of the employee the
+     * proof was issued for, or 0. Memoized because it is called both from init() (maintenance) and
+     * from initContent() (the real gate).
+     *
+     * Signature issued by EverblockAdminController::previewRedirectAction(). Both sides compute
+     * the same HMAC over an explicit payload, unlike Tools::getAdminTokenLite() whose value
+     * depends on Context::getContext()->employee->id and on the tab id, neither of which exists
+     * on the front office.
+     */
+    protected function verifyProofEmployeeId(): int
+    {
+        if ($this->proofEmployeeId !== null) {
+            return $this->proofEmployeeId;
+        }
+
+        $this->proofEmployeeId = 0;
+
+        try {
+            $token = (string) Tools::getValue(EverblockPreviewToken::PARAM_TOKEN);
+            $expires = (int) Tools::getValue(EverblockPreviewToken::PARAM_EXPIRES);
+            $nonce = (string) Tools::getValue(EverblockPreviewToken::PARAM_NONCE);
+            $blockId = (int) Tools::getValue(EverblockPreviewToken::PARAM_BLOCK);
+            $employeeId = (int) Tools::getValue(EverblockPreviewToken::PARAM_EMPLOYEE);
+            $shopId = (int) Tools::getValue(EverblockPreviewToken::PARAM_SHOP, (int) $this->context->shop->id);
+            $languageId = (int) Tools::getValue(EverblockPreviewToken::PARAM_LANG, (int) $this->context->language->id);
+
+            if ($token !== ''
+                && $employeeId > 0
+                && $expires > 0
+                && EverblockPreviewToken::isFresh($expires)
+                && EverblockPreviewToken::verify($blockId, $shopId, $languageId, $employeeId, $expires, $nonce, $token)
+            ) {
+                $this->proofEmployeeId = $employeeId;
             }
+        } catch (Throwable $exception) {
+            $this->proofEmployeeId = 0;
         }
 
-        $this->logTokenMismatch($token, $expires, $nonce);
-
-        throw $this->accessDenied($this->translate('Invalid preview token.'));
+        return $this->proofEmployeeId;
     }
 
     /**
      * Logs what differed, without ever writing a token value to the logs.
      */
-    protected function logTokenMismatch(string $token, int $expires, string $nonce): void
+    protected function logTokenMismatch(string $token, int $expires, string $nonce, int $employeeId = 0): void
     {
         if (!class_exists('PrestaShopLogger')) {
             return;
         }
-
-        $employeeId = isset($this->context->employee) && $this->context->employee
-            ? (int) $this->context->employee->id
-            : 0;
 
         PrestaShopLogger::addLog(
             sprintf(

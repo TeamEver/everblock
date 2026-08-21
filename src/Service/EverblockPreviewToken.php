@@ -33,13 +33,10 @@ if (!defined('_PS_VERSION_')) {
  * and the front office request that verifies it. Both sides now compute the same HMAC over an
  * explicit payload.
  *
- * Deliberately NOT bound to the employee: the preview controller already requires a live back
- * office session (EverblockBackOfficeGuard), read access on the Ever Block tab, and authorisation
- * on the requested shop. Binding the signature to an employee id would only reintroduce the
- * context dependency this class exists to remove.
- *
- * The signature covers the block, the shop and the language, so those parameters cannot be
- * tampered with, and it guarantees the URL was issued by the back office.
+ * The signature covers the block, the shop, the language and the employee the back office
+ * vouched for, so none of those parameters can be tampered with, and it guarantees the URL was
+ * issued by EverblockAdminController::previewRedirectAction() — a route that runs inside the
+ * PrestaShop admin firewall, with the Ever Block ACL and the native CSRF token.
  */
 final class EverblockPreviewToken
 {
@@ -47,14 +44,15 @@ final class EverblockPreviewToken
     const PURPOSE = 'preview';
 
     /**
-     * Lifetime, in seconds. Generous on purpose: a back office list can legitimately stay open
-     * for hours, and the real gate is the live employee session, not this expiry.
+     * Lifetime, in seconds. Short on purpose: the link is minted when the employee clicks, by a
+     * back office route that PrestaShop itself has authenticated.
      */
-    const TTL = 86400;
+    const TTL = 120;
 
     const PARAM_BLOCK = 'id_everblock';
     const PARAM_SHOP = 'id_shop';
     const PARAM_LANG = 'id_lang';
+    const PARAM_EMPLOYEE = 'ever_id_employee';
     const PARAM_EXPIRES = 'ever_expires';
     const PARAM_NONCE = 'ever_nonce';
     const PARAM_TOKEN = 'token';
@@ -64,7 +62,7 @@ final class EverblockPreviewToken
      *
      * @return array<string, int|string>
      */
-    public static function buildLinkParameters(int $idBlock, int $idShop, int $idLang, ?int $now = null): array
+    public static function buildLinkParameters(int $idBlock, int $idShop, int $idLang, int $idEmployee, ?int $now = null): array
     {
         $now = $now === null ? time() : (int) $now;
         $expires = $now + self::TTL;
@@ -74,9 +72,10 @@ final class EverblockPreviewToken
             self::PARAM_BLOCK => $idBlock,
             self::PARAM_LANG => $idLang,
             self::PARAM_SHOP => $idShop,
+            self::PARAM_EMPLOYEE => $idEmployee,
             self::PARAM_EXPIRES => $expires,
             self::PARAM_NONCE => $nonce,
-            self::PARAM_TOKEN => self::sign($idBlock, $idShop, $idLang, $expires, $nonce),
+            self::PARAM_TOKEN => self::sign($idBlock, $idShop, $idLang, $idEmployee, $expires, $nonce),
         ];
     }
 
@@ -87,13 +86,14 @@ final class EverblockPreviewToken
         int $idBlock,
         int $idShop,
         int $idLang,
+        int $idEmployee,
         int $expires,
         string $nonce,
         string $providedToken
     ): bool {
         return EverblockSignedToken::verify(
             self::PURPOSE,
-            self::payload($idBlock, $idShop, $idLang),
+            self::payload($idBlock, $idShop, $idLang, $idEmployee),
             $expires,
             $nonce,
             $providedToken
@@ -105,11 +105,11 @@ final class EverblockPreviewToken
         return EverblockSignedToken::isFresh($expires, self::TTL, $now);
     }
 
-    private static function sign(int $idBlock, int $idShop, int $idLang, int $expires, string $nonce): string
+    private static function sign(int $idBlock, int $idShop, int $idLang, int $idEmployee, int $expires, string $nonce): string
     {
         return EverblockSignedToken::sign(
             self::PURPOSE,
-            self::payload($idBlock, $idShop, $idLang),
+            self::payload($idBlock, $idShop, $idLang, $idEmployee),
             $expires,
             $nonce
         );
@@ -118,12 +118,13 @@ final class EverblockPreviewToken
     /**
      * @return array<string, int>
      */
-    private static function payload(int $idBlock, int $idShop, int $idLang): array
+    private static function payload(int $idBlock, int $idShop, int $idLang, int $idEmployee): array
     {
         return [
             'id_everblock' => $idBlock,
             'id_shop' => $idShop,
             'id_lang' => $idLang,
+            'id_employee' => $idEmployee,
         ];
     }
 }

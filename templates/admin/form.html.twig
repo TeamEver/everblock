@@ -11,12 +11,12 @@
         <h2 class="everblock-bo-title">{{ id ? 'Edit'|trans({}, 'Admin.Actions') : 'Add new'|trans({}, 'Admin.Actions') }}</h2>
       </div>
       <div class="everblock-bo-header__actions">
-        {% if section == 'blocks' and preview_url is defined and preview_url %}
+        {% if section == 'blocks' and id %}
           <button
             type="button"
             class="btn btn-outline-info mr-2"
             data-everblock-preview-open="1"
-            data-everblock-preview-url="{{ preview_url }}"
+            data-everblock-preview-url="{{ path('admin_everblock_block_preview', {id: id}) }}"
             title="{{ 'Preview this block'|trans({}, 'Modules.Everblock.Admin') }}"
           >
             <i class="material-icons">visibility</i>
@@ -172,7 +172,7 @@
     {{ form_end(form, {render_rest: section != 'blocks'}) }}
   </div>
 
-  {% if section == 'blocks' and preview_url is defined and preview_url %}
+  {% if section == 'blocks' and id %}
     <div class="modal fade everblock-preview-modal" id="everblock-preview-modal" tabindex="-1" role="dialog" aria-labelledby="everblockPreviewModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-xl everblock-preview-full" role="document">
         <div class="modal-content">

@@ -31,15 +31,14 @@ if (!defined('_PS_VERSION_')) {
  * unrelated to the customer being impersonated — leaking a single URL was enough to open any
  * customer account by changing id_ever_customer.
  *
- * The signature now covers the target customer, the requesting employee and an expiry, and the
- * HMAC key embeds the employee back office session token, so a link:
+ * The signature covers the target customer, the requesting employee and an expiry, so a link:
  *  - only works for the customer it was issued for;
- *  - only works for the employee who requested it;
- *  - dies when that employee logs out of the back office;
+ *  - carries the identity of the employee the back office vouched for;
  *  - dies after TTL seconds.
  *
- * The front controller additionally requires a live back office session, see
- * EverblockBackOfficeGuard.
+ * The link can only be obtained through EverblockAdminController::customerLoginAction(), which
+ * runs inside the PrestaShop admin firewall: obtaining one therefore requires an authenticated
+ * employee holding the AdminCustomers ACL, with the native CSRF token.
  */
 class EverblockCustomerLoginToken
 {
@@ -49,8 +48,14 @@ class EverblockCustomerLoginToken
     /** Configuration key holding the module HMAC secret (shop independent). */
     const CONFIG_SECRET = EverblockSignedToken::CONFIG_SECRET;
 
-    /** Lifetime of a generated link, in seconds. */
-    const TTL = 900;
+    /**
+     * Lifetime of a generated link, in seconds.
+     *
+     * Short on purpose: the link is now minted when the employee clicks, by a back office route
+     * that PrestaShop itself has authenticated, so there is no page left open holding a stale
+     * link any more.
+     */
+    const TTL = 120;
 
     /** Tolerance on the expiry upper bound, to absorb clock drift. */
     const CLOCK_SKEW = 60;
@@ -121,7 +126,6 @@ class EverblockCustomerLoginToken
     private static function sign(int $idCustomer, int $idEmployee, int $expires, string $nonce): string
     {
         // Delegates to the shared primitive so everlogin and the block preview cannot drift apart.
-        // The employee back office session token is part of the HMAC key, never of the URL.
         return EverblockSignedToken::sign(
             self::PURPOSE,
             [
@@ -129,8 +133,7 @@ class EverblockCustomerLoginToken
                 'id_employee' => $idEmployee,
             ],
             $expires,
-            $nonce,
-            EverblockBackOfficeGuard::getEmployeeSessionToken()
+            $nonce
         );
     }
 }

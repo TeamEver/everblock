@@ -191,6 +191,7 @@ return [
     'templates/admin/customer_connect.html.twig',
     'templates/admin/form.html.twig',
     'templates/admin/list.html.twig',
+    'templates/admin/preview.html.twig',
     'templates/admin/product_modal.html.twig',
     'templates/admin/product_tab.html.twig',
     'templates/admin/shortcode_documentation.html.twig',

@@ -23,8 +23,12 @@
       <span>{{ 'Shortcode documentation'|trans({}, 'Modules.Everblock.Admin') }}</span>
     </a>
   </div>
-  <a class="everblock-bo-nav__cache" href="{{ path('admin_everblock_clear_cache', {redirect_route: config.route|default('admin_everblock_configuration')}) }}">
-    <i class="material-icons">delete_sweep</i>
-    <span>{{ 'Clear cache'|trans({}, 'Modules.Everblock.Admin') }}</span>
-  </a>
+  {# POST: clearing the cache mutates state, so it must not be reachable by a GET that a
+     prefetcher, a crawler or the back button could replay. #}
+  <form class="everblock-bo-nav__cache-form" method="post" action="{{ path('admin_everblock_clear_cache', {redirect_route: config.route|default('admin_everblock_configuration')}) }}">
+    <button class="everblock-bo-nav__cache" type="submit">
+      <i class="material-icons">delete_sweep</i>
+      <span>{{ 'Clear cache'|trans({}, 'Modules.Everblock.Admin') }}</span>
+    </button>
+  </form>
 </nav>

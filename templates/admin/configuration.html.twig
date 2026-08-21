@@ -85,10 +85,10 @@
                         {{ 'Current WordPress background image'|trans({}, 'Modules.Everblock.Admin') }}
                         <a href="{{ current_images.EVERWP_POSTS_BG_IMAGE }}" target="_blank" rel="noopener noreferrer">{{ 'View image'|trans({}, 'Modules.Everblock.Admin') }}</a>
                       </span>
-                      <a class="btn btn-outline-danger btn-sm" href="{{ path('admin_everblock_configuration', {deleteEVERWP_POSTS_BG_IMAGE: 1}) }}">
+                      <button class="btn btn-outline-danger btn-sm" type="submit" name="deleteEVERWP_POSTS_BG_IMAGE" value="1">
                         <i class="material-icons">delete</i>
                         {{ 'Delete'|trans({}, 'Admin.Actions') }}
-                      </a>
+                      </button>
                     </div>
                   {% endif %}
 
@@ -98,10 +98,10 @@
                         {{ 'Current store locator marker icon'|trans({}, 'Modules.Everblock.Admin') }}
                         <a href="{{ current_images.EVERBLOCK_MARKER_ICON }}" target="_blank" rel="noopener noreferrer">{{ 'View icon'|trans({}, 'Modules.Everblock.Admin') }}</a>
                       </span>
-                      <a class="btn btn-outline-danger btn-sm" href="{{ path('admin_everblock_configuration', {deleteEVERBLOCK_MARKER_ICON: 1}) }}">
+                      <button class="btn btn-outline-danger btn-sm" type="submit" name="deleteEVERBLOCK_MARKER_ICON" value="1">
                         <i class="material-icons">delete</i>
                         {{ 'Delete'|trans({}, 'Admin.Actions') }}
-                      </a>
+                      </button>
                     </div>
                   {% endif %}
 

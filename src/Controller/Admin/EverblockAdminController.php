@@ -19,7 +19,7 @@ use Everblock\Tools\Query\ListAdminItemsQuery;
 use Everblock\Tools\Repository\BlockRepository;
 use Everblock\Tools\Repository\HookRepository;
 use Everblock\Tools\Service\AdminConfigurationManager;
-use Everblock\Tools\Service\EverblockPreviewToken;
+use Everblock\Tools\Service\EverblockPreviewBuilder;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\EverblockUploadGuard;
 use Everblock\Tools\Service\ModuleTranslationManager;
@@ -231,7 +231,10 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         $form = $this->formFactory->createNamed('', EverblockConfigurationType::class, $this->adminConfigurationManager->getFormData($module), $formOptions);
         $form->handleRequest($request);
 
-        if ($request->isMethod('POST') || $request->query->has('deleteEVERBLOCK_MARKER_ICON') || $request->query->has('deleteEVERWP_POSTS_BG_IMAGE')) {
+        // POST only. The two image deletions used to be reachable through the query string, which
+        // made every operation of processRequest() triggerable by a plain GET link, since
+        // Tools::isSubmit() also reads $_GET. They are submit buttons of this form now.
+        if ($request->isMethod('POST')) {
             // The @AdminSecurity annotation above only guarantees the "read" right, which is
             // enough to display the page but not to mutate anything. Every submitted operation
             // is therefore checked against the permission matching what it really does.
@@ -364,16 +367,10 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         $filterColumns = $config['filter_columns'] ?? $config['columns'];
         $rows = $this->applyFilters($rows, $filters, $filterColumns, $config['boolean_columns'] ?? []);
 
-        $previewUrls = [];
-        if ($section === 'blocks') {
-            foreach ($rows as $row) {
-                $rowId = (int) ($row[$config['id']] ?? 0);
-                if ($rowId > 0) {
-                    $previewUrls[$rowId] = $this->buildPreviewUrl($rowId);
-                }
-            }
-        }
-
+        // The preview link is built by the template with path(), like every other action of this
+        // page: it is the only URL generator whose base path is guaranteed to match the admin
+        // request. Link::getAdminLink() produced a URL without the admin directory here, which
+        // sent the click to the front office.
         return $this->render('@Modules/everblock/templates/admin/list.html.twig', [
             'layoutTitle' => 'Ever Block - ' . $config['title'],
             'section' => $section,
@@ -382,7 +379,6 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             'filter_columns' => $filterColumns,
             'rows' => $rows,
             'sections' => self::SECTION_CONFIG,
-            'preview_urls' => $previewUrls,
         ]);
     }
 
@@ -438,7 +434,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
         $this->commandBus->handle(new ClearEverblockCacheCommand());
         $this->addFlash('success', $this->transAdmin('Cache cleared successfully.'));
 
-        return $this->redirectToRoute((string) $request->query->get('redirect_route', 'admin_everblock_configuration'));
+        return $this->redirectToRoute($this->resolveRedirectRoute($request));
     }
 
     /**
@@ -573,32 +569,153 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             'tab_help' => $section === 'blocks' ? BlockType::tabHelp() : [],
             'tinymce_enabled' => in_array($section, ['blocks', 'shortcodes', 'faqs', 'pages'], true) && (bool) \Configuration::get('EVERBLOCK_TINYMCE'),
             'id' => $id,
-            'preview_url' => ($section === 'blocks' && $id !== null && $id > 0) ? $this->buildPreviewUrl((int) $id) : null,
         ]);
     }
 
-    private function buildPreviewUrl(int $blockId): string
+    /**
+     * Renders a block preview directly in the back office.
+     *
+     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
+     */
+    public function previewRedirectAction(int $id, Request $request): Response
     {
-        if ($blockId <= 0) {
-            return '';
+        $error = null;
+        $block = null;
+        $previewData = [
+            'html' => '',
+            'info' => [],
+            'hook' => '',
+            'assets' => [
+                'stylesheets' => [],
+                'js_definitions' => [],
+                'javascript' => [
+                    'head' => [],
+                    'bottom' => [],
+                ],
+            ],
+        ];
+
+        try {
+            $context = \Context::getContext();
+            /** @var \Everblock|null $module */
+            $module = Module::getInstanceByName('everblock');
+            if (!$module instanceof \Everblock) {
+                throw new \Exception($this->transAdmin('The Ever Block module is not available.'));
+            }
+
+            $block = new \EverBlockClass($id, $this->languageId(), $this->shopId());
+            if (!\Validate::isLoadedObject($block)) {
+                throw new \Exception($this->transAdmin('Unable to find the requested block.'));
+            }
+
+            $builder = new EverblockPreviewBuilder($module, $context);
+            $previewData = $builder->buildPreview($block, $this->collectPreviewParameters($request));
+        } catch (\Throwable $exception) {
+            // Rendering can execute Smarty templates, hooks and module code. Keeping Throwable here
+            // prevents a broken block from turning the preview route into a back office 500.
+            $error = $exception->getMessage();
+
+            if (class_exists('\PrestaShopLogger')) {
+                \PrestaShopLogger::addLog(
+                    sprintf(
+                        'Everblock preview: rendering failed for block #%d (%s in %s line %d)',
+                        $id,
+                        get_class($exception),
+                        basename($exception->getFile()),
+                        (int) $exception->getLine()
+                    ),
+                    3
+                );
+            }
         }
 
-        $context = \Context::getContext();
-        if (!$context || !$context->link) {
-            return '';
+        $response = $this->render('@Modules/everblock/templates/admin/preview.html.twig', [
+            'everblock_preview_error' => $error,
+            'everblock_preview_html' => $previewData['html'],
+            'everblock_preview_info' => $previewData['info'],
+            'everblock_preview_hook' => $previewData['hook'],
+            'everblock_preview_assets' => $previewData['assets'],
+            'everblock_preview_block' => $block,
+            'everblock_preview_return_url' => $this->getPreviewReturnUrl($request),
+            'everblock_preview_generated_at' => new \DateTimeImmutable(),
+        ]);
+        $this->applyPreviewNoStoreHeaders($response);
+
+        return $response;
+    }
+
+    private function collectPreviewParameters(Request $request): array
+    {
+        $keys = [
+            'controller',
+            'page_name',
+            'id_product',
+            'id_category',
+            'id_customer',
+            'id_lang',
+            'id_shop',
+            'id_currency',
+            'id_cms',
+            'id_cms_category',
+            'id_manufacturer',
+            'id_supplier',
+            'id_cart',
+            'id_order',
+            'id_order_return',
+            'position',
+        ];
+
+        $params = [];
+        foreach ($keys as $key) {
+            $value = $request->query->get($key);
+            if ($value === null || $value === '' || !is_scalar($value)) {
+                continue;
+            }
+
+            if ($key === 'controller' || $key === 'page_name') {
+                $params[$key] = (string) $value;
+                continue;
+            }
+
+            $params[$key] = (int) $value;
         }
 
-        // Tools::getAdminTokenLite() cannot be used here: it hashes the tab id together with
-        // Context::getContext()->employee->id, which does not resolve to the same value in the
-        // front office request that verifies the link. The signature below is computed the same
-        // way on both sides.
-        $params = EverblockPreviewToken::buildLinkParameters(
-            $blockId,
-            $this->shopId(),
-            $this->languageId()
-        );
+        if (!isset($params['controller']) || $params['controller'] === '') {
+            $params['controller'] = 'index';
+        }
 
-        return (string) $context->link->getModuleLink('everblock', 'preview', $params);
+        if (!isset($params['id_lang'])) {
+            $params['id_lang'] = $this->languageId();
+        }
+
+        if (!isset($params['id_shop'])) {
+            $params['id_shop'] = $this->shopId();
+        }
+
+        if (!isset($params['id_currency']) && isset(\Context::getContext()->currency->id)) {
+            $params['id_currency'] = (int) \Context::getContext()->currency->id;
+        }
+
+        return $params;
+    }
+
+    private function getPreviewReturnUrl(Request $request): string
+    {
+        $referer = (string) $request->headers->get('referer', '');
+        if ($referer !== '') {
+            return $referer;
+        }
+
+        return $this->generateUrl('admin_everblock_blocks');
+    }
+
+    private function applyPreviewNoStoreHeaders(Response $response): void
+    {
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, private');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        $response->headers->set('Surrogate-Control', 'no-store');
+        $response->headers->set('X-Accel-Expires', '0');
     }
 
     private function formOptions(string $section): array
@@ -814,6 +931,21 @@ final class EverblockAdminController extends FrameworkBundleAdminController
      *
      * @return string[]
      */
+    /**
+     * Whitelists the redirect_route parameter: an unknown route name would otherwise make
+     * redirectToRoute() throw a RouteNotFoundException (a 500 on an employee click).
+     */
+    private function resolveRedirectRoute(Request $request): string
+    {
+        $requested = (string) $request->query->get('redirect_route', '');
+        $allowed = ['admin_everblock_configuration'];
+        foreach (self::SECTION_CONFIG as $sectionConfig) {
+            $allowed[] = $sectionConfig['route'];
+        }
+
+        return in_array($requested, $allowed, true) ? $requested : 'admin_everblock_configuration';
+    }
+
     private function getMissingConfigurationPermissions(Request $request, \Everblock $module): array
     {
         // Read from the route attributes only: a query string must not be able to substitute

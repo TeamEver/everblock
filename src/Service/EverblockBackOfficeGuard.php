@@ -25,7 +25,8 @@ use Configuration;
 use Context;
 use Cookie;
 use Employee;
-use Exception;
+use EmployeeSession;
+use PhpEncryption;
 use Tab;
 use Tools;
 use Validate;
@@ -37,26 +38,36 @@ if (!defined('_PS_VERSION_')) {
 /**
  * Identifies and authorises a real back office employee from a front office request.
  *
- * PrestaShop never populates $context->employee on the front office: config/config.inc.php
- * only builds it when _PS_ADMIN_DIR_ is defined, and classes/controller/FrontController.php
- * does not reference employees at all (checked on 8.0, 8.2 and 9.2).
+ * PrestaShop never populates $context->employee on the front office: config/config.inc.php only
+ * builds it when _PS_ADMIN_DIR_ is defined, and classes/controller/FrontController.php does not
+ * reference employees at all (checked on 8.0, 8.2 and 9.2).
  *
  * Employee::isLoggedBack() cannot be used from the front office either: on PS 8 it reads
- * Context::getContext()->cookie, which is the *customer* cookie, and on PS 9 it delegates to
- * the admin Symfony firewall (prestashop.user_provider), unreachable outside the back office.
+ * Context::getContext()->cookie, which is the *customer* cookie, and on PS 9 it delegates to the
+ * admin Symfony firewall, unreachable outside the back office.
  *
- * We therefore read the native `psAdmin` cookie — exactly what the core itself does in
- * Tools::isAllowedToBypassMaintenance() — and replay the checks performed by isLoggedBack().
+ * IMPORTANT — why this class does NOT instantiate Cookie('psAdmin') on the front office.
+ * Cookie::__construct() calls update(), and update() calls logout() as soon as the stored
+ * checksum does not match. Cookie::logout() then calls deleteSession() (which DELETES the
+ * ps_employee_session row) and encryptAndSetCookie() (which sends a Set-Cookie clearing the
+ * cookie) — and encryptAndSetCookie() does not honour disallowWriting(). Merely *reading* the
+ * back office cookie that way could therefore log the employee out of the back office. The
+ * parsing below is strictly read only: it never writes a cookie, never touches a session row.
+ *
+ * It is also name agnostic: rather than recomputing 'PrestaShop-' . md5(_PS_VERSION_ . 'psAdmin'
+ * . domain), it scans the cookies actually sent by the browser. A host that differs between the
+ * back office and the front office (preprod aliases, reverse proxies, shop domain mismatches)
+ * therefore no longer breaks the lookup.
  */
 class EverblockBackOfficeGuard
 {
     const ROLE_PREFIX = 'ROLE_MOD_TAB_';
 
-    /** @var Cookie|null */
-    private static $adminCookie;
+    /** Prefix of every PrestaShop cookie name. */
+    const COOKIE_NAME_PREFIX = 'PrestaShop-';
 
-    /** @var bool */
-    private static $adminCookieResolved = false;
+    /** @var array<string, string>|null Decoded content of the back office cookie */
+    private static $adminCookieContent;
 
     /** @var Employee|null */
     private static $employee;
@@ -65,58 +76,107 @@ class EverblockBackOfficeGuard
     private static $employeeResolved = false;
 
     /**
-     * Read-only access to the back office cookie, from either side of the shop.
+     * Decoded back office cookie content, as a plain key => value map.
      *
-     * @return Cookie|null
+     * @return array<string, string>
      */
-    public static function getAdminCookie()
+    public static function getAdminCookieContent(): array
     {
-        if (self::$adminCookieResolved) {
-            return self::$adminCookie;
+        if (self::$adminCookieContent !== null) {
+            return self::$adminCookieContent;
         }
 
-        self::$adminCookieResolved = true;
-        self::$adminCookie = null;
+        self::$adminCookieContent = [];
 
-        // Inside the back office the current cookie already *is* the psAdmin cookie.
+        // Inside the back office the legacy context already holds the decoded psAdmin cookie,
+        // so there is nothing to parse and nothing that could be written.
         if (defined('_PS_ADMIN_DIR_')) {
             $context = Context::getContext();
             if ($context && $context->cookie instanceof Cookie) {
-                self::$adminCookie = $context->cookie;
+                foreach (['id_employee', 'passwd', 'remote_addr', 'session_id', 'session_token'] as $key) {
+                    if (isset($context->cookie->{$key})) {
+                        self::$adminCookieContent[$key] = (string) $context->cookie->{$key};
+                    }
+                }
             }
 
-            return self::$adminCookie;
+            return self::$adminCookieContent;
         }
 
+        if (!is_array($_COOKIE) || !class_exists('PhpEncryption') || !defined('_NEW_COOKIE_KEY_')) {
+            return self::$adminCookieContent;
+        }
+
+        foreach ($_COOKIE as $name => $value) {
+            if (!is_string($name) || !is_string($value) || strpos($name, self::COOKIE_NAME_PREFIX) !== 0) {
+                continue;
+            }
+
+            $content = self::decodeCookieValue($value);
+            if ($content === [] || (int) ($content['id_employee'] ?? 0) <= 0) {
+                continue;
+            }
+
+            self::$adminCookieContent = $content;
+            break;
+        }
+
+        return self::$adminCookieContent;
+    }
+
+    /**
+     * Read only reimplementation of Cookie::update() decoding, restricted to what this guard
+     * needs. Returns an empty array when the value cannot be decrypted or fails its checksum.
+     *
+     * @return array<string, string>
+     */
+    private static function decodeCookieValue(string $value): array
+    {
         try {
-            $cookie = new Cookie('psAdmin');
+            $cipher = new PhpEncryption(_NEW_COOKIE_KEY_);
+            $decrypted = $cipher->decrypt($value);
         } catch (\Throwable $exception) {
-            // Catch Throwable, not Exception: a malformed cookie can surface as an Error in
-            // PHP 8, and this guard must never be the reason a page fails to render.
-            return null;
+            return [];
         }
 
-        // Never rewrite the back office cookie from a front office request.
-        $cookie->disallowWriting();
-        self::$adminCookie = $cookie;
+        if (!is_string($decrypted) || $decrypted === '' || strpos($decrypted, 'id_employee|') === false) {
+            return [];
+        }
 
-        return self::$adminCookie;
+        $parts = explode('¤', $decrypted);
+        array_pop($parts);
+        $contentForChecksum = implode('¤', $parts) . '¤';
+
+        $content = [];
+        foreach (explode('¤', $decrypted) as $pair) {
+            $keyAndValue = explode('|', $pair);
+            if (count($keyAndValue) === 2) {
+                $content[$keyAndValue[0]] = $keyAndValue[1];
+            }
+        }
+
+        // Same checksum as Cookie::update() for a non standalone cookie: salt is _COOKIE_IV_.
+        if (!defined('_COOKIE_IV_')
+            || !isset($content['checksum'])
+            || !hash_equals(hash('sha256', _COOKIE_IV_ . $contentForChecksum), (string) $content['checksum'])
+        ) {
+            return [];
+        }
+
+        return $content;
     }
 
     /**
      * Token of the current employee back office session, or an empty string.
      *
-     * Useful as an extra HMAC ingredient: any signature bound to it dies when the employee
-     * logs out of the back office, without any server side storage.
+     * Useful as an extra HMAC ingredient: any signature bound to it dies when the employee logs
+     * out of the back office, without any server side storage.
      */
     public static function getEmployeeSessionToken(): string
     {
-        $cookie = self::getAdminCookie();
-        if (!$cookie) {
-            return '';
-        }
+        $content = self::getAdminCookieContent();
 
-        return isset($cookie->session_token) ? (string) $cookie->session_token : '';
+        return isset($content['session_token']) ? (string) $content['session_token'] : '';
     }
 
     /**
@@ -131,30 +191,29 @@ class EverblockBackOfficeGuard
         self::$employeeResolved = true;
         self::$employee = null;
 
-        $cookie = self::getAdminCookie();
-        if (!$cookie) {
+        $content = self::getAdminCookieContent();
+        if ($content === []) {
             return null;
         }
 
-        $employeeId = (int) $cookie->id_employee;
+        $employeeId = (int) ($content['id_employee'] ?? 0);
         if ($employeeId <= 0) {
             return null;
         }
 
-        // The employee session must still exist in ps_employee_session.
-        if (!method_exists($cookie, 'isSessionAlive') || !$cookie->isSessionAlive()) {
-            return null;
-        }
-
         // The password hash carried by the cookie must still match the database one.
-        $passwd = isset($cookie->passwd) ? (string) $cookie->passwd : '';
+        $passwd = (string) ($content['passwd'] ?? '');
         if ($passwd === '' || !Employee::checkPassword($employeeId, $passwd)) {
             return null;
         }
 
+        if (!self::isSessionAlive($employeeId, $content)) {
+            return null;
+        }
+
         if (Configuration::get('PS_COOKIE_CHECKIP')
-            && isset($cookie->remote_addr)
-            && (int) $cookie->remote_addr !== (int) ip2long(Tools::getRemoteAddr())
+            && isset($content['remote_addr'])
+            && (int) $content['remote_addr'] !== (int) ip2long(Tools::getRemoteAddr())
         ) {
             return null;
         }
@@ -170,9 +229,36 @@ class EverblockBackOfficeGuard
     }
 
     /**
+     * Same check as Cookie::isSessionAlive(), without going through a Cookie instance and
+     * without the date_upd write that Cookie::getSession() performs.
+     *
+     * @param array<string, string> $content
+     */
+    private static function isSessionAlive(int $employeeId, array $content): bool
+    {
+        $sessionId = (int) ($content['session_id'] ?? 0);
+        $sessionToken = (string) ($content['session_token'] ?? '');
+
+        if ($sessionId <= 0 || $sessionToken === '') {
+            return false;
+        }
+
+        if (!class_exists('EmployeeSession')) {
+            return false;
+        }
+
+        $session = new EmployeeSession($sessionId);
+        if (!Validate::isLoadedObject($session)) {
+            return false;
+        }
+
+        return hash_equals((string) $session->getToken(), $sessionToken)
+            && (int) $session->getUserId() === $employeeId;
+    }
+
+    /**
      * Native PrestaShop ACL check against a back office tab.
      *
-     * @param Employee $employee
      * @param string $tabClassName e.g. 'AdminEverBlock'
      * @param string $authorization 'CREATE'|'READ'|'UPDATE'|'DELETE'
      */
@@ -219,12 +305,36 @@ class EverblockBackOfficeGuard
     }
 
     /**
+     * Diagnostic helper: why did the lookup fail? Never returns a secret.
+     */
+    public static function describeLookup(): string
+    {
+        $prestashopCookies = 0;
+        if (is_array($_COOKIE)) {
+            foreach (array_keys($_COOKIE) as $name) {
+                if (is_string($name) && strpos($name, self::COOKIE_NAME_PREFIX) === 0) {
+                    ++$prestashopCookies;
+                }
+            }
+        }
+
+        $content = self::getAdminCookieContent();
+
+        return sprintf(
+            'admin dir defined: %s, PrestaShop cookies received: %d, decoded employee cookie: %s, https: %s',
+            defined('_PS_ADMIN_DIR_') ? 'yes' : 'no',
+            $prestashopCookies,
+            $content === [] ? 'none' : ('#' . (int) ($content['id_employee'] ?? 0)),
+            Tools::usingSecureMode() ? 'yes' : 'no'
+        );
+    }
+
+    /**
      * Test helper: forget the memoized employee/cookie.
      */
     public static function reset(): void
     {
-        self::$adminCookie = null;
-        self::$adminCookieResolved = false;
+        self::$adminCookieContent = null;
         self::$employee = null;
         self::$employeeResolved = false;
     }

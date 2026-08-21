@@ -4235,27 +4235,10 @@ class Everblock extends Module
             return '';
         }
 
-        // Building the signed link must never be able to blank the whole panel: a hardening
-        // feature that breaks a back office page is worse than the hardening is worth. Any
-        // failure is logged and the card is rendered without its login button instead.
-        $loginLink = '';
-        $loginToken = '';
-        try {
-            $loginParams = $this->getEverloginLinkParameters($customer);
-            $loginToken = (string) $loginParams[EverblockCustomerLoginToken::PARAM_TOKEN];
-            $link = new Link();
-            $loginLink = (string) $link->getModuleLink(
-                $this->name,
-                'everlogin',
-                $loginParams
-            );
-        } catch (Throwable $exception) {
-            PrestaShopLogger::addLog(
-                $this->name . ' | unable to build the everlogin link for customer #'
-                . (int) $customer->id . ': ' . $exception->getMessage(),
-                3
-            );
-        }
+        // Building the link must never be able to blank the whole panel: a hardening feature that
+        // breaks a back office page is worse than the hardening is worth. Any failure is logged
+        // and the card is rendered without its login button instead.
+        $loginLink = $this->getEverloginBackOfficeUrl($customer, 'AdminCustomers');
 
         return $this->renderAdminTwig('customer_connect.html.twig', [
             'login_customer' => $customer,
@@ -4263,9 +4246,61 @@ class Everblock extends Module
             'firstname' => $customer->firstname,
             'login_link' => $loginLink,
             $this->name . '_dir' => $this->_path . 'views/img/',
-            'evertoken' => $loginToken,
             'base_uri' => __PS_BASE_URI__,
         ]);
+    }
+
+    /**
+     * Back office URL that mints a fresh "log in as this customer" link and redirects to it.
+     *
+     * The button points at admin_everblock_customer_login rather than at the front office URL, so
+     * the signed token is created when the employee clicks: nothing expirable sits in the back
+     * office HTML, and no token is generated for a button nobody presses.
+     */
+    protected function getEverloginBackOfficeUrl(Customer $customer, string $legacyController): string
+    {
+        // Two routes for one action: each is declared on the legacy controller of the page holding
+        // the button, so the native ACL of that page is what gates it.
+        $route = $legacyController === 'AdminOrders'
+            ? 'admin_everblock_order_customer_login'
+            : 'admin_everblock_customer_login';
+
+        try {
+            // Same call as Twig's path(): the router service, with an absolute PATH. This is the
+            // generator the native grid row actions use, and the only one observed to include the
+            // admin directory. Link::getAdminLink() asks for an ABSOLUTE_URL and produced a URL
+            // without it, which sent the click to the front office.
+            $container = SymfonyContainer::getInstance();
+            if ($container !== null) {
+                $url = (string) $container->get('router')->generate(
+                    $route,
+                    ['customerId' => (int) $customer->id]
+                );
+
+                if ($url !== '') {
+                    return $url;
+                }
+            }
+
+            $link = new Link();
+
+            return (string) $link->getAdminLink(
+                $legacyController,
+                true,
+                [
+                    'route' => $route,
+                    'customerId' => (int) $customer->id,
+                ]
+            );
+        } catch (Throwable $exception) {
+            PrestaShopLogger::addLog(
+                $this->name . ' | unable to build the everlogin link for customer #'
+                . (int) $customer->id . ': ' . $exception->getMessage(),
+                3
+            );
+
+            return '';
+        }
     }
 
     /**
@@ -4373,21 +4408,9 @@ class Everblock extends Module
                 return;
             }
             // Same rule as hookDisplayAdminCustomers: never break the order page because the
-            // signed link could not be built.
-            try {
-                $link = new Link();
-                $connectLink = (string) $link->getModuleLink(
-                    $this->name,
-                    'everlogin',
-                    $this->getEverloginLinkParameters($customer)
-                );
-            } catch (Throwable $exception) {
-                PrestaShopLogger::addLog(
-                    $this->name . ' | unable to build the everlogin link for customer #'
-                    . (int) $customer->id . ': ' . $exception->getMessage(),
-                    3
-                );
-
+            // link could not be built, and mint the signed token only when the button is clicked.
+            $connectLink = $this->getEverloginBackOfficeUrl($customer, 'AdminOrders');
+            if ($connectLink === '') {
                 return;
             }
             if (version_compare(_PS_VERSION_, '8.0', '<')) {

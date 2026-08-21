@@ -79,6 +79,8 @@ class EverblockPreviewBuilder
             $params['controller'] = $controller->php_self;
 
             $this->injectPreviewParameters($params);
+            $this->assignFrontTemplateVariables($controller);
+            $assets = $this->collectFrontAssets($controller);
 
             $methodName = 'hook' . Tools::toCamelCase($hookName);
             $arguments = [[
@@ -87,13 +89,15 @@ class EverblockPreviewBuilder
             ] + $params];
 
             $html = $this->module->everHook($methodName, $arguments);
+            $html = $this->renderShortcodesForPreview((string) $html);
 
             $groupIds = $this->resolveGroupIds($block, $previewCustomer);
             $groupLabels = $this->resolveGroupLabels($groupIds, (int) $this->context->language->id);
 
             return [
-                'html' => (string) $html,
+                'html' => $html,
                 'hook' => $hookName,
+                'assets' => $assets,
                 'info' => [
                     'controller' => $controller->php_self,
                     'page_name' => $controller->page_name,
@@ -121,8 +125,6 @@ class EverblockPreviewBuilder
             'shop' => $context->shop,
             'customer' => $context->customer,
             'controller' => $context->controller,
-            'controller_page' => $context->controller ? $context->controller->page_name : null,
-            'controller_self' => $context->controller ? $context->controller->php_self : null,
         ];
     }
 
@@ -134,10 +136,6 @@ class EverblockPreviewBuilder
         $context->customer = $snapshot['customer'];
 
         $context->controller = $snapshot['controller'];
-        if ($context->controller) {
-            $context->controller->page_name = $snapshot['controller_page'];
-            $context->controller->php_self = $snapshot['controller_self'];
-        }
     }
 
     protected function snapshotGlobals(): array
@@ -267,6 +265,307 @@ class EverblockPreviewBuilder
         }
 
         return $controller;
+    }
+
+    protected function assignFrontTemplateVariables(Controller $controller): void
+    {
+        if (!$this->context->smarty) {
+            return;
+        }
+
+        $pageName = isset($controller->page_name) && $controller->page_name !== ''
+            ? (string) $controller->page_name
+            : 'index';
+
+        $assignments = [
+            'page' => $this->getControllerTemplateVar($controller, 'getTemplateVarPage', [
+                'page_name' => $pageName,
+                'body_classes' => [
+                    'lang-' . ($this->context->language ? (string) $this->context->language->iso_code : '') => true,
+                    'page-' . $pageName => true,
+                ],
+            ]),
+            'urls' => $this->getControllerTemplateVar($controller, 'getTemplateVarUrls', []),
+            'shop' => $this->getControllerTemplateVar($controller, 'getTemplateVarShop', $this->context->shop),
+            'customer' => $this->getControllerTemplateVar($controller, 'getTemplateVarCustomer', $this->context->customer),
+            'currency' => $this->getControllerTemplateVar($controller, 'getTemplateVarCurrency', $this->context->currency),
+            'configuration' => $this->getControllerTemplateVar($controller, 'getTemplateVarConfiguration', []),
+            'language' => $this->context->language,
+        ];
+
+        try {
+            $this->context->smarty->assign($assignments);
+        } catch (\Throwable $exception) {
+            $this->logPreviewNotice('Unable to assign front template variables: ' . $exception->getMessage());
+        }
+    }
+
+    /**
+     * @param mixed $fallback
+     *
+     * @return mixed
+     */
+    protected function getControllerTemplateVar(Controller $controller, string $method, $fallback)
+    {
+        if (!is_callable([$controller, $method])) {
+            return $fallback;
+        }
+
+        try {
+            return $controller->{$method}();
+        } catch (\Throwable $exception) {
+            $this->logPreviewNotice(sprintf(
+                'Unable to collect %s for preview: %s',
+                $method,
+                $exception->getMessage()
+            ));
+        }
+
+        return $fallback;
+    }
+
+    protected function collectFrontAssets(Controller $controller): array
+    {
+        $assets = [
+            'stylesheets' => [],
+            'js_definitions' => [],
+            'javascript' => [
+                'head' => [],
+                'bottom' => [],
+            ],
+        ];
+
+        try {
+            if (is_callable([$controller, 'setMedia'])) {
+                $controller->setMedia();
+            }
+
+            if (is_callable([$controller, 'getStylesheets'])) {
+                $assets['stylesheets'] = $this->normaliseStylesheets((array) $controller->getStylesheets());
+            }
+
+            $assets['js_definitions'] = $this->collectJavascriptDefinitions();
+
+            if (is_callable([$controller, 'getJavascript'])) {
+                $assets['javascript'] = $this->normaliseJavascript((array) $controller->getJavascript());
+            }
+        } catch (\Throwable $exception) {
+            $this->logPreviewNotice('Unable to collect front assets for preview: ' . $exception->getMessage());
+        }
+
+        return $assets;
+    }
+
+    protected function collectJavascriptDefinitions(): array
+    {
+        if (!class_exists('\Media') || !is_callable(['\Media', 'getJsDef'])) {
+            return [];
+        }
+
+        $definitions = [];
+        try {
+            foreach ((array) \Media::getJsDef() as $name => $value) {
+                if (!is_string($name) || !preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/', $name)) {
+                    continue;
+                }
+
+                $encoded = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                if ($encoded === false) {
+                    continue;
+                }
+
+                $definitions[] = [
+                    'name' => $name,
+                    'value' => $encoded,
+                ];
+            }
+        } catch (\Throwable $exception) {
+            $this->logPreviewNotice('Unable to collect front JavaScript definitions: ' . $exception->getMessage());
+        }
+
+        return $definitions;
+    }
+
+    protected function normaliseStylesheets(array $stylesheets): array
+    {
+        $normalised = [];
+
+        foreach ($stylesheets as $stylesheet) {
+            $uri = $this->extractAssetUri($stylesheet);
+            if ($uri === '') {
+                continue;
+            }
+
+            $normalised[] = [
+                'uri' => $uri,
+                'media' => $this->extractAssetOption($stylesheet, ['media'], 'all') ?: 'all',
+            ];
+        }
+
+        return $normalised;
+    }
+
+    protected function normaliseJavascript(array $javascript): array
+    {
+        $normalised = [
+            'head' => [],
+            'bottom' => [],
+        ];
+
+        foreach ($javascript as $position => $assets) {
+            if (in_array($position, ['head', 'bottom'], true) && is_array($assets)) {
+                foreach ($assets as $asset) {
+                    $script = $this->normaliseJavascriptAsset($asset);
+                    if ($script !== null) {
+                        $normalised[$position][] = $script;
+                    }
+                }
+
+                continue;
+            }
+
+            $script = $this->normaliseJavascriptAsset($assets);
+            if ($script !== null) {
+                $normalised['bottom'][] = $script;
+            }
+        }
+
+        return $normalised;
+    }
+
+    protected function normaliseJavascriptAsset($asset): ?array
+    {
+        $uri = $this->extractAssetUri($asset);
+        if ($uri === '') {
+            return null;
+        }
+
+        return [
+            'uri' => $uri,
+            'async' => $this->assetHasAsyncAttribute($asset),
+            'defer' => $this->assetHasDeferAttribute($asset),
+        ];
+    }
+
+    protected function extractAssetUri($asset): string
+    {
+        if (is_scalar($asset)) {
+            return $this->normaliseAssetUri((string) $asset);
+        }
+
+        return $this->normaliseAssetUri($this->extractAssetOption($asset, ['uri', 'path', 'src'], ''));
+    }
+
+    protected function normaliseAssetUri(string $uri): string
+    {
+        $uri = trim($uri);
+        if ($uri === ''
+            || preg_match('#^(?:https?:)?//#i', $uri)
+            || strpos($uri, '/') === 0
+            || strpos($uri, 'data:') === 0
+            || strpos($uri, 'blob:') === 0
+        ) {
+            return $uri;
+        }
+
+        return rtrim(__PS_BASE_URI__, '/') . '/' . ltrim($uri, '/');
+    }
+
+    protected function extractAssetOption($asset, array $keys, string $default = ''): string
+    {
+        foreach ($keys as $key) {
+            if (is_array($asset) && isset($asset[$key]) && is_scalar($asset[$key])) {
+                return (string) $asset[$key];
+            }
+
+            if (is_object($asset)) {
+                if (isset($asset->{$key}) && is_scalar($asset->{$key})) {
+                    return (string) $asset->{$key};
+                }
+
+                $getter = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $key)));
+                if (is_callable([$asset, $getter])) {
+                    try {
+                        $value = $asset->{$getter}();
+                        if (is_scalar($value)) {
+                            return (string) $value;
+                        }
+                    } catch (\Throwable $exception) {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        return $default;
+    }
+
+    protected function assetHasDeferAttribute($asset): bool
+    {
+        if (is_array($asset)) {
+            if (!empty($asset['defer'])) {
+                return true;
+            }
+
+            return isset($asset['attribute']) && (string) $asset['attribute'] === 'defer';
+        }
+
+        if (is_object($asset)) {
+            if (isset($asset->defer) && (bool) $asset->defer) {
+                return true;
+            }
+
+            if (isset($asset->attribute) && (string) $asset->attribute === 'defer') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function assetHasAsyncAttribute($asset): bool
+    {
+        if (is_array($asset)) {
+            if (!empty($asset['async'])) {
+                return true;
+            }
+
+            return isset($asset['attribute']) && (string) $asset['attribute'] === 'async';
+        }
+
+        if (is_object($asset)) {
+            if (isset($asset->async) && (bool) $asset->async) {
+                return true;
+            }
+
+            if (isset($asset->attribute) && (string) $asset->attribute === 'async') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function renderShortcodesForPreview(string $html): string
+    {
+        if (!EverblockTools::hasShortcodeToken($html)) {
+            return $html;
+        }
+
+        try {
+            return EverblockTools::renderShortcodes($html, $this->context, $this->module);
+        } catch (\Throwable $exception) {
+            $this->logPreviewNotice('Unable to render shortcodes in preview: ' . $exception->getMessage());
+        }
+
+        return $html;
+    }
+
+    protected function logPreviewNotice(string $message): void
+    {
+        if (class_exists('\PrestaShopLogger')) {
+            \PrestaShopLogger::addLog('Everblock preview: ' . $message, 2);
+        }
     }
 
     protected function resolveControllerClass(string $controller): string

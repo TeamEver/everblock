@@ -894,8 +894,17 @@ details[open] > .everblock-doc-accordion__summary::after {
 }
 
 .everblock-bo-nav__link,
+.everblock-bo-nav__cache-form {
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
 .everblock-bo-nav__cache {
     align-items: center;
+    background: none;
+    font: inherit;
+    cursor: pointer;
     border: 1px solid transparent;
     border-radius: 6px;
     color: #334155;

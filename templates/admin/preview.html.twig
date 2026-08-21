@@ -1,0 +1,178 @@
+{% set preview_assets = everblock_preview_assets|default({
+  'stylesheets': [],
+  'javascript': {
+    'head': [],
+    'bottom': []
+  }
+}) %}
+{% set preview_page_name = everblock_preview_info.page_name|default(everblock_preview_info.controller|default('index')) %}
+
+<!doctype html>
+<html lang="{{ everblock_preview_info.language.iso_code|default(app.request.locale|default('en')) }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      {% if everblock_preview_block.name|default('') %}
+        {{ 'Preview for "%name%"'|trans({'%name%': everblock_preview_block.name}, 'Modules.Everblock.Admin') }}
+      {% else %}
+        {{ 'Block preview'|trans({}, 'Modules.Everblock.Admin') }}
+      {% endif %}
+    </title>
+
+    {% for stylesheet in preview_assets.stylesheets|default([]) %}
+      <link rel="stylesheet" href="{{ stylesheet.uri }}" media="{{ stylesheet.media|default('all') }}">
+    {% endfor %}
+
+    {% for definition in preview_assets.js_definitions|default([]) %}
+      <script>var {{ definition.name }} = {{ definition.value|raw }};</script>
+    {% endfor %}
+
+    {% for script in preview_assets.javascript.head|default([]) %}
+      <script src="{{ script.uri }}"{% if script.async|default(false) %} async{% endif %}{% if script.defer|default(false) %} defer{% endif %}></script>
+    {% endfor %}
+
+    <style>
+      .everblock-preview-toolbar,
+      .everblock-preview-toolbar * {
+        box-sizing: border-box;
+      }
+
+      .everblock-preview-toolbar {
+        position: fixed;
+        z-index: 2147483000;
+        top: 12px;
+        right: 12px;
+        max-width: min(380px, calc(100vw - 24px));
+        color: #1f2933;
+        font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      }
+
+      .everblock-preview-toolbar details {
+        overflow: hidden;
+        border: 1px solid rgba(15, 23, 42, .16);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, .96);
+        box-shadow: 0 14px 36px rgba(15, 23, 42, .18);
+      }
+
+      .everblock-preview-toolbar summary {
+        display: block;
+        padding: 9px 12px;
+        cursor: pointer;
+        color: #0f172a;
+        font-weight: 700;
+        list-style: none;
+      }
+
+      .everblock-preview-toolbar summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .everblock-preview-toolbar__content {
+        padding: 0 12px 12px;
+        border-top: 1px solid rgba(15, 23, 42, .1);
+      }
+
+      .everblock-preview-toolbar dl {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 5px 10px;
+        margin: 10px 0 0;
+      }
+
+      .everblock-preview-toolbar dt {
+        color: #64748b;
+        font-weight: 700;
+      }
+
+      .everblock-preview-toolbar dd {
+        margin: 0;
+      }
+
+      .everblock-preview-toolbar a {
+        color: #2563eb;
+        text-decoration: none;
+      }
+
+      .everblock-preview-toolbar a:hover {
+        text-decoration: underline;
+      }
+
+      .everblock-preview-error,
+      .everblock-preview-empty {
+        margin: 24px auto;
+        max-width: 960px;
+        padding: 16px 18px;
+        border-radius: 8px;
+        font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      }
+
+      .everblock-preview-error {
+        border: 1px solid #f5b5ae;
+        background: #fff1f0;
+        color: #b42318;
+      }
+
+      .everblock-preview-empty {
+        border: 1px solid #dbe2ea;
+        background: #fff;
+        color: #64748b;
+      }
+    </style>
+  </head>
+  <body id="module-everblock-preview" class="everblock-front-preview page-{{ preview_page_name|replace({'_': '-'}) }}">
+    {% if everblock_preview_error %}
+      <section class="everblock-preview-error" role="alert">
+        {{ everblock_preview_error }}
+      </section>
+    {% else %}
+      <aside class="everblock-preview-toolbar" aria-label="{{ 'Preview context'|trans({}, 'Modules.Everblock.Admin') }}">
+        <details>
+          <summary>{{ 'Ever Block preview'|trans({}, 'Modules.Everblock.Admin') }}</summary>
+          <div class="everblock-preview-toolbar__content">
+            <dl>
+              {% if everblock_preview_hook %}
+                <dt>{{ 'Hook:'|trans({}, 'Modules.Everblock.Admin') }}</dt>
+                <dd>{{ everblock_preview_hook }}</dd>
+              {% endif %}
+              {% if everblock_preview_info.controller is defined %}
+                <dt>{{ 'Controller:'|trans({}, 'Modules.Everblock.Admin') }}</dt>
+                <dd>{{ everblock_preview_info.controller }}</dd>
+              {% endif %}
+              {% if everblock_preview_info.language.iso_code is defined %}
+                <dt>{{ 'Language:'|trans({}, 'Modules.Everblock.Admin') }}</dt>
+                <dd>{{ everblock_preview_info.language.iso_code }}</dd>
+              {% endif %}
+              {% if everblock_preview_info.shop.name is defined %}
+                <dt>{{ 'Shop:'|trans({}, 'Modules.Everblock.Admin') }}</dt>
+                <dd>{{ everblock_preview_info.shop.name }}</dd>
+              {% endif %}
+              {% if everblock_preview_return_url|default('') %}
+                <dt>{{ 'Edition:'|trans({}, 'Modules.Everblock.Admin') }}</dt>
+                <dd><a href="{{ everblock_preview_return_url }}" target="_top">{{ 'Back to edition'|trans({}, 'Modules.Everblock.Admin') }}</a></dd>
+              {% endif %}
+            </dl>
+          </div>
+        </details>
+      </aside>
+
+      <main id="wrapper">
+        <div class="container">
+          <section id="content" class="page-content">
+            {% if everblock_preview_html %}
+              {{ everblock_preview_html|raw }}
+            {% else %}
+              <p class="everblock-preview-empty">{{ 'The block did not return any content for this context.'|trans({}, 'Modules.Everblock.Admin') }}</p>
+            {% endif %}
+          </section>
+        </div>
+      </main>
+    {% endif %}
+
+    {% for script in preview_assets.javascript.bottom|default([]) %}
+      <script src="{{ script.uri }}"{% if script.async|default(false) %} async{% endif %}{% if script.defer|default(false) %} defer{% endif %}></script>
+    {% endfor %}
+  </body>
+</html>

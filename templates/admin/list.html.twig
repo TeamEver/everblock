@@ -65,9 +65,9 @@
     </div>
   </form>
 
-  {% if section == 'blocks' %}
-    <form id="everblock-block-bulk-form" method="post">
-  {% endif %}
+  {# Wraps the table for every section: the row actions below are POST submits, so they need
+     an enclosing form. Bulk buttons are still only rendered for the blocks section. #}
+  <form id="everblock-list-form" method="post">
 
   <div class="card everblock-bo-list-card">
     <div class="card-header everblock-bo-list-card__header">
@@ -170,7 +170,9 @@
                 {% if section == 'blocks' %}
                   {% set active_value = attribute(row, 'active')|default(false) %}
                   {% set is_active = active_value == true or active_value == 1 or active_value == '1' %}
-                  {% set preview_url = preview_urls[row_id]|default('') %}
+                  {# path(), like the other actions of this row: the only generator whose base
+                     path is guaranteed to match the admin request. #}
+                  {% set preview_url = row_id ? path('admin_everblock_block_preview', {id: row_id}) : '' %}
                   {% if preview_url %}
                     <button
                       type="button"
@@ -184,24 +186,24 @@
                       <span class="sr-only">{{ 'Preview'|trans({}, 'Modules.Everblock.Admin') }}</span>
                     </button>
                   {% endif %}
-                  <a class="btn btn-sm {{ is_active ? 'btn-outline-warning' : 'btn-success' }} everblock-icon-btn" href="{{ path('admin_everblock_blocks_toggle', {id: row_id}) }}" title="{{ is_active ? 'Disable'|trans({}, 'Admin.Actions') : 'Enable'|trans({}, 'Admin.Actions') }}" aria-label="{{ is_active ? 'Disable'|trans({}, 'Admin.Actions') : 'Enable'|trans({}, 'Admin.Actions') }}">
+                  <button type="submit" formmethod="post" formaction="{{ path('admin_everblock_blocks_toggle', {id: row_id}) }}" class="btn btn-sm {{ is_active ? 'btn-outline-warning' : 'btn-success' }} everblock-icon-btn" title="{{ is_active ? 'Disable'|trans({}, 'Admin.Actions') : 'Enable'|trans({}, 'Admin.Actions') }}" aria-label="{{ is_active ? 'Disable'|trans({}, 'Admin.Actions') : 'Enable'|trans({}, 'Admin.Actions') }}">
                     <i class="material-icons">{{ is_active ? 'toggle_off' : 'toggle_on' }}</i>
                     {% if is_active %}
                       <span class="sr-only">{{ 'Disable'|trans({}, 'Admin.Actions') }}</span>
                     {% else %}
                       <span class="sr-only">{{ 'Enable'|trans({}, 'Admin.Actions') }}</span>
                     {% endif %}
-                  </a>
-                  <a class="btn btn-sm btn-outline-secondary everblock-icon-btn" href="{{ path('admin_everblock_blocks_duplicate', {id: row_id}) }}" title="{{ 'Duplicate'|trans({}, 'Admin.Actions') }}" aria-label="{{ 'Duplicate'|trans({}, 'Admin.Actions') }}">
+                  </button>
+                  <button type="submit" formmethod="post" formaction="{{ path('admin_everblock_blocks_duplicate', {id: row_id}) }}" class="btn btn-sm btn-outline-secondary everblock-icon-btn" title="{{ 'Duplicate'|trans({}, 'Admin.Actions') }}" aria-label="{{ 'Duplicate'|trans({}, 'Admin.Actions') }}">
                     <i class="material-icons">content_copy</i>
                     <span class="sr-only">{{ 'Duplicate'|trans({}, 'Admin.Actions') }}</span>
-                  </a>
+                  </button>
                 {% endif %}
 
-                <a class="btn btn-sm btn-outline-danger everblock-icon-btn" href="{{ path(config.route ~ '_delete', {id: row_id}) }}" title="{{ 'Delete'|trans({}, 'Admin.Actions') }}" aria-label="{{ 'Delete'|trans({}, 'Admin.Actions') }}" onclick="return confirm('{{ 'Delete this item?'|trans({}, 'Modules.Everblock.Admin')|e('js') }}');">
+                <button type="submit" formmethod="post" formaction="{{ path(config.route ~ '_delete', {id: row_id}) }}" class="btn btn-sm btn-outline-danger everblock-icon-btn" title="{{ 'Delete'|trans({}, 'Admin.Actions') }}" aria-label="{{ 'Delete'|trans({}, 'Admin.Actions') }}" onclick="return confirm('{{ 'Delete this item?'|trans({}, 'Modules.Everblock.Admin')|e('js') }}');">
                   <i class="material-icons">delete</i>
                   <span class="sr-only">{{ 'Delete'|trans({}, 'Admin.Actions') }}</span>
-                </a>
+                </button>
               </td>
             </tr>
           {% else %}
@@ -219,8 +221,9 @@
     </div>
   </div>
 
+  </form>
+
   {% if section == 'blocks' %}
-    </form>
 
     <div class="modal fade everblock-preview-modal" id="everblock-preview-modal" tabindex="-1" role="dialog" aria-labelledby="everblockPreviewModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-xl everblock-preview-full" role="document">
