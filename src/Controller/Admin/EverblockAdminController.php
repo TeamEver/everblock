@@ -19,6 +19,7 @@ use Everblock\Tools\Query\ListAdminItemsQuery;
 use Everblock\Tools\Repository\BlockRepository;
 use Everblock\Tools\Repository\HookRepository;
 use Everblock\Tools\Service\AdminConfigurationManager;
+use Everblock\Tools\Service\EverblockPreviewToken;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\EverblockUploadGuard;
 use Everblock\Tools\Service\ModuleTranslationManager;
@@ -285,6 +286,49 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
+     * Mints a fresh signed "log in as this customer" link and redirects to it.
+     *
+     * Generating the link here rather than in the grid HTML means the signed token is created at
+     * click time: it is never rendered for rows nobody clicks, and it never sits in the back
+     * office page source. The route is declared on the AdminCustomers legacy controller, so the
+     * native ACL of the Customers page gates it — the same permission that
+     * controllers/front/everlogin.php requires.
+     *
+     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
+     */
+    public function customerLoginAction(int $customerId): RedirectResponse
+    {
+        $customer = new \Customer($customerId);
+        if (!\Validate::isLoadedObject($customer)) {
+            $this->addFlash('error', $this->transAdmin('The requested customer could not be found.'));
+
+            return $this->redirectToRoute('admin_customers_index');
+        }
+
+        /** @var \Everblock|null $module */
+        $module = Module::getInstanceByName('everblock');
+        if (!$module instanceof \Everblock) {
+            $this->addFlash('error', $this->transAdmin('The Ever Block module is not available.'));
+
+            return $this->redirectToRoute('admin_customers_index');
+        }
+
+        try {
+            $loginUrl = $module->getEverloginUrl($customer);
+        } catch (\Throwable $exception) {
+            $loginUrl = '';
+        }
+
+        if ($loginUrl === '') {
+            $this->addFlash('error', $this->transAdmin('The secure login link could not be generated. See the PrestaShop logs for details.'));
+
+            return $this->redirectToRoute('admin_customers_index');
+        }
+
+        return $this->redirect($loginUrl);
+    }
+
+    /**
      * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
      */
     public function downloadTranslationAction(string $file, ModuleTranslationManager $manager): Response
@@ -544,12 +588,15 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             return '';
         }
 
-        $params = [
-            'id_everblock' => $blockId,
-            'id_lang' => $this->languageId(),
-            'id_shop' => $this->shopId(),
-            'token' => \Tools::getAdminTokenLite('AdminEverBlock'),
-        ];
+        // Tools::getAdminTokenLite() cannot be used here: it hashes the tab id together with
+        // Context::getContext()->employee->id, which does not resolve to the same value in the
+        // front office request that verifies the link. The signature below is computed the same
+        // way on both sides.
+        $params = EverblockPreviewToken::buildLinkParameters(
+            $blockId,
+            $this->shopId(),
+            $this->languageId()
+        );
 
         return (string) $context->link->getModuleLink('everblock', 'preview', $params);
     }

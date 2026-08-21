@@ -24,6 +24,7 @@ if (!defined('_PS_VERSION_')) {
 
 use Everblock\Tools\Service\EverblockBackOfficeGuard;
 use Everblock\Tools\Service\EverblockPreviewBuilder;
+use Everblock\Tools\Service\EverblockPreviewToken;
 
 class EverblockPreviewModuleFrontController extends ModuleFrontController
 {
@@ -130,25 +131,81 @@ class EverblockPreviewModuleFrontController extends ModuleFrontController
 
     protected function assertValidToken(): void
     {
-        $token = (string) Tools::getValue('token');
+        $token = (string) Tools::getValue(EverblockPreviewToken::PARAM_TOKEN);
         if ($token === '') {
             throw $this->accessDenied($this->translate('Missing preview token.'));
         }
 
-        $validTokens = [
+        // Signature issued by EverblockAdminController::buildPreviewUrl(). Both sides compute
+        // the same HMAC over an explicit payload, unlike Tools::getAdminTokenLite() whose value
+        // depends on Context::getContext()->employee->id and on the tab id.
+        $expires = (int) Tools::getValue(EverblockPreviewToken::PARAM_EXPIRES);
+        $nonce = (string) Tools::getValue(EverblockPreviewToken::PARAM_NONCE);
+        $blockId = (int) Tools::getValue(EverblockPreviewToken::PARAM_BLOCK);
+        $shopId = (int) Tools::getValue(EverblockPreviewToken::PARAM_SHOP, (int) $this->context->shop->id);
+        $languageId = (int) Tools::getValue(EverblockPreviewToken::PARAM_LANG, (int) $this->context->language->id);
+
+        if ($expires > 0
+            && EverblockPreviewToken::isFresh($expires)
+            && EverblockPreviewToken::verify($blockId, $shopId, $languageId, $expires, $nonce, $token)
+        ) {
+            return;
+        }
+
+        // Legacy fallback: preview links generated before the signed token was introduced, and
+        // still open in a back office tab. Kept because it can only widen acceptance for an
+        // already authenticated employee, never narrow it.
+        $legacyTokens = [
             Tools::getAdminTokenLite('AdminEverBlock'),
             Tools::getAdminTokenLite('AdminEverBlockConfiguration'),
             Tools::getAdminTokenLite('AdminEverBlockHook'),
             Tools::getAdminTokenLite('AdminModules'),
         ];
 
-        foreach ($validTokens as $validToken) {
-            if (is_string($validToken) && $validToken !== '' && hash_equals($validToken, $token)) {
+        foreach ($legacyTokens as $legacyToken) {
+            if (is_string($legacyToken) && $legacyToken !== '' && hash_equals($legacyToken, $token)) {
                 return;
             }
         }
 
+        $this->logTokenMismatch($token, $expires, $nonce);
+
         throw $this->accessDenied($this->translate('Invalid preview token.'));
+    }
+
+    /**
+     * Logs what differed, without ever writing a token value to the logs.
+     */
+    protected function logTokenMismatch(string $token, int $expires, string $nonce): void
+    {
+        if (!class_exists('PrestaShopLogger')) {
+            return;
+        }
+
+        $employeeId = isset($this->context->employee) && $this->context->employee
+            ? (int) $this->context->employee->id
+            : 0;
+
+        PrestaShopLogger::addLog(
+            sprintf(
+                'Everblock preview: token mismatch (token length %d, signed params %s, expires %s, employee #%d, tab id %d)',
+                strlen($token),
+                ($expires > 0 && $nonce !== '') ? 'present' : 'absent',
+                $expires > 0 ? ($this->isExpiredLabel($expires)) : 'none',
+                $employeeId,
+                (int) Tab::getIdFromClassName(self::PREVIEW_TAB)
+            ),
+            2
+        );
+    }
+
+    private function isExpiredLabel(int $expires): string
+    {
+        if ($expires <= time()) {
+            return 'expired';
+        }
+
+        return EverblockPreviewToken::isFresh($expires) ? 'fresh' : 'out of range';
     }
 
     /**

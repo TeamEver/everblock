@@ -20,8 +20,6 @@
 
 namespace Everblock\Tools\Service;
 
-use Configuration;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -45,8 +43,11 @@ if (!defined('_PS_VERSION_')) {
  */
 class EverblockCustomerLoginToken
 {
+    /** Domain separator of this token family. */
+    const PURPOSE = 'everlogin';
+
     /** Configuration key holding the module HMAC secret (shop independent). */
-    const CONFIG_SECRET = 'EVERBLOCK_EVERLOGIN_SECRET';
+    const CONFIG_SECRET = EverblockSignedToken::CONFIG_SECRET;
 
     /** Lifetime of a generated link, in seconds. */
     const TTL = 900;
@@ -104,69 +105,32 @@ class EverblockCustomerLoginToken
      */
     public static function isFresh(int $expires, ?int $now = null): bool
     {
-        $now = $now === null ? time() : (int) $now;
-
-        return $expires > $now && $expires <= $now + self::TTL + self::CLOCK_SKEW;
+        return EverblockSignedToken::isFresh($expires, self::TTL, $now);
     }
 
     public static function isValidNonce(string $nonce): bool
     {
-        $length = strlen($nonce);
-
-        return $length >= 16 && $length <= 64 && ctype_xdigit($nonce);
+        return EverblockSignedToken::isValidNonce($nonce);
     }
 
     public static function generateNonce(): string
     {
-        try {
-            return bin2hex(random_bytes(16));
-        } catch (\Exception $exception) {
-            // random_bytes only fails when no CSPRNG is available; refuse to emit a weak nonce.
-            return '';
-        }
+        return EverblockSignedToken::generateNonce();
     }
 
     private static function sign(int $idCustomer, int $idEmployee, int $expires, string $nonce): string
     {
-        $secret = self::getSecret();
-        if ($secret === '' || $nonce === '') {
-            return '';
-        }
-
-        $payload = implode('|', [
-            'everlogin',
-            (int) $idCustomer,
-            (int) $idEmployee,
-            (int) $expires,
+        // Delegates to the shared primitive so everlogin and the block preview cannot drift apart.
+        // The employee back office session token is part of the HMAC key, never of the URL.
+        return EverblockSignedToken::sign(
+            self::PURPOSE,
+            [
+                'id_customer' => $idCustomer,
+                'id_employee' => $idEmployee,
+            ],
+            $expires,
             $nonce,
-        ]);
-
-        // The employee back office session token is part of the key, never of the URL.
-        $key = $secret . '|' . EverblockBackOfficeGuard::getEmployeeSessionToken();
-
-        return hash_hmac('sha256', $payload, $key);
-    }
-
-    /**
-     * Dedicated random secret, created on first use so existing shops are covered without
-     * waiting for an upgrade script.
-     */
-    private static function getSecret(): string
-    {
-        $secret = (string) Configuration::getGlobalValue(self::CONFIG_SECRET);
-
-        if (strlen($secret) >= 32) {
-            return $secret;
-        }
-
-        try {
-            $secret = bin2hex(random_bytes(32));
-        } catch (\Exception $exception) {
-            return '';
-        }
-
-        Configuration::updateGlobalValue(self::CONFIG_SECRET, $secret);
-
-        return $secret;
+            EverblockBackOfficeGuard::getEmployeeSessionToken()
+        );
     }
 }

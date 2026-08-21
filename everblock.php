@@ -78,6 +78,7 @@ use Everblock\Tools\Service\AdminTwigRenderer;
 use Everblock\Tools\Service\EverblockCache;
 use Everblock\Tools\Service\EverblockCustomerLoginToken;
 use Everblock\Tools\Service\EverblockUploadGuard;
+use PrestaShop\PrestaShop\Core\Grid\Action\Row\Type\LinkRowAction;
 use Everblock\Tools\Service\QcdThirdPartyBlockRenderer;
 use Everblock\Tools\Service\EverblockTools;
 use Everblock\Tools\Service\ImportFile;
@@ -1208,6 +1209,7 @@ class Everblock extends Module
         $this->unregisterHook('actionDispatcherBefore');
         $this->registerHook('actionGetAdminOrderButtons');
         $this->registerHook('displayAdminCustomers');
+        $this->registerHook('actionCustomerGridDefinitionModifier');
         $this->registerHook('actionCustomerLogoutBefore');
         $this->registerHook('displayAdminProductsExtra');
         $this->registerHook('displayAdminProductsMainStepLeftColumnBottom');
@@ -4278,13 +4280,83 @@ class Everblock extends Module
             $employeeId = (int) $this->context->employee->id;
         }
 
-        $params = EverblockCustomerLoginToken::buildLinkParameters(
+        // No ever_id_cart: controllers/front/everlogin.php never reads it, and computing it
+        // costs a Cart::lastNoneOrderedCart() query on every render.
+        return EverblockCustomerLoginToken::buildLinkParameters(
             (int) $customer->id,
             $employeeId
         );
-        $params['ever_id_cart'] = (int) Cart::lastNoneOrderedCart((int) $customer->id);
+    }
 
-        return $params;
+    /**
+     * Front office URL that logs the current employee in as the given customer.
+     *
+     * Public so the back office controller can build a fresh link when the employee clicks the
+     * "Log in as this customer" action of the Customers grid.
+     */
+    public function getEverloginUrl(Customer $customer): string
+    {
+        $link = new Link();
+
+        return (string) $link->getModuleLink(
+            $this->name,
+            'everlogin',
+            $this->getEverloginLinkParameters($customer)
+        );
+    }
+
+    /**
+     * Adds a "Log in as this customer" row action to the Customers grid.
+     *
+     * The action points at a back office route rather than at the front office URL: the signed
+     * token is then minted when the employee clicks, so it never sits in the grid HTML of every
+     * row (and no token is generated for rows nobody clicks).
+     *
+     * @param array<string, mixed> $params
+     */
+    public function hookActionCustomerGridDefinitionModifier(array $params)
+    {
+        if (!isset($params['definition'])) {
+            return;
+        }
+
+        $definition = $params['definition'];
+        if (!method_exists($definition, 'getColumns') || !class_exists(LinkRowAction::class)) {
+            return;
+        }
+
+        try {
+            foreach ($definition->getColumns() as $column) {
+                if ($column->getId() !== 'actions') {
+                    continue;
+                }
+
+                $options = $column->getOptions();
+                if (!isset($options['actions']) || !is_object($options['actions'])) {
+                    continue;
+                }
+
+                $options['actions']->add(
+                    (new LinkRowAction('everblock_customer_login'))
+                        ->setName($this->l('Log in as this customer'))
+                        ->setIcon('login')
+                        ->setOptions([
+                            'route' => 'admin_everblock_customer_login',
+                            'route_param_name' => 'customerId',
+                            'route_param_field' => 'id_customer',
+                            'target' => '_blank',
+                        ])
+                );
+
+                break;
+            }
+        } catch (Throwable $exception) {
+            // Never break the Customers grid because of an extra row action.
+            PrestaShopLogger::addLog(
+                $this->name . ' | unable to add the everlogin row action: ' . $exception->getMessage(),
+                3
+            );
+        }
     }
 
     /**

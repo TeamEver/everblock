@@ -135,6 +135,8 @@ return [
     'src/Service/EverblockCache.php',
     'src/Service/EverblockCustomerLoginToken.php',
     'src/Service/EverblockPreviewBuilder.php',
+    'src/Service/EverblockPreviewToken.php',
+    'src/Service/EverblockSignedToken.php',
     'src/Service/EverblockTools.php',
     'src/Service/EverblockUploadGuard.php',
     'src/Service/GithubReleaseChecker.php',
