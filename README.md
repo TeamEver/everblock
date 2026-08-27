@@ -1,1075 +1,228 @@
-# Ever Block - Free HTML Block Module for PrestaShop
+# Ever Block
+
 ![Ever Block logo](logo.png)
 
-Ever Block lets PrestaShop 1.7, 8 and 9 users add unlimited custom HTML blocks anywhere using hooks and shortcodes.
+Ever Block est un module gratuit pour PrestaShop qui permet d'ajouter des blocs HTML, du contenu dynamique et des shortcodes dans les hooks d'affichage de la boutique.
 
-Works seamlessly with PrestaShop hooks and is fully compatible with PrestaShop 1.7, 8 and 9.
+Le module est concu pour les boutiques PrestaShop 8 et 9. PrestaShop 1.7 n'est plus une cible de compatibilite.
 
-## Key Features
-- Unlimited HTML blocks in any PrestaShop hook
-- Shortcodes for products, forms, categories and more
-- Compatible with PrestaShop 1.7, 8 & 9
-- Works with Pretty Blocks page builder
-- Supports QCD ACF custom fields module
-- Built-in cache and obfuscation tools for SEO
-- Easily create modals and extra order steps
+Version documentee : 9.0.6.
 
+[Faire un don pour soutenir le developpement des modules gratuits Team Ever](https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE)
 
-## PrestaShop free HTML block module
-This free module allows you to create unlimited HTML blocks on your shop
+## Compatibilite
 
-[You can make a donation to support the development of free modules by clicking on this link](https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE)
+- PrestaShop 8.0+ et PrestaShop 9.x.
+- PHP 8.1 ou superieur.
+- Multiboutique.
+- Back office moderne base sur les routes, formulaires et grilles Symfony de PrestaShop 8/9.
+- QCD Page Builder lorsque le module est installe.
+- QCD ACF pour les champs personnalises et la bibliotheque SVG.
 
-## PrestaShop 1.7, 8 & 9 hooks 
-Dev documentation show every native PrestaShop hook :
-[PrestaShop 1.7 hook list](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
-Please check ps_hook table on your database to see every available hook on your shop. Only display hooks are used with this module
+Le module declare ces prerequis directement dans `everblock.php` et `composer.json`. Si vous travaillez depuis les sources, utilisez un PHP 8.1+ pour Composer, les commandes Symfony et les controles de syntaxe.
 
-## FAQ ↔ product associations
-Ever Block ships a pivot table named `everblock_faq_product` that stores the FAQ → product relations (`id_everblock_faq`, `id_product`, `id_shop`, `position`). The installer and the 8.0.7 upgrade script automatically create it and keep it in sync across multishop setups.
+## Installation
 
-Use the static helpers exposed by `models/EverblockFaq.php` to manage those links from your own integrations:
+1. Copiez le dossier dans `modules/everblock`.
+2. Si vous partez du depot source, lancez `composer install --no-dev` depuis le dossier du module avec PHP 8.1+.
+3. Installez le module depuis le back office PrestaShop.
+4. Videz le cache PrestaShop apres installation ou mise a jour.
 
-- `EverblockFaq::linkToProduct($faqId, $productId, $shopId = null, $position = null)` attaches a FAQ to a product (the position defaults to the next slot).
-- `EverblockFaq::unlinkProductFaqs($productId, $shopId = null, array $faqIds = null)` removes either all relations for a product or just the provided FAQ IDs.
-- `EverblockFaq::getFaqIdsByProduct($productId, $shopId = null)` returns the ordered FAQ identifiers assigned to a product in the current (or provided) shop.
-- `EverblockFaq::getProductsByFaq($faqId, $shopId = null)` lists the product IDs (and their positions) that consume a FAQ inside a shop.
-- `EverblockFaq::getByIds(array $faqIds, $langId, $shopId = null)` fetches the hydrated FAQ objects for the provided identifiers while keeping the initial ordering intact.
+Le module cree ses tables SQL a l'installation et les maintient via les scripts du dossier `upgrade/`.
 
-All helpers are multishop-aware, keep the multilingual cache up-to-date and trigger the same invalidation logic as the `actionObjectEverblockFaq*` hooks. You can safely call them from cron jobs, custom controllers or import scripts.
+## Back Office
 
-Whenever a product owns at least one FAQ relation, Ever Block automatically injects an extra tab on the product page through `hookDisplayProductExtraContent`. The tab content reuses `views/templates/hook/faq.tpl`, so visitors get the same accordion UI and schema.org microdata as the `[everfaq]` shortcode. The template output is cached per product / shop / language and is flushed by the `actionObjectEverblockFaqUpdateAfter` and `actionObjectProductUpdateAfter` hooks whenever FAQs or their relations change.
+Le menu est installe dans `Improve > Ever Block` avec les entrees suivantes :
 
-## Pretty Blocks compatibility
-This module is compatible with the Pretty Blocks page builder. [Find this free module here.](https://prettyblocks.io/)
+- `Configuration` : reglages globaux, integrations, outils et crons.
+- `HTML Blocks` : blocs affiches dans les hooks.
+- `Hooks` : hooks d'affichage utilisables par les blocs.
+- `Shortcodes` : shortcodes personnalises.
+- `Shortcode documentation` : reference generee depuis le code.
+- `FAQ` : questions/reponses, tags et associations produits.
+- `Pages` : pages de contenu gerees par le module.
 
-### Wheel of fortune segments
-Segments for the wheel now accept an array of category IDs through the `id_categories` field. Use this to restrict generated coupons to one or more categories. The former `id_category` field is deprecated.
+La page de configuration est organisee en onglets : reglages, Meta/Instagram, WordPress, Google, traductions, migration d'URL, outils, fichiers, flags, pages, horaires de jours feries et taches cron.
 
-Each segment also includes its own promo-code settings (name, prefix, validity, discount type and winner cap). Legacy blocks that only defined these values at the block level keep working because the segment settings fall back to the parent configuration when left empty.
+## Blocs HTML
 
-In the PrettyBlocks cover block, you can choose Bootstrap button classes, including outline variants:
+Un bloc Ever Block contient du HTML multilingue et peut etre attache a n'importe quel hook d'affichage actif.
 
-<button type="button" class="btn btn-outline-primary">Primary</button> 
-<button type="button" class="btn btn-outline-secondary">Secondary</button>
-<button type="button" class="btn btn-outline-success">Success</button>
-<button type="button" class="btn btn-outline-danger">Danger</button>
-<button type="button" class="btn btn-outline-warning">Warning</button>
-<button type="button" class="btn btn-outline-info">Info</button>
-<button type="button" class="btn btn-outline-light">Light</button>
-<button type="button" class="btn btn-outline-dark">Dark</button>
+Principales options :
 
+- contenu HTML et code personnalise par langue ;
+- hook, position, statut actif/inactif ;
+- ciblage par page d'accueil, categories, categories produit, fabricants, fournisseurs, categories CMS et groupes clients ;
+- affichage par type d'appareil : tous, mobile, tablette ou desktop ;
+- fenetre de publication avec dates de debut et de fin ;
+- wrapper Bootstrap, classe CSS, couleur de fond et attributs `data-*` ;
+- lazy loading lorsque le template le permet ;
+- obfuscation des liens rendus ;
+- rendu en modal avec delai d'apparition et duree du cookie.
 
-### PrettyBlock blocks
+Les hooks PrestaShop disponibles dependent du theme et des modules installes. Ever Block intercepte dynamiquement les hooks `display*` et ignore les hooks d'action pour l'affichage des blocs.
 
-Ever Block includes a library of PrettyBlock blocks ready to use:
+Documentation officielle utile :
 
-- Accordion
-- Alert
-- Button
-- Brands
-- Card
-- Category highlight
-- Category price
-- Category tabs
-- Contact form
-- Counters
-- Cover
-- Call to action
-- Divider
-- Downloads
-- Everblock content
-- Flash deals
-- Google reviews
-- Special event
-- Category products
-- Gallery
-- Google map
-- Heading
-- Iframe
-- Image map
-- Image
-- Image slider
-- Layout
-- Link list
-- Login form
-- Lookbook
-- Masonry gallery
-- Modal
-- Podcasts
-- Pricing table
-- Product highlight
-- Product selector
-- Progress bar
-- Reassurance
-- Scroll video
-- Sharer
-- Shopping cart
-- Shortcode
-- Social links
-- Spacer
-- Tab
-- Testimonial
-- Testimonial slider
-- Text and image
-- Table of contents
-- Video gallery
-
-## QCD ACF compatibility
-This module is compatible with the QCD ACF module developed by the 410 Gone agency. The QCD ACF module allows you to add custom fields to products, categories, brands, suppliers, characteristics, etc. [You can contact the 410 Gone agency from their website to obtain the QCD ACF module.](https://www.410-gone.fr/e-commerce/prestashop.html)
-
-## Smarty Variables
-
-- `$currency.name`: The name of the currency (euro, dollar, pound sterling, etc.).
-- `$currency.iso_code`: The ISO code of the currency (like EUR for the euro).
-- `$currency.sign`: The acronym of the currency displayed (e.g., € or $).
-- `$currency.iso_code_num`: The ISO code number of this currency (like 978 for the euro).
-- `$shop.name`: Shop name.
-- `$shop.email`: Email associated with the store.
-- `$shop.logo`: Logo of the store (can be found in “Appearance” then “Theme and logo”).
-- `$shop.favicon`: The favicon of your store (also in the same place as the logos and the theme).
-- `$shop.phone`: Phone number of your store.
-- `$shop.fax`: Fax number of your store.
-- `$customer.lastname`: The last name of the connected customer.
-- `$customer.firstname`: The first name of the connected customer.
-- `$customer.email`: The customer's email address.
-- `$customer.birthday`: Date of birth of the customer (no longer mandatory).
-- `$customer.newsletter`: Whether the customer is subscribed to the newsletter (boolean).
-- `$customer.ip_registration_newsletter`: Newsletter registration IP address.
-- `$customer.optin`: Whether the customer has agreed to receive offers from partners (yes or no).
-- `$customer.date_add`: Customer creation date.
-- `$customer.date_upd`: Customer last modified date.
-- `$customer.id`: Customer identifier (database ID).
-- `$customer.id_default_group`: Identifier of the default customer group of this customer.
-- `$customer.is_logged`: Is the customer logged in?
-- `$urls.base_url`: URL of the home page of your PrestaShop.
-- `$urls.current_url`: The current page's URL.
-- `$urls.shop_domain_url`: The domain name of the store.
-- `$urls.img_ps_url`: URL of the /img directory of your PrestaShop.
-- `$urls.img_cat_url`: URL of the category images (e.g., /img/c).
-- `$urls.img_lang_url`: URL of the site’s language images.
-- `$urls.img_prod_url`: URL of the product images (e.g., /img/p).
-- `$urls.img_manu_url`: URL of the manufacturers' images (e.g., /img/m).
-- `$urls.img_sup_url`: URL of the images linked to the suppliers.
-- `$urls.img_ship_url`: URL of images linked to carriers.
-- `$urls.img_store_url`: URL of your store's images.
-- `$urls.img_url`: URL of the images in your theme (e.g., /themes/yourtheme/assets/img).
-- `$urls.css_url`: URL of your theme's CSS files (e.g., /themes/yourtheme/assets/css).
-- `$urls.js_url`: URL of your theme's JavaScript files (e.g., /themes/yourtheme/assets/js).
-- `$urls.pic_url`: URL of the /upload directory.
-
-## Console tools
-
-Run `php bin/console everblock:tools:execute --list` to display the maintenance actions shipped with the module.
-
-## Media directory hygiene
-
-Only image and media assets should be stored inside `views/img/`. The automated clean-up run by `EverblockTools::cleanObsoleteFiles()` will remove any executable files (such as `.php`, `.phtml` or `.phar`) that are found there, even if they match patterns from `.gitignore`, while preserving placeholder `index.php` files.
-
-| Action | Label | Description | Parameters |
-| --- | --- | --- | --- |
-| `getrandomcomment` | Random console comment | Displays a formatted humorous message in the console. | — |
-| `saveblocks` | Backup Everblock data | Exports module tables and backs up CSS/JS assets. | `idshop` (optional) |
-| `restoreblocks` | Restore Everblock data | Restores module tables and assets from a backup. | — |
-| `removeinlinecsstags` | Strip inline CSS | Removes inline style attributes from product descriptions. | `idshop` (optional) |
-| `droplogs` | Purge PrestaShop logs | Clears the native PrestaShop logs table. | — |
-| `refreshtokens` | Refresh Instagram token | Renews the Instagram token and clears the related cache. | — |
-| `fetchinstagramimages` | Download Instagram medias | Downloads configured Instagram media files and stores them locally. | — |
-| `securewithapache` | Protect module folders | Adds Apache rules to protect the module folders. | — |
-| `saveproducts` | Resave all products | Re-saves every product in the shop. | `idshop` (optional) |
-| `generateproducts` | Generate demo products | Creates dummy products with images for the selected shop. | `idshop` (optional) |
-| `webpprettyblock` | Convert Prettyblocks images to WebP | Converts every Prettyblock image to WebP. | — |
-| `removehn` | Replace Hn tags | Replaces Hn tags with paragraph elements carrying CSS classes. | `idshop` (optional) |
-| `duplicateblockslang` | Duplicate blocks between languages | Copies block content and custom code from one language to another. | `idshop` (optional), `fromlang` (required), `tolang` (required) |
-| `fetchwordpressposts` | Fetch WordPress posts | Fetches the configured WordPress posts. | — |
-| `checkdatabase` | Check module database | Installs missing tables and columns, removes obsolete files. | — |
-| `dropunusedlangs` | Drop unused languages | Removes orphan translations from core multilingual tables. | — |
-| `clearcache` | Clear Everblock cache | Flushes module cache entries without clearing the whole shop cache. | — |
+- [Liste des hooks PrestaShop 8](https://devdocs.prestashop-project.org/8/modules/concepts/hooks/list-of-hooks/)
+- [Liste des hooks PrestaShop 9](https://devdocs.prestashop-project.org/9/modules/concepts/hooks/list-of-hooks/)
 
 ## Shortcodes
-The module allows you to use many shortcodes anywhere in your store. However, restrictions may be in place, such as not allowing a hook shortcode or store locator to be used in a modal.
 
-You can create your own shortcodes from the "Shortcodes" tab accessible in the "Ever block" submenu.
+La reference complete est disponible dans le back office via `Ever Block > Shortcode documentation`. Elle est generee par `src/Service/ShortcodeDocumentationProvider.php`, qui est la source de verite a maintenir quand un shortcode evolue.
 
--### Basic shortcodes
-- `[product id="1"]`: Display product with ID 1. Optional parameter: `carousel`.
-- `[product id="1,2,3"]`: Display products with IDs 1, 2, and 3. Optional parameter: `carousel`.
-- `[product_image id="1" image="1"]`: Displays an image of product ID 1. Optional parameter: `image` (defaults to the first image).
-- `[entity_lastname]`: Display customer's last name.
-- `[entity_firstname]`: Display customer's first name.
-- `[entity_gender]`: Display customer's gender.
-- `[category id="8" nb="8"]`: Display products from category ID 8. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
-- `[manufacturer id="2" nb="8"]`: Display products from manufacturer ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
-- `[brands nb="8" carousel=true]`: Display brand names with logos. Required parameter: `nb`. Optional parameter: `carousel`.
-- `[storelocator]`: Show a store locator on any CMS page when a Google Maps API key is configured. Opening and holiday hours accept patterns such as "10h - 12h / 14h - 18h" (simple hyphen) or "10h – 12h / 14h – 18h" (en dash), as well as "10h / 16h".
-- `[evermap]`: Display a Google Map centered on the shop address when a Google Maps API key is configured.
-- `[subcategories id="2" nb="8"]`: Display subcategories of category 2. Parameters `id` and `nb` are required.
-- `[last-products nb="4" carousel=true]`: Display the last products listed in the store. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
-- `[recently_viewed nb="4" carousel=true]`: Display the recently viewed products for the current visitor. Optional parameters: `nb`, `carousel`.
-- `[best-sales nb="4" carousel=true]`: Display best-selling products. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
-- `[evercart]`: Display dropdown cart.
-- `[cart_total]`: Display the total value of the current cart.
-- `[cart_quantity]`: Display the number of products currently in the cart.
-- `[shop_logo]`: Display the shop logo.
-- `[newsletter_form]`: Display the PrestaShop newsletter subscription form.
-- `[alert type="success"]Content[/alert]`: Display a Bootstrap alert box. Optional parameter: `type` (`primary`, `secondary`, `success`, `danger`, `warning`, `info`, `light`, `dark`).
-- `[nativecontact]`: Embed the native PrestaShop contact form (this replaces the obsolete `[evercontact]` shortcode).
-- `[everstore id="4"]`: Display store information for store ID 4 (several IDs can be separated with commas). Required parameter: `id`.
-- `[video url="https://www.youtube.com/embed/35kwlY_RR08?si=QfwsUt9sEukni0Gj"]`: Display a YouTube iframe of the video whose sharing URL is in the parameter. Required parameter: `url`.
-- `[everaddtocart ref="1234" text="Add me to cart"]`: Create an add to cart button for product reference 1234. Required parameter: `ref`. Optional parameter: `text`.
-- `[everfaq tag="faq1"]`: Show FAQs related to the `tag`. Required parameter: `tag`.
-- `[everfaq_product id_product="42"]`: Show FAQs associated with the product ID `42`. Required parameter: `id_product` (aliases: `product_id`, `product`, `id`).
-- `[productfeature id="2" nb="12" carousel="true"]`: Display products with feature ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
-- `[productfeaturevalue id="2" nb="12" carousel="true"]`: Display products with feature value ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
-- `[promo-products nb="10" carousel=true]`: Display products on sale. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
-- `[products_by_tag tag="summer|sale" match="all" limit="8" order="price" way="asc" cols="4"]`: Display products filtered by PrestaShop tags. Required parameter: `tag` or `tag_id`. Other parameters are optional: `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
-- `[best-sales nb="10" carousel=true]`: Display the top best-selling products. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
-- `[categorybestsales id="8" nb="10"]`: Display best-selling products from category ID 8. Required parameter: `id`. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
-- `[brandbestsales id="3" nb="10"]`: Display best-selling products from brand ID 3. Required parameter: `id`. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
-- `[featurebestsales id="2" nb="10"]`: Display best-selling products with feature ID 2. Required parameter: `id`. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
-- `[featurevaluebestsales id="5" nb="10"]`: Display best-selling products with feature value ID 5. Required parameter: `id`. Optional parameters: `nb`, `limit`, `days`, `carousel`, `orderby`, `orderway`.
-- `[random_product nb="10" carousel=true]`: Display random products. Optional parameters: `nb`, `limit`, `carousel`, `orderby`, `orderway`.
-- `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Display products linked to the current product. Optional parameters: `nb`, `limit`, `orderby`, `orderway`.
-- `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Display accessories of the current product. Required parameter: `nb` or `limit`. Optional parameters: `orderby`, `orderway`.
-- `[crosselling nb="4" orderby="id_product" orderway="asc"]`: If the cart is empty, show best-selling products. Otherwise display accessories of cart products. Optional parameters: `nb`, `limit`, `orderby`, `orderway`, `carousel`.
-- `{hook h='displayHome'}`: Displays the `displayHome` hook (hooks are not allowed on modals)
-- `[everinstagram]`: Display your latest Instagram photos. Images are stored in `/img/cms/instagram`. Images are cached for 24h and refreshed when the cache expires or when you run `everblock:tools:execute refreshtokens`.
-- `[googlereviews place_id="YOUR_PLACE_ID"]`: Display reviews from your Google Business listing. Optional parameters: `key`, `place_id`, `limit`, `min_rating`, `sort`, `show_rating`, `show_avatar`, `show_cta`, `cta_label`, `cta_url`, `columns`, `title`, `intro`, `class`.
-- `[everimg name="image.jpg" class="img-fluid" carousel=true]`: Display one or more CMS images. Required parameter: `name`. Optional parameters: `class`, `carousel`.
-- `[displayQcdSvg name="icon" class="myclass" inline=true]`: Display a QCD SVG icon. Required parameter: `name`. Optional parameters: `class`, `inline`.
-- `[qcdacf field="field" objectType="objectType" objectId="objectId"]`: Display a value from QCD ACF fields. Required parameters: `field`, `objectType`, `objectId`.
-- `[widget moduleName="mymodule" hookName="displayHome"]`: Render another module's widget. Required parameters: `moduleName`, `hookName`.
+Exemples courants :
 
-### Shortcode parameters reference
+| Famille | Exemples |
+| --- | --- |
+| Catalogue | `[product 1,2,3 carousel=true]`, `[category id="8" nb="8"]`, `[manufacturer id="3" nb="12"]`, `[best-sales nb=10]` |
+| Merchandising | `[promo-products nb=10]`, `[random_product nb="10"]`, `[products_by_tag tag="summer|sale"]`, `[low_stock limit="8"]` |
+| Produit courant | `[linkedproducts nb="8"]`, `[accessories nb="8"]`, `[crosselling nb=4]`, `[everaddtocart ref="ABC123"]` |
+| Contenu | `[everblock 3]`, `[cms id="1"]`, `[evercms id="1"]`, `[everimg name="image.jpg"]`, `[video https://www.youtube.com/watch?v=...]` |
+| Boutique | `[everstore 1]`, `[storelocator]`, `[evermap]`, `[googlereviews place_id="..."]` |
+| Client et panier | `[entity_firstname]`, `[entity_company]`, `[evercart]`, `[cart_total]`, `[cart_quantity]`, `[newsletter_form]` |
+| FAQ | `[everfaq tag="faq1"]`, `[everfaq_product id_product="42"]` |
+| Formulaires | `[evercontactform_open]`, `[evercontact type="text" label="Votre nom"]`, `[evercontactform_close]` |
+| Commande | `[everorderform_open]`, `[everorderform type="text" label="Information"]`, `[everorderform_close]` |
+| Integrations | `[qcdacf my_field product 12]`, `[displayQcdSvg name="icon" inline=true]`, `[wordpress-posts]`, `[everinstagram]`, `[widget moduleName="mymodule" hookName="displayHome"]` |
 
-| Shortcode | Required parameters | Optional parameters |
-| --- | --- | --- |
-| `[alert]...[/alert]` | — | type |
-| `[everfaq]` | tag | — |
-| `[everfaq_product]` | id_product | — |
-| `[product]` | id(s) | carousel |
-| `[product_image]` | id | image number |
-| `[productfeature]` | id | nb, limit, carousel, orderby, orderway |
-| `[productfeaturevalue]` | id | nb, limit, carousel, orderby, orderway |
-| `[category]` | id | nb, limit, carousel, orderby, orderway |
-| `[manufacturer]` | id | nb, limit, carousel, orderby, orderway |
-| `[brands]` | nb | carousel |
-| `[subcategories]` | id, nb | — |
-| `[everstore]` | id(s) | — |
-| `[video]` | url | — |
-| `[qcdacf]` | field, objectType, objectId | — |
-| `[displayQcdSvg]` | name | class, inline |
-| `[everimg]` | name | class, carousel |
-| `[entity_lastname]` | — | — |
-| `[entity_firstname]` | — | — |
-| `[entity_gender]` | — | — |
-| `[storelocator]` | — | — |
-| `[evermap]` | — | — |
-| `[googlereviews]` | — | key, place_id, limit, min_rating, sort, show_rating, show_avatar, show_cta, cta_label, cta_url, columns, title, intro, class |
-| `[evercart]` | — | — |
-| `[cart_total]` | — | — |
-| `[cart_quantity]` | — | — |
-| `[shop_logo]` | — | — |
-| `[newsletter_form]` | — | — |
-| `[nativecontact]` | — | — |
-| `[everinstagram]` | — | — |
-| `[evercontactform_open]` | — | — |
-| `[evercontactform_close]` | — | — |
-| `[everorderform_open]` | — | — |
-| `[everorderform_close]` | — | — |
-| `[llorem]` | — | — |
-| `[wordpress-posts]` | — | — |
-| `[best-sales]` | — | nb, limit, days, carousel, orderby, orderway |
-| `[categorybestsales]` | id | nb, limit, days, carousel, orderby, orderway |
-| `[brandbestsales]` | id | nb, limit, days, carousel, orderby, orderway |
-| `[featurebestsales]` | id | nb, limit, days, carousel, orderby, orderway |
-| `[featurevaluebestsales]` | id | nb, limit, days, carousel, orderby, orderway |
-| `[last-products]` | — | nb, limit, carousel, orderby, orderway |
-| `[recently_viewed]` | — | nb, carousel |
-| `[promo-products]` | — | nb, limit, carousel, orderby, orderway |
-| `[products_by_tag]` | tag or tag_id | match, limit, offset, order, way, cols, visibility |
-| `[low_stock]` | — | limit, offset, threshold, match, order, way, days, id_category, id_manufacturer, visibility, available_only, cols, by |
-| `[random_product]` | — | nb, limit, carousel, orderby, orderway |
-| `[accessories]` | nb or limit | orderby, orderway |
-| `[linkedproducts]` | — | nb, limit, orderby, orderway |
-| `[crosselling]` | — | nb, limit, orderby, orderway, carousel |
-| `[widget]` | moduleName, hookName | — |
-| `[everaddtocart]` | ref | text |
-| `[evercontact]` | type, label | value, values, required, class |
-| `[everorderform]` | type, label | value, values, required, class |
-| `[cms]` | id | — |
-| `[evercms]` | id | — |
-| `[everblock]` | id | — |
+Les shortcodes peuvent aussi afficher des variables Smarty simples via le contexte PrestaShop, par exemple les informations boutique, client, devise et URL.
 
-### Contact form shortcodes
-A contact form must start with the shortcode `[evercontactform_open]` and end with the shortcode `[evercontactform_close]`
+## FAQ et pages front office
 
-- `[evercontact type="text" label="Your name"]` to display a text input field with the label "Your name"
-- `[evercontact type="number" label="Your age"]` to display a numeric input field with the label "Your age"
-- `[evercontact type="textarea" label="Message"]` to display a textarea input field with the label "Message"
-- `[evercontact type="select" label="You are" values="Man,Woman,Other"]` to display a select field with the label "You are" and the options "Man, Woman, Other"
-- `[evercontact type="radio" label="You are" values="Man,Woman,Other"]` is the same as select, but using radio buttons instead of select
-- `[evercontact type="checkbox" label="You are" values="Man,Woman,Other"]` is the same as select, but using checkboxes instead of select
-- `[evercontact type="multiselect" label="You are" values="Man,Woman,Other"]` to display a multiple select field with the label "You are" and the options "Man, Woman, Other"
-- `[evercontact type="file" label="Attachment"]` to display a file upload field
-- `[evercontact type="hidden" label="Hidden field"]` to display a hidden field that will have the label and value "Hidden field"
-- `[evercontact type="sento" label="me@email.fr"]` to display the recipient's email in a coded way. The recipient's email will not be clearly displayed on the pages. Not using this means sending the email to the email address defined in your store by default. You can specify multiple emails by separating them with commas. Be sure to use the EI Captcha module to secure email sending.
-- `[evercontact type="submit" label="Submit"]` to display a submit button for your custom contact form
+Ever Block fournit deux contenus front office natifs :
 
-The HTML for each `[evercontact]` field is rendered through the `contact_field.tpl` template located in `views/templates/hook`.  
-Copy this file into your theme (`/themes/your_theme/modules/everblock/views/templates/hook/`) to customize the markup.
+- Pages : liste sur `/guide` par defaut, detail sur `/guide/{id}-{rewrite}`.
+- FAQ : liste sur `/faq` par defaut, filtre par tag sur `/faq/tag/{tag}`.
 
-No emails are saved on your store.
-A contact form can be added in a block used as a modal.
+Les bases d'URL (`guide` et `faq`) et la pagination se configurent dans `Configuration > Pages`.
 
-### Order funnel form shortcodes
-To use the form in the order tunnel, you must first create the new step in the module configuration.
+Les FAQ sont regroupees par tag et peuvent etre liees a des produits via la table `everblock_faq_product`. Quand un produit possede des FAQ associees, le module peut ajouter automatiquement un onglet produit via `displayProductExtraContent`.
 
-A form for the new order funnel step must be put on the `displayEverblockExtraOrderStep` hook. Therefore, you can create a new block, set it on the `displayEverblockExtraOrderStep` hook and add these shortcodes below.
+Les helpers disponibles sur l'alias legacy `EverblockFaq` permettent de piloter ces associations depuis un import, un cron ou un module tiers :
 
-Please make sure that the title of the new order step is set in the module configuration.
+- `EverblockFaq::linkToProduct($faqId, $productId, $shopId = null, $position = null)`
+- `EverblockFaq::unlinkProductFaqs($productId, $shopId = null, array $faqIds = null)`
+- `EverblockFaq::getFaqIdsByProduct($productId, $shopId = null)`
+- `EverblockFaq::getProductsByFaq($faqId, $shopId = null)`
+- `EverblockFaq::getByIds(array $faqIds, $langId, $shopId = null)`
 
-A form for the new order funnel step must start with the shortcode `[everorderform_open]` and end with the shortcode `[everorderform_close]`
+## Produit, checkout et commande
 
-You can add the following fields between these two shortcodes:
-`[everorderform type="text" label="Your name"]` to display a text input field with the label "Your name"
-`[everorderform type="number" label="Your age"]` to display a numeric input field with the label "Your age"
-`[everorderform type="textarea" label="Message"]` to display a textarea input field with the label "Message"
-`[everorderform type="select" label="You are" values="Man,Woman,Other"]` to display a select field with the label "You are" and the options "Man, Woman, Other"
-`[everorderform type="radio" label="You are" values="Man,Woman,Other"]` is the same as select, but using radio buttons instead of select
-`[everorderform type="checkbox" label="You are" values="Man,Woman,Other"]` is the same as select, but using checkboxes instead of select
-`[everorderform type="multiselect" label="You are" values="Man,Woman,Other"]` to display a multiple select field with the label "You are" and the options "Man, Woman, Other"
-`[everorderform type="hidden" label="Hidden field"]` to display a hidden field which will have the label and value "Hidden field"
+Le module ajoute plusieurs outils autour de la fiche produit et du tunnel de commande :
 
-The choices made in the form of the additional step of the order tunnel will be displayed in invoices, delivery notes, in the order confirmation page and in the order administration page.
+- onglets produit globaux ou specifiques au produit ;
+- FAQ produit ;
+- modales produit avec contenu multilingue et fichiers associes ;
+- flags produit, dont flag "sold out" et flags bases sur des caracteristiques ;
+- etape supplementaire de checkout configurable ;
+- contenu supplementaire sur confirmation de commande, detail commande, facture PDF, bon de livraison PDF et emails.
 
-## FAQ Management
-FAQs are grouped using tags. All FAQs with exactly the same tags will be grouped together when you enter the shortcode.
+## Integrations
 
-For example, the shortcode `[everfaq tag="faq1"]` will display all FAQs with the tag "faq1".
+### QCD Page Builder
 
-You can determine the order of FAQs within a tag by specifying a position for them.
+Lorsque QCD Page Builder est installe, Ever Block enregistre ses hooks d'integration et expose des cibles editables pour les blocs, shortcodes, FAQ, pages et contenus produit.
 
-## Blocks Management
-An HTML block is grafted onto a hook. You can determine the customer group(s) concerned by the block, as well as the type of device (smartphone, tablet, computer).
+### QCD ACF
 
-Settings allow you to add conditions on the display of these blocks, such as:
-- display the block only on the home page
-- display the block only on category pages, with a selection of the categories concerned
-- display the block only on product sheets, with a selection of product categories concerned
-- display the block only on brand pages, with a selection of the brands concerned
-- display the block only on supplier pages, with a selection of the suppliers concerned
+Les shortcodes `[qcdacf ...]` et `[displayQcdSvg ...]` permettent d'afficher des champs ACF et des icones SVG fournis par QCD ACF.
 
-Obfuscation settings will help you improve your SEO, the obfuscation script can be disabled in the module configuration.
+### Google
 
-Make sure that the hook used in the block matches the criteria of the settings of this block, so as to guarantee its display.
+La configuration Google couvre :
 
-Each block can be converted to a modal and can have shortcodes in its content (except hook and store locator shortcodes). You can therefore create contact forms in a modal.
+- les avis Google Places via `[googlereviews ...]` ;
+- Google Maps pour `[evermap]` ;
+- le store locator via `[storelocator]` ;
+- l'icone SVG de marqueur de carte ;
+- les horaires specifiques de jours feries par magasin.
 
-The PrettyBlocks library now includes a **Google reviews** block so you can drop your Google Business testimonials with configurable columns, intro text and CTA overrides.
+### Instagram et WordPress
 
-## Triggering modals from a button
-You can trigger an Everblock modal manually from any hook. Add a button with the
-class `everblock-modal-button` and provide the block ID in a `data-everclickmodal`
-attribute:
+Le module peut :
 
-```html
-<button class="everblock-modal-button" data-everclickmodal="12">Open modal</button>
+- rafraichir un token Instagram et telecharger les medias utilises par `[everinstagram]` ;
+- recuperer les derniers articles d'un site WordPress REST pour `[wordpress-posts]`.
+
+## Cache
+
+Ever Block utilise un cache module centralise dans `Everblock\Tools\Service\EverblockCache`.
+
+Le cache est invalide automatiquement lors de la mise a jour des blocs, FAQ, pages, relations FAQ/produit et contenus produit. Pour le vider manuellement :
+
+- back office : `Ever Block > Configuration > Outils > Empty Everblock cache` ;
+- console : `php bin/console everblock:tools:execute clearcache`.
+
+Apres une mise a jour de code, une installation, une restauration ou une migration, videz aussi le cache PrestaShop.
+
+## Taches cron
+
+La page `Configuration > Taches crons` genere des URLs signees avec un token rotatif. Les actions HTTP exposees volontairement sont limitees a :
+
+- `saveblocks`
+- `droplogs`
+- `refreshtokens`
+- `fetchwordpressposts`
+
+Les actions de restauration, migration ou securisation restent disponibles en console ou via les boutons du back office, pas via le controleur front cron.
+
+## Commandes console
+
+Toutes les commandes doivent etre lancees depuis la racine PrestaShop avec PHP 8.1+.
+
+| Commande | Usage |
+| --- | --- |
+| `php bin/console everblock:tools:execute --list` | Liste les actions de maintenance disponibles. |
+| `php bin/console everblock:tools:execute clearcache` | Vide uniquement le cache Ever Block. |
+| `php bin/console everblock:tools:execute checkdatabase` | Verifie et repare le schema SQL du module. |
+| `php bin/console everblock:tools:execute saveblocks [idshop]` | Sauvegarde les tables et assets du module. |
+| `php bin/console everblock:tools:execute restoreblocks` | Restaure les tables et assets depuis une sauvegarde. |
+| `php bin/console everblock:tools:execute duplicateblockslang [idshop] [fromlang] [tolang]` | Duplique le contenu des blocs d'une langue vers une autre. |
+| `php bin/console everblock:tools:execute fetchwordpressposts` | Recupere les articles WordPress configures. |
+| `php bin/console everblock:tools:execute fetchinstagramimages` | Telecharge les medias Instagram configures. |
+| `php bin/console everblock:tools:execute refreshtokens` | Rafraichit le token Instagram. |
+| `php bin/console everblock:tools:execute removeinlinecsstags [idshop]` | Supprime les attributs `style` des descriptions produit. |
+| `php bin/console everblock:tools:execute removehn [idshop]` | Remplace les titres `h1` a `h6` dans les descriptions par des paragraphes classes. |
+| `php bin/console everblock:tools:execute droplogs` | Vide les logs natifs PrestaShop. |
+| `php bin/console everblock:tools:execute dropunusedlangs` | Supprime les traductions orphelines. |
+| `php bin/console everblock:tools:execute securewithapache` | Ajoute des protections Apache dans les dossiers module. |
+| `php bin/console everblock:tools:execute saveproducts [idshop]` | Re-sauvegarde les produits de la boutique. |
+| `php bin/console everblock:tools:execute generateproducts [idshop]` | Genere des produits de demonstration. |
+| `php bin/console everblock:tools:export blocks [idshop] [lang]` | Exporte les blocs vers `output/everblock.xlsx`. |
+| `php bin/console everblock:tools:import` | Importe `input/everblock.xlsx`, puis supprime le fichier et vide le cache module. |
+| `php bin/console everblock:tools:import_tab` | Importe `input/everblock_tabs.xlsx`. |
+| `php bin/console everblock:tools:search-replace <search> <replace> [idshop]` | Remplace une chaine dans la base pour une migration d'URL. |
+
+## Fichiers et securite
+
+- Les assets publics sont dans `views/css`, `views/js` et `views/img`.
+- Le dossier `views/img` doit contenir uniquement des medias. Les fichiers executables y sont supprimes par `EverblockTools::cleanObsoleteFiles()`, sauf les `index.php` de protection.
+- Les uploads de formulaire et de modale passent par `EverblockUploadGuard`.
+- Les URLs cron utilisent un token dedie et regenerable.
+- Les actions de configuration verifient les permissions natives PrestaShop selon l'operation executee.
+
+## Developpement
+
+Le depot contient des workflows GitHub pour :
+
+- lint PHP 8.1 ;
+- lint Smarty quand Smarty est disponible ;
+- PHPStan avec `phpstan.neon` ;
+- PHP CS Fixer ;
+- validation et packaging de release.
+
+Commandes utiles en local :
+
+```bash
+composer install
+php -l everblock.php
+php bin/console everblock:tools:execute --list
+php phpstan.phar analyse --no-progress --configuration=phpstan.neon --memory-limit=1G
 ```
 
-To display the content of a CMS page in a modal, use the same class with a
-`data-evercms` attribute holding the CMS page ID:
+Sur Windows, si le PHP du `PATH` est inferieur a 8.1, lancez ces commandes dans un conteneur Docker PHP 8.1+ ou dans l'environnement PrestaShop cible.
 
-```html
-<button class="everblock-modal-button" data-evercms="5">Open CMS</button>
-```
+## Licence
 
-When clicked, the module will load the corresponding modal content via AJAX and
-display it using Bootstrap.
-
-## Cache & logs
-
-The module stores its cache entries in the native PrestaShop cache layer and does not create module cache files.
-
-The logs directory is located in /var/logs/
-Log files are created only when there is content to log.
-
-Saving a block clears that block cache automatically. The `clearcache` command only clears Everblock cache entries.
-
----
-
-## README en français
-
-# Ever Block - Module gratuit de bloc HTML pour PrestaShop
-![Ever Block logo](logo.png)
-
-Ever Block permet aux utilisateurs de PrestaShop 1.7, 8 et 9 d'ajouter un nombre illimité de blocs HTML personnalisés n'importe où grâce aux hooks et aux shortcodes.
-
-Il fonctionne parfaitement avec les hooks PrestaShop et est totalement compatible avec PrestaShop 1.7, 8 et 9.
-
-
-## Fonctionnalités clés
-- Blocs HTML illimités sur n'importe quel hook PrestaShop
-- Shortcodes pour produits, formulaires, catégories et plus encore
-- Compatible avec PrestaShop 1.7, 8 & 9
-- Fonctionne avec le constructeur de pages Pretty Blocks
-- Prend en charge le module de champs personnalisés QCD ACF
-- Outils intégrés de cache et d'obfuscation pour le SEO
-- Création facile de modales et d'étapes de commande supplémentaires
-
-## Module de bloc HTML gratuit pour PrestaShop
-Ce module gratuit vous permet de créer un nombre illimité de blocs HTML sur votre boutique
-
-[Vous pouvez faire un don pour soutenir le développement de modules gratuits en cliquant sur ce lien](https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE)
-
-## Hooks PrestaShop 1.7, 8 & 9
-La documentation développeur présente tous les hooks PrestaShop natifs :
-[Liste des hooks PrestaShop 1.7](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
-Veuillez consulter la table ps_hook de votre base de données pour voir tous les hooks disponibles sur votre boutique. Seuls les hooks d'affichage sont utilisés avec ce module
-
-## Compatibilité Pretty Blocks
-Ce module est compatible avec le constructeur de pages Pretty Blocks. [Retrouvez ce module gratuit ici.](https://prettyblocks.io/)
-
-Dans le bloc cover de PrettyBlocks, vous pouvez choisir des classes de boutons Bootstrap, y compris les variantes outline :
-
-<button type="button" class="btn btn-outline-primary">Primary</button> 
-<button type="button" class="btn btn-outline-secondary">Secondary</button>
-<button type="button" class="btn btn-outline-success">Success</button>
-<button type="button" class="btn btn-outline-danger">Danger</button>
-<button type="button" class="btn btn-outline-warning">Warning</button>
-<button type="button" class="btn btn-outline-info">Info</button>
-<button type="button" class="btn btn-outline-light">Light</button>
-<button type="button" class="btn btn-outline-dark">Dark</button>
-
-## Compatibilité QCD ACF
-Ce module est compatible avec le module QCD ACF développé par l'agence 410 Gone. Il permet d'ajouter des champs personnalisés aux produits, catégories, marques, fournisseurs, caractéristiques, etc. [Contactez l'agence 410 Gone depuis leur site pour obtenir le module QCD ACF.](https://www.410-gone.fr/e-commerce/prestashop.html)
-
-## Variables Smarty
-- `$currency.name` : Nom de la devise (euro, dollar, livre sterling, etc.)
-- `$currency.iso_code` : Code ISO de la devise (comme EUR pour l'euro)
-- `$currency.sign` : Signe de la devise (€, $ ...)
-- `$currency.iso_code_num` : Code ISO numérique de la devise (ex : 978 pour l'euro)
-- `$shop.name` : Nom de la boutique
-- `$shop.email` : Adresse email de la boutique
-- `$shop.logo` : Logo de la boutique
-- `$shop.favicon` : Favicon de la boutique
-- `$shop.phone` : Numéro de téléphone de la boutique
-- `$shop.fax` : Fax de la boutique
-- `$customer.lastname` : Nom du client connecté
-- `$customer.firstname` : Prénom du client connecté
-- `$customer.email` : Email du client
-- `$customer.birthday` : Date de naissance du client
-- `$customer.newsletter` : Inscription à la newsletter (booléen)
-- `$customer.ip_registration_newsletter` : IP d'inscription à la newsletter
-- `$customer.optin` : Consentement aux offres partenaires
-- `$customer.date_add` : Date de création du client
-- `$customer.date_upd` : Date de dernière modification du client
-- `$customer.id` : Identifiant du client
-- `$customer.id_default_group` : Groupe client par défaut
-- `$customer.is_logged` : Le client est-il connecté ?
-- `$urls.base_url` : URL de la page d'accueil
-- `$urls.current_url` : URL de la page actuelle
-- `$urls.shop_domain_url` : Domaine de la boutique
-- `$urls.img_ps_url` : URL du dossier /img de PrestaShop
-- `$urls.img_cat_url` : URL des images catégories
-- `$urls.img_lang_url` : URL des images de langues
-- `$urls.img_prod_url` : URL des images produits
-- `$urls.img_manu_url` : URL des images fabricants
-- `$urls.img_sup_url` : URL des images fournisseurs
-- `$urls.img_ship_url` : URL des images transporteurs
-- `$urls.img_store_url` : URL des images de la boutique
-- `$urls.img_url` : URL des images du thème
-- `$urls.css_url` : URL des fichiers CSS du thème
-- `$urls.js_url` : URL des fichiers JavaScript du thème
-- `$urls.pic_url` : URL du dossier /upload
-
-## Outils console
-
-Exécutez `php bin/console everblock:tools:execute --list` pour afficher les actions de maintenance fournies par le module.
-
-| Action | Libellé | Description | Paramètres |
-| --- | --- | --- | --- |
-| `getrandomcomment` | Commentaire console aléatoire | Affiche un message humoristique formaté dans la console. | — |
-| `saveblocks` | Sauvegarder les blocs Everblock | Exporte les tables du module et sauvegarde les assets CSS/JS. | `idshop` (optionnel) |
-| `restoreblocks` | Restaurer les blocs Everblock | Restaure les tables et fichiers du module depuis une sauvegarde. | — |
-| `removeinlinecsstags` | Nettoyer le CSS inline | Supprime les attributs style des descriptions produit. | `idshop` (optionnel) |
-| `droplogs` | Purger les logs PrestaShop | Vide la table native des logs PrestaShop. | — |
-| `refreshtokens` | Rafraîchir le jeton Instagram | Renouvelle le jeton Instagram et vide le cache associé. | — |
-| `fetchinstagramimages` | Télécharger les médias Instagram | Télécharge les médias Instagram configurés et les stocke localement. | — |
-| `securewithapache` | Protéger les dossiers du module | Ajoute des règles Apache pour sécuriser les dossiers du module. | — |
-| `saveproducts` | Réenregistrer tous les produits | Réenregistre chaque produit de la boutique. | `idshop` (optionnel) |
-| `generateproducts` | Générer des produits de démonstration | Crée des produits factices avec images pour la boutique sélectionnée. | `idshop` (optionnel) |
-| `webpprettyblock` | Convertir les images Prettyblocks en WebP | Convertit toutes les images Prettyblock en WebP. | — |
-| `removehn` | Remplacer les balises Hn | Remplace les balises Hn par des paragraphes avec classes CSS. | `idshop` (optionnel) |
-| `duplicateblockslang` | Dupliquer les blocs entre langues | Copie le contenu et le code personnalisé d'une langue à l'autre. | `idshop` (optionnel), `fromlang` (obligatoire), `tolang` (obligatoire) |
-| `fetchwordpressposts` | Récupérer les articles WordPress | Récupère les articles WordPress configurés. | — |
-| `checkdatabase` | Vérifier la base du module | Installe les tables/colonnes manquantes et supprime les fichiers obsolètes. | — |
-| `dropunusedlangs` | Supprimer les langues inutilisées | Retire les traductions orphelines des tables multilingues natives. | — |
-| `clearcache` | Vider le cache Everblock | Vide les entrées de cache du module sans vider tout le cache de la boutique. | — |
-
-## Shortcodes
-Le module vous permet d'utiliser de nombreux shortcodes partout dans votre boutique. Certaines restrictions peuvent s'appliquer, par exemple un hook ou un store locator ne peuvent pas être utilisés dans une modale.
-
-Vous pouvez créer vos propres shortcodes depuis l'onglet "Shortcodes" accessible dans le sous-menu "Ever block".
-
-### Shortcodes basiques
-- `[product 1]` : Affiche le produit ayant l'ID 1. Supporte `carousel=true`.
-- `[product 1,2,3]` : Affiche les produits 1, 2 et 3. Supporte `carousel=true`.
-- `[product_image 1 1]` : affiche la première image du produit dont l'ID est 1. Par défaut, la première image est affichée si rien n'est spécifié après l'ID de l'image.
- - `[entity_lastname]` : Affiche le nom du client connecté.
- - `[promo-products nb="10" carousel=true]` : Affiche dix produits en promotion en carousel.
- - `[products_by_tag tag="été|soldes" match="all" limit="8" order="price" way="asc" cols="4"]` : Affiche les produits filtrés par tags PrestaShop. Attributs : `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
- - `[best-sales nb="10" carousel=true]` : Affiche les dix meilleures ventes. Paramètres optionnels : `days`, `orderby`, `orderway`.
-- `[categorybestsales id="8" nb="10"]` : Affiche les meilleures ventes de la catégorie 8. Paramètres optionnels : `orderby`, `orderway`.
-- `[brandbestsales id="3" nb="10"]` : Affiche les meilleures ventes de la marque 3. Paramètres optionnels : `orderby`, `orderway`.
-- `[featurebestsales id="2" nb="10"]` : Affiche les meilleures ventes associées à la caractéristique 2. Paramètres optionnels : `orderby`, `orderway`.
-- `[featurevaluebestsales id="5" nb="10"]` : Affiche les meilleures ventes pour la valeur de caractéristique 5. Paramètres optionnels : `orderby`, `orderway`.
-- `[random_product nb="10" carousel=true]` : Affiche dix produits aléatoires en carousel.
-- `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]` : Affiche les produits liés au produit courant en carousel Bootstrap.
-- `[accessories nb="8" orderby="date_add" orderway="DESC"]` : Affiche les accessoires du produit courant en carousel Bootstrap.
-- `[crosselling nb=4 orderby="id_product" orderway="asc"]` : Si le panier est vide, affiche les meilleures ventes. Sinon, affiche les accessoires des produits du panier. S'il n'y en a pas ou si le nombre est insuffisant, complète avec les meilleures ventes des mêmes catégories puis avec les meilleures ventes globales.
-- `{hook h='displayHome'}` : Affiche le hook `displayHome` (les hooks ne sont pas autorisés dans les modales)
-- `[everinstagram]` : Affiche vos dernières photos Instagram. Les images sont enregistrées dans `/img/cms/instagram`. Les images sont mises en cache pendant 24h et régénérées automatiquement ou via la commande `everblock:tools:execute refreshtokens`.
-- `[googlereviews place_id="VOTRE_PLACE_ID"]` : Affiche les avis de votre fiche Google Business. Paramètres optionnels : `key`, `place_id`, `limit`, `min_rating`, `sort`, `show_rating`, `show_avatar`, `show_cta`, `cta_label`, `cta_url`, `columns`, `title`, `intro`, `class`.
-- `[nativecontact]` : Intègre le formulaire de contact natif PrestaShop.
-- `[everimg name="image.jpg" class="img-fluid"]` : Affiche une ou plusieurs images CMS.
-- `[displayQcdSvg name="icon" class="myclass" inline=true]` : Affiche une icône SVG QCD. Module disponible chez [410 Gone](https://www.410-gone.fr/).
-- `[evermap]` : Affiche une carte Google centrée sur l'adresse de la boutique si la clé Google Maps est renseignée.
-- `[qcdacf field objectType objectId]` : Affiche une valeur provenant des champs QCD ACF. Module disponible chez [410 Gone](https://www.410-gone.fr/).
-- `[widget moduleName="mymodule" hookName="displayHome"]` : Affiche le widget d'un autre module.
-- `[everblock 3]` : Insère le contenu du bloc ayant l'ID 3.
-- `[cms id="1"]` or `[evercms id="1"]` : Affiche le contenu de la page CMS ayant l'ID 1.
-
-### Shortcodes de formulaire de contact
-Un formulaire de contact doit commencer par `[evercontactform_open]` et se terminer par `[evercontactform_close]`
-- `[evercontact type="text" label="Votre nom"]` : champ texte "Votre nom"
-- `[evercontact type="number" label="Votre âge"]` : champ numérique "Votre âge"
-- `[evercontact type="textarea" label="Message"]` : champ zone de texte "Message"
-- `[evercontact type="select" label="Vous êtes" values="Homme,Femme,Autre"]` : champ select
-- `[evercontact type="radio" label="Vous êtes" values="Homme,Femme,Autre"]` : boutons radio
-- `[evercontact type="checkbox" label="Vous êtes" values="Homme,Femme,Autre"]` : cases à cocher
-- `[evercontact type="multiselect" label="Vous êtes" values="Homme,Femme,Autre"]` : champ multisélection
-- `[evercontact type="file" label="Pièce jointe"]` : upload de fichier
-- `[evercontact type="hidden" label="Champ caché"]` : champ caché avec valeur "Champ caché"
-- `[evercontact type="sento" label="me@email.fr"]` : email destinataire chiffré
-- `[evercontact type="submit" label="Envoyer"]` : bouton d'envoi du formulaire
-
-Aucun email n'est enregistré sur votre boutique. Un formulaire peut être ajouté dans un bloc utilisé en modal.
-
-### Shortcodes du tunnel de commande
-Pour utiliser le formulaire dans le tunnel de commande, créez d'abord la nouvelle étape dans la configuration du module.
-
-Le formulaire de la nouvelle étape doit être placé sur le hook `displayEverblockExtraOrderStep`. Créez donc un nouveau bloc, positionnez-le sur ce hook et ajoutez les shortcodes ci-dessous.
-
-Assurez-vous que le titre de la nouvelle étape soit renseigné dans la configuration du module.
-
-Un formulaire d'étape supplémentaire commence par `[everorderform_open]` et se termine par `[everorderform_close]`
-`[everorderform type="text" label="Votre nom"]` : champ texte "Votre nom"
-`[everorderform type="number" label="Votre âge"]` : champ numérique
-`[everorderform type="textarea" label="Message"]` : zone de texte
-`[everorderform type="select" label="Vous êtes" values="Homme,Femme,Autre"]` : champ select
-`[everorderform type="radio" label="Vous êtes" values="Homme,Femme,Autre"]` : boutons radio
-`[everorderform type="checkbox" label="Vous êtes" values="Homme,Femme,Autre"]` : cases à cocher
-`[everorderform type="multiselect" label="Vous êtes" values="Homme,Femme,Autre"]` : champ multisélection
-`[everorderform type="hidden" label="Champ caché"]` : champ caché "Champ caché"
-
-Les choix faits dans cette étape supplémentaire apparaîtront sur les factures, les bons de livraison, la page de confirmation de commande et dans l'administration des commandes.
-
-## Gestion de la FAQ
-Les FAQ sont regroupées grâce à des tags. Toutes les FAQ portant exactement les mêmes tags seront regroupées lors de l'utilisation du shortcode correspondant.
-
-Par exemple, le shortcode `[everfaq tag="faq1"]` affichera toutes les FAQ portant le tag "faq1".
-
-Vous pouvez définir l'ordre des FAQ au sein d'un tag en leur attribuant une position.
-
-## Gestion des blocs
-Un bloc HTML se greffe sur un hook. Vous pouvez définir les groupes de clients concernés ainsi que le type d'appareil (smartphone, tablette, ordinateur).
-
-Les réglages permettent d'ajouter des conditions d'affichage comme :
-- afficher le bloc uniquement sur la page d'accueil
-- afficher le bloc uniquement sur les pages catégorie, avec sélection des catégories concernées
-- afficher le bloc uniquement sur les fiches produits, avec sélection des catégories concernées
-- afficher le bloc uniquement sur les pages marque, avec sélection des marques
-- afficher le bloc uniquement sur les pages fournisseur, avec sélection des fournisseurs
-
-Les réglages d'obfuscation vous aideront à améliorer votre SEO ; le script d'obfuscation peut être désactivé dans la configuration du module.
-
-Assurez-vous que le hook utilisé dans le bloc corresponde aux critères du bloc afin de garantir son affichage.
-
-Chaque bloc peut être converti en modal et peut contenir des shortcodes (à l'exception des hooks et du store locator). Vous pouvez donc créer des formulaires de contact dans une modal.
-
-La bibliothèque PrettyBlocks propose désormais un bloc **Avis Google** pour afficher vos témoignages Google Business avec configuration des colonnes, du texte d’introduction et du bouton.
-
-## Déclenchement des modales depuis un bouton
-Vous pouvez déclencher manuellement une modal Everblock depuis n'importe quel hook. Ajoutez un bouton avec la classe `everblock-modal-button` et indiquez l'ID du bloc dans l'attribut `data-everclickmodal` :
-```html
-<button class="everblock-modal-button" data-everclickmodal="12">Ouvrir la modal</button>
-```
-Vous pouvez également afficher le contenu d'une page CMS en utilisant l'attribut `data-evercms` avec l'identifiant de la page :
-
-```html
-<button class="everblock-modal-button" data-evercms="5">Ouvrir la page CMS</button>
-```
-Lors du clic, le module chargera le contenu de la modal via AJAX et l'affichera avec Bootstrap.
-
-## Cache et logs
-Le module utilise son propre système de cache en plus de celui de PrestaShop.
-
-Le dossier du cache se situe dans /var/cache/dev?prod/everblock/
-
-Le dossier des logs se situe dans /var/logs/
-Les fichiers de log ne sont créés que s'il y a un message à enregistrer.
-
-Vider le cache natif de PrestaShop videra également le cache du module, mais ce dernier vide automatiquement son cache lorsqu'un bloc expire.
-
----
-
-## README en español
-
-# Ever Block - Módulo de bloque HTML gratuito para PrestaShop
-![Ever Block logo](logo.png)
-
-Ever Block permite a los usuarios de PrestaShop 1.7, 8 y 9 añadir bloques HTML personalizados ilimitados en cualquier parte mediante hooks y shortcodes.
-
-Funciona sin problemas con los hooks de PrestaShop y es totalmente compatible con PrestaShop 1.7, 8 y 9.
-
-
-## Funcionalidades clave
-- Bloques HTML ilimitados en cualquier hook de PrestaShop
-- Shortcodes para productos, formularios, categorías y más
-- Compatible con PrestaShop 1.7, 8 y 9
-- Funciona con el constructor de páginas Pretty Blocks
-- Soporta el módulo de campos personalizados QCD ACF
-- Herramientas integradas de caché y ofuscación para SEO
-- Creación sencilla de modales y pasos adicionales en el pedido
-
-## Módulo gratuito de bloque HTML para PrestaShop
-Este módulo gratuito te permite crear un número ilimitado de bloques HTML en tu tienda
-
-[Puedes hacer una donación para apoyar el desarrollo de módulos gratuitos haciendo clic en este enlace](https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE)
-
-## Hooks de PrestaShop 1.7, 8 y 9
-La documentación de desarrolladores muestra todos los hooks nativos de PrestaShop:
-[Lista de hooks PrestaShop 1.7](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
-Consulta la tabla ps_hook de tu base de datos para ver todos los hooks disponibles en tu tienda. Solo se utilizan hooks de display con este módulo
-
-## Compatibilidad con Pretty Blocks
-Este módulo es compatible con el constructor de páginas Pretty Blocks. [Encuentra este módulo gratuito aquí.](https://prettyblocks.io/)
-
-En el bloque cover de PrettyBlocks, puedes elegir clases de botones de Bootstrap, incluidas las variantes outline:
-
-<button type="button" class="btn btn-outline-primary">Primary</button> 
-<button type="button" class="btn btn-outline-secondary">Secondary</button>
-<button type="button" class="btn btn-outline-success">Success</button>
-<button type="button" class="btn btn-outline-danger">Danger</button>
-<button type="button" class="btn btn-outline-warning">Warning</button>
-<button type="button" class="btn btn-outline-info">Info</button>
-<button type="button" class="btn btn-outline-light">Light</button>
-<button type="button" class="btn btn-outline-dark">Dark</button>
-
-## Compatibilidad con QCD ACF
-Este módulo es compatible con el módulo QCD ACF desarrollado por la agencia 410 Gone. Permite añadir campos personalizados a productos, categorías, marcas, proveedores, características, etc. [Contacta con la agencia 410 Gone desde su web para obtener el módulo QCD ACF.](https://www.410-gone.fr/e-commerce/prestashop.html)
-
-## Variables Smarty
-- `$currency.name`: Nombre de la divisa (euro, dólar, libra, etc.)
-- `$currency.iso_code`: Código ISO de la divisa (como EUR para el euro)
-- `$currency.sign`: Símbolo de la divisa (€, $ ...)
-- `$currency.iso_code_num`: Código ISO numérico de la divisa (ej: 978 para el euro)
-- `$shop.name`: Nombre de la tienda
-- `$shop.email`: Correo de la tienda
-- `$shop.logo`: Logo de la tienda
-- `$shop.favicon`: Favicon de la tienda
-- `$shop.phone`: Teléfono de la tienda
-- `$shop.fax`: Fax de la tienda
-- `$customer.lastname`: Apellido del cliente conectado
-- `$customer.firstname`: Nombre del cliente conectado
-- `$customer.email`: Correo del cliente
-- `$customer.birthday`: Fecha de nacimiento del cliente
-- `$customer.newsletter`: Suscripción al boletín (booleano)
-- `$customer.ip_registration_newsletter`: IP de registro al boletín
-- `$customer.optin`: Aceptación de ofertas de socios
-- `$customer.date_add`: Fecha de creación del cliente
-- `$customer.date_upd`: Fecha de modificación del cliente
-- `$customer.id`: Identificador del cliente
-- `$customer.id_default_group`: Grupo por defecto del cliente
-- `$customer.is_logged`: ¿Está conectado el cliente?
-- `$urls.base_url`: URL de la página principal
-- `$urls.current_url`: URL de la página actual
-- `$urls.shop_domain_url`: Dominio de la tienda
-- `$urls.img_ps_url`: URL del directorio /img de PrestaShop
-- `$urls.img_cat_url`: URL de las imágenes de categorías
-- `$urls.img_lang_url`: URL de las imágenes de idiomas
-- `$urls.img_prod_url`: URL de las imágenes de productos
-- `$urls.img_manu_url`: URL de las imágenes de fabricantes
-- `$urls.img_sup_url`: URL de las imágenes de proveedores
-- `$urls.img_ship_url`: URL de las imágenes de transportistas
-- `$urls.img_store_url`: URL de las imágenes de la tienda
-- `$urls.img_url`: URL de las imágenes del tema
-- `$urls.css_url`: URL de los archivos CSS del tema
-- `$urls.js_url`: URL de los archivos JavaScript del tema
-- `$urls.pic_url`: URL del directorio /upload
-
-## Herramientas de consola
-
-Ejecuta `php bin/console everblock:tools:execute --list` para mostrar las acciones de mantenimiento incluidas en el módulo.
-
-| Acción | Título | Descripción | Parámetros |
-| --- | --- | --- | --- |
-| `getrandomcomment` | Comentario aleatorio en consola | Muestra un mensaje humorístico formateado en la consola. | — |
-| `saveblocks` | Guardar bloques Everblock | Exporta las tablas del módulo y guarda los assets CSS/JS. | `idshop` (opcional) |
-| `restoreblocks` | Restaurar bloques Everblock | Restaura las tablas y archivos del módulo desde una copia de seguridad. | — |
-| `removeinlinecsstags` | Limpiar CSS inline | Elimina los atributos style de las descripciones de producto. | `idshop` (opcional) |
-| `droplogs` | Purgar logs de PrestaShop | Vacía la tabla nativa de logs de PrestaShop. | — |
-| `refreshtokens` | Renovar token de Instagram | Renueva el token de Instagram y limpia la caché relacionada. | — |
-| `fetchinstagramimages` | Descargar medios de Instagram | Descarga los medios de Instagram configurados y los almacena localmente. | — |
-| `securewithapache` | Proteger carpetas del módulo | Añade reglas de Apache para proteger las carpetas del módulo. | — |
-| `saveproducts` | Volver a guardar todos los productos | Vuelve a guardar cada producto de la tienda. | `idshop` (opcional) |
-| `generateproducts` | Generar productos de demostración | Crea productos ficticios con imágenes para la tienda seleccionada. | `idshop` (opcional) |
-| `webpprettyblock` | Convertir imágenes Prettyblocks a WebP | Convierte todas las imágenes Prettyblock a WebP. | — |
-| `removehn` | Sustituir etiquetas Hn | Sustituye las etiquetas Hn por párrafos con clases CSS. | `idshop` (opcional) |
-| `duplicateblockslang` | Duplicar bloques entre idiomas | Copia el contenido y el código personalizado de un idioma a otro. | `idshop` (opcional), `fromlang` (obligatorio), `tolang` (obligatorio) |
-| `fetchwordpressposts` | Obtener entradas de WordPress | Recupera las entradas de WordPress configuradas. | — |
-| `checkdatabase` | Comprobar la base de datos del módulo | Instala tablas y columnas faltantes y elimina archivos obsoletos. | — |
-| `dropunusedlangs` | Eliminar idiomas sin uso | Elimina traducciones huérfanas de las tablas multilingües nativas. | — |
-| `clearcache` | Vaciar la caché de Everblock | Limpia las entradas de caché del módulo sin vaciar toda la caché de la tienda. | — |
-
-## Shortcodes
-El módulo permite usar muchos shortcodes en cualquier lugar de la tienda. Pueden existir restricciones, por ejemplo un hook o un store locator no pueden usarse en una modal.
-
-Puedes crear tus propios shortcodes desde la pestaña "Shortcodes" disponible en el submenú "Ever block".
-
-### Shortcodes básicos
-- `[product 1]`: Muestra el producto con ID 1. Soporta `carousel=true`.
-- `[product 1,2,3]`: Muestra los productos 1, 2 y 3. Soporta `carousel=true`.
-- `[product_image 1 1]`: Muestra la primera imagen del producto con ID 1. Por defecto, la primera imagen es mostrada si no se especifica nada después del ID de la imagen.
-- `[entity_lastname]`: Muestra el apellido del cliente conectado.
- - `[promo-products nb="10" carousel=true]`: Muestra diez productos en promoción en un carrusel.
- - `[products_by_tag tag="verano|rebajas" match="all" limit="8" order="price" way="asc" cols="4"]`: Muestra productos filtrados por etiquetas nativas de PrestaShop. Atributos: `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
- - `[best-sales nb="10" carousel=true]`: Muestra los diez productos más vendidos. Parámetros opcionales: `days`, `orderby`, `orderway`.
-- `[categorybestsales id="8" nb="10"]`: Muestra los productos más vendidos de la categoría 8. Parámetros opcionales: `orderby`, `orderway`.
-- `[brandbestsales id="3" nb="10"]`: Muestra los productos más vendidos de la marca 3. Parámetros opcionales: `orderby`, `orderway`.
-- `[featurebestsales id="2" nb="10"]`: Muestra los productos más vendidos con la característica 2. Parámetros opcionales: `orderby`, `orderway`.
-- `[featurevaluebestsales id="5" nb="10"]`: Muestra los productos más vendidos con el valor de característica 5. Parámetros opcionales: `orderby`, `orderway`.
-- `[random_product nb="10" carousel=true]`: Muestra diez productos aleatorios en carrusel.
-- `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Muestra productos relacionados con el producto actual en un carrusel Bootstrap.
-- `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Muestra los accesorios del producto actual en un carrusel Bootstrap.
-- `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Si el carrito está vacío, se muestran los productos más vendidos. De lo contrario, muestra los accesorios de los productos del carrito. Si no hay suficientes, se añaden los más vendidos de las mismas categorías y, en último lugar, los más vendidos globales.
-- `{hook h='displayHome'}`: Muestra el hook `displayHome` (los hooks no están permitidos en modales)
-- `[everinstagram]`: Muestra tus últimas fotos de Instagram. Las imágenes se guardan en `/img/cms/instagram`. Las imágenes se almacenan en caché durante 24h y se regeneran de forma automática o ejecutando `everblock:tools:execute refreshtokens`.
-- `[googlereviews place_id="TU_PLACE_ID"]`: Muestra las reseñas de tu ficha de Google Business. Parámetros opcionales: `key`, `place_id`, `limit`, `min_rating`, `sort`, `show_rating`, `show_avatar`, `show_cta`, `cta_label`, `cta_url`, `columns`, `title`, `intro`, `class`.
-- `[nativecontact]`: Inserta el formulario de contacto nativo de PrestaShop.
-- `[everimg name="image.jpg" class="img-fluid"]`: Muestra una o más imágenes CMS.
-- `[displayQcdSvg name="icon" class="myclass" inline=true]`: Muestra un icono SVG de QCD. Módulo disponible en [410 Gone](https://www.410-gone.fr/).
-- `[qcdacf field objectType objectId]`: Muestra un valor de los campos QCD ACF. Módulo disponible en [410 Gone](https://www.410-gone.fr/).
-- `[widget moduleName="mymodule" hookName="displayHome"]`: Muestra el widget de otro módulo.
-- `[everblock 3]`: Inserta el contenido del bloque con ID 3.
-- `[cms id="1"]` or `[evercms id="1"]`: Muestra el contenido de la página CMS con ID 1.
-
-### Shortcodes para formularios de contacto
-Un formulario de contacto debe comenzar con `[evercontactform_open]` y finalizar con `[evercontactform_close]`
-- `[evercontact type="text" label="Tu nombre"]`: campo de texto "Tu nombre"
-- `[evercontact type="number" label="Tu edad"]`: campo numérico "Tu edad"
-- `[evercontact type="textarea" label="Mensaje"]`: área de texto "Mensaje"
-- `[evercontact type="select" label="Eres" values="Hombre,Mujer,Otro"]`: campo select
-- `[evercontact type="radio" label="Eres" values="Hombre,Mujer,Otro"]`: botones radio
-- `[evercontact type="checkbox" label="Eres" values="Hombre,Mujer,Otro"]`: casillas de verificación
-- `[evercontact type="multiselect" label="Eres" values="Hombre,Mujer,Otro"]`: lista de selección múltiple
-- `[evercontact type="file" label="Adjunto"]`: subida de archivo
-- `[evercontact type="hidden" label="Campo oculto"]`: campo oculto con valor "Campo oculto"
-- `[evercontact type="sento" label="me@email.fr"]`: correo destinatario cifrado
-- `[evercontact type="submit" label="Enviar"]`: botón de envío del formulario
-
-No se guardan correos en tu tienda. Un formulario puede añadirse en un bloque usado como modal.
-
-### Shortcodes para el túnel de pedido
-Para usar el formulario en el túnel de pedido, primero crea el nuevo paso en la configuración del módulo.
-
-El formulario del nuevo paso debe colocarse en el hook `displayEverblockExtraOrderStep`. Crea un nuevo bloque, colócalo en ese hook y añade los siguientes shortcodes.
-
-Asegúrate de que el título del nuevo paso esté configurado en el módulo.
-
-Un formulario de paso adicional empieza con `[everorderform_open]` y termina con `[everorderform_close]`
-`[everorderform type="text" label="Tu nombre"]`: campo de texto "Tu nombre"
-`[everorderform type="number" label="Tu edad"]`: campo numérico
-`[everorderform type="textarea" label="Mensaje"]`: área de texto
-`[everorderform type="select" label="Eres" values="Hombre,Mujer,Otro"]`: campo select
-`[everorderform type="radio" label="Eres" values="Hombre,Mujer,Otro"]`: botones radio
-`[everorderform type="checkbox" label="Eres" values="Hombre,Mujer,Otro"]`: casillas de verificación
-`[everorderform type="multiselect" label="Eres" values="Hombre,Mujer,Otro"]`: lista de selección múltiple
-`[everorderform type="hidden" label="Campo oculto"]`: campo oculto "Campo oculto"
-
-Las elecciones realizadas en este paso adicional se mostrarán en facturas, albaranes, en la página de confirmación y en la administración de pedidos.
-
-## Gestión de FAQ
-Las FAQs se agrupan mediante etiquetas. Todas las FAQs con las mismas etiquetas se agruparán al usar el shortcode correspondiente.
-
-Por ejemplo, el shortcode `[everfaq tag="faq1"]` mostrará todas las FAQs con la etiqueta "faq1".
-
-Puedes determinar el orden de las FAQs dentro de una etiqueta asignándoles una posición.
-
-## Gestión de bloques
-Un bloque HTML se engancha a un hook. Puedes determinar el grupo de clientes al que se dirige y el tipo de dispositivo (móvil, tableta, ordenador).
-
-Las opciones permiten añadir condiciones de visualización como:
-- mostrar el bloque solo en la página de inicio
-- mostrar el bloque solo en páginas de categoría, con selección de categorías
-- mostrar el bloque solo en fichas de producto, con selección de categorías de producto
-- mostrar el bloque solo en páginas de marca, con selección de marcas
-- mostrar el bloque solo en páginas de proveedor, con selección de proveedores
-
-Las opciones de ofuscación te ayudarán a mejorar tu SEO; el script puede desactivarse en la configuración del módulo.
-
-La biblioteca PrettyBlocks incorpora ahora un bloque **Reseñas de Google** para mostrar tus testimonios de Google Business con columnas, texto introductorio y botón configurables.
-
-Asegúrate de que el hook del bloque coincida con los criterios de configuración para garantizar su visualización.
-
-Cada bloque puede convertirse en modal y puede contener shortcodes (excepto hooks y store locator). Puedes crear formularios de contacto en una modal.
-
-## Disparar modales desde un botón
-Puedes lanzar una modal de Everblock manualmente desde cualquier hook. Añade un botón con la clase `everblock-modal-button` e indica el ID del bloque en el atributo `data-everclickmodal`:
-```html
-<button class="everblock-modal-button" data-everclickmodal="12">Abrir modal</button>
-```
-Tambien puedes mostrar el contenido de una página CMS usando el atributo `data-evercms` con el ID de la página:
-
-```html
-<button class="everblock-modal-button" data-evercms="5">Abrir CMS</button>
-```
-Al hacer clic, el módulo cargará el contenido de la modal vía AJAX y lo mostrará con Bootstrap.
-
-## Caché y logs
-El módulo utiliza su propio sistema de caché además del de PrestaShop.
-
-El directorio de caché está en /var/cache/dev?prod/everblock/
-
-El directorio de logs está en /var/logs/
-Los archivos de registro solo se crean si contienen información.
-
-Borrar la caché nativa de PrestaShop también limpiará la del módulo, pero este limpia automáticamente su caché cuando expira un bloque.
-
----
-
-## README in italiano
-
-# Ever Block - Modulo gratuito di blocchi HTML per PrestaShop
-![Ever Block logo](logo.png)
-
-Ever Block consente agli utenti di PrestaShop 1.7, 8 e 9 di aggiungere blocchi HTML personalizzati illimitati ovunque mediante hook e shortcode.
-
-Funziona perfettamente con gli hook di PrestaShop ed è completamente compatibile con PrestaShop 1.7, 8 e 9.
-
-
-## Funzionalità principali
-- Blocchi HTML illimitati in qualsiasi hook di PrestaShop
-- Shortcode per prodotti, moduli, categorie e altro
-- Compatibile con PrestaShop 1.7, 8 e 9
-- Funziona con il page builder Pretty Blocks
-- Supporta il modulo di campi personalizzati QCD ACF
-- Strumenti integrati di cache e offuscamento per la SEO
-- Creazione semplice di modali e passaggi extra nell'ordine
-
-## Modulo gratuito di blocchi HTML per PrestaShop
-Questo modulo gratuito permette di creare un numero illimitato di blocchi HTML nel tuo shop
-
-[Puoi fare una donazione per sostenere lo sviluppo di moduli gratuiti cliccando su questo link](https://www.paypal.com/donate?hosted_button_id=3CM3XREMKTMSE)
-
-## Hook PrestaShop 1.7, 8 e 9
-La documentazione per sviluppatori mostra tutti gli hook nativi di PrestaShop:
-[Elenco hook PrestaShop 1.7](https://devdocs.prestashop.com/1.7/modules/concepts/hooks/)
-Controlla la tabella ps_hook del tuo database per vedere tutti gli hook disponibili sul tuo shop. Con questo modulo vengono utilizzati solo gli hook di display
-
-## Compatibilità con Pretty Blocks
-Questo modulo è compatibile con il page builder Pretty Blocks. [Trovi il modulo gratuito qui.](https://prettyblocks.io/)
-
-Nel blocco cover di PrettyBlocks puoi scegliere le classi dei bottoni Bootstrap, comprese le varianti outline:
-
-<button type="button" class="btn btn-outline-primary">Primary</button> 
-<button type="button" class="btn btn-outline-secondary">Secondary</button>
-<button type="button" class="btn btn-outline-success">Success</button>
-<button type="button" class="btn btn-outline-danger">Danger</button>
-<button type="button" class="btn btn-outline-warning">Warning</button>
-<button type="button" class="btn btn-outline-info">Info</button>
-<button type="button" class="btn btn-outline-light">Light</button>
-<button type="button" class="btn btn-outline-dark">Dark</button>
-
-## Compatibilità con QCD ACF
-Questo modulo è compatibile con il modulo QCD ACF sviluppato dall'agenzia 410 Gone. Permette di aggiungere campi personalizzati a prodotti, categorie, marchi, fornitori, caratteristiche, ecc. [Contatta l'agenzia 410 Gone dal loro sito per ottenere il modulo QCD ACF.](https://www.410-gone.fr/e-commerce/prestashop.html)
-
-## Variabili Smarty
-- `$currency.name`: Nome della valuta (euro, dollaro, sterlina, ecc.)
-- `$currency.iso_code`: Codice ISO della valuta (es: EUR per l'euro)
-- `$currency.sign`: Simbolo della valuta (€, $ ...)
-- `$currency.iso_code_num`: Codice ISO numerico della valuta (es: 978 per l'euro)
-- `$shop.name`: Nome del negozio
-- `$shop.email`: Email del negozio
-- `$shop.logo`: Logo del negozio
-- `$shop.favicon`: Favicon del negozio
-- `$shop.phone`: Numero di telefono del negozio
-- `$shop.fax`: Fax del negozio
-- `$customer.lastname`: Cognome del cliente loggato
-- `$customer.firstname`: Nome del cliente loggato
-- `$customer.email`: Email del cliente
-- `$customer.birthday`: Data di nascita del cliente
-- `$customer.newsletter`: Iscrizione alla newsletter (booleano)
-- `$customer.ip_registration_newsletter`: IP di registrazione alla newsletter
-- `$customer.optin`: Consenso alle offerte dei partner
-- `$customer.date_add`: Data di creazione del cliente
-- `$customer.date_upd`: Data di modifica del cliente
-- `$customer.id`: ID del cliente
-- `$customer.id_default_group`: Gruppo predefinito del cliente
-- `$customer.is_logged`: Il cliente è loggato?
-- `$urls.base_url`: URL della home page
-- `$urls.current_url`: URL della pagina attuale
-- `$urls.shop_domain_url`: Dominio del negozio
-- `$urls.img_ps_url`: URL della cartella /img di PrestaShop
-- `$urls.img_cat_url`: URL delle immagini categorie
-- `$urls.img_lang_url`: URL delle immagini delle lingue
-- `$urls.img_prod_url`: URL delle immagini prodotto
-- `$urls.img_manu_url`: URL delle immagini produttori
-- `$urls.img_sup_url`: URL delle immagini fornitori
-- `$urls.img_ship_url`: URL delle immagini dei corrieri
-- `$urls.img_store_url`: URL delle immagini del negozio
-- `$urls.img_url`: URL delle immagini del tema
-- `$urls.css_url`: URL dei file CSS del tema
-- `$urls.js_url`: URL dei file JavaScript del tema
-- `$urls.pic_url`: URL della cartella /upload
-
-## Strumenti da console
-
-Esegui `php bin/console everblock:tools:execute --list` per visualizzare le azioni di manutenzione fornite dal modulo.
-
-| Azione | Titolo | Descrizione | Parametri |
-| --- | --- | --- | --- |
-| `getrandomcomment` | Commento casuale in console | Mostra un messaggio umoristico formattato in console. | — |
-| `saveblocks` | Salvare i blocchi Everblock | Esporta le tabelle del modulo e salva gli asset CSS/JS. | `idshop` (opzionale) |
-| `restoreblocks` | Ripristinare i blocchi Everblock | Ripristina tabelle e file del modulo da un backup. | — |
-| `removeinlinecsstags` | Pulire il CSS inline | Rimuove gli attributi style dalle descrizioni prodotto. | `idshop` (opzionale) |
-| `droplogs` | Svuotare i log di PrestaShop | Svuota la tabella nativa dei log di PrestaShop. | — |
-| `refreshtokens` | Rinnovare il token Instagram | Rinnova il token Instagram e svuota la cache collegata. | — |
-| `fetchinstagramimages` | Scaricare i media Instagram | Scarica i media Instagram configurati e li salva localmente. | — |
-| `securewithapache` | Proteggere le cartelle del modulo | Aggiunge regole Apache per proteggere le cartelle del modulo. | — |
-| `saveproducts` | Risalvare tutti i prodotti | Riesegue il salvataggio di ogni prodotto del negozio. | `idshop` (opzionale) |
-| `generateproducts` | Generare prodotti dimostrativi | Crea prodotti fittizi con immagini per il negozio selezionato. | `idshop` (opzionale) |
-| `webpprettyblock` | Convertire immagini Prettyblocks in WebP | Converte tutte le immagini Prettyblock in WebP. | — |
-| `removehn` | Sostituire i tag Hn | Sostituisce i tag Hn con paragrafi dotati di classi CSS. | `idshop` (opzionale) |
-| `duplicateblockslang` | Duplicare blocchi tra lingue | Copia contenuto e codice personalizzato da una lingua all'altra. | `idshop` (opzionale), `fromlang` (obbligatorio), `tolang` (obbligatorio) |
-| `fetchwordpressposts` | Recuperare articoli WordPress | Recupera gli articoli WordPress configurati. | — |
-| `checkdatabase` | Controllare il database del modulo | Installa tabelle e colonne mancanti ed elimina i file obsoleti. | — |
-| `dropunusedlangs` | Eliminare lingue inutilizzate | Rimuove le traduzioni orfane dalle tabelle multilingue native. | — |
-| `clearcache` | Svuotare la cache Everblock | Svuota le voci cache del modulo senza svuotare tutta la cache del negozio. | — |
-
-## Shortcode
-Il modulo consente di utilizzare molti shortcode in qualsiasi parte del negozio. Possono esserci restrizioni, ad esempio un hook o uno store locator non possono essere usati in una modale.
-
-Puoi creare i tuoi shortcode dalla scheda "Shortcodes" nel sottomenu "Ever block".
-
-### Shortcode di base
-- `[product 1]`: Mostra il prodotto con ID 1. Supporta `carousel=true`.
-- `[product 1,2,3]`: Mostra i prodotti 1, 2 e 3. Supporta `carousel=true`.
-- `[product_image 1 1]`: Mostra la prima immagine del prodotto con ID 1. Per default, la prima immagine è mostrata se non si specifica nulla dopo l'ID dell'immagine.
-- `[entity_lastname]`: Mostra il cognome del cliente loggato.
- - `[promo-products nb="10" carousel=true]`: Mostra dieci prodotti in promozione in un carosello.
- - `[products_by_tag tag="estate|sconti" match="all" limit="8" order="price" way="asc" cols="4"]`: Mostra prodotti filtrati per tag nativi PrestaShop. Attributi: `tag`, `tag_id`, `match`, `limit`, `offset`, `order`, `way`, `cols`, `visibility`.
- - `[best-sales nb="10" carousel=true]`: Mostra i dieci prodotti più venduti. Parametri opzionali: `days`, `orderby`, `orderway`.
-- `[categorybestsales id="8" nb="10"]`: Mostra i prodotti più venduti della categoria 8. Parametri opzionali: `orderby`, `orderway`.
-- `[brandbestsales id="3" nb="10"]`: Mostra i prodotti più venduti del marchio 3. Parametri opzionali: `orderby`, `orderway`.
-- `[featurebestsales id="2" nb="10"]`: Mostra i prodotti più venduti con la caratteristica 2. Parametri opzionali: `orderby`, `orderway`.
-- `[featurevaluebestsales id="5" nb="10"]`: Mostra i prodotti più venduti con il valore caratteristica 5. Parametri opzionali: `orderby`, `orderway`.
-- `[random_product nb="10" carousel=true]`: Mostra dieci prodotti casuali in carosello.
-- `[linkedproducts nb="8" orderby="date_add" orderway="DESC"]`: Mostra i prodotti collegati a quello attuale in un carosello Bootstrap.
-- `[accessories nb="8" orderby="date_add" orderway="DESC"]`: Mostra gli accessori del prodotto corrente in un carosello Bootstrap.
-- `[crosselling nb=4 orderby="id_product" orderway="asc"]`: Se il carrello è vuoto vengono mostrati i prodotti più venduti. Altrimenti mostra gli accessori dei prodotti in carrello; se mancano articoli o non si raggiunge il limite, aggiunge i più venduti delle stesse categorie e infine i best seller globali.
-- `{hook h='displayHome'}`: Mostra l'hook `displayHome` (gli hook non sono consentiti nelle modali)
-- `[everinstagram]`: Mostra le ultime foto di Instagram. Le immagini vengono salvate in `/img/cms/instagram`. Le immagini sono mantenute in cache per 24h e vengono rigenerate automaticamente o eseguendo `everblock:tools:execute refreshtokens`.
-- `[googlereviews place_id="IL_TUO_PLACE_ID"]`: Mostra le recensioni della tua scheda Google Business. Parametri opzionali: `key`, `place_id`, `limit`, `min_rating`, `sort`, `show_rating`, `show_avatar`, `show_cta`, `cta_label`, `cta_url`, `columns`, `title`, `intro`, `class`.
-- `[nativecontact]`: Inserisce il modulo di contatto nativo di PrestaShop.
-- `[everimg name="image.jpg" class="img-fluid"]`: Mostra una o più immagini CMS.
-- `[displayQcdSvg name="icon" class="myclass" inline=true]`: Mostra un'icona SVG QCD. Modulo disponibile presso [410 Gone](https://www.410-gone.fr/).
-- `[qcdacf field objectType objectId]`: Mostra un valore dai campi QCD ACF. Modulo disponibile presso [410 Gone](https://www.410-gone.fr/).
-- `[widget moduleName="mymodule" hookName="displayHome"]`: Mostra il widget di un altro modulo.
-- `[everblock 3]`: Inserisce il contenuto del blocco con ID 3.
-- `[cms id="1"]` or `[evercms id="1"]`: Mostra il contenuto della pagina CMS con ID 1.
-
-### Shortcode per moduli di contatto
-Un modulo di contatto deve iniziare con `[evercontactform_open]` e terminare con `[evercontactform_close]`
-- `[evercontact type="text" label="Il tuo nome"]`: campo di testo "Il tuo nome"
-- `[evercontact type="number" label="La tua età"]`: campo numerico "La tua età"
-- `[evercontact type="textarea" label="Messaggio"]`: area di testo "Messaggio"
-- `[evercontact type="select" label="Sei" values="Uomo,Donna,Altro"]`: campo select
-- `[evercontact type="radio" label="Sei" values="Uomo,Donna,Altro"]`: pulsanti radio
-- `[evercontact type="checkbox" label="Sei" values="Uomo,Donna,Altro"]`: caselle di controllo
-- `[evercontact type="multiselect" label="Sei" values="Uomo,Donna,Altro"]`: elenco multiselezione
-- `[evercontact type="file" label="Allegato"]`: caricamento file
-- `[evercontact type="hidden" label="Campo nascosto"]`: campo nascosto con valore "Campo nascosto"
-- `[evercontact type="sento" label="me@email.fr"]`: indirizzo email cifrato del destinatario
-- `[evercontact type="submit" label="Invia"]`: pulsante di invio del modulo
-
-Nessuna email viene salvata sul tuo shop. Un modulo può essere aggiunto in un blocco usato come modale.
-
-### Shortcode per il percorso d'ordine
-Per utilizzare il modulo nel percorso d'ordine, crea prima il nuovo passaggio nella configurazione del modulo.
-
-Il modulo del nuovo passaggio deve essere inserito sull'hook `displayEverblockExtraOrderStep`. Crea quindi un nuovo blocco, posizionalo su questo hook e aggiungi gli shortcode di seguito.
-
-Assicurati che il titolo del nuovo passaggio sia impostato nella configurazione del modulo.
-
-Un modulo di passaggio aggiuntivo inizia con `[everorderform_open]` e termina con `[everorderform_close]`
-`[everorderform type="text" label="Il tuo nome"]`: campo di testo "Il tuo nome"
-`[everorderform type="number" label="La tua età"]`: campo numerico
-`[everorderform type="textarea" label="Messaggio"]`: area di testo
-`[everorderform type="select" label="Sei" values="Uomo,Donna,Altro"]`: campo select
-`[everorderform type="radio" label="Sei" values="Uomo,Donna,Altro"]`: pulsanti radio
-`[everorderform type="checkbox" label="Sei" values="Uomo,Donna,Altro"]`: caselle di controllo
-`[everorderform type="multiselect" label="Sei" values="Uomo,Donna,Altro"]`: elenco multiselezione
-`[everorderform type="hidden" label="Campo nascosto"]`: campo nascosto "Campo nascosto"
-
-Le scelte effettuate in questo passaggio aggiuntivo saranno mostrate nelle fatture, nei documenti di consegna, nella pagina di conferma dell'ordine e nell'amministrazione degli ordini.
-
-## Gestione delle FAQ
-Le FAQ sono raggruppate tramite tag. Tutte le FAQ con gli stessi tag saranno raggruppate quando utilizzerai lo shortcode corrispondente.
-
-Ad esempio, lo shortcode `[everfaq tag="faq1"]` mostrerà tutte le FAQ con il tag "faq1".
-
-Puoi determinare l'ordine delle FAQ all'interno di un tag assegnando loro una posizione.
-
-## Gestione dei blocchi
-Un blocco HTML è agganciato a un hook. Puoi definire i gruppi di clienti interessati e il tipo di dispositivo (smartphone, tablet, computer).
-
-Le impostazioni permettono di aggiungere condizioni di visualizzazione come:
-- mostrare il blocco solo nella home page
-- mostrare il blocco solo nelle pagine categoria, selezionando le categorie interessate
-- mostrare il blocco solo nelle schede prodotto, selezionando le categorie interessate
-- mostrare il blocco solo nelle pagine marca, selezionando le marche
-- mostrare il blocco solo nelle pagine fornitore, selezionando i fornitori
-
-Le impostazioni di offuscamento ti aiuteranno a migliorare la SEO; lo script di offuscamento può essere disattivato nella configurazione del modulo.
-
-Assicurati che l'hook utilizzato nel blocco corrisponda ai criteri di configurazione per garantirne la visualizzazione.
-
-Ogni blocco può essere convertito in modale e può contenere shortcode (tranne hook e store locator). Puoi quindi creare moduli di contatto in una modale.
-
-La libreria PrettyBlocks ora include un blocco **Recensioni Google** per mostrare le testimonianze della tua scheda Google Business con colonne, testo introduttivo e pulsante personalizzabili.
-
-## Attivare modali da un pulsante
-Puoi attivare manualmente una modale Everblock da qualsiasi hook. Aggiungi un pulsante con la classe `everblock-modal-button` e indica l'ID del blocco nell'attributo `data-everclickmodal`:
-```html
-<button class="everblock-modal-button" data-everclickmodal="12">Apri modale</button>
-```
-Puoi anche mostrare il contenuto di una pagina CMS usando l'attributo `data-evercms` con l'ID della pagina:
-
-```html
-<button class="everblock-modal-button" data-evercms="5">Apri CMS</button>
-```
-Al clic, il modulo caricherà il contenuto della modale tramite AJAX e lo mostrerà con Bootstrap.
-
-## Cache e log
-Il modulo utilizza un proprio sistema di cache oltre a quello di PrestaShop.
-
-La cartella cache si trova in /var/cache/dev?prod/everblock/
-
-La cartella log si trova in /var/logs/
-I file di log vengono creati solo se contengono dei messaggi.
-
-Cancellare la cache nativa di PrestaShop cancellerà anche quella del modulo, ma quest'ultimo la pulisce automaticamente alla scadenza di un blocco.
-## Continuous Integration
-A GitHub Actions workflow checks PHP and Smarty template syntax on every push or pull request. The `vendor` directory is skipped during these checks to avoid issues with third-party code.
+Ever Block est distribue sous licence AFL 3.0. Voir `LICENSE.md`.
