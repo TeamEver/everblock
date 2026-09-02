@@ -1841,8 +1841,41 @@ details[open] > .everblock-doc-accordion__summary::after {
 }
 
 .everblock-bo-list-table__select {
+    min-width: 42px;
     text-align: center;
     width: 42px;
+}
+
+.everblock-bo-list-table__select-label {
+    align-items: center;
+    cursor: pointer;
+    display: inline-flex;
+    height: 32px;
+    justify-content: center;
+    margin: 0;
+    width: 32px;
+}
+
+.everblock-bo-list-table__select input[type="checkbox"] {
+    -webkit-appearance: checkbox !important;
+    appearance: auto !important;
+    clip: auto !important;
+    clip-path: none !important;
+    cursor: pointer;
+    display: inline-block !important;
+    flex: 0 0 auto;
+    height: 16px;
+    margin: 0;
+    opacity: 1 !important;
+    pointer-events: auto;
+    position: static !important;
+    visibility: visible !important;
+    width: 16px;
+}
+
+.everblock-bo-list-table__select input[type="checkbox"]:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
 }
 
 .everblock-bo-list-table__cell {

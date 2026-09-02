@@ -291,17 +291,46 @@ $(document).ready(function() {
     }
   });
 
-  $(document).on('change', '[data-everblock-check-all]', function () {
-    const checked = this.checked;
-    $('[data-everblock-row-check]').prop('checked', checked);
-  });
-
-  $(document).on('change', '[data-everblock-row-check]', function () {
+  function syncEverblockBulkSelectionState() {
     const $rows = $('[data-everblock-row-check]');
     const $checkedRows = $rows.filter(':checked');
+
     $('[data-everblock-check-all]')
       .prop('checked', $rows.length > 0 && $checkedRows.length === $rows.length)
       .prop('indeterminate', $checkedRows.length > 0 && $checkedRows.length < $rows.length);
+  }
+
+  $('.everblock-bo-list-table__select-label, [data-everblock-check-all], [data-everblock-row-check]')
+    .on('click.everblockSelection', function (event) {
+      event.stopPropagation();
+    });
+
+  $(document).on('click', '[data-everblock-row-select-cell], [data-everblock-check-all-cell]', function (event) {
+    const $target = $(event.target);
+    const isSelectAllCell = $(this).is('[data-everblock-check-all-cell]');
+    const checkboxSelector = isSelectAllCell ? '[data-everblock-check-all]' : '[data-everblock-row-check]';
+
+    if ($target.is(checkboxSelector) || $target.closest('.everblock-bo-list-table__select-label').length) {
+      return;
+    }
+
+    const $checkbox = $(this).find(checkboxSelector).first();
+    if (!$checkbox.length || $checkbox.prop('disabled')) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    $checkbox.prop('checked', !$checkbox.prop('checked')).trigger('change');
+  });
+
+  $(document).on('change', '[data-everblock-check-all]', function () {
+    $('[data-everblock-row-check]').prop('checked', this.checked);
+    syncEverblockBulkSelectionState();
+  });
+
+  $(document).on('change', '[data-everblock-row-check]', function () {
+    syncEverblockBulkSelectionState();
   });
 });
 
