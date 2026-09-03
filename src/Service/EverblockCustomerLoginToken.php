@@ -33,8 +33,9 @@ if (!defined('_PS_VERSION_')) {
  *
  * The signature covers the target customer, the requesting employee and an expiry, so a link:
  *  - only works for the customer it was issued for;
- *  - carries the identity of the employee the back office vouched for;
- *  - dies after TTL seconds.
+ *  - carries the identity of the employee the back office vouched for.
+ *
+ * It no longer dies after a delay: see the TTL constant below.
  *
  * The link can only be obtained through EverblockAdminController::customerLoginAction(), which
  * runs inside the PrestaShop admin firewall: obtaining one therefore requires an authenticated
@@ -49,13 +50,23 @@ class EverblockCustomerLoginToken
     const CONFIG_SECRET = EverblockSignedToken::CONFIG_SECRET;
 
     /**
-     * Lifetime of a generated link, in seconds.
+     * Lifetime of a generated link, in seconds. 0 disables expiry entirely.
      *
-     * Short on purpose: the link is now minted when the employee clicks, by a back office route
-     * that PrestaShop itself has authenticated, so there is no page left open holding a stale
-     * link any more.
+     * Set to 0 on purpose: the link is minted at click time by a back office route PrestaShop
+     * itself has authenticated, and the feature is used often enough that an expiring link is
+     * felt as a malfunction rather than as a safeguard.
+     *
+     * What still gates the link: the HMAC signature covers the customer, the employee and the
+     * expiry, so none of the three can be tampered with; and everlogin.php re-checks, on every
+     * hit, that the employee still exists, is still active, still holds the AdminCustomers or
+     * AdminOrders read permission and still has access to the customer shop. Deactivating the
+     * employee or removing their permission therefore revokes every link they ever minted.
+     *
+     * What is no longer gated: a URL recovered from a browser history, a server access log, a
+     * proxy log or a Referer header opens that customer account for as long as the employee
+     * stays active. Putting a positive number back here restores expiry with no other change.
      */
-    const TTL = 120;
+    const TTL = 0;
 
     /** Tolerance on the expiry upper bound, to absorb clock drift. */
     const CLOCK_SKEW = 60;
@@ -74,7 +85,9 @@ class EverblockCustomerLoginToken
     public static function buildLinkParameters(int $idCustomer, int $idEmployee, ?int $now = null): array
     {
         $now = $now === null ? time() : (int) $now;
-        $expires = $now + self::TTL;
+        // TTL 0 means "no expiry". The value still travels inside the signature, so it cannot be
+        // tampered with, and flipping the constant back is enough to re-enable expiring links.
+        $expires = self::TTL > 0 ? $now + self::TTL : 0;
         $nonce = self::generateNonce();
 
         return [
@@ -106,10 +119,16 @@ class EverblockCustomerLoginToken
     }
 
     /**
-     * True when the expiry is neither in the past nor absurdly far in the future.
+     * True when the link may still be used.
+     *
+     * With TTL 0 every link is usable, including those minted while expiry was still enforced.
      */
     public static function isFresh(int $expires, ?int $now = null): bool
     {
+        if (self::TTL <= 0) {
+            return true;
+        }
+
         return EverblockSignedToken::isFresh($expires, self::TTL, $now);
     }
 

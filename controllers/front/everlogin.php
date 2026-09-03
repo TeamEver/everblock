@@ -55,7 +55,9 @@ class EverblockEverloginModuleFrontController extends ModuleFrontController
         // The proof cannot be obtained without going through
         // EverblockAdminController::customerLoginAction(), which runs inside the PrestaShop admin
         // firewall: an authenticated employee, the AdminCustomers ACL and the native CSRF token
-        // are all required to get one. It is valid for EverblockCustomerLoginToken::TTL seconds.
+        // are all required to get one. The proof does not expire (EverblockCustomerLoginToken::TTL
+        // is 0): what revokes it is deactivating the employee or removing their permission, both
+        // re-checked below on every hit.
         //
         // Reading the psAdmin cookie here is NOT used as the gate any more: PrestaShop 9 only
         // writes that cookie on login success (EmployeeSessionSubscriber::updateLegacyCookie is
