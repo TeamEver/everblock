@@ -291,48 +291,128 @@ $(document).ready(function() {
     }
   });
 
-  function syncEverblockBulkSelectionState() {
-    const $rows = $('[data-everblock-row-check]');
-    const $checkedRows = $rows.filter(':checked');
+  initEverblockBulkSelection();
+});
 
-    $('[data-everblock-check-all]')
-      .prop('checked', $rows.length > 0 && $checkedRows.length === $rows.length)
-      .prop('indeterminate', $checkedRows.length > 0 && $checkedRows.length < $rows.length);
+function initEverblockBulkSelection() {
+  const selectionSelector = [
+    '[data-everblock-check-all]',
+    '[data-everblock-row-check]',
+    '.everblock-bo-list-table__select-label',
+    '[data-everblock-row-select-cell]',
+    '[data-everblock-check-all-cell]'
+  ].join(', ');
+
+  function closestElement(target, selector) {
+    if (target && target.nodeType !== 1) {
+      target = target.parentElement;
+    }
+
+    if (!target || typeof target.closest !== 'function') {
+      return null;
+    }
+
+    return target.closest(selector);
   }
 
-  $('.everblock-bo-list-table__select-label, [data-everblock-check-all], [data-everblock-row-check]')
-    .on('click.everblockSelection', function (event) {
-      event.stopPropagation();
+  function selectionTable(element) {
+    return closestElement(element, '.everblock-bo-list-table');
+  }
+
+  function selectionCheckbox(element) {
+    if (!element || typeof element.matches !== 'function') {
+      return null;
+    }
+
+    if (element.matches('[data-everblock-check-all], [data-everblock-row-check]')) {
+      return element;
+    }
+
+    return element.querySelector('input[type="checkbox"]');
+  }
+
+  function rowCheckboxes(table) {
+    return Array.prototype.slice.call(table.querySelectorAll('[data-everblock-row-check]'));
+  }
+
+  function syncBulkSelectionState(table) {
+    const checkAll = table.querySelector('[data-everblock-check-all]');
+    const rows = rowCheckboxes(table);
+    let checkedCount = 0;
+
+    rows.forEach(function (checkbox) {
+      if (checkbox.checked) {
+        checkedCount += 1;
+      }
     });
 
-  $(document).on('click', '[data-everblock-row-select-cell], [data-everblock-check-all-cell]', function (event) {
-    const $target = $(event.target);
-    const isSelectAllCell = $(this).is('[data-everblock-check-all-cell]');
-    const checkboxSelector = isSelectAllCell ? '[data-everblock-check-all]' : '[data-everblock-row-check]';
-
-    if ($target.is(checkboxSelector) || $target.closest('.everblock-bo-list-table__select-label').length) {
+    if (!checkAll) {
       return;
     }
 
-    const $checkbox = $(this).find(checkboxSelector).first();
-    if (!$checkbox.length || $checkbox.prop('disabled')) {
+    checkAll.checked = rows.length > 0 && checkedCount === rows.length;
+    checkAll.indeterminate = checkedCount > 0 && checkedCount < rows.length;
+  }
+
+  function setRowsChecked(table, checked) {
+    rowCheckboxes(table).forEach(function (checkbox) {
+      checkbox.checked = checked;
+    });
+  }
+
+  function dispatchSelectionChange(checkbox) {
+    if (typeof window.Event === 'function') {
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      return;
+    }
+
+    const event = document.createEvent('Event');
+    event.initEvent('change', true, true);
+    checkbox.dispatchEvent(event);
+  }
+
+  document.addEventListener('click', function (event) {
+    const trigger = closestElement(event.target, selectionSelector);
+    const table = selectionTable(trigger);
+    const checkbox = selectionCheckbox(trigger);
+    const clickedCheckbox = event.target === checkbox;
+
+    if (!trigger || !table || !checkbox || checkbox.disabled) {
+      return;
+    }
+
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') {
+      event.stopImmediatePropagation();
+    }
+
+    if (clickedCheckbox) {
       return;
     }
 
     event.preventDefault();
-    event.stopPropagation();
-    $checkbox.prop('checked', !$checkbox.prop('checked')).trigger('change');
+    checkbox.checked = !checkbox.checked;
+    dispatchSelectionChange(checkbox);
+  }, true);
+
+  document.addEventListener('change', function (event) {
+    const checkbox = closestElement(event.target, '[data-everblock-check-all], [data-everblock-row-check]');
+    const table = selectionTable(checkbox);
+
+    if (!checkbox || !table) {
+      return;
+    }
+
+    if (checkbox.matches('[data-everblock-check-all]')) {
+      checkbox.indeterminate = false;
+      setRowsChecked(table, checkbox.checked);
+    }
+
+    syncBulkSelectionState(table);
   });
 
-  $(document).on('change', '[data-everblock-check-all]', function () {
-    $('[data-everblock-row-check]').prop('checked', this.checked);
-    syncEverblockBulkSelectionState();
-  });
-
-  $(document).on('change', '[data-everblock-row-check]', function () {
-    syncEverblockBulkSelectionState();
-  });
-});
+  Array.prototype.slice.call(document.querySelectorAll('.everblock-bo-list-table')).forEach(syncBulkSelectionState);
+}
 
 function everblockSlugify(value) {
   if (!value) {

@@ -1842,8 +1842,11 @@ details[open] > .everblock-doc-accordion__summary::after {
 
 .everblock-bo-list-table__select {
     min-width: 42px;
+    pointer-events: auto;
+    position: relative;
     text-align: center;
     width: 42px;
+    z-index: 2;
 }
 
 .everblock-bo-list-table__select-label {
@@ -1853,7 +1856,9 @@ details[open] > .everblock-doc-accordion__summary::after {
     height: 32px;
     justify-content: center;
     margin: 0;
+    position: relative;
     width: 32px;
+    z-index: 3;
 }
 
 .everblock-bo-list-table__select input[type="checkbox"] {

@@ -104,8 +104,8 @@
           <tr>
             {% if section == 'blocks' %}
               <th class="everblock-bo-list-table__select" data-everblock-check-all-cell>
-                <label class="everblock-bo-list-table__select-label">
-                  <input type="checkbox" data-everblock-check-all aria-label="{{ 'Select all'|trans({}, 'Admin.Actions') }}" />
+                <label class="everblock-bo-list-table__select-label" for="everblock-select-all">
+                  <input id="everblock-select-all" type="checkbox" data-everblock-check-all aria-label="{{ 'Select all'|trans({}, 'Admin.Actions') }}" />
                   <span class="sr-only">{{ 'Select all'|trans({}, 'Admin.Actions') }}</span>
                 </label>
               </th>
@@ -129,9 +129,10 @@
               aria-label="{{ 'Open record %id% for edition'|trans({'%id%': row_id}, 'Modules.Everblock.Admin') }}"
             >
               {% if section == 'blocks' %}
+                {% set row_select_id = 'everblock-select-' ~ row_id %}
                 <td class="everblock-bo-list-table__select" data-everblock-row-no-click="1" data-everblock-row-select-cell>
-                  <label class="everblock-bo-list-table__select-label">
-                    <input type="checkbox" name="selected[]" value="{{ row_id }}" data-everblock-row-check aria-label="{{ 'Select row'|trans({}, 'Modules.Everblock.Admin') }}" />
+                  <label class="everblock-bo-list-table__select-label" for="{{ row_select_id }}">
+                    <input id="{{ row_select_id }}" type="checkbox" name="selected[]" value="{{ row_id }}" data-everblock-row-check aria-label="{{ 'Select row'|trans({}, 'Modules.Everblock.Admin') }}" />
                     <span class="sr-only">{{ 'Select row'|trans({}, 'Modules.Everblock.Admin') }}</span>
                   </label>
                 </td>
