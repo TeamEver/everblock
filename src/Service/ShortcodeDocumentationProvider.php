@@ -21,6 +21,7 @@
 namespace Everblock\Tools\Service;
 
 use Context;
+use Hook;
 use Module;
 
 if (!defined('_PS_VERSION_') && php_sapi_name() !== 'cli') {
@@ -934,6 +935,12 @@ class ShortcodeDocumentationProvider
                 ],
             ],
         ];
+
+        Hook::exec('actionEverBlockShortcodeDocumentation', [
+            'documentation' => &$docs,
+            'module' => $module,
+            'id_lang' => $idLang,
+        ]);
 
         static::$cache[$idLang] = $docs;
 

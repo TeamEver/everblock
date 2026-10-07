@@ -88,6 +88,40 @@ Exemples courants :
 
 Les shortcodes peuvent aussi afficher des variables Smarty simples via le contexte PrestaShop, par exemple les informations boutique, client, devise et URL.
 
+### Ajouter la documentation des shortcodes d'un module tiers
+
+Enregistrez votre module sur `actionEverBlockShortcodeDocumentation` dans son installation (ou dans un script de mise a jour pour un module deja installe) :
+
+```php
+$this->registerHook('actionEverBlockShortcodeDocumentation');
+```
+
+Le hook recoit `documentation` par reference, `module` (l'instance Ever Block) et `id_lang` (la langue courante). Il est execute avant la mise en cache de la documentation, une fois par langue et par requete. Ajoutez vos rubriques directement au tableau ; la valeur de retour du hook n'est pas utilisee.
+
+```php
+public function hookActionEverBlockShortcodeDocumentation(array $params): void
+{
+    $params['documentation'][] = [
+        'title' => $this->l('My module'),
+        'entries' => [
+            [
+                'code' => '[my_shortcode id="42"]',
+                'description' => $this->l('Display content from my module.'),
+                'parameters' => [
+                    [
+                        'name' => 'id',
+                        'description' => $this->l('Content identifier.'),
+                        'required' => true,
+                    ],
+                ],
+            ],
+        ],
+    ];
+}
+```
+
+Chaque rubrique contient `title` et `entries`. Chaque entree contient `code`, `description` et `parameters` (tableau vide si aucun parametre). Les libelles doivent etre traduits par le module contributeur dans la langue courante. Ce hook enrichit uniquement la documentation ; le rendu du shortcode reste gere par votre module.
+
 ## FAQ et pages front office
 
 Ever Block fournit deux contenus front office natifs :

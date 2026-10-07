@@ -24,6 +24,8 @@
   </div>
 
   <form class="everblock-filterbar mb-3" method="get" action="{{ path(config.route) }}">
+    {# GET submissions replace the action URL query string, including the back-office token. #}
+    <input type="hidden" name="_token" value="{{ app.request.query.get('_token', app.request.query.get('token', '')) }}" />
     <div class="everblock-filterbar__caption">
       <i class="material-icons">filter_alt</i>
       <span>{{ 'Filters'|trans({}, 'Modules.Everblock.Admin') }}</span>

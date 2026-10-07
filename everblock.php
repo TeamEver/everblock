@@ -311,6 +311,7 @@ class Everblock extends Module
             ['actionEverBlockChangeShortcodeAfter', 'After block shortcodes are rendered', 'This hook triggers after every block shortcode is rendered'],
             ['displayBeforeRenderingShortcodes', 'Before rendering shortcodes', 'This hook triggers before shortcodes are rendered'],
             ['displayAfterRenderingShortcodes', 'After rendering shortcodes', 'This hook triggers after shortcodes are rendered'],
+            ['actionEverBlockShortcodeDocumentation', 'Extend shortcode documentation', 'Allows modules to add their shortcode documentation'],
             ['displayFakeHook', 'Fake hook', 'Ne pas afficher ce hook en front, il sera utilisé pour du contenu asynchrone'],
         ];
 
@@ -1035,6 +1036,12 @@ class Everblock extends Module
 
     public function checkHooks()
     {
+        $this->createHookIfNotExists(
+            'actionEverBlockShortcodeDocumentation',
+            'Extend shortcode documentation',
+            'Allows modules to add their shortcode documentation'
+        );
+
         if (!Hook::getIdByName('displayEverblockExtraOrderStep')) {
             $hook = new Hook();
             $hook->name = 'displayEverblockExtraOrderStep';
