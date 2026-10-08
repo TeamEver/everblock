@@ -18,6 +18,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
+use Everblock\Tools\Service\EverblockSignedToken;
 use Everblock\Tools\Service\EverblockUploadGuard;
 
 if (!defined('_PS_VERSION_')) {
@@ -204,12 +205,11 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
                 $decodedRecipients = base64_decode($encodedRecipients, true);
 
                 if ($decodedRecipients !== false && $signature !== '') {
-                    $expectedSignature = $this->module->encrypt($decodedRecipients . '|' . (int) $this->context->shop->id);
-
-                    if ($expectedSignature
-                        && Tools::strlen($expectedSignature) === Tools::strlen($signature)
-                        && hash_equals($expectedSignature, $signature)
-                    ) {
+                    if (EverblockSignedToken::verifyValue(
+                        'contact_recipients',
+                        $decodedRecipients . '|' . (int) $this->context->shop->id,
+                        (string) $signature
+                    )) {
                         $mailList = array_filter(array_map('trim', explode(',', $decodedRecipients)));
                     }
                 }

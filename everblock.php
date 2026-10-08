@@ -1217,6 +1217,7 @@ class Everblock extends Module
         $this->registerHook('actionGetAdminOrderButtons');
         $this->registerHook('displayAdminCustomers');
         $this->registerHook('actionCustomerGridDefinitionModifier');
+        $this->registerHook('actionOrderGridDefinitionModifier');
         $this->registerHook('actionCustomerLogoutBefore');
         $this->registerHook('displayAdminProductsExtra');
         $this->registerHook('displayAdminProductsMainStepLeftColumnBottom');
@@ -4358,6 +4359,30 @@ class Everblock extends Module
      */
     public function hookActionCustomerGridDefinitionModifier(array $params)
     {
+        $this->addEverloginRowAction($params, 'admin_everblock_customer_login');
+    }
+
+    /**
+     * Adds the same "Log in as this customer" row action to the Orders grid.
+     *
+     * The route is declared on AdminOrders, so an employee holding the Orders permission can use
+     * it exactly like the "Connect to customer account" button of the order page. The order grid
+     * rows carry id_customer, which is the parameter the route expects.
+     *
+     * @param array<string, mixed> $params
+     */
+    public function hookActionOrderGridDefinitionModifier(array $params)
+    {
+        $this->addEverloginRowAction($params, 'admin_everblock_order_customer_login');
+    }
+
+    /**
+     * Shared implementation of the "Log in as this customer" grid row action.
+     *
+     * @param array<string, mixed> $params
+     */
+    protected function addEverloginRowAction(array $params, string $route): void
+    {
         if (!isset($params['definition'])) {
             return;
         }
@@ -4383,7 +4408,7 @@ class Everblock extends Module
                         ->setName($this->l('Log in as this customer'))
                         ->setIcon('login')
                         ->setOptions([
-                            'route' => 'admin_everblock_customer_login',
+                            'route' => $route,
                             'route_param_name' => 'customerId',
                             'route_param_field' => 'id_customer',
                             'target' => '_blank',
@@ -4393,9 +4418,10 @@ class Everblock extends Module
                 break;
             }
         } catch (Throwable $exception) {
-            // Never break the Customers grid because of an extra row action.
+            // Never break a back office grid because of an extra row action.
             PrestaShopLogger::addLog(
-                $this->name . ' | unable to add the everlogin row action: ' . $exception->getMessage(),
+                $this->name . ' | unable to add the everlogin row action (' . $route . '): '
+                . $exception->getMessage(),
                 3
             );
         }

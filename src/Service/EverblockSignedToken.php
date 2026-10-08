@@ -76,6 +76,37 @@ final class EverblockSignedToken
     }
 
     /**
+     * HMAC-SHA256 of a value that carries no expiry nor nonce (e.g. the recipients of a contact
+     * form rendered in cached HTML). The purpose is a domain separator so a signature minted for
+     * one feature can never be replayed against another.
+     *
+     * @return string Empty string when no secret could be produced
+     */
+    public static function signValue(string $purpose, string $value): string
+    {
+        $secret = self::getSecret();
+        if ($secret === '' || $purpose === '') {
+            return '';
+        }
+
+        return hash_hmac('sha256', $purpose . '|' . $value, $secret);
+    }
+
+    /**
+     * Constant time verification of a signValue() signature.
+     */
+    public static function verifyValue(string $purpose, string $value, string $providedSignature): bool
+    {
+        if ($providedSignature === '') {
+            return false;
+        }
+
+        $expected = self::signValue($purpose, $value);
+
+        return $expected !== '' && hash_equals($expected, $providedSignature);
+    }
+
+    /**
      * Constant time verification.
      *
      * @param array<int|string, int|string> $payload

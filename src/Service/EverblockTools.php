@@ -2500,7 +2500,12 @@ class EverblockTools
             if (!empty($validEmails)) {
                 $emailString = implode(',', $validEmails);
                 $encodedEmails = base64_encode($emailString);
-                $signature = $module->encrypt($emailString . '|' . (int) $context->shop->id);
+                // HMAC-SHA256 with the module secret. The former md5(_COOKIE_KEY_ . data) was
+                // open to length extension: a visitor could append his own address to the list.
+                $signature = EverblockSignedToken::signValue(
+                    'contact_recipients',
+                    $emailString . '|' . (int) $context->shop->id
+                );
                 $field['secure_value'] = $encodedEmails . '::' . $signature;
             }
         }

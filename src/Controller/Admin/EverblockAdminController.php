@@ -28,7 +28,7 @@ use Language;
 use Module;
 use PrestaShop\PrestaShop\Core\CommandBus\CommandBusInterface;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
-use PrestaShopBundle\Security\Annotation\AdminSecurity;
+use PrestaShopBundle\Security\Attribute\AdminSecurity;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -209,8 +209,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function configurationAction(Request $request): Response
     {
         /** @var \Everblock $module */
@@ -297,8 +298,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
      * native ACL of the Customers page gates it — the same permission that
      * controllers/front/everlogin.php requires.
      *
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function customerLoginAction(int $customerId): RedirectResponse
     {
         $customer = new \Customer($customerId);
@@ -332,8 +334,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function downloadTranslationAction(string $file, ModuleTranslationManager $manager): Response
     {
         $module = Module::getInstanceByName('everblock');
@@ -353,8 +356,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function listAction(Request $request, string $section): Response
     {
         $config = $this->config($section);
@@ -383,8 +387,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function shortcodeDocumentationAction(): Response
     {
         $module = Module::getInstanceByName('everblock');
@@ -398,24 +403,27 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('create', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('create', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('create', request.get('_legacy_controller'))")]
     public function createAction(Request $request, string $section): Response
     {
         return $this->handleForm($request, $section, null);
     }
 
     /**
-     * @AdminSecurity("is_granted('update', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('update', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))")]
     public function editAction(Request $request, string $section, int $id): Response
     {
         return $this->handleForm($request, $section, $id);
     }
 
     /**
-     * @AdminSecurity("is_granted('delete', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('delete', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('delete', request.get('_legacy_controller'))")]
     public function deleteAction(string $section, int $id): RedirectResponse
     {
         $config = $this->config($section);
@@ -427,8 +435,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('update', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('update', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))")]
     public function clearCacheAction(Request $request): RedirectResponse
     {
         $this->commandBus->handle(new ClearEverblockCacheCommand());
@@ -438,8 +447,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('update', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('update', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))")]
     public function toggleBlockAction(int $id): RedirectResponse
     {
         $block = $this->blockRepository->find($id, $this->shopId());
@@ -457,8 +467,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('create', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('create', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('create', request.get('_legacy_controller'))")]
     public function duplicateBlockAction(int $id): RedirectResponse
     {
         $newId = $this->blockRepository->duplicate($id, $this->shopId(), Language::getLanguages(false));
@@ -476,8 +487,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     }
 
     /**
-     * @AdminSecurity("is_granted('update', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('update', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('update', request.get('_legacy_controller'))")]
     public function bulkBlockAction(Request $request, string $bulkAction): RedirectResponse
     {
         $ids = $this->extractBulkIds($request);
@@ -575,8 +587,9 @@ final class EverblockAdminController extends FrameworkBundleAdminController
     /**
      * Renders a block preview directly in the back office.
      *
-     * @AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
+     * @\PrestaShopBundle\Security\Annotation\AdminSecurity("is_granted('read', request.get('_legacy_controller'))")
      */
+    #[AdminSecurity("is_granted('read', request.get('_legacy_controller'))")]
     public function previewRedirectAction(int $id, Request $request): Response
     {
         $error = null;
