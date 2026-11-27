@@ -58,7 +58,7 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
         }
 
         // Hook avant traitement.
-        Hook::exec('hookActionContactFormSubmitBefore', ['formData' => &$formData]);
+        Hook::exec('actionContactFormSubmitBefore', ['formData' => &$formData]);
 
         // Si erreurs existantes.
         if (empty($formData) || sizeof($this->context->controller->errors)) {
@@ -68,7 +68,8 @@ class EverblockcontactModuleFrontController extends ModuleFrontController
 
         // Contenu du message HTML.
         $messageContent = '';
-        $excludedKeys = ['token', 'everHide', 'submit', 'action'];
+        // Paramètres techniques (routage du contrôleur, langue) : jamais dans l'e-mail.
+        $excludedKeys = ['token', 'everHide', 'submit', 'action', 'fc', 'module', 'controller', 'isolang', 'id_lang', 'ajax'];
 
         foreach ($formData as $key => $value) {
             if (in_array($key, $excludedKeys)) {

@@ -10,7 +10,6 @@ use Feature;
 use Language;
 use Store;
 use Tools;
-use ZipArchive;
 
 final class AdminConfigurationManager
 {
@@ -354,77 +353,14 @@ final class AdminConfigurationManager
 
     public function processUpdate(\Everblock $module, GithubReleaseChecker $releaseChecker): array
     {
-        $errors = [];
-        $success = [];
-
-        if (!$releaseChecker->isEverblockUpdateAvailable()) {
-            $errors[] = $module->l('Ever Block is already up to date.');
-            return ['errors' => $errors, 'success' => $success];
+        // Même procédure que la commande everblock:update (sauvegarde dans var/, reprise des
+        // fichiers générés par la boutique, retour arrière en cas d'échec).
+        $result = (new ModuleUpdater($module, $releaseChecker))->update();
+        if ($result['errors'] === []) {
+            $result['success'][] = $module->l('Ever Block has been updated. The page will now reload.');
         }
 
-        $release = $releaseChecker->getLatestEverblockRelease();
-        if (!$release || empty($release['tag_name'])) {
-            $errors[] = $module->l('Unable to fetch the latest release details.');
-            return ['errors' => $errors, 'success' => $success];
-        }
-
-        $tagName = (string) $release['tag_name'];
-        $downloadUrl = 'https://github.com/TeamEver/everblock/archive/refs/tags/' . rawurlencode($tagName) . '.zip';
-        $tmpBase = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'everblock_update' . DIRECTORY_SEPARATOR;
-        if (!is_dir($tmpBase) && !@mkdir($tmpBase, 0755, true)) {
-            $errors[] = $module->l('Unable to prepare the temporary update directory.');
-            return ['errors' => $errors, 'success' => $success];
-        }
-
-        $tempFile = tempnam($tmpBase, 'everblock_');
-        if (!$tempFile) {
-            $errors[] = $module->l('Unable to create the update archive.');
-            return ['errors' => $errors, 'success' => $success];
-        }
-        $zipPath = $tempFile . '.zip';
-        @rename($tempFile, $zipPath);
-
-        if (!Tools::copy($downloadUrl, $zipPath)) {
-            @unlink($zipPath);
-            $errors[] = $module->l('Unable to download the latest release archive.');
-            return ['errors' => $errors, 'success' => $success];
-        }
-
-        $extractDir = $tmpBase . 'extract_' . uniqid('', true) . DIRECTORY_SEPARATOR;
-        if (!@mkdir($extractDir, 0755, true)) {
-            @unlink($zipPath);
-            $errors[] = $module->l('Unable to prepare the extraction directory.');
-            return ['errors' => $errors, 'success' => $success];
-        }
-
-        $zip = new ZipArchive();
-        if ($zip->open($zipPath) !== true) {
-            $this->removeDirectory($extractDir);
-            @unlink($zipPath);
-            $errors[] = $module->l('Unable to open the downloaded archive.');
-            return ['errors' => $errors, 'success' => $success];
-        }
-        $zip->extractTo($extractDir);
-        $zip->close();
-        @unlink($zipPath);
-
-        $sourceDir = $this->locateEverblockSource($extractDir);
-        if (!$sourceDir) {
-            $this->removeDirectory($extractDir);
-            $errors[] = $module->l('Unable to locate the module files in the archive.');
-            return ['errors' => $errors, 'success' => $success];
-        }
-
-        if (!$this->replaceModuleFiles($sourceDir, $module->name)) {
-            $this->removeDirectory($extractDir);
-            $errors[] = $module->l('Unable to install the latest release.');
-            return ['errors' => $errors, 'success' => $success];
-        }
-
-        $this->removeDirectory($extractDir);
-        $success[] = $module->l('Ever Block has been updated. The page will now reload.');
-
-        return ['errors' => $errors, 'success' => $success];
+        return ['errors' => $result['errors'], 'success' => $result['success']];
     }
 
     private function appendToolResult($result, array &$errors, array &$success): void
@@ -474,103 +410,5 @@ final class AdminConfigurationManager
         }
 
         $errors[] = (string) ($result['message'] ?? 'Translation action failed.');
-    }
-
-    private function locateEverblockSource(string $extractDir)
-    {
-        if (file_exists($extractDir . 'everblock.php')) {
-            return $extractDir;
-        }
-
-        $entries = @scandir($extractDir);
-        if (!is_array($entries)) {
-            return null;
-        }
-
-        foreach ($entries as $entry) {
-            if ($entry === '.' || $entry === '..') {
-                continue;
-            }
-            $candidate = $extractDir . $entry . DIRECTORY_SEPARATOR;
-            if (is_dir($candidate) && file_exists($candidate . 'everblock.php')) {
-                return $candidate;
-            }
-        }
-
-        return null;
-    }
-
-    private function replaceModuleFiles(string $sourceDir, string $moduleName): bool
-    {
-        $targetDir = rtrim(_PS_MODULE_DIR_, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $moduleName;
-        $backupDir = $targetDir . '_backup_' . date('YmdHis');
-
-        if (@rename($targetDir, $backupDir)) {
-            if (@rename($sourceDir, $targetDir)) {
-                $this->removeDirectory($backupDir);
-                return true;
-            }
-            @rename($backupDir, $targetDir);
-            return false;
-        }
-
-        return $this->recursiveCopy($sourceDir, $targetDir);
-    }
-
-    private function recursiveCopy(string $sourceDir, string $targetDir): bool
-    {
-        if (!is_dir($sourceDir)) {
-            return false;
-        }
-        if (!is_dir($targetDir) && !@mkdir($targetDir, 0755, true)) {
-            return false;
-        }
-
-        $entries = scandir($sourceDir);
-        if (!is_array($entries)) {
-            return false;
-        }
-
-        foreach ($entries as $entry) {
-            if ($entry === '.' || $entry === '..') {
-                continue;
-            }
-            $sourcePath = $sourceDir . DIRECTORY_SEPARATOR . $entry;
-            $targetPath = $targetDir . DIRECTORY_SEPARATOR . $entry;
-            if (is_dir($sourcePath)) {
-                if (!$this->recursiveCopy($sourcePath, $targetPath)) {
-                    return false;
-                }
-                continue;
-            }
-            if (!@copy($sourcePath, $targetPath)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-        $entries = scandir($dir);
-        if (!is_array($entries)) {
-            return;
-        }
-        foreach ($entries as $entry) {
-            if ($entry === '.' || $entry === '..') {
-                continue;
-            }
-            $path = $dir . DIRECTORY_SEPARATOR . $entry;
-            if (is_dir($path)) {
-                $this->removeDirectory($path);
-            } else {
-                @unlink($path);
-            }
-        }
-        @rmdir($dir);
     }
 }

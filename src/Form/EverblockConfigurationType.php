@@ -105,8 +105,6 @@ final class EverblockConfigurationType extends AbstractType
             'pages' => [
                 'EVERBLOCK_PAGES_BASE_URL',
                 'EVERBLOCK_PAGES_PER_PAGE',
-                'EVERBLOCK_FAQ_BASE_URL',
-                'EVERBLOCK_FAQ_PER_PAGE',
             ],
             'holiday' => [],
             'cron' => [],
@@ -182,7 +180,7 @@ final class EverblockConfigurationType extends AbstractType
             'tools' => 'Run maintenance tools such as cache cleanup, log cleanup, backups and restores.',
             'files' => 'Import product tab data from an Excel file.',
             'flags' => 'Configure product flags, feature colors and sold-out display colors.',
-            'pages' => 'Configure guide and FAQ front-office route bases and pagination.',
+            'pages' => 'Configure guide front-office route base and pagination.',
             'holiday' => 'Override holiday opening hours per store.',
             'cron' => 'Use these secure URLs to run Everblock maintenance tasks from cron.',
         ];
@@ -460,15 +458,6 @@ final class EverblockConfigurationType extends AbstractType
             ])
             ->add('EVERBLOCK_PAGES_PER_PAGE', TextType::class, [
                 'label' => 'Items per page',
-                'required' => false,
-            ])
-            ->add('EVERBLOCK_FAQ_BASE_URL', TextType::class, [
-                'label' => 'FAQ base URL',
-                'required' => false,
-                'help' => 'Leave empty to keep the default "faq" value.',
-            ])
-            ->add('EVERBLOCK_FAQ_PER_PAGE', TextType::class, [
-                'label' => 'FAQ per page',
                 'required' => false,
             ])
             ->add('EVERPS_OLD_URL', TextType::class, [

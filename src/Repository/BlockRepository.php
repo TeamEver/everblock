@@ -46,51 +46,6 @@ final class BlockRepository extends AbstractEverblockRepository
         return Block::fromDatabase($row, $langRows);
     }
 
-    public function findAllForShop(int $langId, int $shopId): array
-    {
-        return $this->connection->fetchAllAssociative(
-            'SELECT b.*,
-                COALESCE(NULLIF(bl.content, \'\'), NULLIF(bld.content, \'\'), \'\') AS content,
-                COALESCE(NULLIF(bl.custom_code, \'\'), NULLIF(bld.custom_code, \'\'), \'\') AS custom_code
-            FROM ' . $this->table('everblock') . ' b
-            LEFT JOIN ' . $this->table('everblock_lang') . ' bl
-                ON b.id_everblock = bl.id_everblock AND bl.id_lang = :langId
-            LEFT JOIN ' . $this->table('everblock_lang') . ' bld
-                ON b.id_everblock = bld.id_everblock AND bld.id_lang = :langIdDefault
-            WHERE b.id_shop = :shopId
-            ORDER BY b.position ASC',
-            [
-                'langId' => $langId,
-                'langIdDefault' => (int) \Configuration::get('PS_LANG_DEFAULT'),
-                'shopId' => $shopId,
-            ]
-        );
-    }
-
-    public function findActiveForHook(int $hookId, int $langId, int $shopId): array
-    {
-        return $this->connection->fetchAllAssociative(
-            'SELECT b.*,
-                COALESCE(NULLIF(bl.content, \'\'), NULLIF(bld.content, \'\'), \'\') AS content,
-                COALESCE(NULLIF(bl.custom_code, \'\'), NULLIF(bld.custom_code, \'\'), \'\') AS custom_code
-            FROM ' . $this->table('everblock') . ' b
-            LEFT JOIN ' . $this->table('everblock_lang') . ' bl
-                ON b.id_everblock = bl.id_everblock AND bl.id_lang = :langId
-            LEFT JOIN ' . $this->table('everblock_lang') . ' bld
-                ON b.id_everblock = bld.id_everblock AND bld.id_lang = :langIdDefault
-            WHERE b.id_hook = :hookId
-              AND b.id_shop = :shopId
-              AND b.active = 1
-            ORDER BY b.position ASC',
-            [
-                'hookId' => $hookId,
-                'langId' => $langId,
-                'langIdDefault' => (int) \Configuration::get('PS_LANG_DEFAULT'),
-                'shopId' => $shopId,
-            ]
-        );
-    }
-
     public function save(Block $block, array $languages): int
     {
         $data = [

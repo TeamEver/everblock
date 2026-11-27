@@ -24,7 +24,6 @@ final class RepositoryProvider
     private const SERVICE_MAP = [
         'everblock.repository.block' => BlockRepository::class,
         'everblock.repository.shortcode' => ShortcodeRepository::class,
-        'everblock.repository.faq' => FaqRepository::class,
         'everblock.repository.page' => PageRepository::class,
         'everblock.repository.product_content' => ProductContentRepository::class,
         'everblock.repository.hook' => HookRepository::class,

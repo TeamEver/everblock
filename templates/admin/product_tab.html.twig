@@ -1,48 +1,5 @@
 <div id="everblock" class="panel">
   <fieldset class="form-group">
-    {% if everblock_faq_selector is defined %}
-      {% set selectedOptions = everblock_faq_selector.selected_options|default([]) %}
-      {% set faqSelectedCount = selectedOptions|length %}
-      <div class="container border rounded p-3 mb-3 everblock-faq-selector-card">
-        <div class="row">
-          <div class="col-lg-12 col-xl-12">
-            <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2 mb-2">
-              <div>
-                <h4 class="h4 mb-2">{{ 'FAQ associations'|trans({}, 'Modules.Everblock.Admin') }}</h4>
-                <p class="text-muted mb-0">{{ 'Select the FAQ entries that should be displayed with this product. Use the search bar to quickly find them by tag or title.'|trans({}, 'Modules.Everblock.Admin') }}</p>
-              </div>
-              {% if faqSelectedCount > 0 %}
-                <span class="badge bg-primary everblock-faq-selected-counter">{{ '%count% FAQ selected'|trans({'%count%': faqSelectedCount}, 'Modules.Everblock.Admin') }}</span>
-              {% endif %}
-            </div>
-            <div class="everblock-faq-search-tip alert alert-info py-2 px-3 mb-3">
-              <i class="icon-search" aria-hidden="true"></i>
-              <span>{{ 'Start typing to highlight the search bar and filter the FAQs by tag or title.'|trans({}, 'Modules.Everblock.Admin') }}</span>
-            </div>
-            <div class="everblock-faq-selector-wrapper">
-              <label for="everblock_faq_selector" class="form-label fw-semibold">{{ 'Search and select FAQ entries'|trans({}, 'Modules.Everblock.Admin') }}</label>
-              <select
-                id="everblock_faq_selector"
-                name="everblock_faq_ids[]"
-                class="form-control js-everblock-faq-selector"
-                multiple="multiple"
-                data-ajax-url="{{ everblock_faq_selector.ajax_url }}"
-                data-placeholder="{{ everblock_faq_selector.placeholder }}"
-                aria-describedby="everblock_faq_selector_hint"
-              >
-                {% for faqOption in selectedOptions %}
-                  <option value="{{ faqOption.id|default(0) }}" selected="selected" data-active="{{ faqOption.active|default(false) ? 1 : 0 }}">
-                    {{ faqOption.text|default('') }}{% if not faqOption.active|default(false) %} ({{ 'Inactive'|trans({}, 'Modules.Everblock.Admin') }}){% endif %}
-                  </option>
-                {% endfor %}
-              </select>
-              <p id="everblock_faq_selector_hint" class="help-block mt-2 mb-0">{{ 'The order of the selected items will be used when displaying the FAQ on the product page.'|trans({}, 'Modules.Everblock.Admin') }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
     {% for tabNumber, everpstabs in tabsData %}
       <div class="container border rounded p-3 mb-3">
         <div class="row">

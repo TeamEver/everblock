@@ -38,11 +38,6 @@ abstract class AbstractEverblockRepository
         return $value;
     }
 
-    protected function intList(array $values): array
-    {
-        return array_values(array_unique(array_filter(array_map('intval', $values))));
-    }
-
     protected function langRows(string $table, string $primary, int $id): array
     {
         return $this->connection->fetchAllAssociative(

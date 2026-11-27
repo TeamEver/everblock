@@ -7,7 +7,6 @@ namespace Everblock\Tools\Handler;
 use Everblock\Tools\Command\DeleteAdminItemCommand;
 use Everblock\Tools\Entity\Block;
 use Everblock\Tools\Repository\BlockRepository;
-use Everblock\Tools\Repository\FaqRepository;
 use Everblock\Tools\Repository\HookRepository;
 use Everblock\Tools\Repository\PageRepository;
 use Everblock\Tools\Repository\ShortcodeRepository;
@@ -18,7 +17,6 @@ final class DeleteAdminItemHandler
     public function __construct(
         private BlockRepository $blockRepository,
         private ShortcodeRepository $shortcodeRepository,
-        private FaqRepository $faqRepository,
         private PageRepository $pageRepository,
         private HookRepository $hookRepository
     ) {
@@ -34,14 +32,12 @@ final class DeleteAdminItemHandler
         $previous = match ($command->section) {
             'blocks' => $this->blockRepository->find($command->id, $command->shopId),
             'shortcodes' => $this->shortcodeRepository->find($command->id, $command->shopId),
-            'faqs' => $this->faqRepository->find($command->id, $command->shopId),
             'pages' => $this->pageRepository->find($command->id, $command->shopId),
             default => null,
         };
         $deleted = match ($command->section) {
             'blocks' => $this->blockRepository->delete($command->id, $command->shopId),
             'shortcodes' => $this->shortcodeRepository->delete($command->id, $command->shopId),
-            'faqs' => $this->faqRepository->delete($command->id, $command->shopId),
             'pages' => $this->pageRepository->delete($command->id, $command->shopId),
             'hooks' => $this->hookRepository->delete($command->id),
             default => false,
@@ -77,24 +73,6 @@ final class DeleteAdminItemHandler
                 }
             }
             EverblockCache::cacheDrop('EverblockShortcode_getAllShortcodeIds_' . $command->shopId);
-
-            return;
-        }
-
-        if ($command->section === 'faqs') {
-            $tag = $previous && isset($previous->tag_name) ? trim((string) $previous->tag_name) : '';
-            foreach ($languages as $language) {
-                $langId = (int) ($language['id_lang'] ?? 0);
-                if ($langId <= 0) {
-                    continue;
-                }
-                EverblockCache::cacheDrop('EverblockFaq_getAllFaq_' . $command->shopId . '_' . $langId);
-                if ($tag !== '') {
-                    EverblockCache::cacheDrop('EverblockFaq_getFaqByTagName_' . $command->shopId . '_' . $langId . '_' . $tag);
-                }
-            }
-            EverblockCache::cacheDrop('EverblockFaq_getFirstActiveTagName_' . $command->shopId);
-            EverblockCache::cacheDropByPattern('EverblockFaq_getByIds_' . $command->shopId . '_');
 
             return;
         }

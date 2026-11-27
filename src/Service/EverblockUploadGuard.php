@@ -204,28 +204,6 @@ final class EverblockUploadGuard
     }
 
     /**
-     * Same as buildSafeFileName() with a random suffix, when overwriting must be impossible.
-     */
-    public static function buildUniqueFileName(string $originalName, string $extension, string $fallbackSlug = 'file'): string
-    {
-        $slug = self::slugify(pathinfo(self::baseName($originalName), PATHINFO_FILENAME));
-        if ($slug === '') {
-            $slug = self::slugify($fallbackSlug);
-        }
-        if ($slug === '') {
-            $slug = 'file';
-        }
-
-        try {
-            $suffix = bin2hex(random_bytes(4));
-        } catch (\Exception $exception) {
-            $suffix = substr(sha1($slug . microtime(false)), 0, 8);
-        }
-
-        return $slug . '-' . $suffix . '.' . strtolower($extension);
-    }
-
-    /**
      * Best effort Apache hardening of an upload directory. Deliberately limited to the same
      * directives as the module own .htaccess, and never overwrites an existing file.
      *

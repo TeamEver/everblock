@@ -45,43 +45,6 @@ final class ShortcodeRepository extends AbstractEverblockRepository
         );
     }
 
-    public function findAll(int $shopId, int $langId): array
-    {
-        $rows = $this->connection->fetchAllAssociative(
-            'SELECT s.*, sl.title, sl.content, sl.id_lang
-            FROM ' . $this->table('everblock_shortcode') . ' s
-            INNER JOIN ' . $this->table('everblock_shortcode_lang') . ' sl
-                ON s.id_everblock_shortcode = sl.id_everblock_shortcode AND sl.id_lang = :langId
-            WHERE s.id_shop = :shopId
-            ORDER BY s.shortcode ASC',
-            ['shopId' => $shopId, 'langId' => $langId]
-        );
-
-        return array_map(static fn (array $row): Shortcode => Shortcode::fromDatabase($row, [], $langId), $rows);
-    }
-
-    public function findIds(int $shopId): array
-    {
-        return $this->connection->fetchAllAssociative(
-            'SELECT id_everblock_shortcode FROM ' . $this->table('everblock_shortcode') . ' WHERE id_shop = :shopId',
-            ['shopId' => $shopId]
-        );
-    }
-
-    public function findContentByShortcode(string $shortcode, int $shopId, int $langId): string
-    {
-        $content = $this->connection->fetchOne(
-            'SELECT sl.content
-            FROM ' . $this->table('everblock_shortcode') . ' s
-            INNER JOIN ' . $this->table('everblock_shortcode_lang') . ' sl
-                ON s.id_everblock_shortcode = sl.id_everblock_shortcode
-            WHERE s.shortcode = :shortcode AND s.id_shop = :shopId AND sl.id_lang = :langId',
-            ['shortcode' => $shortcode, 'shopId' => $shopId, 'langId' => $langId]
-        );
-
-        return is_string($content) ? $content : '';
-    }
-
     public function save(Shortcode $shortcode, array $languages): int
     {
         $data = [

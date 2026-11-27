@@ -82,36 +82,6 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_shortcode_lan
         PRIMARY KEY (`id_everblock_shortcode`, `id_lang`)
     ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
 
-// FAQ
-$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_faq` (
-        `id_everblock_faq` int(10) unsigned NOT NULL auto_increment,
-        `tag_name` text DEFAULT NULL,
-        `id_shop` int(10) unsigned NOT NULL,
-        `position` int(10) unsigned NOT NULL DEFAULT 0,
-        `date_add` DATETIME DEFAULT NULL,
-        `date_upd` DATETIME DEFAULT NULL DEFAULT 0,
-        `active` int(10) unsigned NOT NULL,
-        PRIMARY KEY (`id_everblock_faq`, `id_shop`)
-    ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
-
-$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_faq_lang` (
-        `id_everblock_faq` int(10) unsigned NOT NULL,
-        `id_lang` int(10) unsigned NOT NULL,
-        `title` text DEFAULT NULL,
-        `content` text DEFAULT NULL,
-        PRIMARY KEY (`id_everblock_faq`, `id_lang`)
-    ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
-
-$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_faq_product` (
-        `id_everblock_faq_product` int(10) unsigned NOT NULL auto_increment,
-        `id_everblock_faq` int(10) unsigned NOT NULL,
-        `id_product` int(10) unsigned NOT NULL,
-        `id_shop` int(10) unsigned NOT NULL,
-        `position` int(10) unsigned NOT NULL DEFAULT 0,
-        PRIMARY KEY (`id_everblock_faq_product`),
-        UNIQUE KEY `everblock_faq_product_unique` (`id_everblock_faq`, `id_product`, `id_shop`)
-    ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
-
 /* Tabs */
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_tabs` (
          `id_everblock_tabs` int(10) unsigned NOT NULL auto_increment,
@@ -161,17 +131,6 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_modal_lang` (
         `content` text DEFAULT NULL,
         `button_label` text DEFAULT NULL,
         PRIMARY KEY (`id_everblock_modal`, `id_lang`))
-        ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
-$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'everblock_game_play` (
-        `id_everblock_game_play` int(10) unsigned NOT NULL auto_increment,
-        `id_prettyblocks` int(10) unsigned NOT NULL,
-        `id_customer` int(10) unsigned NOT NULL,
-        `ip_address` varchar(45) DEFAULT NULL,
-        `result` varchar(255) DEFAULT NULL,
-        `is_winner` TINYINT(1) NOT NULL DEFAULT 0,
-        `date_add` DATETIME DEFAULT NULL,
-        PRIMARY KEY (`id_everblock_game_play`))
         ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 // Pages

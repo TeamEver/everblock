@@ -105,11 +105,6 @@ class ExecuteAction extends Command
             'description' => 'Creates dummy products with images for the selected shop.',
             'parameters' => ['idshop (optional)'],
         ],
-        'webpprettyblock' => [
-            'label' => 'Convert Prettyblocks images to WebP',
-            'description' => 'Converts every Prettyblock image to WebP.',
-            'parameters' => [],
-        ],
         'removehn' => [
             'label' => 'Replace Hn tags',
             'description' => 'Replaces Hn tags with paragraph elements carrying CSS classes.',
@@ -353,12 +348,6 @@ class ExecuteAction extends Command
                 }
             }
             $output->writeln('<comment>Inline styles have been removed from all products</comment>');
-            return self::SUCCESS;
-        }
-        if ($action == 'webpprettyblock') {
-            $output->writeln('<comment>Start converting Prettyblock images to webp</comment>');
-            EverblockTools::convertAllPrettyblocksImagesToWebP();
-            $output->writeln('<comment>Prettyblock images have been improved into webp</comment>');
             return self::SUCCESS;
         }
         if ($action === 'saveproducts') {

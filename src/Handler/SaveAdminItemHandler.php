@@ -6,11 +6,9 @@ namespace Everblock\Tools\Handler;
 
 use Everblock\Tools\Command\SaveAdminItemCommand;
 use Everblock\Tools\Entity\Block;
-use Everblock\Tools\Entity\Faq;
 use Everblock\Tools\Entity\Page;
 use Everblock\Tools\Entity\Shortcode;
 use Everblock\Tools\Repository\BlockRepository;
-use Everblock\Tools\Repository\FaqRepository;
 use Everblock\Tools\Repository\HookRepository;
 use Everblock\Tools\Repository\PageRepository;
 use Everblock\Tools\Repository\ShortcodeRepository;
@@ -22,7 +20,6 @@ final class SaveAdminItemHandler
     public function __construct(
         private BlockRepository $blockRepository,
         private ShortcodeRepository $shortcodeRepository,
-        private FaqRepository $faqRepository,
         private PageRepository $pageRepository,
         private HookRepository $hookRepository
     ) {
@@ -39,7 +36,6 @@ final class SaveAdminItemHandler
         $id = match ($command->section) {
             'blocks' => $this->saveBlock($command),
             'shortcodes' => $this->saveShortcode($command),
-            'faqs' => $this->saveFaq($command),
             'pages' => $this->savePage($command),
             'hooks' => $this->hookRepository->save($command->id, $command->data),
             default => 0,
@@ -96,22 +92,6 @@ final class SaveAdminItemHandler
         return $this->shortcodeRepository->save($shortcode, $command->languages);
     }
 
-    private function saveFaq(SaveAdminItemCommand $command): int
-    {
-        $faq = $command->id ? $this->faqRepository->find($command->id, $command->shopId) : new Faq();
-        $faq ??= new Faq();
-        $faq->id = $command->id;
-        $faq->id_everblock_faq = $command->id;
-        $faq->id_shop = $command->shopId;
-        $faq->tag_name = (string) ($command->data['tag_name'] ?? '');
-        $faq->position = (int) ($command->data['position'] ?? 0);
-        $faq->active = !empty($command->data['active']);
-        $faq->title = $this->localized($command->data, 'title', $command->languages);
-        $faq->content = $this->localized($command->data, 'content', $command->languages, true);
-
-        return $this->faqRepository->save($faq, $command->languages);
-    }
-
     private function savePage(SaveAdminItemCommand $command): int
     {
         $page = $command->id ? $this->pageRepository->find($command->id, $command->shopId) : new Page();
@@ -161,7 +141,6 @@ final class SaveAdminItemHandler
         return match ($command->section) {
             'blocks' => $this->blockRepository->find((int) $command->id, $command->shopId),
             'shortcodes' => $this->shortcodeRepository->find((int) $command->id, $command->shopId),
-            'faqs' => $this->faqRepository->find((int) $command->id, $command->shopId),
             'pages' => $this->pageRepository->find((int) $command->id, $command->shopId),
             default => null,
         };
@@ -200,28 +179,6 @@ final class SaveAdminItemHandler
                 }
             }
             EverblockCache::cacheDrop('EverblockShortcode_getAllShortcodeIds_' . $command->shopId);
-
-            return;
-        }
-
-        if ($command->section === 'faqs') {
-            $tags = [];
-            if ($previous instanceof Faq) {
-                $tags[] = trim($previous->tag_name);
-            }
-            $tags[] = trim((string) ($command->data['tag_name'] ?? ''));
-            foreach ($command->languages as $language) {
-                $langId = (int) ($language['id_lang'] ?? $language['id'] ?? 0);
-                if ($langId <= 0) {
-                    continue;
-                }
-                EverblockCache::cacheDrop('EverblockFaq_getAllFaq_' . $command->shopId . '_' . $langId);
-                foreach (array_unique(array_filter($tags)) as $tag) {
-                    EverblockCache::cacheDrop('EverblockFaq_getFaqByTagName_' . $command->shopId . '_' . $langId . '_' . $tag);
-                }
-            }
-            EverblockCache::cacheDrop('EverblockFaq_getFirstActiveTagName_' . $command->shopId);
-            EverblockCache::cacheDropByPattern('EverblockFaq_getByIds_' . $command->shopId . '_');
 
             return;
         }

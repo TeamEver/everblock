@@ -26,38 +26,10 @@
         legacy: {
             file: 'everblock.js',
             selectors: [
-                'select[name$="[id_categories][]"], select[name$="[id_categories]"]',
-                '.prettyblocks-image-slider',
                 '.ever-bootstrap-carousel',
                 '[data-ever-infinite-carousel="1"], [data-ever-mobile-carousel="1"]',
                 '.ever_instagram img',
-                '#everImageModal',
-                '.ever-slide',
-                '.everblock-gallery',
-                '.everblock-masonry-gallery',
-                '.everblock-video-gallery',
-                '.everblock-video-products',
-                '.everblock-guided-step',
-                '.flash-deals-wrapper',
-                '.everblock-downloads a',
-                '.everblock-scroll-video',
-                '.everblock-counter',
-                '.everblock-countdown',
-                '.everblock-podcasts audio',
-                '[id^="block-"][data-lookbook-url]',
-                '.ever-wheel-of-fortune',
-                '.ever-scratch-card-block',
-                '.ever-mystery-boxes',
-                '.ever-advent-calendar',
-                '.ever-slot-machine',
-                '.prettyblock-category-tabs',
-                '.pb-toc-summary'
-            ]
-        },
-        slider: {
-            file: 'everblock-slider.js',
-            selectors: [
-                '.ever-slider'
+                '#everImageModal'
             ]
         },
         modal: {
@@ -139,10 +111,6 @@
     }
 
     function runFeatureInit(featureName, context) {
-        if (featureName === 'slider' && typeof window.everblockInitSliders === 'function') {
-            window.everblockInitSliders();
-        }
-
         if (featureName === 'modal' && typeof window.everblockInitModals === 'function') {
             window.everblockInitModals(context || document);
         }
@@ -206,10 +174,6 @@
 
         if (legacyNeeded) {
             detected.push('legacy');
-        }
-
-        if (hasFeature('slider', context)) {
-            detected.push('slider');
         }
 
         if (!legacyNeeded && hasFeature('modal', context)) {

@@ -10,7 +10,6 @@ use Everblock\Tools\Command\SaveAdminItemCommand;
 use Everblock\Tools\Entity\Block;
 use Everblock\Tools\Form\BlockType;
 use Everblock\Tools\Form\EverblockConfigurationType;
-use Everblock\Tools\Form\FaqType;
 use Everblock\Tools\Form\HookType;
 use Everblock\Tools\Form\PageType;
 use Everblock\Tools\Form\ShortcodeType;
@@ -134,46 +133,6 @@ final class EverblockAdminController extends FrameworkBundleAdminController
                 'shortcode' => 'Shortcode',
                 'title' => 'Title',
                 'content' => 'Content',
-            ],
-        ],
-        'faqs' => [
-            'title' => 'FAQ',
-            'form' => FaqType::class,
-            'route' => 'admin_everblock_faqs',
-            'legacy' => 'AdminEverBlockFaq',
-            'id' => 'id_everblock_faq',
-            'columns' => [
-                'id_everblock_faq',
-                'tag_name',
-                'title',
-                'content',
-                'position',
-                'active',
-                'linked_products',
-                'date_add',
-                'date_upd',
-            ],
-            'filter_columns' => [
-                'id_everblock_faq',
-                'tag_name',
-                'title',
-                'content',
-                'position',
-                'active',
-                'date_add',
-                'date_upd',
-            ],
-            'boolean_columns' => ['active'],
-            'column_labels' => [
-                'id_everblock_faq' => 'ID',
-                'tag_name' => 'FAQ tag',
-                'title' => 'Title',
-                'content' => 'Content',
-                'position' => 'Position',
-                'active' => 'Status',
-                'linked_products' => 'Linked products',
-                'date_add' => 'Date add',
-                'date_upd' => 'Date upd',
             ],
         ],
         'pages' => [
@@ -579,7 +538,7 @@ final class EverblockAdminController extends FrameworkBundleAdminController
             'field_tabs' => $section === 'blocks' ? BlockType::fieldTabs(Language::getLanguages(false)) : [],
             'field_descriptions' => $section === 'blocks' ? BlockType::fieldDescriptions(Language::getLanguages(false)) : [],
             'tab_help' => $section === 'blocks' ? BlockType::tabHelp() : [],
-            'tinymce_enabled' => in_array($section, ['blocks', 'shortcodes', 'faqs', 'pages'], true) && (bool) \Configuration::get('EVERBLOCK_TINYMCE'),
+            'tinymce_enabled' => in_array($section, ['blocks', 'shortcodes', 'pages'], true) && (bool) \Configuration::get('EVERBLOCK_TINYMCE'),
             'id' => $id,
         ]);
     }

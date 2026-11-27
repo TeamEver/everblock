@@ -59,173 +59,6 @@
     list-style-type: none;
 }
 
-/* FAQ styles */
-.faq-accordion .card-header,
-.faq-accordion .accordion-header {
-    background-color: #f7f7f7;
-}
-.faq-question i {
-    transition: transform 0.3s ease;
-}
-.faq-accordion .accordion-button {
-    background: none;
-    box-shadow: none;
-}
-.faq-question[aria-expanded="true"] i {
-    transform: rotate(180deg);
-}
-.faq-answer,
-.faq-accordion .accordion-body {
-    padding: 15px;
-}
-
-/* Admin - Product FAQ selector */
-#everblock .everblock-faq-selector-card {
-    background: #fdfdfd;
-    border-color: #e3e8ef;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-}
-
-#everblock .everblock-faq-search-tip {
-    border: 1px dashed #94a3b8;
-    background: #f8fafc;
-    color: #334155;
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
-    font-weight: 500;
-}
-
-#everblock .everblock-faq-selector-wrapper label {
-    color: #0f172a;
-}
-
-#everblock .everblock-faq-selected-counter {
-    font-size: .9rem;
-    padding: .5rem 1rem;
-}
-
-#everblock .everblock-faq-selector-wrapper select[multiple] {
-    min-height: 70px;
-    border-width: 2px;
-    border-color: #4f46e5;
-    border-radius: .75rem;
-    padding: .65rem;
-    box-shadow: 0 0 0 .1rem rgba(79, 70, 229, 0.15);
-}
-
-#everblock .everblock-faq-selector-wrapper .select2-container--default .select2-selection--multiple {
-    border: 2px solid #4f46e5;
-    border-radius: .75rem;
-    min-height: 56px;
-    padding: .35rem;
-    background-color: #ffffff;
-    transition: box-shadow .2s ease, border-color .2s ease;
-}
-
-#everblock .everblock-faq-selector-wrapper .select2-container--default .select2-selection--multiple .select2-selection__choice {
-    background-color: rgba(79, 70, 229, 0.15);
-    border: none;
-    color: #312e81;
-    font-weight: 600;
-}
-
-#everblock .everblock-faq-selector-wrapper .select2-container--default .select2-selection--multiple .select2-search__field {
-    padding: .4rem;
-    font-size: 1rem;
-    color: #0f172a;
-    min-width: 100%;
-    width: 100% !important;
-}
-
-#everblock .everblock-faq-selector-wrapper .select2-container--default.select2-container--focus .select2-selection--multiple {
-    box-shadow: 0 0 0 .2rem rgba(79, 70, 229, 0.2);
-}
-
-#everblock .everblock-faq-selector-wrapper .select2-container {
-    width: 100% !important;
-}
-
-#everblock .everblock-faq-selector-wrapper .select2-search--inline {
-    width: 100%;
-}
-
-#everblock .everblock-faq-selector-wrapper .select2-search--inline .select2-search__field::placeholder {
-    color: #4f46e5;
-    font-weight: 600;
-}
-
-/* Pricing table styles */
-.everblock-pricing-table .pricing-plan {
-    border: 1px solid #dee2e6;
-    border-radius: .5rem;
-    text-align: center;
-}
-.everblock-pricing-table .pricing-price {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 1rem 0;
-}
-.everblock-pricing-table .pricing-features {
-    list-style: none;
-    padding-left: 0;
-    margin-bottom: 1rem;
-}
-.everblock-pricing-table .pricing-features li {
-    margin-bottom: .5rem;
-}
-.everblock-pricing-table .pricing-plan.highlight {
-    border-width: 2px;
-    border-color: #0d6efd;
-    box-shadow: 0 0 10px rgba(0,0,0,.1);
-}
-
-/* Downloads list styles */
-.everblock-downloads {
-    list-style: none;
-    padding-left: 0;
-}
-.everblock-downloads li {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-}
-.everblock-downloads .download-icon {
-    margin-right: .5rem;
-    width: 24px;
-    height: 24px;
-}
-.everblock-downloads .download-description {
-    margin: 0;
-}
-
-/* Video gallery */
-.everblock-video-gallery img {
-    cursor: pointer;
-}
-.everblock-video-gallery .video-description {
-    margin-top: .5rem;
-}
-
-/* Counters */
-.everblock-counter-value {
-    display: block;
-    font-size: 2rem;
-    font-weight: 700;
-}
-
-/* Countdown */
-.everblock-countdown-value {
-    display: block;
-    font-size: 3rem;
-    font-weight: 700;
-}
-.everblock-countdown-label {
-    display: block;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-}
-
 /* Exit intent modal */
 .ever-exit-intent-modal .modal-content {
     text-align: center;
@@ -446,21 +279,6 @@
     border: 0;
     padding: 0;
     box-shadow: none;
-}
-
-#module_form .everblock-prettyblocks-action {
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    padding: 0;
-    display: flex;
-    justify-content: flex-end;
-}
-
-#module_form .everblock-prettyblocks-action .everblock-prettyblocks-action__buttons {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
 }
 
 #module_form label.control-label {
@@ -1709,7 +1527,6 @@ details[open] > .everblock-doc-accordion__summary::after {
 .everblock-filterbar__field--id-everblock,
 .everblock-filterbar__field--id-hook,
 .everblock-filterbar__field--id-everblock-shortcode,
-.everblock-filterbar__field--id-everblock-faq,
 .everblock-filterbar__field--id-everblock-page,
 .everblock-filterbar__field--position,
 .everblock-filterbar__field--id-shop {
@@ -1896,7 +1713,6 @@ details[open] > .everblock-doc-accordion__summary::after {
 .everblock-bo-list-table__cell--id-everblock,
 .everblock-bo-list-table__cell--id-hook,
 .everblock-bo-list-table__cell--id-everblock-shortcode,
-.everblock-bo-list-table__cell--id-everblock-faq,
 .everblock-bo-list-table__cell--id-everblock-page,
 .everblock-bo-list-table__cell--position,
 .everblock-bo-list-table__cell--id-shop {
@@ -2178,7 +1994,6 @@ details[open] > .everblock-doc-accordion__summary::after {
     .everblock-filterbar__field--id-everblock,
     .everblock-filterbar__field--id-hook,
     .everblock-filterbar__field--id-everblock-shortcode,
-    .everblock-filterbar__field--id-everblock-faq,
     .everblock-filterbar__field--id-everblock-page,
     .everblock-filterbar__field--position,
     .everblock-filterbar__field--id-shop,

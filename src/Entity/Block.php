@@ -116,14 +116,6 @@ class Block
         return $this->translated($this->content, $idLang);
     }
 
-    /**
-     * Retourne le code personnalise traduit du bloc.
-     */
-    public function getCustomCode(?int $idLang = null): string
-    {
-        return $this->translated($this->custom_code, $idLang);
-    }
-
     public static function repository(): BlockRepository
     {
         /** @var BlockRepository $repository */
@@ -254,12 +246,6 @@ class Block
         }
 
         return (array) EverblockCache::cacheRetrieve($cacheId);
-    }
-
-    public static function cleanBlocksCacheOnDate(int $idLang, int $idShop): void
-    {
-        // Block visibility dates are evaluated at render time, so no hook-wide
-        // rendered cache has to be flushed on each front-office request.
     }
 
     public static function getBlocks(int $idHook, int $idLang, int $idShop): array

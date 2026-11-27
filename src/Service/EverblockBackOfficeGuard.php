@@ -167,19 +167,6 @@ class EverblockBackOfficeGuard
     }
 
     /**
-     * Token of the current employee back office session, or an empty string.
-     *
-     * Useful as an extra HMAC ingredient: any signature bound to it dies when the employee logs
-     * out of the back office, without any server side storage.
-     */
-    public static function getEmployeeSessionToken(): string
-    {
-        $content = self::getAdminCookieContent();
-
-        return isset($content['session_token']) ? (string) $content['session_token'] : '';
-    }
-
-    /**
      * @return Employee|null The employee owning a live back office session, null otherwise
      */
     public static function getLoggedEmployee()
@@ -302,31 +289,6 @@ class EverblockBackOfficeGuard
         }
 
         return false;
-    }
-
-    /**
-     * Diagnostic helper: why did the lookup fail? Never returns a secret.
-     */
-    public static function describeLookup(): string
-    {
-        $prestashopCookies = 0;
-        if (is_array($_COOKIE)) {
-            foreach (array_keys($_COOKIE) as $name) {
-                if (is_string($name) && strpos($name, self::COOKIE_NAME_PREFIX) === 0) {
-                    ++$prestashopCookies;
-                }
-            }
-        }
-
-        $content = self::getAdminCookieContent();
-
-        return sprintf(
-            'admin dir defined: %s, PrestaShop cookies received: %d, decoded employee cookie: %s, https: %s',
-            defined('_PS_ADMIN_DIR_') ? 'yes' : 'no',
-            $prestashopCookies,
-            $content === [] ? 'none' : ('#' . (int) ($content['id_employee'] ?? 0)),
-            Tools::usingSecureMode() ? 'yes' : 'no'
-        );
     }
 
     /**

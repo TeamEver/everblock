@@ -21,7 +21,6 @@ views/js/custom.js
 views/css/feature-flags-1.css
 views/css/outofstock-flag-1.css
 views/templates/hook/generated_wp_posts/*.json
-/views/img/prettyblocks
 /views/backup
 views/backup/css/custom-compressed1.css
 views/backup/css/custom.css

@@ -16,8 +16,6 @@ services:
         tags: [form.type]
     Everblock\Tools\Form\ShortcodeType:
         tags: [form.type]
-    Everblock\Tools\Form\FaqType:
-        tags: [form.type]
     Everblock\Tools\Form\PageType:
         tags: [form.type]
     Everblock\Tools\Form\HookType:
@@ -54,13 +52,6 @@ services:
         arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
     everblock.repository.shortcode:
         alias: Everblock\Tools\Repository\ShortcodeRepository
-        public: true
-
-    Everblock\Tools\Repository\FaqRepository:
-        public: true
-        arguments: ['@doctrine.dbal.default_connection', '%database_prefix%']
-    everblock.repository.faq:
-        alias: Everblock\Tools\Repository\FaqRepository
         public: true
 
     Everblock\Tools\Repository\PageRepository:
@@ -104,6 +95,12 @@ services:
         tags:
             - { name: tactician.handler, command: Everblock\Tools\Command\ClearEverblockCacheCommand }
             - { name: messenger.message_handler, handles: Everblock\Tools\Command\ClearEverblockCacheCommand }
+
+    everblock.tools.update:
+        class: Everblock\Tools\Command\UpdateModuleCommand
+        public: true
+        tags:
+            - { name: console.command }
 
     everblock.tools.import:
         class: Everblock\Tools\Command\ImportFileCommand

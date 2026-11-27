@@ -53,14 +53,17 @@ class GithubReleaseChecker
         $this->moduleVersion = $moduleVersion;
     }
 
-    public function getLatestEverblockRelease(): ?array
+    /**
+     * @param bool $forceRefresh interroger GitHub même si la réponse en cache (24 h) est valide
+     */
+    public function getLatestEverblockRelease(bool $forceRefresh = false): ?array
     {
-        if ($this->latestReleaseLoaded) {
+        if ($this->latestReleaseLoaded && !$forceRefresh) {
             return $this->latestRelease;
         }
 
         $cachedPayload = $this->getCachedPayload();
-        if ($cachedPayload && !$this->isCacheExpired($cachedPayload)) {
+        if (!$forceRefresh && $cachedPayload && !$this->isCacheExpired($cachedPayload)) {
             $this->latestReleaseLoaded = true;
             $this->latestRelease = $cachedPayload['release'];
             return $this->latestRelease;
